@@ -1,0 +1,275 @@
+! Oberon-0 (Symbolauflösung)  MK 06.96
+
+OberonO = Decls Stmts.
+
+OberonOe <+ Decls Stmts: OberonO>:
+  Decls <"NIL", Decls, Map, "NIL", FieldTab> Stmts <Map, Stmts>.
+
+letter =
+    "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m"
+  | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
+  | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M"
+  | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z".
+
+letter:
+    <+ "a": letter> "a" | <+ "b": letter> "b" | <+ "c": letter> "c" | <+ "d": letter> "d"
+  | <+ "e": letter> "e" | <+ "f": letter> "f" | <+ "g": letter> "g" | <+ "h": letter> "h"
+  | <+ "i": letter> "i" | <+ "j": letter> "j" | <+ "k": letter> "k" | <+ "l": letter> "l"
+  | <+ "m": letter> "m" | <+ "n": letter> "n" | <+ "o": letter> "o" | <+ "p": letter> "p"
+  | <+ "q": letter> "q" | <+ "r": letter> "r" | <+ "s": letter> "s" | <+ "t": letter> "t"
+  | <+ "u": letter> "u" | <+ "v": letter> "v" | <+ "w": letter> "w" | <+ "x": letter> "x"
+  | <+ "y": letter> "y" | <+ "z": letter> "z"
+  | <+ "A": letter> "A" | <+ "B": letter> "B" | <+ "C": letter> "C" | <+ "D": letter> "D"
+  | <+ "E": letter> "E" | <+ "F": letter> "F" | <+ "G": letter> "G" | <+ "H": letter> "H"
+  | <+ "I": letter> "I" | <+ "J": letter> "J" | <+ "K": letter> "K" | <+ "L": letter> "L"
+  | <+ "M": letter> "M" | <+ "N": letter> "N" | <+ "O": letter> "O" | <+ "P": letter> "P"
+  | <+ "Q": letter> "Q" | <+ "R": letter> "R" | <+ "S": letter> "S" | <+ "T": letter> "T"
+  | <+ "U": letter> "U" | <+ "V": letter> "V" | <+ "W": letter> "W" | <+ "X": letter> "X"
+  | <+ "Y": letter> "Y" | <+ "Z": letter> "Z".
+
+digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9".
+
+digit:
+    <+ "0": digit> "0" | <+ "1": digit> "1" | <+ "2": digit> "2" | <+ "3": digit> "3"
+  | <+ "4": digit> "4" | <+ "5": digit> "5" | <+ "6": digit> "6" | <+ "7": digit> "7"
+  | <+ "8": digit> "8" | <+ "9": digit> "9".
+
+letgits = | letter letgits | digit letgits.
+id = "ID" letgits.
+
+letgits:
+    <+ : letgits>
+  | <+ letter letgits: letgits>
+      letter <letter> letgits <letgits>
+  | <+ digit letgits: letgits>
+      digit <digit> letgits <letgits>.
+
+id <+ "ID" letgits: id>:
+  "ID" letgits <letgits>.
+
+digits = | digit digits.
+int = "INT" digits.
+
+digits:
+    <+ : digits>
+  | <+ digit digits: digits>
+      digit <digit> digits <digits>.
+
+int <+ "INT" digits: int>:
+  "INT" digits <digits>.
+
+Sel = | "." id Map Sel | "[" Expr "]" Map Sel.
+
+Sel:
+    <- Map: Map, + : Sel>
+  | <- Map: Map, + "." id Map Sel: Sel>
+      "." id <id> Sel <Map, Sel>
+  | <- Map: Map, + "[" Expr "]" Map Sel: Sel>
+      "[" Expr <Map, Expr> "]" Sel <Map, Sel>.
+
+Sign = "+" | "-".
+UnOp = Sign | "NOT" | "()".
+
+UnOp:
+    <+ "+": UnOp> "+" | <+ "-": UnOp> "-"
+  | <+ "NOT": UnOp> "NOT"
+  | <+ "()": UnOp> "()".
+
+IntOp = "+" | "-" | "*" | "DIV" | "MOD".
+BoolOp = "OR" | "AND".
+Equal = "=" | "#".
+Rel = "<" | "<=" | ">" | ">=".
+Op = IntOp | BoolOp | Equal | Rel.
+
+Op:
+    <+ "+": Op> "+" | <+ "-": Op> "-"
+  | <+ "*": Op> "*" | <+ "DIV": Op> "DIV" | <+ "MOD": Op> "MOD"
+  | <+ "OR": Op> "OR" | <+ "AND": Op> "AND"
+  | <+ "=": Op> "=" | <+ "#": Op> "#"
+  | <+ "<": Op> "<" | <+ "<=": Op> "<=" | <+ ">": Op> ">" | <+ ">=": Op> ">=".
+
+Expr =
+    Attr Sel
+  | int
+  | UnOp Expr
+  | "(" Expr Op Expr ")".
+
+Expr:
+    <- Map: Map, + Attr Sel: Expr>
+      IdUse <Attr> Sel <Map, Sel>
+  | <- Map: Map, + int: Expr>
+      int <int>
+  | <- Map: Map, + UnOp Expr: Expr>
+      UnOp <UnOp> Expr <Map, Expr>
+  | <- Map: Map, + "(" Expr1 Op Expr2 ")": Expr>
+      "(" Expr <Map, Expr1> Op <Op> Expr <Map, Expr2> ")".
+
+APList = "NIL" | Expr APList.
+
+APList:
+    <- Map: Map, + "NIL": APList>
+      "NIL"
+  | <- Map: Map, + Expr APList: APList>
+      Expr <Map, Expr> APList <Map, APList>.
+
+Stmts = "NIL" | "(" Stmts Stmts ")"
+  | "ASSIGN" Attr Sel Expr
+  | "CALL" Attr APList
+  | "IF" Expr Stmts Stmts
+  | "WHILE" Expr Stmts
+  | "REPEAT" Stmts Expr.
+
+Stmts:
+    <- Map: Map, + "NIL": Stmts>
+      "NIL"
+  | <- Map: Map, + "(" Stmts1 Stmts2 ")": Stmts>
+      "(" Stmts <Map, Stmts1> Stmts <Map, Stmts2> ")".
+
+Stmts:
+    <- Map: Map, + "ASSIGN" Attr Sel Expr: Stmts>
+      "ASSIGN" IdUse <Attr> Sel <Map, Sel> Expr <Map, Expr>
+  | <- Map: Map, + "CALL" Attr APList: Stmts>
+      "CALL" IdUse <Attr> APList <Map, APList>
+  | <- Map: Map, + "IF" Expr Stmts1 Stmts2: Stmts>
+      "IF" Expr <Map, Expr> Stmts <Map, Stmts1> Stmts <Map, Stmts2>
+  | <- Map: Map, + "WHILE" Expr Stmts: Stmts>
+      "WHILE" Expr <Map, Expr> Stmts <Map, Stmts>
+  | <- Map: Map, + "REPEAT" Stmts Expr: Stmts>
+      "REPEAT" Stmts <Map, Stmts> Expr <Map, Expr>.
+
+BasicType = "INT" | "BOOL".
+N = | "|" N.
+Type =
+    BasicType
+  | "STRUCT" N.
+
+BasicType:
+  <+ "INT": BasicType> "INT" | <+ "BOOL": BasicType> "BOOL".
+
+N:
+    <+ : N>
+  | <+ "|" N: N>
+      "|" N <N>.
+
+Type:
+    <+ BasicType: Type>
+      BasicType <BasicType>
+  | <+ "STRUCT" N: Type>
+      "STRUCT" N <N>.
+
+Kind = "VAR" | "VAL".
+FPList = "NIL" | Kind Type FPList.
+
+Kind:
+  <+ "VAR": Kind> "VAR" | <+ "VAL": Kind> "VAL".
+
+FPList:
+    <+ "NIL": FPList>
+      "NIL"
+  | <+ Kind Type FPList: FPList>
+      Kind <Kind> Type <Type> FPList <FPList>.
+
+Attr =
+    "UNDEF"
+  | "CONST" BasicType
+  | "VAR" Type
+  | "REF" Type
+  | "PROC" FPList.
+
+Attr:
+    <+ "UNDEF": Attr>
+      "UNDEF"
+  | <+ "CONST" BasicType: Attr>
+      "CONST" BasicType <BasicType>
+  | <+ "VAR" Type: Attr>
+      "VAR" Type <Type>
+  | <+ "REF" Type: Attr>
+      "REF" Type <Type>
+  | <+ "PROC" FPList: Attr>
+      "PROC" FPList <FPList>.
+
+AttrOpt = Attr | "NIL".
+
+Tab:
+    <- AttrOpt: AttrOpt, - id: id, + AttrOpt: AttrOpt>
+      "NIL"
+  | <- AttrOpt1: AttrOpt, - id: id, + AttrOpt: AttrOpt>
+      "(" Tab <AttrOpt1, id, AttrOpt2> Tab <AttrOpt2, id, AttrOpt> ")".
+
+Tab <- AttrOpt1: AttrOpt, - id: id, + AttrOpt: AttrOpt>:
+  id <id1> Attr <Attr>
+  <id, id1, Attr, AttrOpt1, AttrOpt>
+    ( <- id: id, - id: id, - Attr: Attr, - AttrOpt: AttrOpt, + Attr: AttrOpt>
+    | <- id: id, - #id: id, - Attr: Attr, - AttrOpt: AttrOpt, + AttrOpt: AttrOpt>
+    ).
+
+IdDef <+ id: id>:
+  id <id> Tab <"NIL", id, "NIL">.
+
+IdUse <+ Attr: Attr>:
+  id <id> Tab <"NIL", id, Attr>.
+
+FieldAttr =
+    "UNDEF"
+  | Type.
+FieldTab = "NIL" | id Type FieldTab.
+Desc =
+    "ARRAY" Type
+  | "RECORD" FieldTab.
+Map = "NIL" | "(" Map Map ")"
+  | "STRUCT" N Desc.
+
+Object =
+    "CONST" Expr
+  | "TYPE" Type
+  | "FIELD" Type
+  | "VAR" Type
+  | "REF" Type
+  | "PROC" FPList Decls Stmts.
+Struct =
+    "ARRAY" Expr Type
+  | "RECORD" Decls.
+Decls = "NIL" | "(" Decls Decls ")"
+  | id Object
+  | "STRUCT" N Struct.
+
+Object:
+    <- Map: Map, + "CONST" Expr: Object, + "UNDEF": FieldAttr>
+      "CONST" Expr <"NIL", Expr>
+  | <- Map: Map, + "TYPE" Type: Object, + "UNDEF": FieldAttr>
+      "TYPE" Type <Type>
+  | <- Map: Map, + "FIELD" Type: Object, + Type: FieldAttr>
+      "FIELD" Type <Type>
+  | <- Map: Map, + "VAR" Type: Object, + "UNDEF": FieldAttr>
+      "VAR" Type <Type>
+  | <- Map: Map, + "REF" Type: Object, + "UNDEF": FieldAttr>
+      "REF" Type <Type>
+  | <- Map: Map, + "PROC" FPList Decls Stmts: Object, + "UNDEF": FieldAttr>
+      "PROC" FPList <FPList> Decls <Map, Decls, Map1, "NIL", FieldTab> Stmts <Map1, Stmts>.
+
+Struct:
+    <+ "ARRAY" Expr Type: Struct, + "ARRAY" Type: Desc, + "NIL": Map>
+      "ARRAY" Expr <"NIL", Expr> Type <Type>
+  | <+ "RECORD" Decls: Struct, + "RECORD" FieldTab: Desc, + Map: Map>
+      "RECORD" Decls <"NIL", Decls, Map, "NIL", FieldTab>.
+
+Decls:
+    <- Map: Map, + "NIL": Decls, + Map: Map,
+     - FieldTab: FieldTab, + FieldTab: FieldTab>
+      "NIL"
+  | <- Map1: Map, + "(" Decls1 Decls2 ")": Decls, + Map: Map,
+     - FieldTab1: FieldTab, + FieldTab: FieldTab>
+      "(" Decls <Map1, Decls1, Map2, FieldTab1, FieldTab2>
+      Decls <Map2, Decls2, Map, FieldTab2, FieldTab> ")".
+
+Decls:
+    <- Map: Map, + id Object: Decls, + Map: Map,
+     - FieldTab1: FieldTab, + FieldTab: FieldTab>
+      IdDef <id> Object <Map, Object, FieldAttr>
+      <id, FieldAttr, FieldTab1, FieldTab>
+        ( <- id: id, - "UNDEF": FieldAttr, - FieldTab: FieldTab, + FieldTab: FieldTab>
+        | <- id: id, - Type: FieldAttr, - FieldTab: FieldTab, + id Type FieldTab: FieldTab>
+        )
+  | <- Map: Map, + "STRUCT" N Struct: Decls, + "(" Map "(" "STRUCT" N Desc Map1 ")" ")": Map,
+     - FieldTab: FieldTab, + FieldTab: FieldTab>
+      "STRUCT" N <N> Struct <Struct, Desc, Map1>.

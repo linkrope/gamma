@@ -1,0 +1,319 @@
+! Oberon-0 (Abstrakte Syntax)  MK 06.96
+
+OberonO = Decls Stmts.
+
+OberonOa <+ Decls Stmts: OberonO>:
+  Module <Decls, Stmts>.
+
+letter =
+    "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m"
+  | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
+  | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M"
+  | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z".
+
+letter:
+    <+ "a": letter> "a" | <+ "b": letter> "b" | <+ "c": letter> "c" | <+ "d": letter> "d"
+  | <+ "e": letter> "e" | <+ "f": letter> "f" | <+ "g": letter> "g" | <+ "h": letter> "h"
+  | <+ "i": letter> "i" | <+ "j": letter> "j" | <+ "k": letter> "k" | <+ "l": letter> "l"
+  | <+ "m": letter> "m" | <+ "n": letter> "n" | <+ "o": letter> "o" | <+ "p": letter> "p"
+  | <+ "q": letter> "q" | <+ "r": letter> "r" | <+ "s": letter> "s" | <+ "t": letter> "t"
+  | <+ "u": letter> "u" | <+ "v": letter> "v" | <+ "w": letter> "w" | <+ "x": letter> "x"
+  | <+ "y": letter> "y" | <+ "z": letter> "z"
+  | <+ "A": letter> "A" | <+ "B": letter> "B" | <+ "C": letter> "C" | <+ "D": letter> "D"
+  | <+ "E": letter> "E" | <+ "F": letter> "F" | <+ "G": letter> "G" | <+ "H": letter> "H"
+  | <+ "I": letter> "I" | <+ "J": letter> "J" | <+ "K": letter> "K" | <+ "L": letter> "L"
+  | <+ "M": letter> "M" | <+ "N": letter> "N" | <+ "O": letter> "O" | <+ "P": letter> "P"
+  | <+ "Q": letter> "Q" | <+ "R": letter> "R" | <+ "S": letter> "S" | <+ "T": letter> "T"
+  | <+ "U": letter> "U" | <+ "V": letter> "V" | <+ "W": letter> "W" | <+ "X": letter> "X"
+  | <+ "Y": letter> "Y" | <+ "Z": letter> "Z".
+
+digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9".
+
+digit:
+    <+ "0": digit> "0" | <+ "1": digit> "1" | <+ "2": digit> "2" | <+ "3": digit> "3"
+  | <+ "4": digit> "4" | <+ "5": digit> "5" | <+ "6": digit> "6" | <+ "7": digit> "7"
+  | <+ "8": digit> "8" | <+ "9": digit> "9".
+
+letgits = | letter letgits | digit letgits.
+id = "ID" letgits.
+
+ident <+ "ID" letter letgits: id>:
+  letter <letter>
+  <letgits>
+    { <+ letter letgits: letgits>
+        letter <letter>  <letgits>
+    | <+ digit letgits: letgits>
+        digit <digit>  <letgits>
+    } <+ : letgits>.
+
+digits = | digit digits.
+int = "INT" digits.
+
+integer <+ "INT" digit digits: int>:
+  digit <digit>
+  <digits>
+    { <+ digit digits: digits>
+        digit <digit>  <digits>
+    } <+ : digits>.
+
+Sel = | "." id Sel | "[" Expr "]" Sel.
+
+Selector:
+  { <+ "." id Sel: Sel>
+      "." ident <id>  <Sel>
+  | <+ "[" Expr "]" Sel: Sel>
+      "[" Expression <Expr> "]"  <Sel>
+  } <+ : Sel>.
+
+UnOp = "+" | "-" | "NOT" | "()".
+Op = "+" | "-" | "*" | "DIV" | "MOD" | "OR" | "AND" | "=" | "#" | "<" | "<=" | ">" | ">=".
+Expr =
+    id Sel
+  | int
+  | UnOp Expr
+  | "(" Expr Op Expr ")".
+
+Factor:
+    <+ id Sel: Expr>
+      ident <id> Selector <Sel>
+  | <+ int: Expr>
+      integer <int>
+  | <+ "()" Expr: Expr>
+      "(" Expression <Expr> ")"
+  | <+ "NOT" Expr: Expr>
+      "~" Factor <Expr>.
+
+Term <+ Expr: Expr>:
+  Factor <Expr1>
+  <Expr1, Expr>
+    { <- Expr1: Expr, + Expr: Expr>
+        <Op>
+          ( <+ "*": Op> "*" | <+ "DIV": Op> "DIV" | <+ "MOD": Op> "MOD"
+          | <+ "AND": Op> "&"
+          )
+        Factor <Expr2>
+        <"(" Expr1 Op Expr2 ")", Expr>
+    } <- Expr: Expr, + Expr: Expr>.
+
+SimpleExpression <+ Expr: Expr>:
+  <Expr1, Expr2>
+    [ <- Expr: Expr, + "+" Expr: Expr> "+"
+    | <- Expr: Expr, + "-" Expr: Expr> "-"
+    ] <- Expr: Expr, + Expr: Expr>
+  Term <Expr1>
+  <Expr2, Expr>
+    { <- Expr1: Expr, + Expr: Expr>
+        <Op>
+          ( <+ "+": Op> "+" | <+ "-": Op> "-"
+          | <+ "OR": Op> "OR"
+          )
+        Term <Expr2>
+        <"(" Expr1 Op Expr2 ")", Expr>
+    } <- Expr: Expr, + Expr: Expr>.
+
+Expression <+ Expr: Expr>:
+  SimpleExpression <Expr1>
+  <Expr1, Expr>
+    [ <- Expr1: Expr, + "(" Expr1 Op Expr2 ")": Expr>
+        <Op>
+          ( <+ "=": Op> "=" | <+ "#": Op> "#"
+          | <+ "<": Op> "<" | <+ "<=": Op> "<=" | <+ ">": Op> ">" | <+ ">=": Op> ">="
+          )
+        SimpleExpression <Expr2>
+    ] <- Expr: Expr, + Expr: Expr>.
+
+APList = "NIL" | Expr APList.
+
+ActualParameters <+ APList: APList>:
+  "("
+  <APList>
+    [ <+ Expr APList: APList>
+        Expression <Expr>
+        <APList>
+          { <+ Expr APList: APList>
+              "," Expression <Expr>  <APList>
+          } <+ "NIL": APList>
+    ] <+ "NIL": APList>
+  ")".
+
+Stmts = "NIL" | "(" Stmts Stmts ")"
+  | "ASSIGN" id Sel Expr
+  | "CALL" id APList
+  | "IF" Expr Stmts Stmts
+  | "WHILE" Expr Stmts
+  | "REPEAT" Stmts Expr.
+
+AssignmentOrProcedureCall:
+    <- id: id, + "ASSIGN" id Sel Expr: Stmts>
+      Selector <Sel> ":=" Expression <Expr>
+  | <- id: id, + "CALL" id APList: Stmts>
+      <APList>
+        [ <+ APList: APList>
+            ActualParameters <APList>
+        ] <+ "NIL": APList>.
+
+IfStatement <+ "IF" Expr Stmts1 Stmts2: Stmts>:
+  "IF" Expression <Expr> "THEN" StatementSequence <Stmts1>
+  <Stmts, Stmts2>
+    { <- Stmts: Stmts, + "IF" Expr Stmts1 Stmts2: Stmts>
+        "ELSIF" Expression <Expr> "THEN" StatementSequence <Stmts1>  <Stmts, Stmts2>
+    } <- Stmts: Stmts, + Stmts: Stmts>
+  <Stmts>
+    [ <+ Stmts: Stmts>
+        "ELSE" StatementSequence <Stmts>
+    ] <+ "NIL": Stmts> 
+  "END".
+
+WhileStatement <+ "WHILE" Expr Stmts: Stmts>:
+  "WHILE" Expression <Expr> "DO" StatementSequence <Stmts> "END".
+
+RepeatStatement <+ "REPEAT" Stmts Expr: Stmts>:
+  "REPEAT" StatementSequence <Stmts> "UNTIL" Expression <Expr>.
+
+Statement:
+  [ <+ Stmts: Stmts>
+      ident <id> AssignmentOrProcedureCall <id, Stmts>
+  | <+ Stmts: Stmts>
+      IfStatement <Stmts>
+  | <+ Stmts: Stmts>
+      WhileStatement <Stmts>
+  | <+ Stmts: Stmts>
+      RepeatStatement <Stmts>
+  ] <+ "NIL": Stmts>.
+
+StatementSequence <+ "(" Stmts1 Stmts2 ")": Stmts>:
+  Statement <Stmts1>
+  <Stmts2>
+    { <+ "(" Stmts1 Stmts2 ")": Stmts>
+        ";" Statement <Stmts1>  <Stmts2>
+    } <+ "NIL": Stmts>.
+
+IdList = "NIL" | id IdList.
+
+IdentList <+ id IdList: IdList>:
+  ident <id>
+  <IdList>
+    { <+ id IdList: IdList>
+        "," ident <id>  <IdList>
+    } <+ "NIL": IdList>.
+
+StructType =
+    "ARRAY" Expr Type
+  | "RECORD" Decls.
+Type =
+    id
+  | StructType.
+
+ArrayType <+ "ARRAY" Expr Type: StructType>:
+  "ARRAY" Expression <Expr> "OF" Type <Type>.
+
+FieldList:
+  [ <+ "FIELD" IdList Type: Decls>
+      IdentList <IdList> ":" Type <Type>
+  ] <+ "NIL": Decls>.
+
+RecordType <+ "RECORD" "(" Decls1 Decls2 ")": StructType>:
+  "RECORD" FieldList <Decls1>
+  <Decls2>
+    { <+ "(" Decls1 Decls2 ")": Decls>
+        ";" FieldList <Decls1>  <Decls2>
+    } <+ "NIL": Decls>
+  "END".
+
+Type:
+    <+ id: Type>
+      ident <id>
+  | <+ StructType: Type>
+      ArrayType <StructType>
+  | <+ StructType: Type>
+      RecordType <StructType>.
+
+Kind = "VAR" | "VAL".
+M = | "|" M.
+FPList = "NIL" | Kind M IdList "TYPE" id FPList.
+
+FPSection <+ Kind: Kind, + "|" M: M, + id1 IdList: IdList, + id: id>:
+  <Kind>
+    [ <+ "VAR": Kind> "VAR"
+    ] <+ "VAL": Kind>
+  ident <id1>
+  <M, IdList>
+    { <+ "|" M: M, + id IdList: IdList>
+        "," ident <id>  <M, IdList>
+    } <+ : M, + "NIL": IdList>
+  ":" ident <id>.
+
+FormalParameters <+ FPList: FPList>:
+  "("
+  <FPList>
+    [<+ Kind M IdList "TYPE" id FPList: FPList>
+        FPSection <Kind, M, IdList, id>
+        <FPList>
+          { <+ Kind M IdList "TYPE" id FPList: FPList>
+              ";" FPSection <Kind, M, IdList, id>  <FPList>
+          } <+ "NIL": FPList>
+    ] <+ "NIL": FPList>
+  ")".
+
+ProcedureBody <+ Decls: Decls, + Stmts: Stmts>:
+  Declarations <Decls>
+  <Stmts>
+    [ <+ Stmts: Stmts>
+        "BEGIN" StatementSequence <Stmts>
+    ] <+ "NIL": Stmts>
+  "END".
+
+Decls = "NIL" | "(" Decls Decls ")"
+  | "CONST" id Expr
+  | "ALIAS" id id
+  | "TYPE" id StructType
+  | "FIELD" IdList Type
+  | "VAR" IdList Type
+  | "PROC" id FPList Decls Stmts.
+
+ProcedureDeclaration <+ "PROC" id FPList Decls Stmts: Decls>:
+  "PROCEDURE" ident <id>
+  <FPList>
+    [ <+ FPList: FPList>
+        FormalParameters <FPList>
+    ] <+ "NIL": FPList>
+  ";" ProcedureBody <Decls, Stmts>
+  ident <id>.
+
+Declarations <+ "(" "(" Decls1 Decls2 ")" "(" Decls3 Decls4 ")" ")": Decls>:
+  <Decls1>
+    [ <+ Decls: Decls>
+        "CONST"
+        <Decls>
+          { <+ "(" "CONST" id Expr Decls ")": Decls>
+              ident <id> "=" Expression <Expr> ";"  <Decls>
+          } <+ "NIL": Decls>
+    ] <+ "NIL": Decls>
+  <Decls2>
+    [ <+ Decls: Decls>
+        "TYPE"
+        <Decls>
+          { <+ "(" Decls1 Decls ")": Decls>
+              ident <id> "=" Type <Type> ";"
+              <id, Type, Decls1>
+                ( <- id: id, - id1: Type, + "ALIAS" id id1: Decls>
+                | <- id: id, - StructType: Type, + "TYPE" id StructType: Decls>
+                )
+              <Decls>
+          } <+ "NIL": Decls>
+    ] <+ "NIL": Decls>
+  <Decls3>
+    [ <+ Decls: Decls>
+        "VAR"
+        <Decls>
+          { <+ "(" "VAR" IdList Type Decls ")": Decls>
+              IdentList <IdList> ":" Type <Type> ";"  <Decls>
+          } <+ "NIL": Decls>
+    ] <+ "NIL": Decls>
+  <Decls4>
+    { <+ "(" Decls1 Decls ")": Decls>
+        ProcedureDeclaration <Decls1> ";"  <Decls>
+    } <+ "NIL": Decls>.
+
+Module <+ Decls: Decls, + Stmts: Stmts>:
+  "MODULE" ident <id> ";" ProcedureBody <Decls, Stmts> ident <id> ".".
