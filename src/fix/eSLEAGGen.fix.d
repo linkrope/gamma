@@ -166,7 +166,7 @@ $ void SetErr()
     IO.WriteText(IO.Msg, "  ");
 }
 
-void Error(char[] Msg)
+void Error(string Msg)
 {
     SetErr;
     IO.WriteText(IO.Msg, Msg);
@@ -174,7 +174,7 @@ void Error(char[] Msg)
     IO.Update(IO.Msg);
 }
 
-void PredError(char[] Msg)
+void PredError(string Msg)
 {
     SetErr;
     IO.WriteText(IO.Msg, "predicate ");
@@ -184,7 +184,7 @@ void PredError(char[] Msg)
     IO.Update(IO.Msg);
 }
 
-void AnalyseError(ref HeapType V, char[] Msg)
+void AnalyseError(ref HeapType V, string Msg)
 {
     if (V != errVal)
     {
@@ -223,7 +223,7 @@ bool Equal(HeapType Ptr1, HeapType Ptr2)
     return false;
 }
 
-void Eq(HeapType Ptr1, HeapType Ptr2, char[] ErrMsg)
+void Eq(HeapType Ptr1, HeapType Ptr2, string ErrMsg)
 {
     if (!Equal(Ptr1, Ptr2))
     {
@@ -234,7 +234,7 @@ void Eq(HeapType Ptr1, HeapType Ptr2, char[] ErrMsg)
     }
 }
 
-void UnEq(HeapType Ptr1, HeapType Ptr2, char[] ErrMsg)
+void UnEq(HeapType Ptr1, HeapType Ptr2, string ErrMsg)
 {
     if (Equal(Ptr1, Ptr2))
     {
@@ -254,7 +254,8 @@ bool EvalInitSucceeds()
     bool OpenError;
     int i;
     long l;
-    void LoadError(char[] Msg)
+
+    void LoadError(string Msg)
     {
         IO.WriteText(IO.Msg, "  loading the evaluator table ");
         IO.WriteString(IO.Msg, name);
@@ -288,7 +289,7 @@ bool EvalInitSucceeds()
         LoadError("wrong heap size");
         return false;
     }
-    if (Heap == null)
+    if (Heap is null)
     {
         NEW(Heap, initialHeapSize);
     }
@@ -317,7 +318,7 @@ bool EvalInitSucceeds()
     $
     PosTop = -1;
     NEW(PosStack, 128);
-    if (PosHeap == null)
+    if (PosHeap is null)
     {
         NEW(PosHeap, Heap.length);
     }

@@ -1,4 +1,5 @@
 module eELL1Gen;
+
 import runtime;
 import Sets = eSets;
 import IO = eIO;
@@ -16,6 +17,7 @@ const nElemsPerSET = 31 + 1;
 const firstEdge = 1;
 const firstGenSet = 1;
 const firstGenSetT = 1;
+
 class NontRecord
 {
     Sets.OpenSet First;
@@ -33,18 +35,21 @@ class NontRecord
 }
 
 alias OpenNont = NontRecord[];
+
 class AltRecord
 {
     Sets.OpenSet Dir;
 }
 
 alias OpenAlt = AltRecord[];
+
 class FactorRecord
 {
     int Rec;
 }
 
 alias OpenFactor = FactorRecord[];
+
 class EdgeRecord
 {
     int Dest;
@@ -73,12 +78,14 @@ bool Warning;
 bool ShowMod;
 bool Compiled;
 bool UseReg;
+
 void Expand()
 {
     OpenEdge Edge1;
     OpenGenSet GenSet1;
     OpenGenSetT GenSetT1;
     long i;
+
     long ExpLen(long ArrayLen)
     {
         if (ArrayLen <= DIV(int.max, 2))
@@ -120,7 +127,8 @@ void Expand()
     }
 }
 /**
-* R  whole procedure */
+ * R  whole procedure
+ */
 void ComputeRegNonts()
 {
     int N;
@@ -134,7 +142,7 @@ void ComputeRegNonts()
         do
         {
             F = A.Sub;
-            while (F != null)
+            while (F !is null)
             {
                 if (F is EAG.Nont && Sets.In(TestNonts, F(EAG.Nont).Sym)
                         && !Sets.In(RegNonts, F(EAG.Nont).Sym))
@@ -146,7 +154,7 @@ void ComputeRegNonts()
             }
             A = A.Next;
         }
-        while (!(A == null));
+        while (A !is null);
     }
 
     void DeleteConflictNont(int N)
@@ -158,7 +166,7 @@ void ComputeRegNonts()
         do
         {
             F = A.Sub;
-            while (F != null)
+            while (F !is null)
             {
                 if (F is EAG.Nont && Sets.In(ConflictNonts, F(EAG.Nont).Sym))
                 {
@@ -168,7 +176,7 @@ void ComputeRegNonts()
             }
             A = A.Next;
         }
-        while (!(A == null));
+        while (A !is null);
     }
 
     Sets.Empty(RegNonts);
@@ -189,15 +197,15 @@ void ComputeRegNonts()
             do
             {
                 F = A.Last;
-                while (F != null && F is EAG.Nont && !Sets.In(TestNonts, F(EAG.Nont).Sym))
+                while (F !is null && F is EAG.Nont && !Sets.In(TestNonts, F(EAG.Nont).Sym))
                 {
                     F = F.Prev;
                 }
-                if (F != null)
+                if (F !is null)
                 {
                     F = F.Prev;
                 }
-                while (F != null)
+                while (F !is null)
                 {
                     if (F is EAG.Nont && Sets.In(ConflictNonts, F(EAG.Nont).Sym))
                     {
@@ -207,7 +215,7 @@ void ComputeRegNonts()
                 }
                 A = A.Next;
             }
-            while (!(A == null));
+            while (A !is null);
         }
     }
 }
@@ -340,7 +348,8 @@ void NewEdge(int From, int To)
     ++NextEdge;
 }
 /**
-* R  whole procedure */
+ * R  whole procedure
+ */
 bool GrammarOk()
 {
     int N;
@@ -393,7 +402,7 @@ bool GrammarOk()
                 do
                 {
                     F = A.Sub;
-                    while (F != null)
+                    while (F !is null)
                     {
                         if (F is EAG.Nont && Sets.In(TestNonts, F(EAG.Nont).Sym)
                                 && Sets.In(RegNonts, F(EAG.Nont).Sym)
@@ -414,7 +423,7 @@ bool GrammarOk()
                     }
                     A = A.Next;
                 }
-                while (!(A == null));
+                while (A !is null);
             }
         }
     }
@@ -576,7 +585,7 @@ void ComputeDir()
                 F = A.Sub;
                 while (true)
                 {
-                    if (F == null)
+                    if (F is null)
                     {
                         break;
                     }
@@ -600,7 +609,7 @@ void ComputeDir()
                 }
                 A = A.Next;
             }
-            while (!(A == null));
+            while (A !is null);
         }
     }
     for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
@@ -635,7 +644,7 @@ void ComputeDir()
                 }
                 F = A.Last;
                 IsLast = true;
-                while (F != null)
+                while (F !is null)
                 {
                     if (F is EAG.Term)
                     {
@@ -677,7 +686,7 @@ void ComputeDir()
                 }
                 A = A.Next;
             }
-            while (!(A == null));
+            while (A !is null);
         }
     }
     for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
@@ -717,7 +726,7 @@ void ComputeDir()
                 F = A.Sub;
                 while (true)
                 {
-                    if (F == null)
+                    if (F is null)
                     {
                         break;
                     }
@@ -748,7 +757,7 @@ void ComputeDir()
                 Sets.Union(Toks, Toks, Alt[A.Ind].Dir);
                 A = A.Next;
             }
-            while (!(A == null));
+            while (A !is null);
             if (EAG.HNont[N].Def is EAG.Opt || EAG.HNont[N].Def is EAG.Rep)
             {
                 if (!Sets.Disjoint(Nont[N].Follow, Toks))
@@ -887,7 +896,7 @@ void ComputeDefaultAlts()
                 Alt[A.Ind].Deg = 0;
                 Alt[A.Ind].Prio = APrio;
                 F = A.Sub;
-                while (F != null)
+                while (F !is null)
                 {
                     if (F is EAG.Nont && Sets.In(DefNonts, F(EAG.Nont).Sym))
                     {
@@ -900,7 +909,7 @@ void ComputeDefaultAlts()
                 A = A.Next;
                 ++APrio;
             }
-            while (!(A == null));
+            while (A !is null);
         }
     }
     while (Top > 0)
@@ -969,7 +978,7 @@ void ComputeSets()
         bool RealAlt;
         Sets.New(S, nToks);
         A = EAG.HNont[N].Def.Sub;
-        RealAlt = A.Next != null;
+        RealAlt = A.Next !is null;
         do
         {
             if (EAG.HNont[N].Def is EAG.Rep)
@@ -981,7 +990,7 @@ void ComputeSets()
                 Sets.Assign(S, LocalRec);
             }
             F = A.Last;
-            while (F != null)
+            while (F !is null)
             {
                 if (F is EAG.Term)
                 {
@@ -1012,7 +1021,7 @@ void ComputeSets()
             }
             A = A.Next;
         }
-        while (!(A == null));
+        while (A !is null);
         Sets.Union(LocalRec, LocalRec, Nont[N].First);
         if (EAG.HNont[N].Def is EAG.Opt || EAG.HNont[N].Def is EAG.Rep)
         {
@@ -1052,7 +1061,7 @@ void ComputeSets()
                 NewGenSetT(Nont[N].First, Nont[N].FirstIndex);
                 NewGenSetT(Nont[N].Follow, Nont[N].FollowIndex);
             }
-            if (EAG.HNont[N].Def.Sub.Next != null)
+            if (EAG.HNont[N].Def.Sub.Next !is null)
             {
                 NewGenSet(Nont[N].First, Nont[N].AltExp);
             }
@@ -1071,16 +1080,19 @@ void GenerateMod(bool ParsePass)
     bool OpenError;
     bool CompileError;
     long TabTimeStamp;
+
     void TraverseNont(int N, bool FirstNontCall, Sets.OpenSet Poss)
     {
         bool ExactOneToken;
         int TheOneToken;
+
         void TraverseAlts(EAG.Alt A, bool FirstNontCall, Sets.OpenSet Poss)
         {
             int Tok;
             Sets.OpenSet Toks;
             bool FirstTok;
             bool LoopNeeded;
+
             void TraverseFactors(EAG.Factor F, bool FirstNontCall, Sets.OpenSet Poss)
             {
                 Sets.OpenSet Poss1;
@@ -1088,7 +1100,7 @@ void GenerateMod(bool ParsePass)
                 TwoCalls = false;
                 Sets.New(Poss1, nToks);
                 Sets.Assign(Poss1, Poss);
-                while (F != null)
+                while (F !is null)
                 {
                     if (F is EAG.Term)
                     {
@@ -1171,7 +1183,7 @@ void GenerateMod(bool ParsePass)
                                     IO.WriteText(Mod, "IsRepairMode := FALSE END;\n");
                                     IO.WriteText(Mod, "S.Get := S.Get2;\n");
                                 }
-                                if (F.Next != null && F.Next is EAG.Nont
+                                if (F.Next !is null && F.Next is EAG.Nont
                                         && Sets.In(GenNonts, F.Next(EAG.Nont)
                                             .Sym) && !Nont[F.Next(EAG.Nont).Sym].Anonym)
                                 {
@@ -1214,7 +1226,7 @@ void GenerateMod(bool ParsePass)
                 }
             }
 
-            if (A.Next == null)
+            if (A.Next is null)
             {
                 EvalGen.InitScope(A.Scope);
                 EvalGen.GenAnalPred(N, A.Formal.Params);
@@ -1295,7 +1307,7 @@ void GenerateMod(bool ParsePass)
                     }
                     A = A.Next;
                 }
-                while (!(A == null));
+                while (A !is null);
                 if (LoopNeeded)
                 {
                     A = Nont[N].DefaultAlt;
@@ -1476,7 +1488,7 @@ void GenerateMod(bool ParsePass)
         }
     }
 
-    void WriteTab(char[] Name)
+    void WriteTab(string Name)
     {
         const magicNumber = 827092037;
         IO.File Tab;
@@ -1541,7 +1553,7 @@ void GenerateMod(bool ParsePass)
         }
     }
 
-    void Append(ref char[] Dest, char[] Src, char[] Suf)
+    void Append(ref string Dest, string Src, string Suf)
     {
         int i;
         int j;

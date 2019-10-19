@@ -30,6 +30,7 @@ void ParserExpand()
 {
     OpenRecStack RecStack1;
     long i;
+
     long ExpLen(long ArrayLen)
     {
         if (ArrayLen <= DIV(int.max, 2))
@@ -53,7 +54,7 @@ void ParserExpand()
     }
 }
 
-void ReadParserTab(char[] Name)
+void ReadParserTab(string Name)
 {
     const magicNumber = 827092037;
     const tabTimeStamp = $;
@@ -63,7 +64,8 @@ void ReadParserTab(char[] Name)
     int j;
     long l;
     uint s;
-    void LoadError(char[] Msg)
+
+    void LoadError(string Msg)
     {
         IO.WriteText(IO.Msg, "  loading the parser table ");
         IO.WriteString(IO.Msg, Name);

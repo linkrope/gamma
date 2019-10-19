@@ -1,8 +1,10 @@
 module eSets;
+
 import runtime;
 
 const M = 31 + 1;
 alias OpenSet = uint[];
+
 void New(ref OpenSet s0, int MaxElem)
 {
     int n;

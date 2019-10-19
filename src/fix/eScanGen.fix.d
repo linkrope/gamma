@@ -32,6 +32,7 @@ int Mode;
 char StringCh;
 IO.Position Pos;
 // TODO: Get*: PROCEDURE (VAR Tok: INTEGER);
+
 void CopyBuf()
 {
     int i;
@@ -91,10 +92,11 @@ void GetPos()
     }
 }
 
-void Enter(int Tok, char[] Name)
+void Enter(int Tok, string Name)
 {
     int Ptr;
     int i;
+
     void Insert(ref int Ptr, char Ch)
     {
         void Expand()
@@ -243,7 +245,8 @@ void Keyword(ref int Tok)
 void Comment()
 {
     int Level;
-    void Error(char[] Txt)
+
+    void Error(string Txt)
     {
         IO.WritePos(IO.Msg, Pos);
         IO.WriteString(IO.Msg, "  ");

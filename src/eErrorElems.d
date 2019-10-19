@@ -1,4 +1,5 @@
 module eErrorElems;
+
 import runtime;
 import Viewers;
 import Input;
@@ -9,7 +10,7 @@ import Oberon;
 import TextFrames;
 import TextPrinter;
 
-const eol = '\x0d';
+const eol = '\n';
 const tab = '\x09';
 const syntax = 0;
 const restart = 1;
@@ -25,6 +26,7 @@ const insertTxt = " ins  ";
 const maxErrStringLen = 180;
 const maxErrorElems = 1000;
 alias Elem = ElemDesc;
+
 class ElemDesc : Texts.ElemDesc
 {
     short id;
@@ -35,7 +37,8 @@ class ElemDesc : Texts.ElemDesc
 
 Texts.Writer W;
 Texts.Notifier OrigNotifier;
-long StrDispWidth(Fonts.Font fnt, char[] s)
+
+long StrDispWidth(Fonts.Font fnt, string s)
 {
     Display.Pattern pat;
     int width;
@@ -59,7 +62,7 @@ long StrDispWidth(Fonts.Font fnt, char[] s)
     return LONG(width) * TextFrames.Unit;
 }
 
-void DispStr(Fonts.Font fnt, char[] s, int col, int x0, int y0)
+void DispStr(Fonts.Font fnt, string s, int col, int x0, int y0)
 {
     Display.Pattern pat;
     int i;
@@ -81,7 +84,7 @@ void DispStr(Fonts.Font fnt, char[] s, int col, int x0, int y0)
     }
 }
 
-void Open(Elem e, short id, char[] s, bool clpsd)
+void Open(Elem e, short id, string s, bool clpsd)
 {
     e.W = 5 * TextFrames.mm;
     e.H = e.W;
@@ -262,7 +265,7 @@ Texts.Text MarkedText()
 {
     Viewers.Viewer V;
     V = Oberon.MarkedViewer();
-    if (V.dsc != null && V.dsc.next != null && V.dsc.next is TextFrames.Frame)
+    if (V.dsc !is null && V.dsc.next !is null && V.dsc.next is TextFrames.Frame)
     {
         return V.dsc.next(TextFrames.Frame).text;
     }
@@ -287,7 +290,8 @@ void Insert()
     int NextCh;
     long[maxErrorElems] Position;
     int NextPosition;
-    void Put(Texts.Text T, long pos, short id, ref char[] s)
+
+    void Put(Texts.Text T, long pos, short id, ref string s)
     {
         Elem e;
         long Offset;
@@ -328,7 +332,7 @@ void Insert()
         }
     }
     dT = MarkedText();
-    if (dT == null || sT == dT)
+    if (dT is null || sT == dT)
     {
         return;
     }
@@ -337,8 +341,8 @@ void Insert()
     {
         Texts.ReadElem(ElemR);
     }
-    while (!(ElemR.eot || ElemR.elem == null || ElemR.elem is Elem));
-    if (ElemR.elem != null)
+    while (!(ElemR.eot || ElemR.elem is null || ElemR.elem is Elem));
+    if (ElemR.elem !is null)
     {
         return;
     }
@@ -462,7 +466,7 @@ void Remove()
     Texts.Reader R;
     long Pos;
     T = MarkedText();
-    if (T == null)
+    if (T is null)
     {
         return;
     }
@@ -471,7 +475,7 @@ void Remove()
     while (true)
     {
         Texts.ReadElem(R);
-        if (R.eot || R.elem == null)
+        if (R.eot || R.elem is null)
         {
             break;
         }
@@ -493,7 +497,7 @@ void Repair()
     long End;
     int i;
     T = MarkedText();
-    if (T == null)
+    if (T is null)
     {
         return;
     }
@@ -503,7 +507,7 @@ void Repair()
     while (true)
     {
         Texts.ReadElem(R);
-        if (R.eot || R.elem == null)
+        if (R.eot || R.elem is null)
         {
             break;
         }
@@ -551,6 +555,7 @@ void Next()
     TextFrames.Frame F;
     Texts.Reader R;
     long pos;
+
     void Show(TextFrames.Frame F, long pos)
     {
         long beg;
@@ -582,7 +587,7 @@ void Next()
     }
 
     V = Oberon.MarkedViewer();
-    if (V.dsc != null && V.dsc.next != null && V.dsc.next is TextFrames.Frame)
+    if (V.dsc !is null && V.dsc.next !is null && V.dsc.next is TextFrames.Frame)
     {
         F = V.dsc.next(TextFrames.Frame);
     }
@@ -603,8 +608,8 @@ void Next()
     {
         Texts.ReadElem(R);
     }
-    while (!(R.eot || R.elem == null || R.elem is Elem));
-    if (!R.eot && R.elem != null && R.elem is Elem)
+    while (!(R.eot || R.elem is null || R.elem is Elem));
+    if (!R.eot && R.elem !is null && R.elem is Elem)
     {
         Oberon.PassFocus(Viewers.This(F.X, F.Y));
         pos = Texts.ElemPos(R.elem);

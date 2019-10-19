@@ -1,4 +1,5 @@
 module eScanner;
+
 import runtime;
 import IO = eIO;
 
@@ -7,10 +8,11 @@ const firstChar = 0;
 const firstIdent = 1;
 const errorIdent = firstIdent;
 const eot = '\x00';
-const str = '\x22';
-const num = "0";
-const ide = "A";
+const str = '"';
+const num = '0';
+const ide = 'A';
 alias OpenCharBuf = char[];
+
 class IdentRecord
 {
     int Repr;
@@ -28,7 +30,8 @@ int NextIdent;
 int[97] HashTable;
 IO.TextIn In;
 int ErrorCounter;
-void Error(char[] String)
+
+void Error(string String)
 {
     IO.WriteText(IO.Msg, "\n  ");
     IO.WritePos(IO.Msg, Pos);
@@ -82,11 +85,11 @@ void Expand()
 void Init(IO.TextIn Input)
 {
     int i;
-    c = " ";
+    c = ' ';
     CharBuf[firstChar] = str;
-    CharBuf[firstChar + 1] = "e";
-    CharBuf[firstChar + 2] = "r";
-    CharBuf[firstChar + 3] = "r";
+    CharBuf[firstChar + 1] = 'e';
+    CharBuf[firstChar + 2] = 'r';
+    CharBuf[firstChar + 3] = 'r';
     NextChar = firstChar + 4;
     Ident[errorIdent].Repr = firstChar;
     Ident[errorIdent + 1].Repr = NextChar;
@@ -108,7 +111,7 @@ void GetRepr(int Id, ref char[] Name)
     k = Ident[Id].Repr;
     c = CharBuf[k];
     n = Ident[Id + 1].Repr - k;
-    if (Name.length < n + 1 || Name.length < n + 2 && (c == str || c == "'"))
+    if (Name.length < n + 1 || Name.length < n + 2 && (c == str || c == '\''))
     {
         IO.WriteText(IO.Msg, "\n  internal error: symbol too long\n");
         IO.Update(IO.Msg);
@@ -118,7 +121,7 @@ void GetRepr(int Id, ref char[] Name)
     {
         Name[m] = CharBuf[k + m];
     }
-    if (c == str || c == "'")
+    if (c == str || c == '\'')
     {
         Name[n] = c;
         ++n;
@@ -137,7 +140,7 @@ void WriteRepr(IO.TextOut Out, int Id)
     {
         IO.Write(Out, CharBuf[m]);
     }
-    if (c == str || c == "'")
+    if (c == str || c == '\'')
     {
         IO.Write(Out, c);
     }
@@ -146,23 +149,24 @@ void WriteRepr(IO.TextOut Out, int Id)
 void Get(ref char Tok)
 {
     /**
-* a "!" starts a one line comment inside this comment */
+     * a "!" starts a one line comment inside this comment
+     */
     void Comment()
     {
         int Lev;
         char c1;
         Lev = 1;
-        c = " ";
+        c = ' ';
         while (true)
         {
             c1 = c;
             IO.Read(In, c);
-            if (c1 == "(" && c == "*")
+            if (c1 == '(' && c == '*')
             {
                 IO.Read(In, c);
                 ++Lev;
             }
-            else if (c1 == "*" && c == ")")
+            else if (c1 == '*' && c == ')')
             {
                 IO.Read(In, c);
                 --Lev;
@@ -171,7 +175,7 @@ void Get(ref char Tok)
                     break;
                 }
             }
-            if (c == "!")
+            if (c == '!')
             {
                 do
                 {
@@ -206,13 +210,13 @@ void Get(ref char Tok)
             Len = NextChar - OldNextChar;
         }
         Last = ORD(CharBuf[NextChar - 1]);
-        HashIndex = MOD(((First + Last) * 2 - Len) * 4 - First, HashTable.length);
+        HashIndex = cast(int) MOD(((First + Last) * 2 - Len) * 4 - First, HashTable.length);
         Val = HashTable[HashIndex];
         while (Val != nil)
         {
             n = OldNextChar;
             m = Ident[Val].Repr;
-            if (Tok == str && (CharBuf[m] == str || CharBuf[m] == "'"))
+            if (Tok == str && (CharBuf[m] == str || CharBuf[m] == '\''))
             {
                 ++n;
                 ++m;
@@ -266,7 +270,7 @@ void Get(ref char Tok)
                 Val = errorIdent;
                 return;
             }
-            else if (c < " ")
+            else if (c < ' ')
             {
                 Error("illegal character in string");
                 NextChar = OldNextChar;
@@ -314,7 +318,7 @@ void Get(ref char Tok)
             ++NextChar;
             IO.Read(In, c);
         }
-        while (!((c < "A" || "Z" < c) && (c < "a" || "z" < c)));
+        while ('A' <= c && c <= 'Z' || 'a' <= c && c <= 'z');
         if (NextChar == CharBuf.length)
         {
             Expand;
@@ -333,7 +337,7 @@ void Get(ref char Tok)
         {
             if (Ok)
             {
-                d = ORD(c) - ORD("0");
+                d = ORD(c) - ORD('0');
                 if (Val <= 999)
                 {
                     Val = Val * 10 + d;
@@ -347,34 +351,34 @@ void Get(ref char Tok)
             }
             IO.Read(In, c);
         }
-        while (!(c < "0" || "9" < c));
+        while ('0' <= c && c <= '9');
     }
 
     while (true)
     {
-        while (c <= " " && c != eot)
+        while (c <= ' ' && c != eot)
         {
             IO.Read(In, c);
         }
-        if (c == "!")
+        if (c == '!')
         {
             do
             {
                 IO.Read(In, c);
             }
-            while (!(c == IO.eol || c == eot));
+            while (c != IO.eol && c != eot);
         }
-        else if (c == "(")
+        else if (c == '(')
         {
             IO.PrevPos(In, Pos);
             IO.Read(In, c);
-            if (c == "*")
+            if (c == '*')
             {
                 Comment;
             }
             else
             {
-                Tok = "(";
+                Tok = '(';
                 return;
             }
         }
@@ -384,22 +388,22 @@ void Get(ref char Tok)
         }
     }
     IO.PrevPos(In, Pos);
-    if (c == str || c == "'")
+    if (c == str || c == '\'')
     {
         Tok = str;
         String;
     }
-    else if ("A" <= c && c <= "Z" || "a" <= c && c <= "z")
+    else if ('A' <= c && c <= 'Z' || 'a' <= c && c <= 'z')
     {
         Tok = ide;
         Ident;
     }
-    else if ("0" <= c && c <= "9")
+    else if ('0' <= c && c <= '9')
     {
         Tok = num;
         Number;
     }
-    else if (c == "~" || c == eot)
+    else if (c == '~' || c == eot)
     {
         Tok = eot;
     }
@@ -414,4 +418,6 @@ static this()
 {
     NEW(CharBuf, 1023);
     NEW(Ident, 255);
+    foreach (ref element; Ident)
+        element = new IdentRecord;
 }

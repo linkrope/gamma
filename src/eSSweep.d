@@ -1,4 +1,5 @@
 module eSSweep;
+
 import runtime;
 import Sets = eSets;
 import IO = eIO;
@@ -14,6 +15,7 @@ Sets.OpenSet GenFactors;
 bool Error;
 bool ShowMod;
 bool Compiled;
+
 void Init()
 {
     NEW(FactorOffset, EAG.NextHFactor + EAG.NextHAlt + 1);
@@ -34,6 +36,7 @@ void GenerateMod(bool CreateMod)
 {
     const firstEdge = 1;
     const firstStack = 0;
+
     class EdgeRecord
     {
         int Dest;
@@ -41,6 +44,7 @@ void GenerateMod(bool CreateMod)
     }
 
     alias OpenEdge = EdgeRecord[];
+
     class FactorRecord
     {
         int Vars;
@@ -71,6 +75,7 @@ void GenerateMod(bool CreateMod)
     int[] Stack;
     int NextStack;
     Sets.OpenSet DefVars;
+
     void Expand()
     {
         OpenEdge Edge1;
@@ -103,7 +108,7 @@ void GenerateMod(bool CreateMod)
         }
     }
 
-    void Append(ref char[] Dest, char[] Src, char[] Suf)
+    void Append(ref string Dest, string Src, string Suf)
     {
         int i;
         int j;
@@ -144,7 +149,7 @@ void GenerateMod(bool CreateMod)
                     ++i;
                     A = A.Next;
                 }
-                while (!(A == null));
+                while (A !is null);
                 if (EAG.HNont[N].Def is EAG.Opt || EAG.HNont[N].Def is EAG.Rep)
                 {
                     ++i;
@@ -185,7 +190,7 @@ void GenerateMod(bool CreateMod)
             A1.Sub = null;
             A1.Last = null;
             A1.Next = null;
-            if (A2 != null)
+            if (A2 !is null)
             {
                 A2.Next = A1;
             }
@@ -196,7 +201,7 @@ void GenerateMod(bool CreateMod)
             A2 = A1;
             F = A.Sub;
             F2 = null;
-            while (F != null)
+            while (F !is null)
             {
                 if (F is EAG.Nont && Sets.In(GenFactors, F(EAG.Nont).Sym))
                 {
@@ -205,7 +210,7 @@ void GenerateMod(bool CreateMod)
                     F1.Prev = F2;
                     F1.Next = null;
                     A1.Last = F1;
-                    if (F2 != null)
+                    if (F2 !is null)
                     {
                         F2.Next = F1;
                     }
@@ -224,11 +229,11 @@ void GenerateMod(bool CreateMod)
                 ++EAG.NextHFactor;
                 F1.Prev = A1.Last;
                 A1.Last = F1;
-                if (A1.Sub == null)
+                if (A1.Sub is null)
                 {
                     A1.Sub = F1;
                 }
-                if (F1.Prev != null)
+                if (F1.Prev !is null)
                 {
                     F1.Prev.Next = F1;
                 }
@@ -241,7 +246,7 @@ void GenerateMod(bool CreateMod)
             }
             A = A.Next;
         }
-        while (!(A == null));
+        while (A !is null);
         if (EAG.HNont[N].Def is EAG.Opt || EAG.HNont[N].Def is EAG.Rep)
         {
             NEW(A1);
@@ -291,9 +296,11 @@ void GenerateMod(bool CreateMod)
         int NE;
         int VE;
         int V;
+
         void TravParams(int op, int P, EAG.Factor F)
         {
             bool Def;
+
             void NewEdge(ref int From, int To)
             {
                 if (NextEdge >= Edge.length)
@@ -393,7 +400,7 @@ void GenerateMod(bool CreateMod)
             F = A.Sub;
             Prio = 0;
             Offset = 1;
-            while (F != null)
+            while (F !is null)
             {
                 Factor[F.Ind].Vars = nil;
                 Factor[F.Ind].CountAppl = 0;
@@ -423,7 +430,7 @@ void GenerateMod(bool CreateMod)
                 F.Prev = F1;
                 F.Next = null;
                 A.Last = F;
-                if (F1 != null)
+                if (F1 !is null)
                 {
                     F1.Next = F;
                 }
@@ -469,7 +476,7 @@ void GenerateMod(bool CreateMod)
             }
             A = A.Next;
         }
-        while (!(A == null));
+        while (A !is null);
     }
 
     void GenerateNont(int N)
@@ -509,7 +516,7 @@ void GenerateMod(bool CreateMod)
             }
             EvalGen.GenAnalPred(N, A.Formal.Params);
             F = A.Sub;
-            while (F != null)
+            while (F !is null)
             {
                 if (!Sets.In(EAG.Pred, F(EAG.Nont).Sym))
                 {
@@ -541,11 +548,11 @@ void GenerateMod(bool CreateMod)
                     EvalGen.GenSynPred(N, F(EAG.Nont).Actual.Params);
                     IO.WriteText(Mod, "Pos := PosTree[Adr + ");
                     F1 = F.Prev;
-                    while (F1 != null && Sets.In(EAG.Pred, F1(EAG.Nont).Sym))
+                    while (F1 !is null && Sets.In(EAG.Pred, F1(EAG.Nont).Sym))
                     {
                         F1 = F1.Prev;
                     }
-                    if (F1 == null)
+                    if (F1 is null)
                     {
                         IO.WriteInt(Mod, 0);
                     }
@@ -563,7 +570,7 @@ void GenerateMod(bool CreateMod)
             A = A.Next;
             ++AltIndex;
         }
-        while (!(A == null));
+        while (A !is null);
         IO.WriteText(Mod, "\tEND;\n");
         IO.WriteText(Mod, "END P");
         IO.WriteInt(Mod, N);

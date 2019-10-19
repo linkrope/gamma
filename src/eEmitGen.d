@@ -1,4 +1,5 @@
 module eEmitGen;
+
 import runtime;
 import Sets = eSets;
 import IO = eIO;
@@ -9,11 +10,13 @@ const CaseLabels = 127;
 Sets.OpenSet Type3;
 Sets.OpenSet Type2;
 int StartMNont;
+
 void GenEmitProc(IO.TextOut Mod)
 {
     int Lo;
     int Hi;
     bool EmitSpace;
+
     void CalcSets(int Nont)
     {
         int A;
@@ -57,6 +60,7 @@ void GenEmitProc(IO.TextOut Mod)
     void GenEmitProcs(Sets.OpenSet MNonts)
     {
         int N;
+
         void GenProcName(int N, Sets.OpenSet Type)
         {
             IO.WriteString(Mod, "Emit");

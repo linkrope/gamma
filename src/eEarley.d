@@ -1,4 +1,5 @@
 module eEarley;
+
 import runtime;
 import IO = eIO;
 import EAG = eEAG;
@@ -7,6 +8,7 @@ const end = int.min;
 const nil = EAG.nil;
 const firstMSym = 1;
 const firstItem = 1;
+
 class MSymRecord
 {
     int Sym;
@@ -15,6 +17,7 @@ class MSymRecord
 }
 
 alias OpenMSymBuf = MSymRecord[];
+
 class ItemRecord
 {
     int Dot;
@@ -30,11 +33,13 @@ OpenItemBuf ItemBuf;
 int NextItem;
 int CurList;
 bool[] Predicted;
+
 void Expand()
 {
     long i;
     OpenMSymBuf MSymBuf1;
     OpenItemBuf ItemBuf1;
+
     long NewLen(long ArrayLen)
     {
         if (ArrayLen <= DIV(int.max, 2))
@@ -277,7 +282,7 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def)
         void Init(int Start)
         {
             int i;
-            if (Predicted == null || Predicted.length < EAG.NextMNont)
+            if (Predicted is null || Predicted.length < EAG.NextMNont)
             {
                 NEW(Predicted, EAG.NextMNont);
             }

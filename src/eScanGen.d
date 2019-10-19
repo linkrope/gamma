@@ -1,4 +1,5 @@
 module eScanGen;
+
 import runtime;
 import IO = eIO;
 import Scanner = eScanner;
@@ -9,6 +10,7 @@ const lenOfPredefinedToken = 8;
 bool[256] IsIdent;
 bool[256] IsSymbol;
 int i;
+
 void Generate()
 {
     IO.TextIn Fix;
@@ -22,10 +24,11 @@ void Generate()
     bool OpenError;
     bool CompileError;
     bool ShowMod;
-    void TestToken(ref char[] s, ref int Len)
+
+    void TestToken(ref string s, ref int Len)
     {
         int i;
-        void Err(char[] Msg)
+        void Err(string Msg)
         {
             int i;
             Error = true;
@@ -97,7 +100,7 @@ void Generate()
         }
     }
 
-    void Append(ref char[] Dest, char[] Src, char[] Suf)
+    void Append(ref string Dest, string Src, string Suf)
     {
         int i;
         int j;

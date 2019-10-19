@@ -1,34 +1,42 @@
 module eIO;
+
 import runtime;
-import Display;
 import Texts;
 import TextFrames;
 import Viewers;
 import MenuViewers;
 import Oberon;
-import TextDocs;
 import Files;
 import Compiler;
 
-const eol = '\x0d';
-const optCh1 = "\\";
-const optCh2 = "-";
-const standardCompileOpts = "s";
-class Position
+const eol = '\n';
+const optCh1 = '\\';
+const optCh2 = '-';
+const standardCompileOpts = 's';
+
+struct Position
 {
     long Offset;
 }
 
 class TextIn
 {
-    Texts.Reader R;
+    char[] text;
+    long offset;
+
+    this(char[] text)
+    {
+        this.text = text;
+    }
 }
 
 class TextOut
 {
+    import std.stdio : File;
+
     char[33] Name;
-    Texts.Text Txt;
-    Texts.Writer W;
+    File file;
+    char[] text;
     bool IsShown;
 }
 
@@ -42,11 +50,13 @@ TextOut Msg;
 Position UndefPos;
 Texts.Reader ParamReader;
 char ParamCh;
-void OpenIn(ref TextIn In, char[] Name, ref bool Error)
+
+void OpenIn(ref TextIn In, string Name, ref bool Error)
 {
+    assert(false, "not implemented");
+    /+
     Texts.Scanner S;
     Texts.Text T;
-    Display.Frame F;
     Viewers.Viewer V;
     long Beg;
     long End;
@@ -55,11 +65,11 @@ void OpenIn(ref TextIn In, char[] Name, ref bool Error)
     In = null;
     if (Name == "*")
     {
-        T = TextDocs.GetText(F);
-        if (T != null)
+        V = Oberon.MarkedViewer();
+        if (V.dsc !is null && V.dsc.next is TextFrames.Frame)
         {
             NEW(In);
-            Texts.OpenReader(In.R, T, 0);
+            Texts.OpenReader(In.R, V.dsc.next(TextFrames.Frame).text, 0);
         }
         else
         {
@@ -107,6 +117,7 @@ void OpenIn(ref TextIn In, char[] Name, ref bool Error)
             Error = true;
         }
     }
+    +/
 }
 
 void CloseIn(ref TextIn In)
@@ -116,21 +127,29 @@ void CloseIn(ref TextIn In)
 
 void Read(TextIn In, ref char c)
 {
-    Texts.Read(In.R, c);
+    if (In.offset >= In.text.length)
+    {
+        c = 0;
+        return;
+    }
+    c = In.text[In.offset];
+    ++In.offset;
 }
 
 void Pos(TextIn In, ref Position Pos)
 {
-    Pos.Offset = Texts.Pos(In.R);
+    Pos = Position(In.offset);
 }
 
 void PrevPos(TextIn In, ref Position Pos)
 {
-    Pos.Offset = Texts.Pos(In.R) - 1;
+    Pos = Position(In.offset - 1);
 }
 
-void CreateOut(ref TextOut Out, char[] Name)
+void CreateOut(ref TextOut Out, string Name)
 {
+    assert(false, "not implemented");
+    /+
     NEW(Out);
     Out.Txt = TextFrames.Text("");
     Texts.OpenWriter(Out.W);
@@ -140,10 +159,13 @@ void CreateOut(ref TextOut Out, char[] Name)
         COPY("IOOutStd.Txt", Out.Name);
     }
     Out.IsShown = false;
+    +/
 }
 
-void CreateModOut(ref TextOut Out, char[] Name)
+void CreateModOut(ref TextOut Out, string Name)
 {
+    assert(false, "not implemented");
+    /+
     int i;
     NEW(Out);
     Out.Txt = TextFrames.Text("");
@@ -164,11 +186,13 @@ void CreateModOut(ref TextOut Out, char[] Name)
     Out.Name[i + 3] = "d";
     Out.Name[i + 4] = '\x00';
     Out.IsShown = false;
+    +/
 }
 
 void Update(TextOut Out)
 {
-    Texts.Append(Out.Txt, Out.W.buf);
+    Out.file.write(Out.text);
+    Out.text = null;
 }
 
 void CloseOut(ref TextOut Out)
@@ -179,6 +203,8 @@ void CloseOut(ref TextOut Out)
 
 void Show(TextOut Out)
 {
+    assert(false, "not implemented");
+    /+
     TextFrames.Frame menuF;
     TextFrames.Frame mainF;
     MenuViewers.Viewer V;
@@ -194,17 +220,20 @@ void Show(TextOut Out)
         V = MenuViewers.New(menuF, mainF, TextFrames.menuH, X, Y);
         Out.IsShown = true;
     }
+    +/
 }
 
-void WriteText(TextOut Out, char[] Str)
+void WriteText(TextOut Out, const char[] Str)
 {
+    Out.text ~= Str;
+    /+
     int i;
     char c;
     i = 0;
     c = Str[0];
     while (c != '\x00')
     {
-        if (c == "\\")
+        if (c == '\\')
         {
             ++i;
             c = Str[i];
@@ -213,13 +242,13 @@ void WriteText(TextOut Out, char[] Str)
             case '\x00':
                 return;
                 break;
-            case "'":
-                Texts.Write(Out.W, '\x22');
+            case '\'':
+                Texts.Write(Out.W, '"');
                 break;
-            case "t":
+            case 't':
                 Texts.Write(Out.W, '\x09');
                 break;
-            case "n":
+            case 'n':
                 Texts.Write(Out.W, eol);
                 break;
             default:
@@ -233,41 +262,48 @@ void WriteText(TextOut Out, char[] Str)
         ++i;
         c = Str[i];
     }
+    +/
 }
 
-void WriteString(TextOut Out, char[] Str)
+void WriteString(TextOut Out, string Str)
 {
-    Texts.WriteString(Out.W, Str);
+    Out.text ~= Str;
 }
 
 void Write(TextOut Out, char c)
 {
-    Texts.Write(Out.W, c);
+    Out.text ~= c;
 }
 
 void WriteInt(TextOut Out, long i)
 {
-    Texts.WriteInt(Out.W, i, 0);
+    import std.format : format;
+
+    Out.text ~= format!"%d"(i);
 }
 
 void WriteIntF(TextOut Out, long i, int Len)
 {
-    Texts.WriteInt(Out.W, i, Len);
+    import std.format : format;
+
+    Out.text ~= format!"%*d"(Len, i);
 }
 
 void WritePos(TextOut Out, Position Pos)
 {
-    Texts.WriteString(Out.W, "pos ");
-    Texts.WriteInt(Out.W, Pos.Offset, 6);
+    WriteString(Out, "pos ");
+    WriteIntF(Out, Pos.Offset, 6);
 }
 
 void WriteLn(TextOut Out)
 {
-    Texts.Write(Out.W, eol);
+    Out.text ~= '\n';
 }
 
 void Compile(TextOut Out, ref bool Error)
 {
+    assert(false, "not implemented");
+    /+
     Texts.Reader R;
     char[512] Opts;
     Update(Out);
@@ -278,13 +314,16 @@ void Compile(TextOut Out, ref bool Error)
         Opts = standardCompileOpts;
     }
     Compiler.Module(R, Opts, 0, Msg.Txt, Error);
+    +/
 }
 
-void OpenFile(ref File F, char[] Name, ref bool Error)
+void OpenFile(ref File F, string Name, ref bool Error)
 {
+    assert(false, "not implemented");
+    /+
     Files.File File;
     File = Files.Old(Name);
-    if (File != null)
+    if (File !is null)
     {
         NEW(F);
         Files.Set(F.Rider, File, 0);
@@ -296,10 +335,13 @@ void OpenFile(ref File F, char[] Name, ref bool Error)
         F = null;
         Error = true;
     }
+    +/
 }
 
-void CreateFile(ref File F, char[] Name)
+void CreateFile(ref File F, string Name)
 {
+    assert(false, "not implemented");
+    /+
     NEW(F);
     if (Name != "")
     {
@@ -310,45 +352,66 @@ void CreateFile(ref File F, char[] Name)
         Files.Set(F.Rider, Files.New("IOFilStd.Bin"), 0);
     }
     F.NewFile = true;
+    +/
 }
 
 void CloseFile(ref File F)
 {
+    assert(false, "not implemented");
+    /+
     Files.Close(Files.Base(F.Rider));
     if (F.NewFile)
     {
         Files.Register(Files.Base(F.Rider));
     }
     F = null;
+    +/
 }
 
 void GetLInt(File F, ref long i)
 {
+    assert(false, "not implemented");
+    /+
     Files.ReadLInt(F.Rider, i);
+    +/
 }
 
 void GetSet(File F, ref uint s)
 {
+    assert(false, "not implemented");
+    /+
     Files.ReadSet(F.Rider, s);
+    +/
 }
 
 void PutLInt(File F, long i)
 {
+    assert(false, "not implemented");
+    /+
     Files.WriteLInt(F.Rider, i);
+    +/
 }
 
 void PutSet(File F, uint s)
 {
+    assert(false, "not implemented");
+    /+
     Files.WriteSet(F.Rider, s);
+    +/
 }
 
 long TimeStamp()
 {
+    assert(false, "not implemented");
+    /+
     return Oberon.Time();
+    +/
 }
 
-void NextParam(ref char[] String)
+void NextParam(ref string String)
 {
+    assert(false, "not implemented");
+    /+
     long i;
     while (ParamCh <= " " && ParamCh != '\x00')
     {
@@ -362,21 +425,25 @@ void NextParam(ref char[] String)
         ++i;
     }
     String[i] = '\x00';
+    +/
 }
 
-void FirstParam(ref char[] String)
+void FirstParam(ref string String)
 {
+    assert(false, "not implemented");
+    /+
     Texts.OpenReader(ParamReader, Oberon.Par.text, Oberon.Par.pos);
     Texts.Read(ParamReader, ParamCh);
     NextParam(String);
+    +/
 }
 
 bool IsOption(char c1)
 {
-    char[512] String;
+    string String;
     int i;
     char c;
-    if (c1 < "a" || "z" < c1)
+    if (c1 < 'a' || 'z' < c1)
     {
         return false;
     }
@@ -385,9 +452,9 @@ bool IsOption(char c1)
     {
         i = 1;
         c = String[1];
-        while ("A" <= c && c <= "Z" || "a" <= c && c <= "z")
+        while ('A' <= c && c <= 'Z' || 'a' <= c && c <= 'z')
         {
-            if (c == c1 && (String[i + 1] < "A" || "Z" < String[i + 1]))
+            if (c == c1 && (String[i + 1] < 'A' || 'Z' < String[i + 1]))
             {
                 return true;
             }
@@ -401,14 +468,14 @@ bool IsOption(char c1)
 
 bool IsLongOption(char c1, char c2)
 {
-    char[512] String;
+    string String;
     int i;
     char c;
-    if (c1 < "a" || "z" < c1)
+    if (c1 < 'a' || 'z' < c1)
     {
         return false;
     }
-    else if (c2 < "A" || "Z" < c2)
+    else if (c2 < 'A' || 'Z' < c2)
     {
         return false;
     }
@@ -417,7 +484,7 @@ bool IsLongOption(char c1, char c2)
     {
         i = 1;
         c = String[1];
-        while ("A" <= c && c <= "Z" || "a" <= c && c <= "z")
+        while ('A' <= c && c <= 'Z' || 'a' <= c && c <= 'z')
         {
             if (c == c1 && String[i + 1] == c2)
             {
@@ -433,7 +500,7 @@ bool IsLongOption(char c1, char c2)
 
 void NumOption(ref long Num)
 {
-    char[512] String;
+    string String;
     int i;
     int d;
     char c;
@@ -443,11 +510,11 @@ void NumOption(ref long Num)
     {
         i = 1;
         c = String[1];
-        if ("0" <= c && c <= "9")
+        if ('0' <= c && c <= '9')
         {
             do
             {
-                d = ORD(c) - ORD("0");
+                d = ORD(c) - ORD('0');
                 if (Num <= DIV(long.max - d, 10))
                 {
                     Num = Num * 10 + d;
@@ -459,7 +526,7 @@ void NumOption(ref long Num)
                 ++i;
                 c = String[i];
             }
-            while (!(c < "0" || "9" < c));
+            while (!(c < '0' || '9' < c));
             return;
         }
         NextParam(String);
@@ -468,24 +535,24 @@ void NumOption(ref long Num)
 
 void StringOption(ref char[] Str)
 {
-    char[512] String;
+    string String;
     int i;
     char c;
     Str[0] = '\x00';
     FirstParam(String);
     while (String[0] == optCh1 || String[0] == optCh2)
     {
-        if (String[1] == "\"")
+        if (String[1] == '"')
         {
             i = 2;
             c = String[2];
-            while (c != "\"" && c != '\x00' && i < Str.length + 1)
+            while (c != '"' && c != '\x00' && i < Str.length + 1)
             {
                 Str[i - 2] = c;
                 ++i;
                 c = String[i];
             }
-            if (c == "\"")
+            if (c == '"')
             {
                 Str[i - 2] = '\x00';
             }
@@ -499,7 +566,7 @@ void StringOption(ref char[] Str)
     }
 }
 
-void InputName(ref char[] Name)
+void InputName(ref string Name)
 {
     FirstParam(Name);
     while (Name[0] == optCh1 || Name[0] == optCh2)
@@ -510,9 +577,12 @@ void InputName(ref char[] Name)
 
 static this()
 {
+    import std.stdio : stdout;
+
     NEW(Msg);
-    Msg.Txt = Oberon.Log;
-    Texts.OpenWriter(Msg.W);
+    Msg.file = stdout;
+    // Msg.Txt = Oberon.Log;
+    // Texts.OpenWriter(Msg.W);
     COPY("System.Log", Msg.Name);
     Msg.IsShown = true;
     UndefPos.Offset = -1;

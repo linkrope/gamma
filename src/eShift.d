@@ -1,10 +1,12 @@
 module eShift;
+
 import runtime;
 import Sets = eSets;
 import IO = eIO;
 import EAG = eEAG;
 
 const nil = EAG.nil;
+
 void Shift(int Dummy)
 {
     int HN;
@@ -65,7 +67,7 @@ void Shift(int Dummy)
                 Rhs = EAG.NextMemb;
                 HF = HA.Sub;
                 Num = 2;
-                while (HF != null)
+                while (HF !is null)
                 {
                     if (HF is EAG.Term)
                     {
@@ -91,11 +93,11 @@ void Shift(int Dummy)
                     }
                     else
                     {
-                        if (HF.Next != null)
+                        if (HF.Next !is null)
                         {
                             HF.Next.Prev = HF.Prev;
                         }
-                        if (HF.Prev != null)
+                        if (HF.Prev !is null)
                         {
                             HF.Prev.Next = HF.Next;
                         }
@@ -131,7 +133,7 @@ void Shift(int Dummy)
                 HA.Scope.End = EAG.NextVar;
                 HA = HA.Next;
             }
-            while (!(HA == null));
+            while (HA !is null);
             if (EAG.HNont[HN].Def is EAG.Opt || EAG.HNont[HN].Def is EAG.Rep)
             {
                 if (EAG.HNont[HN].Def is EAG.Opt)

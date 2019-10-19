@@ -1,4 +1,5 @@
 module eAnalyser;
+
 import runtime;
 import Sets = eSets;
 import IO = eIO;
@@ -10,12 +11,13 @@ const nil = EAG.nil;
 char Tok;
 int ErrorCounter;
 bool NameNotified;
-void Str(char[] s)
+
+void Str(const char[] s)
 {
     IO.WriteText(IO.Msg, s);
 }
 
-void Error(IO.Position Pos, char[] ErrMsg)
+void Error(IO.Position Pos, string ErrMsg)
 {
     ++ErrorCounter;
     if (ErrorCounter > 25)
@@ -30,31 +32,31 @@ void Error(IO.Position Pos, char[] ErrMsg)
     Str(ErrMsg);
 }
 /**
-* Specification: 
-*	(MetaRule | HyperRule) {MetaRule | HyperRule} . 
-*/
+ * Specification:
+ *   (MetaRule | HyperRule) {MetaRule | HyperRule} .
+ */
 void Specification()
 {
     int Id;
     bool IsToken;
     /**
-* MetaRule: 
-*	ident "=" MetaExpr ".". 
-*/
+     * MetaRule:
+     *   ident "=" MetaExpr ".".
+     */
     void MetaRule(int Id, bool IsToken)
     {
         int MNont;
         /**
-* MetaExpr: 
-*	MetaTerm {"|" MetaTerm}. 
-*/
+         * MetaExpr:
+         *   MetaTerm {"|" MetaTerm}.
+         */
         void MetaExpr()
         {
             int Rhs;
             /**
-* MetaTerm: 
-*	{ident | string}. 
-*/
+             * MetaTerm:
+             *   {ident | string}.
+             */
             void MetaTerm()
             {
                 while (true)
@@ -87,7 +89,7 @@ void Specification()
                 Rhs = EAG.NextMemb;
                 MetaTerm;
                 EAG.AppMemb(EAG.NewMAlt(MNont, Rhs));
-                if (Tok == "|")
+                if (Tok == '|')
                 {
                     Scanner.Get(Tok);
                 }
@@ -100,7 +102,7 @@ void Specification()
 
         MNont = EAG.FindMNont(Id);
         EAG.MNont[MNont].IsToken = EAG.MNont[MNont].IsToken || IsToken;
-        if (Tok == "=")
+        if (Tok == '=')
         {
             Scanner.Get(Tok);
         }
@@ -109,7 +111,7 @@ void Specification()
             Error(Scanner.Pos, "'=' expected");
         }
         MetaExpr;
-        if (Tok == ".")
+        if (Tok == '.')
         {
             Scanner.Get(Tok);
         }
@@ -121,7 +123,7 @@ void Specification()
 
     void SetBaseName()
     {
-        char[256] Name;
+        string Name;
         int i;
         EAG.StartSym = EAG.firstHNont;
         if (EAG.NextHNont > EAG.firstHNont)
@@ -137,9 +139,9 @@ void Specification()
         }
     }
     /**
-* HyperRule: 
-*	ident [FormalParams] ":" HyperExpr "." . 
-*/
+     * HyperRule:
+     *   ident [FormalParams] ":" HyperExpr "." .
+     */
     void HyperRule(int Id, bool IsToken)
     {
         int HNont;
@@ -148,6 +150,7 @@ void Specification()
         EAG.ParamsDesc Actual;
         EAG.ParamsDesc Formal;
         IO.Position AltPos;
+
         void Distribute(int Sym, EAG.Alt A, int Sig, EAG.ParamsDesc Formal)
         {
             void CopyParams(ref int s, ref int d)
@@ -169,29 +172,31 @@ void Specification()
             A.Formal.Pos = Formal.Pos;
             A.Formal.Params = Formal.Params;
             A = A.Next;
-            while (A != null)
+            while (A !is null)
             {
                 A.Formal.Pos = Formal.Pos;
                 CopyParams(Formal.Params, A.Formal.Params);
                 A = A.Next;
             }
         }
+
         /**
-* FormalParams:	
-*	"<" ("+" | "-") Affixform ":" ident {"," ("+" | "-") Affixform ":" ident} ">".	
-* ActualParams: 
-*	"<" Affixform {"," Affixform} ">". 
-*/
+         * FormalParams:
+         *   "<" ("+" | "-") Affixform ":" ident {"," ("+" | "-") Affixform ":" ident} ">".
+         * ActualParams:
+         *   "<" Affixform {"," Affixform} ">".
+         */
         void Params(ref EAG.ParamsDesc Actual, ref EAG.ParamsDesc Formal)
         {
             EAG.ParamsDesc P;
             bool isFormal;
             char Dir;
             int Sym;
+
             /**
-* Affixform: 
-*	{string | ["#"] ident [number]}. 
-*/
+             * Affixform:
+             *   {string | ["#"] ident [number]}.
+             */
             void Affixform(ref int Sym)
             {
                 short Uneq;
@@ -209,9 +214,9 @@ void Specification()
                         Scanner.Get(Tok);
                         ++Cnt;
                     }
-                    else if (Tok == "#" || Tok == Scanner.ide)
+                    else if (Tok == '#' || Tok == Scanner.ide)
                     {
-                        if (Tok == "#")
+                        if (Tok == '#')
                         {
                             Uneq = -1;
                             Scanner.Get(Tok);
@@ -257,14 +262,14 @@ void Specification()
             P.Pos = Scanner.Pos;
             Actual = P;
             Formal = P;
-            if (Tok == "<")
+            if (Tok == '<')
             {
                 Scanner.Get(Tok);
-                isFormal = Tok == "+" || Tok == "-";
+                isFormal = Tok == '+' || Tok == '-';
                 P.Params = EAG.NextParam;
                 while (true)
                 {
-                    if (Tok == "+" || Tok == "-")
+                    if (Tok == '+' || Tok == '-')
                     {
                         if (!isFormal)
                         {
@@ -284,9 +289,9 @@ void Specification()
                     Affixform(Sym);
                     if (isFormal)
                     {
-                        if (Sym < 0 || Tok == ":")
+                        if (Sym < 0 || Tok == ':')
                         {
-                            if (Tok == ":")
+                            if (Tok == ':')
                             {
                                 Scanner.Get(Tok);
                             }
@@ -314,12 +319,12 @@ void Specification()
                             EAG.AppDom(Dir, Sym);
                         }
                     }
-                    while (Tok != "," && Tok != ">" && Tok != Scanner.eot)
+                    while (Tok != ',' && Tok != '>' && Tok != Scanner.eot)
                     {
                         Error(Scanner.Pos, "symbol not allowed");
                         Scanner.Get(Tok);
                     }
-                    if (Tok == ",")
+                    if (Tok == ',')
                     {
                         Scanner.Get(Tok);
                     }
@@ -329,7 +334,7 @@ void Specification()
                     }
                 }
                 EAG.AppParam(EAG.nil, Scanner.Pos);
-                if (Tok == ">")
+                if (Tok == '>')
                 {
                     Scanner.Get(Tok);
                 }
@@ -348,9 +353,9 @@ void Specification()
             }
         }
         /**
-* HyperExpr: 
-*	[FormalParams] HyperTerm [ActualParams] {"|" [FormalParams] HyperTerm [ActualParams]}. 
-*/
+         * HyperExpr:
+         *   [FormalParams] HyperTerm [ActualParams] {"|" [FormalParams] HyperTerm [ActualParams]}.
+         */
         void HyperExpr(int HNont, int Id, char Left, ref EAG.Alt HExpr, IO.Position AltPos)
         {
             EAG.ParamsDesc Actual;
@@ -360,14 +365,14 @@ void Specification()
             EAG.Factor FirstF;
             EAG.Factor LastF;
             /**
-* HyperTerm: 
-* 	{ ident [ActualParams]
-*	| string
-*	| [ActualParams] ( "(" HyperExpr ")" 
-*							| "[" HyperExpr "]" [FormalParams] 
-*							| "{" HyperExpr "}" [FormalParams]  )
-*	} .  	
-*/
+             * HyperTerm:
+             *   { ident [ActualParams]
+             *   | string
+             *   | [ActualParams] ( "(" HyperExpr ")"
+             *                    | "[" HyperExpr "]" [FormalParams]
+             *                    | "{" HyperExpr "}" [FormalParams]  )
+             *   } .
+             */
             void HyperTerm(ref EAG.ParamsDesc Actual, ref EAG.Factor First, ref EAG.Factor Last)
             {
                 int HNont;
@@ -422,17 +427,17 @@ void Specification()
                                 Error(Formal.Pos, "formal params not allowed here");
                             }
                         }
-                        if (Tok == "(" || Tok == "[" || Tok == "{")
+                        if (Tok == '(' || Tok == '[' || Tok == '{')
                         {
                             Pos = Scanner.Pos;
                             HNont = EAG.NewAnonymNont(Id);
                             EAG.NewNont(Last, HNont, Actual, Pos);
                             Actual.Params = EAG.empty;
-                            if (Tok == "(")
+                            if (Tok == '(')
                             {
                                 Scanner.Get(Tok);
-                                HyperExpr(HNont, Id, "(", HExpr, Pos);
-                                if (Tok == ")")
+                                HyperExpr(HNont, Id, '(', HExpr, Pos);
+                                if (Tok == ')')
                                 {
                                     Scanner.Get(Tok);
                                 }
@@ -448,9 +453,9 @@ void Specification()
                                 Scanner.Get(Tok);
                                 HyperExpr(HNont, Id, Left, HExpr, Pos);
                                 Pos = Scanner.Pos;
-                                if (Left == "{")
+                                if (Left == '{')
                                 {
-                                    if (Tok == "}")
+                                    if (Tok == '}')
                                     {
                                         Scanner.Get(Tok);
                                     }
@@ -461,7 +466,7 @@ void Specification()
                                 }
                                 else
                                 {
-                                    if (Tok == "]")
+                                    if (Tok == ']')
                                     {
                                         Scanner.Get(Tok);
                                     }
@@ -475,7 +480,7 @@ void Specification()
                                 {
                                     Error(Formal.Pos, "formal params differ");
                                 }
-                                if (Left == "{")
+                                if (Left == '{')
                                 {
                                     EAG.NewRep(HNont, HExpr, Formal, Pos);
                                 }
@@ -490,7 +495,7 @@ void Specification()
                             return;
                         }
                     }
-                    if (First == null)
+                    if (First is null)
                     {
                         First = Last;
                     }
@@ -507,7 +512,7 @@ void Specification()
                     Error(Formal.Pos, "formal params differ");
                 }
                 HyperTerm(Actual, FirstF, LastF);
-                if (Left == "{" && Actual.Params == EAG.empty)
+                if (Left == '{' && Actual.Params == EAG.empty)
                 {
                     Params(Actual, Formal1);
                     if (Formal1.Params != EAG.empty)
@@ -515,17 +520,17 @@ void Specification()
                         Error(Formal1.Pos, "formal params not allowed here");
                     }
                 }
-                else if (Left != "{" && Actual.Params != EAG.empty)
+                else if (Left != '{' && Actual.Params != EAG.empty)
                 {
                     Error(Actual.Pos, "actual params not allowed here");
                     Actual.Params = EAG.empty;
                 }
                 EAG.NewAlt(Last, HNont, Formal, Actual, FirstF, LastF, AltPos);
-                if (HExpr == null)
+                if (HExpr is null)
                 {
                     HExpr = Last;
                 }
-                if (Tok == "|")
+                if (Tok == '|')
                 {
                     AltPos = Scanner.Pos;
                     Scanner.Get(Tok);
@@ -557,7 +562,7 @@ void Specification()
             Sig = EAG.HNont[HNont].Sig;
             EAG.HNont[HNont].Sig = EAG.empty;
         }
-        if (Tok == ":")
+        if (Tok == ':')
         {
             AltPos = Scanner.Pos;
             Scanner.Get(Tok);
@@ -566,13 +571,13 @@ void Specification()
         {
             Error(Scanner.Pos, "':' expected");
         }
-        HyperExpr(HNont, Id, "(", HExpr, AltPos);
+        HyperExpr(HNont, Id, '(', HExpr, AltPos);
         if (Formal.Params != EAG.empty)
         {
             Distribute(HNont, HExpr, Sig, Formal);
         }
         EAG.NewGrp(HNont, HExpr);
-        if (Tok == ".")
+        if (Tok == '.')
         {
             Scanner.Get(Tok);
         }
@@ -600,12 +605,12 @@ void Specification()
             Error(Scanner.Pos, "number is not allowed here");
             Scanner.Get(Tok);
         }
-        if (Tok == "*")
+        if (Tok == '*')
         {
             IsToken = true;
             Scanner.Get(Tok);
         }
-        if (Tok == "=")
+        if (Tok == '=')
         {
             MetaRule(Id, IsToken);
         }
@@ -620,7 +625,7 @@ void Specification()
             {
                 Scanner.Get(Tok);
             }
-            while (!(Tok == "." || Tok == Scanner.eot));
+            while (!(Tok == '.' || Tok == Scanner.eot));
             if (Tok != Scanner.eot)
             {
                 Scanner.Get(Tok);
@@ -640,14 +645,13 @@ void CheckSemantics()
     {
         EAG.Alt A;
         EAG.Nont F;
-        if (EAG.HNont[Sym].Id >= 0 && EAG.HNont[Sym].Def is EAG.Grp)
+        if (EAG.HNont[Sym].Id >= 0 && cast(EAG.Grp) EAG.HNont[Sym].Def !is null)
         {
-            A = EAG.HNont[Sym].Def(EAG.Grp).Sub;
-            if (A.Formal.Params == EAG.empty && A.Next == null && A.Sub != null && A.Sub is EAG
-                    .Nont)
+            A = (cast(EAG.Grp) EAG.HNont[Sym].Def).Sub;
+            if (A.Formal.Params == EAG.empty && A.Next is null && A.Sub !is null && cast(EAG.Nont) A.Sub !is null)
             {
-                F = A.Sub(EAG.Nont);
-                if (EAG.HNont[F.Sym].Id < 0 && F.Actual.Params == EAG.empty && F.Next == null)
+                F = cast(EAG.Nont) A.Sub;
+                if (EAG.HNont[F.Sym].Id < 0 && F.Actual.Params == EAG.empty && F.Next is null)
                 {
                     EAG.HNont[Sym].Def = EAG.HNont[F.Sym].Def;
                     EAG.HNont[F.Sym].Def = null;
@@ -658,7 +662,7 @@ void CheckSemantics()
                         A.Up = Sym;
                         A = A.Next;
                     }
-                    while (!(A == null));
+                    while (A !is null);
                 }
             }
         }
@@ -695,7 +699,7 @@ void CheckSemantics()
         void CheckActual(EAG.Nont F)
         {
             if (EAG.WellMatched(EAG.HNont[F.Sym].Sig, EAG.empty)
-                    && F.Actual.Params != EAG.empty && F.Next != null
+                    && F.Actual.Params != EAG.empty && F.Next !is null
                     && F.Next is EAG.Nont && F.Next(EAG.Nont)
                     .Actual.Params == EAG.empty && EAG.HNont[F.Next(EAG.Nont).Sym].Id < 0)
             {
@@ -707,7 +711,7 @@ void CheckSemantics()
         void CheckRep(EAG.Alt A)
         {
             EAG.Nont F;
-            if (A.Last != null && A.Last is EAG.Nont)
+            if (A.Last !is null && A.Last is EAG.Nont)
             {
                 F = A.Last(EAG.Nont);
                 if (EAG.WellMatched(EAG.HNont[F.Sym].Sig, EAG.empty)
@@ -721,7 +725,7 @@ void CheckSemantics()
 
         Node = EAG.HNont[Sym].Def;
         Sig = EAG.HNont[Sym].Sig;
-        if (Node != null)
+        if (Node !is null)
         {
             if (Node is EAG.Rep)
             {
@@ -749,7 +753,7 @@ void CheckSemantics()
                     CheckParamList(Sig, A.Actual, false);
                 }
                 F = A.Sub;
-                while (F != null)
+                while (F !is null)
                 {
                     if (F is EAG.Nont)
                     {
@@ -761,7 +765,7 @@ void CheckSemantics()
                 A.Scope.End = EAG.NextVar;
                 A = A.Next;
             }
-            while (!(A == null));
+            while (A !is null);
         }
     }
 
@@ -773,7 +777,7 @@ void CheckSemantics()
     }
     for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
     {
-        if (EAG.HNont[Sym].Def == null)
+        if (EAG.HNont[Sym].Def is null)
         {
             if (EAG.HNont[Sym].Id >= 0)
             {
@@ -866,7 +870,7 @@ void ComputeEAGSets()
         do
         {
             F = A.Sub;
-            while (F != null)
+            while (F !is null)
             {
                 if (F is EAG.Nont && !Sets.In(EAG.Reach, F(EAG.Nont).Sym))
                 {
@@ -876,7 +880,7 @@ void ComputeEAGSets()
             }
             A = A.Next;
         }
-        while (!(A == null));
+        while (A !is null);
     }
 
     void NewEdge(int From, EAG.Alt To)
@@ -923,7 +927,7 @@ void ComputeEAGSets()
     ComputeReach(EAG.StartSym);
     for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
     {
-        if (EAG.HNont[Sym].Def != null && !Sets.In(EAG.Reach, Sym) && EAG.HNont[Sym].Id >= 0)
+        if (EAG.HNont[Sym].Def !is null && !Sets.In(EAG.Reach, Sym) && EAG.HNont[Sym].Id >= 0)
         {
             ++Warnings;
         }
@@ -941,7 +945,7 @@ void ComputeEAGSets()
     Sets.New(Prod, EAG.NextHNont);
     for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
     {
-        if (EAG.HNont[Sym].Def != null)
+        if (EAG.HNont[Sym].Def !is null)
         {
             if (EAG.HNont[Sym].Def is EAG.Opt || EAG.HNont[Sym].Def is EAG.Rep)
             {
@@ -955,7 +959,7 @@ void ComputeEAGSets()
                 TermFound = false;
                 Deg[A.Ind] = 0;
                 F = A.Sub;
-                while (F != null)
+                while (F !is null)
                 {
                     if (F is EAG.Term)
                     {
@@ -978,14 +982,14 @@ void ComputeEAGSets()
                 }
                 A = A.Next;
             }
-            while (!(A == null));
+            while (A !is null);
         }
     }
     Prune;
     Sets.Assign(EAG.Null, Prod);
     for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
     {
-        if (EAG.HNont[Sym].Def != null)
+        if (EAG.HNont[Sym].Def !is null)
         {
             A = EAG.HNont[Sym].Def.Sub;
             do
@@ -997,7 +1001,7 @@ void ComputeEAGSets()
                 }
                 A = A.Next;
             }
-            while (!(A == null));
+            while (A !is null);
         }
     }
     Prune;

@@ -1,4 +1,5 @@
 module eEAG;
+
 import runtime;
 import Sets = eSets;
 import IO = eIO;
@@ -16,6 +17,7 @@ uint History;
 const firstParam = 0;
 const firstHAlt = 0;
 const firstHFactor = 0;
+
 class ParamsDesc
 {
     int Params;
@@ -34,6 +36,7 @@ OpenParamBuf ParamBuf;
 int NextParam;
 const firstNode = 1;
 const firstVar = 1;
+
 class ScopeDesc
 {
     int Beg;
@@ -41,6 +44,7 @@ class ScopeDesc
 }
 
 alias OpenNodeBuf = int[];
+
 class VarRecord
 {
     int Sym;
@@ -58,12 +62,14 @@ int NextVar;
 int Scope;
 alias Rule = RuleDesc;
 alias Alt = AltDesc;
+
 class RuleDesc
 {
     Alt Sub;
 }
 
 alias Factor = FactorDesc;
+
 class AltDesc
 {
     int Ind;
@@ -130,6 +136,7 @@ int NextDom;
 int CurSig;
 const firstMAlt = 1;
 const firstMemb = 1;
+
 class MAltRecord
 {
     int Left;
@@ -149,12 +156,14 @@ const firstMTerm = 1;
 const firstMNont = 1;
 const firstHTerm = 0;
 const firstHNont = 0;
+
 class MTermRecord
 {
     int Id;
 }
 
 alias OpenMTerm = MTermRecord[];
+
 class MNontRecord
 {
     int Id;
@@ -164,12 +173,14 @@ class MNontRecord
 }
 
 alias OpenMNont = MNontRecord[];
+
 class HTermRecord
 {
     int Id;
 }
 
 alias OpenHTerm = HTermRecord[];
+
 class HNontRecord
 {
     int Id;
@@ -197,6 +208,7 @@ Sets.OpenSet Null;
 Sets.OpenSet Pred;
 int StartSym;
 char[BaseNameLen] BaseName;
+
 void Expand()
 {
     OpenParamBuf ParamBuf1;
@@ -584,7 +596,7 @@ void NewTerm(ref Factor F, int Sym, IO.Position Pos)
     F1.Pos = Pos;
     F1.Ind = NextHFactor;
     ++NextHFactor;
-    if (F == null)
+    if (F is null)
     {
         F = F1;
         F.Prev = null;
@@ -608,7 +620,7 @@ void NewNont(ref Factor F, int Sym, ParamsDesc Actual, IO.Position Pos)
     F1.Pos = Pos;
     F1.Ind = NextHFactor;
     ++NextHFactor;
-    if (F == null)
+    if (F is null)
     {
         F = F1;
         F.Prev = null;
@@ -625,7 +637,7 @@ void NewGrp(int Sym, Alt Sub)
 {
     Grp N;
     Alt A;
-    if (HNont[Sym].Def == null)
+    if (HNont[Sym].Def is null)
     {
         ++NOGrp;
         NEW(N);
@@ -635,7 +647,7 @@ void NewGrp(int Sym, Alt Sub)
     else
     {
         A = HNont[Sym].Def(Grp).Sub;
-        while (A.Next != null)
+        while (A.Next !is null)
         {
             A = A.Next;
         }
@@ -686,7 +698,7 @@ void NewAlt(ref Alt A, int Sym, ParamsDesc Formal, ParamsDesc Actual, Factor Sub
     A1.Pos = Pos;
     A1.Ind = NextHAlt;
     ++NextHAlt;
-    if (A == null)
+    if (A is null)
     {
         A = A1;
     }

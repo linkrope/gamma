@@ -1,4 +1,5 @@
 module ePredicates;
+
 import runtime;
 import Sets = eSets;
 import IO = eIO;
@@ -46,6 +47,7 @@ void Check()
     Sets.OpenSet Reach;
     int NOPreds;
     int Sym;
+
     void NewDepend(int From, int To)
     {
         DependBuf[NextDepend].Dest = To;
@@ -81,7 +83,7 @@ void Check()
                 do
                 {
                     F = A.Sub;
-                    while (F != null)
+                    while (F !is null)
                     {
                         if (F is EAG.Term)
                         {
@@ -95,7 +97,7 @@ void Check()
                     }
                     A = A.Next;
                 }
-                while (!(A == null));
+                while (A !is null);
             }
         }
     }

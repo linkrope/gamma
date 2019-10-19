@@ -1,4 +1,5 @@
 module eSLEAGGen;
+
 import runtime;
 import Sets = eSets;
 import IO = eIO;
@@ -43,6 +44,7 @@ int IfLevel;
 OpenInt ActualName;
 Sets.OpenSet RepVar;
 Sets.OpenSet EmptySet;
+
 void InitScope(EAG.ScopeDesc Scope)
 {
     int i;
@@ -74,6 +76,7 @@ void Prepare(int N)
     EAG.Alt A;
     EAG.Factor F;
     int P;
+
     void Traverse(int P)
     {
         void DefPos(int Node)
@@ -152,7 +155,7 @@ void Prepare(int N)
             InitArray(A.Scope);
             Traverse(A.Formal.Params);
             F = A.Sub;
-            while (F != null)
+            while (F !is null)
             {
                 if (F is EAG.Nont)
                 {
@@ -175,7 +178,7 @@ void Prepare(int N)
             }
             A = A.Next;
         }
-        while (!(A == null));
+        while (A !is null);
         Sets.Incl(PreparedHNonts, N);
     }
 }
@@ -188,7 +191,8 @@ bool TestHNont(int N, bool EmitErr, bool SLEAG)
     bool isSLEAG;
     bool isLEAG;
     int V;
-    void Error(IO.Position Pos, char[] Msg)
+
+    void Error(IO.Position Pos, string Msg)
     {
         isSLEAG = false;
         if (EmitErr)
@@ -320,7 +324,7 @@ bool TestHNont(int N, bool EmitErr, bool SLEAG)
         InitScope(A.Scope);
         CheckDefPos(A.Formal.Params);
         F = A.Sub;
-        while (F != null)
+        while (F !is null)
         {
             if (F is EAG.Nont)
             {
@@ -345,7 +349,7 @@ bool TestHNont(int N, bool EmitErr, bool SLEAG)
         CheckApplPos(A.Formal.Params);
         A = A.Next;
     }
-    while (!(A == null));
+    while (A !is null);
     if (SLEAG)
     {
         return isSLEAG;
@@ -509,6 +513,7 @@ void ComputeConstDat()
     int A;
     int i;
     int ConstPtr;
+
     void Traverse(int N, ref int ConstPtr)
     {
         EAG.Rule Node;
@@ -578,7 +583,7 @@ void ComputeConstDat()
         {
             CheckParams(A.Formal.Params, ConstPtr);
             F = A.Sub;
-            while (F != null)
+            while (F !is null)
             {
                 if (F is EAG.Nont)
                 {
@@ -592,7 +597,7 @@ void ComputeConstDat()
             }
             A = A.Next;
         }
-        while (!(A == null));
+        while (A !is null);
     }
 
     NEW(AffixSpace, EAG.NextParam);
@@ -637,6 +642,7 @@ void ComputeVarNames(int N, bool Embed)
     int Top;
     int NextFreeVar;
     int temp;
+
     void WriteRefCnt()
     {
         int i;
@@ -732,10 +738,12 @@ void ComputeVarNames(int N, bool Embed)
         int Tree;
         bool Repetition;
         bool isPred;
+
         void CheckDefPos(int P)
         {
             int Tree;
             int V;
+
             void DefPos(int Node, int Var)
             {
                 int n;
@@ -833,6 +841,7 @@ void ComputeVarNames(int N, bool Embed)
             int Tree;
             int V;
             int P1;
+
             void ApplPos(int Node, int Var)
             {
                 int n;
@@ -960,6 +969,7 @@ void ComputeVarNames(int N, bool Embed)
             int P1;
             int Tree;
             int V;
+
             int FindVarName(int P, int VarName)
             {
                 while (AffixName[P] != VarName)
@@ -1033,6 +1043,7 @@ void ComputeVarNames(int N, bool Embed)
         void FreeAllDefPosVarNames(EAG.Alt A)
         {
             EAG.Factor F;
+
             void FreeVarNames(int P)
             {
                 while (EAG.ParamBuf[P].Affixform != EAG.nil)
@@ -1046,7 +1057,7 @@ void ComputeVarNames(int N, bool Embed)
             }
 
             F = A.Sub;
-            while (F != null)
+            while (F !is null)
             {
                 if (F is EAG.Nont)
                 {
@@ -1177,7 +1188,7 @@ void ComputeVarNames(int N, bool Embed)
             }
             CheckDefPos(A.Formal.Params);
             F = A.Sub;
-            while (F != null)
+            while (F !is null)
             {
                 if (F is EAG.Nont)
                 {
@@ -1221,7 +1232,7 @@ void ComputeVarNames(int N, bool Embed)
             }
             A = A.Next;
         }
-        while (!(A == null));
+        while (A !is null);
         if (Node is EAG.Rep)
         {
             InitComputation(Node(EAG.Rep).Scope);
@@ -1285,7 +1296,7 @@ void ComputeVarNames(int N, bool Embed)
                 }
                 A = A.Next;
             }
-            while (!(A == null));
+            while (A !is null);
         }
     }
 
@@ -1430,7 +1441,7 @@ void FinitGen()
     Generating = false;
 }
 
-void Str(char[] s)
+void Str(string s)
 {
     IO.WriteText(Mod, s);
 }
@@ -1530,7 +1541,8 @@ void GenDeclarations()
     char[EAG.BaseNameLen + 10] Name;
     bool OpenError;
     long TabTimeStamp;
-    void Append(ref char[] Dest, char[] Src, char[] Suf)
+
+    void Append(ref string Dest, string Src, string Suf)
     {
         int i;
         int j;
@@ -1593,6 +1605,7 @@ void GenDeclarations()
         int Start;
         IO.File Tab;
         int[] Heap;
+
         void SynTree(int Node, ref int Next)
         {
             int n;
@@ -1792,6 +1805,7 @@ void GenAnalPred(int Sym, int P)
     int Vn;
     bool MakeRefCnt;
     bool IsPred;
+
     void Comp()
     {
         if (UseRefCnt)
@@ -2093,7 +2107,8 @@ void GenAnalPred(int Sym, int P)
     }
 }
 /**
-* RepVar ist nur im Kontext der Generierung von Repetition-Code zu verstehen */
+ * RepVar ist nur im Kontext der Generierung von Repetition-Code zu verstehen
+ */
 void GenSynTree(int Node, Sets.OpenSet RepVar, ref int Next)
 {
     int n;
@@ -2148,7 +2163,8 @@ void GenSynTree(int Node, Sets.OpenSet RepVar, ref int Next)
     }
 }
 /**
-* RepVar ist nur im Kontext der Generierung von Repetition-Code zu verstehen */
+ * RepVar ist nur im Kontext der Generierung von Repetition-Code zu verstehen
+ */
 void Gen1SynTree(int Node, Sets.OpenSet RepVar, bool IsPred)
 {
     int n;
@@ -2373,6 +2389,7 @@ void GenHangIn(int P, bool Guard)
 {
     int Tree;
     int Next;
+
     void FreeVariables(int Node)
     {
         int n;
@@ -2749,6 +2766,7 @@ void GenActualParams(int P, bool ParNeeded)
 void GenPredProcs()
 {
     int N;
+
     void GenForward(int N)
     {
         void GenPredCover(int N)
@@ -2864,7 +2882,7 @@ void GenPredProcs()
         void TraverseFactor(EAG.Factor F, int FormalParams)
         {
             int Level;
-            if (F != null)
+            if (F !is null)
             {
                 ASSERT(F is EAG.Nont, 99);
                 ASSERT(Sets.In(EAG.Pred, F(EAG.Nont).Sym), 98);
@@ -2958,7 +2976,7 @@ void GenPredProcs()
             CleanLevel(Level);
             ++AltLevel;
             A = A.Next;
-            if (A == null)
+            if (A is null)
             {
                 break;
             }
