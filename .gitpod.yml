@@ -1,8 +1,12 @@
-tasks:
-  - init: make
-
 vscode:
   extensions:
     - grammarcraft.epsilon-eag-dark-theme@0.0.1:ugoZ5mIyXQLxd7hb6aaErA==
     - grammarcraft.epsilon-eag-light-theme@0.0.1:FH8VQ4YnIwg5BGgeKR+IEw==
     - grammarcraft.epsilon-eag@0.0.1:FuXpmRvJG3jcY6+VytasEQ==
+    - webfreak.code-d@0.22.0:K65wBqeoqTvGoea7XwBc+A==
+
+image:
+  file: .gitpod.Dockerfile
+
+tasks:
+  - init: make
