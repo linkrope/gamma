@@ -12,7 +12,7 @@ void List()
     IO.WriteString(IO.Msg, "Predicates in     ");
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.WriteText(IO.Msg, ": ");
-    if (EAG.Performed(Set))
+    if (EAG.Performed(SET(1 << EAG.analysed | 1 << EAG.predicates)))
     {
         for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
         {
@@ -85,13 +85,13 @@ void Check()
                     F = A.Sub;
                     while (F !is null)
                     {
-                        if (F is EAG.Term)
+                        if (cast(EAG.Term) F !is null)
                         {
                             PutProd(Sym);
                         }
                         else
                         {
-                            NewDepend(F(EAG.Nont).Sym, Sym);
+                            NewDepend((cast(EAG.Nont) F).Sym, Sym);
                         }
                         F = F.Next;
                     }
@@ -120,7 +120,7 @@ void Check()
     IO.WriteString(IO.Msg, "Predicates in     ");
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.Update(IO.Msg);
-    if (EAG.Performed(Set))
+    if (EAG.Performed(SET(1 << EAG.analysed)))
     {
         EXCL(EAG.History, EAG.predicates);
         NEW(HNont, EAG.NextHNont);

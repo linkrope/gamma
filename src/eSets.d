@@ -11,7 +11,7 @@ void New(ref OpenSet s0, int MaxElem)
     NEW(s0, DIV(MaxElem, M) + 1);
     for (n = 0; n <= DIV(MaxElem, M); ++n)
     {
-        s0[n] = Set;
+        s0[n] = SET(0);
     }
 }
 
@@ -20,7 +20,7 @@ void Empty(ref OpenSet s0)
     int n;
     for (n = 0; n <= SHORT(s0.length - 1); ++n)
     {
-        s0[n] = Set;
+        s0[n] = SET(0);
     }
 }
 
@@ -98,7 +98,7 @@ void SymmetricDifference(ref OpenSet s0, OpenSet s1, OpenSet s2)
 
 bool In(OpenSet s1, int n)
 {
-    return MOD(n, M) in s1[DIV(n, M)];
+    return IN(s1[DIV(n, M)], MOD(n, M));
 }
 
 bool Included(OpenSet s1, OpenSet s2)
@@ -119,7 +119,7 @@ bool IsEmpty(OpenSet s1)
     int n;
     for (n = 0; n <= SHORT(s1.length) - 1; ++n)
     {
-        if (s1[n] != Set)
+        if (s1[n] != SET(0))
         {
             return false;
         }
@@ -145,7 +145,7 @@ bool Disjoint(OpenSet s1, OpenSet s2)
     int n;
     for (n = 0; n <= SHORT(s1.length) - 1; ++n)
     {
-        if (s1[n] * s2[n] != Set)
+        if ((s1[n] & s2[n]) != SET(0))
         {
             return false;
         }

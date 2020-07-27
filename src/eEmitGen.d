@@ -68,11 +68,11 @@ void GenEmitProc(IO.TextOut Mod)
             IO.WriteString(Mod, "Type");
             if (Type == Type2)
             {
-                IO.Write(Mod, "2");
+                IO.Write(Mod, '2');
             }
             else
             {
-                IO.Write(Mod, "3");
+                IO.Write(Mod, '3');
             }
         }
 
@@ -181,7 +181,7 @@ void GenEmitProc(IO.TextOut Mod)
         }
     }
 
-    EmitSpace = IO.IsOption("s");
+    EmitSpace = IO.IsOption('s');
     StartMNont = EAG.DomBuf[EAG.HNont[EAG.StartSym].Sig];
     Sets.New(Type3, EAG.NextMNont);
     Sets.New(Type2, EAG.NextMNont);
@@ -216,7 +216,7 @@ void GenShowHeap(IO.TextOut Mod)
 void GenEmitCall(IO.TextOut Mod)
 {
     IO.WriteText(Mod, "\t\t\tIF ");
-    if (IO.IsOption("w"))
+    if (IO.IsOption('w'))
     {
         IO.WriteText(Mod, "~ ");
     }
@@ -228,11 +228,11 @@ void GenEmitCall(IO.TextOut Mod)
     IO.WriteString(Mod, "Type");
     if (Sets.In(Type2, StartMNont))
     {
-        IO.Write(Mod, "2");
+        IO.Write(Mod, '2');
     }
     else
     {
-        IO.Write(Mod, "3");
+        IO.Write(Mod, '3');
     }
     IO.WriteText(Mod, "(V1); IO.WriteLn(Out); IO.Show(Out); \n");
 }

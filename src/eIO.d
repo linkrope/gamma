@@ -162,7 +162,7 @@ void CreateOut(ref TextOut Out, string Name)
     +/
 }
 
-void CreateModOut(ref TextOut Out, string Name)
+void CreateModOut(ref TextOut Out, char[] Name)
 {
     assert(false, "not implemented");
     /+
@@ -223,9 +223,16 @@ void Show(TextOut Out)
     +/
 }
 
-void WriteText(TextOut Out, const char[] Str)
+void WriteText(TextOut Out, string Str)
 {
     Out.text ~= Str;
+}
+
+void WriteText(TextOut Out, char[] Str)
+{
+    import std.string : fromStringz;
+
+    Out.text ~= fromStringz(Str.ptr);
     /+
     int i;
     char c;
@@ -265,9 +272,9 @@ void WriteText(TextOut Out, const char[] Str)
     +/
 }
 
-void WriteString(TextOut Out, string Str)
+void WriteString(T)(TextOut Out, T Str)
 {
-    Out.text ~= Str;
+    WriteText(Out, Str);
 }
 
 void Write(TextOut Out, char c)
@@ -338,7 +345,7 @@ void OpenFile(ref File F, string Name, ref bool Error)
     +/
 }
 
-void CreateFile(ref File F, string Name)
+void CreateFile(ref File F, char[] Name)
 {
     assert(false, "not implemented");
     /+

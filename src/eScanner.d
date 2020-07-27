@@ -54,8 +54,7 @@ void Expand()
         }
         else
         {
-            Error("internal error: CharBuf overflow\n");
-            HALT(99);
+            throw new Exception("internal error: CharBuf overflow");
         }
         for (i = firstChar; i <= CharBuf.length - 1; ++i)
         {
@@ -71,8 +70,7 @@ void Expand()
         }
         else
         {
-            Error("internal error: Ident overflow\n");
-            HALT(99);
+            throw new Exception("internal error: Ident overflow");
         }
         for (i = firstIdent; i <= Ident.length - 1; ++i)
         {
@@ -113,9 +111,7 @@ void GetRepr(int Id, ref char[] Name)
     n = Ident[Id + 1].Repr - k;
     if (Name.length < n + 1 || Name.length < n + 2 && (c == str || c == '\''))
     {
-        IO.WriteText(IO.Msg, "\n  internal error: symbol too long\n");
-        IO.Update(IO.Msg);
-        HALT(99);
+        throw new Exception("internal error: symbol too long");
     }
     for (m = 0; m <= n - 1; ++m)
     {
@@ -412,12 +408,32 @@ void Get(ref char Tok)
         Tok = c;
         IO.Read(In, c);
     }
+    trace(Tok);
+}
+
+void trace(char tok)
+{
+    import std.stdio : write, writef, writeln;
+
+    writef!"%6d: "(Pos.Offset);
+    if (tok == ide || tok == str)
+    {
+        write((tok == ide) ? "ide" : "str");
+        writef!"[%s] = "(Val);
+        WriteRepr(IO.Msg, Val);
+        IO.Update(IO.Msg);
+        writeln;
+    }
+    else if (tok == num)
+        writeln("num = ", Val);
+    else
+        writeln(tok);
 }
 
 static this()
 {
     NEW(CharBuf, 1023);
     NEW(Ident, 255);
-    foreach (ref element; Ident)
-        element = new IdentRecord;
+    foreach (ref ident; Ident)
+        ident = new IdentRecord;
 }

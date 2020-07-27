@@ -12,7 +12,12 @@ char Tok;
 int ErrorCounter;
 bool NameNotified;
 
-void Str(const char[] s)
+void Str(string s)
+{
+    IO.WriteText(IO.Msg, s);
+}
+
+void Str(char[] s)
 {
     IO.WriteText(IO.Msg, s);
 }
@@ -123,7 +128,7 @@ void Specification()
 
     void SetBaseName()
     {
-        string Name;
+        char[] Name = new char[256];
         int i;
         EAG.StartSym = EAG.firstHNont;
         if (EAG.NextHNont > EAG.firstHNont)
@@ -188,7 +193,7 @@ void Specification()
          */
         void Params(ref EAG.ParamsDesc Actual, ref EAG.ParamsDesc Formal)
         {
-            EAG.ParamsDesc P;
+            EAG.ParamsDesc P = new EAG.ParamsDesc;
             bool isFormal;
             char Dir;
             int Sym;
@@ -699,11 +704,13 @@ void CheckSemantics()
         void CheckActual(EAG.Nont F)
         {
             if (EAG.WellMatched(EAG.HNont[F.Sym].Sig, EAG.empty)
-                    && F.Actual.Params != EAG.empty && F.Next !is null
-                    && F.Next is EAG.Nont && F.Next(EAG.Nont)
-                    .Actual.Params == EAG.empty && EAG.HNont[F.Next(EAG.Nont).Sym].Id < 0)
+                    && F.Actual.Params != EAG.empty
+                    && F.Next !is null
+                    && cast(EAG.Nont) F.Next !is null
+                    && (cast(EAG.Nont) F.Next).Actual.Params == EAG.empty
+                    && EAG.HNont[(cast(EAG.Nont) F.Next).Sym].Id < 0)
             {
-                F.Next(EAG.Nont).Actual = F.Actual;
+                (cast(EAG.Nont)F.Next).Actual = F.Actual;
                 F.Actual.Params = EAG.empty;
             }
         }
@@ -711,11 +718,12 @@ void CheckSemantics()
         void CheckRep(EAG.Alt A)
         {
             EAG.Nont F;
-            if (A.Last !is null && A.Last is EAG.Nont)
+            if (A.Last !is null && cast(EAG.Nont) A.Last !is null)
             {
-                F = A.Last(EAG.Nont);
+                F = cast(EAG.Nont) A.Last;
                 if (EAG.WellMatched(EAG.HNont[F.Sym].Sig, EAG.empty)
-                        && F.Actual.Params != EAG.empty && A.Actual.Params == EAG.empty)
+                        && F.Actual.Params != EAG.empty
+                        && A.Actual.Params == EAG.empty)
                 {
                     A.Actual = F.Actual;
                     F.Actual.Params = EAG.empty;
@@ -727,19 +735,19 @@ void CheckSemantics()
         Sig = EAG.HNont[Sym].Sig;
         if (Node !is null)
         {
-            if (Node is EAG.Rep)
+            if (cast(EAG.Rep) Node !is null)
             {
                 EAG.Scope = EAG.NextVar;
-                Node(EAG.Rep).Scope.Beg = EAG.NextVar;
-                CheckParamList(Sig, Node(EAG.Rep).Formal, true);
-                Node(EAG.Rep).Scope.End = EAG.NextVar;
+                (cast(EAG.Rep) Node).Scope.Beg = EAG.NextVar;
+                CheckParamList(Sig, (cast(EAG.Rep) Node).Formal, true);
+                (cast(EAG.Rep) Node).Scope.End = EAG.NextVar;
             }
-            else if (Node is EAG.Opt)
+            else if (cast(EAG.Opt) Node !is null)
             {
                 EAG.Scope = EAG.NextVar;
-                Node(EAG.Opt).Scope.Beg = EAG.NextVar;
-                CheckParamList(Sig, Node(EAG.Opt).Formal, true);
-                Node(EAG.Opt).Scope.End = EAG.NextVar;
+                (cast(EAG.Opt) Node).Scope.Beg = EAG.NextVar;
+                CheckParamList(Sig, (cast(EAG.Opt) Node).Formal, true);
+                (cast(EAG.Opt) Node).Scope.End = EAG.NextVar;
             }
             A = Node.Sub;
             do
@@ -747,7 +755,7 @@ void CheckSemantics()
                 EAG.Scope = EAG.NextVar;
                 A.Scope.Beg = EAG.NextVar;
                 CheckParamList(Sig, A.Formal, true);
-                if (Node is EAG.Rep)
+                if (cast(EAG.Rep) Node !is null)
                 {
                     CheckRep(A);
                     CheckParamList(Sig, A.Actual, false);
@@ -755,10 +763,10 @@ void CheckSemantics()
                 F = A.Sub;
                 while (F !is null)
                 {
-                    if (F is EAG.Nont)
+                    if (cast(EAG.Nont) F !is null)
                     {
-                        CheckActual(F(EAG.Nont));
-                        CheckParamList(EAG.HNont[F(EAG.Nont).Sym].Sig, F(EAG.Nont).Actual, false);
+                        CheckActual(cast(EAG.Nont) F);
+                        CheckParamList(EAG.HNont[(cast(EAG.Nont) F).Sym].Sig, (cast(EAG.Nont) F).Actual, false);
                     }
                     F = F.Next;
                 }
@@ -872,9 +880,9 @@ void ComputeEAGSets()
             F = A.Sub;
             while (F !is null)
             {
-                if (F is EAG.Nont && !Sets.In(EAG.Reach, F(EAG.Nont).Sym))
+                if (cast(EAG.Nont) F !is null && !Sets.In(EAG.Reach, (cast(EAG.Nont) F).Sym))
                 {
-                    ComputeReach(F(EAG.Nont).Sym);
+                    ComputeReach((cast(EAG.Nont) F).Sym);
                 }
                 F = F.Next;
             }
@@ -947,7 +955,7 @@ void ComputeEAGSets()
     {
         if (EAG.HNont[Sym].Def !is null)
         {
-            if (EAG.HNont[Sym].Def is EAG.Opt || EAG.HNont[Sym].Def is EAG.Rep)
+            if (cast(EAG.Opt) EAG.HNont[Sym].Def !is null || cast(EAG.Rep) EAG.HNont[Sym].Def !is null)
             {
                 Sets.Incl(Prod, Sym);
                 Stack[Top] = Sym;
@@ -961,14 +969,14 @@ void ComputeEAGSets()
                 F = A.Sub;
                 while (F !is null)
                 {
-                    if (F is EAG.Term)
+                    if (cast(EAG.Term) F !is null)
                     {
                         TermFound = true;
                     }
                     else
                     {
                         ++Deg[A.Ind];
-                        NewEdge(F(EAG.Nont).Sym, A);
+                        NewEdge((cast(EAG.Nont) F).Sym, A);
                     }
                     F = F.Next;
                 }
@@ -1021,50 +1029,50 @@ void ComputeEAGSets()
     }
 }
 
-void Analyse()
+void Analyse(string Name)
 {
-    char[512] Name;
-    IO.TextIn In;
+    import std.file : readText;
+
     bool OpenError;
     Str("Analysing ...      ");
     IO.Update(IO.Msg);
-    IO.InputName(Name);
-    IO.OpenIn(In, Name, OpenError);
+    IO.TextIn In = new IO.TextIn(readText!(char[])(Name));
+
+    /+
     if (OpenError)
     {
         Str("\n  error: cannot open input");
     }
+    +/
+
+    Scanner.Init(In);
+    EAG.Init;
+    Earley.Init;
+    ErrorCounter = 0;
+    NameNotified = false;
+    Specification;
+    if (ErrorCounter == 0)
+    {
+        CheckSemantics;
+        Earley.Finit;
+    }
+    if (ErrorCounter == 0)
+    {
+        ComputeEAGSets;
+    }
+    if (ErrorCounter == 0)
+    {
+        INCL(EAG.History, EAG.analysed);
+        Str("   ok ");
+    }
     else
     {
-        Scanner.Init(In);
-        EAG.Init;
-        Earley.Init;
-        ErrorCounter = 0;
-        NameNotified = false;
-        Specification;
-        if (ErrorCounter == 0)
+        EXCL(EAG.History, EAG.analysed);
+        Str("\nerrors occurred");
+        if (NameNotified)
         {
-            CheckSemantics;
-            Earley.Finit;
-        }
-        if (ErrorCounter == 0)
-        {
-            ComputeEAGSets;
-        }
-        if (ErrorCounter == 0)
-        {
-            INCL(EAG.History, EAG.analysed);
-            Str("   ok ");
-        }
-        else
-        {
-            EXCL(EAG.History, EAG.analysed);
-            Str("\nerrors occurred");
-            if (!NameNotified)
-            {
-                Str(" in ");
-                Str(EAG.BaseName);
-            }
+            Str(" in ");
+            Str(EAG.BaseName);
         }
     }
     IO.WriteLn(IO.Msg);
@@ -1079,7 +1087,7 @@ void Warnings()
     bool NoWarnings;
     Str("Analyser");
     IO.Update(IO.Msg);
-    if (EAG.Performed(Set))
+    if (EAG.Performed(SET(1 << EAG.analysed)))
     {
         Sets.New(Unreach, EAG.NextHNont);
         Sets.New(Unprod, EAG.NextHNont);
@@ -1095,7 +1103,7 @@ void Warnings()
         Str("'s hypernonterminals");
         if (!NoWarnings)
         {
-            IO.Write(IO.Msg, ":");
+            IO.Write(IO.Msg, ':');
             for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
             {
                 if (Sets.In(Unreach, Sym) && EAG.HNont[Sym].Id >= 0)
@@ -1111,7 +1119,7 @@ void Warnings()
                     {
                         Str(" in ");
                     }
-                    IO.Write(IO.Msg, "'");
+                    IO.Write(IO.Msg, '\'');
                     EAG.WriteNamedHNont(IO.Msg, Sym);
                     Str("' cannot be derived");
                 }

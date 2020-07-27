@@ -24,7 +24,7 @@ void Init()
     Sets.New(GenNonts, EAG.NextHNont);
     Sets.Difference(GenNonts, GenFactors, EAG.Pred);
     Error = false;
-    ShowMod = IO.IsOption("m");
+    ShowMod = IO.IsOption('m');
 }
 
 void Finit()
@@ -62,7 +62,7 @@ void GenerateMod(bool CreateMod)
     int V;
     IO.TextOut Mod;
     IO.TextIn Fix;
-    char[EAG.BaseNameLen + 10] Name;
+    char[] Name = new char[EAG.BaseNameLen + 10];
     bool OpenError;
     bool CompileError;
     EAG.Rule SavedNontDef;
@@ -108,7 +108,7 @@ void GenerateMod(bool CreateMod)
         }
     }
 
-    void Append(ref string Dest, string Src, string Suf)
+    void Append(ref char[] Dest, char[] Src, string Suf)
     {
         int i;
         int j;
@@ -150,7 +150,7 @@ void GenerateMod(bool CreateMod)
                     A = A.Next;
                 }
                 while (A !is null);
-                if (EAG.HNont[N].Def is EAG.Opt || EAG.HNont[N].Def is EAG.Rep)
+                if (cast(EAG.Opt) EAG.HNont[N].Def !is null || cast(EAG.Rep) EAG.HNont[N].Def !is null)
                 {
                     ++i;
                 }
@@ -203,10 +203,10 @@ void GenerateMod(bool CreateMod)
             F2 = null;
             while (F !is null)
             {
-                if (F is EAG.Nont && Sets.In(GenFactors, F(EAG.Nont).Sym))
+                if (cast(EAG.Nont) F !is null && Sets.In(GenFactors, (cast(EAG.Nont) F).Sym))
                 {
                     NEW(F1);
-                    F1 = F(EAG.Nont);
+                    F1 = (cast(EAG.Nont) F);
                     F1.Prev = F2;
                     F1.Next = null;
                     A1.Last = F1;
@@ -222,7 +222,7 @@ void GenerateMod(bool CreateMod)
                 }
                 F = F.Next;
             }
-            if (EAG.HNont[N].Def is EAG.Rep)
+            if (cast(EAG.Rep) EAG.HNont[N].Def !is null)
             {
                 NEW(F1);
                 F1.Ind = EAG.NextHFactor;
@@ -247,7 +247,7 @@ void GenerateMod(bool CreateMod)
             A = A.Next;
         }
         while (A !is null);
-        if (EAG.HNont[N].Def is EAG.Opt || EAG.HNont[N].Def is EAG.Rep)
+        if (cast(EAG.Opt) EAG.HNont[N].Def !is null || cast(EAG.Rep) EAG.HNont[N].Def !is null)
         {
             NEW(A1);
             A1.Ind = EAG.NextHAlt;
@@ -256,17 +256,17 @@ void GenerateMod(bool CreateMod)
             A1.Next = null;
             A1.Sub = null;
             A1.Last = null;
-            if (EAG.HNont[N].Def is EAG.Opt)
+            if (cast(EAG.Opt) EAG.HNont[N].Def !is null)
             {
-                A1.Scope = EAG.HNont[N].Def(EAG.Opt).Scope;
-                A1.Formal = EAG.HNont[N].Def(EAG.Opt).Formal;
-                A1.Pos = EAG.HNont[N].Def(EAG.Opt).EmptyAltPos;
+                A1.Scope = (cast(EAG.Opt) EAG.HNont[N].Def).Scope;
+                A1.Formal = (cast(EAG.Opt) EAG.HNont[N].Def).Formal;
+                A1.Pos = (cast(EAG.Opt) EAG.HNont[N].Def).EmptyAltPos;
             }
             else
             {
-                A1.Scope = EAG.HNont[N].Def(EAG.Rep).Scope;
-                A1.Formal = EAG.HNont[N].Def(EAG.Rep).Formal;
-                A1.Pos = EAG.HNont[N].Def(EAG.Rep).EmptyAltPos;
+                A1.Scope = (cast(EAG.Rep) EAG.HNont[N].Def).Scope;
+                A1.Formal = (cast(EAG.Rep) EAG.HNont[N].Def).Formal;
+                A1.Pos = (cast(EAG.Rep) EAG.HNont[N].Def).EmptyAltPos;
             }
             A1.Actual.Params = EAG.empty;
             A1.Actual.Pos = IO.UndefPos;
@@ -352,6 +352,8 @@ void GenerateMod(bool CreateMod)
                             Error = true;
                         }
                         break;
+                    default:
+                        assert(0);
                     }
                 }
                 else
@@ -407,12 +409,12 @@ void GenerateMod(bool CreateMod)
                 Factor[F.Ind].Prio = Prio;
                 ++Prio;
                 Factor[F.Ind].F = F;
-                if (!Sets.In(EAG.Pred, F(EAG.Nont).Sym))
+                if (!Sets.In(EAG.Pred, (cast(EAG.Nont) F).Sym))
                 {
                     FactorOffset[F.Ind] = Offset;
                     ++Offset;
                 }
-                TravParams(right, F(EAG.Nont).Actual.Params, F);
+                TravParams(right, (cast(EAG.Nont) F).Actual.Params, F);
                 if (Factor[F.Ind].CountAppl == 0)
                 {
                     Stack[NextStack] = F.Ind;
@@ -518,37 +520,37 @@ void GenerateMod(bool CreateMod)
             F = A.Sub;
             while (F !is null)
             {
-                if (!Sets.In(EAG.Pred, F(EAG.Nont).Sym))
+                if (!Sets.In(EAG.Pred, (cast(EAG.Nont) F).Sym))
                 {
-                    EvalGen.GenSynPred(N, F(EAG.Nont).Actual.Params);
+                    EvalGen.GenSynPred(N, (cast(EAG.Nont) F).Actual.Params);
                     IO.WriteText(Mod, "\t\tP");
-                    IO.WriteInt(Mod, F(EAG.Nont).Sym);
+                    IO.WriteInt(Mod, (cast(EAG.Nont) F).Sym);
                     IO.WriteText(Mod, "(Tree[Adr + ");
                     IO.WriteInt(Mod, FactorOffset[F.Ind]);
                     IO.WriteText(Mod, "]");
-                    EvalGen.GenActualParams(F(EAG.Nont).Actual.Params, false);
+                    EvalGen.GenActualParams((cast(EAG.Nont) F).Actual.Params, false);
                     IO.WriteText(Mod, ");   (* ");
-                    EAG.WriteHNont(Mod, F(EAG.Nont).Sym);
-                    if (EAG.HNont[F(EAG.Nont).Sym].Id < 0)
+                    EAG.WriteHNont(Mod, (cast(EAG.Nont) F).Sym);
+                    if (EAG.HNont[(cast(EAG.Nont) F).Sym].Id < 0)
                     {
                         IO.WriteText(Mod, " in ");
-                        EAG.WriteNamedHNont(Mod, F(EAG.Nont).Sym);
+                        EAG.WriteNamedHNont(Mod, (cast(EAG.Nont) F).Sym);
                     }
                     IO.WriteText(Mod, " *)\n");
-                    if (EvalGen.PosNeeded(F(EAG.Nont).Actual.Params))
+                    if (EvalGen.PosNeeded((cast(EAG.Nont) F).Actual.Params))
                     {
                         IO.WriteText(Mod, "Pos := PosTree[Adr + ");
                         IO.WriteInt(Mod, FactorOffset[F.Ind]);
                         IO.WriteText(Mod, "];\n");
                     }
-                    EvalGen.GenAnalPred(N, F(EAG.Nont).Actual.Params);
+                    EvalGen.GenAnalPred(N, (cast(EAG.Nont) F).Actual.Params);
                 }
                 else
                 {
-                    EvalGen.GenSynPred(N, F(EAG.Nont).Actual.Params);
+                    EvalGen.GenSynPred(N, (cast(EAG.Nont) F).Actual.Params);
                     IO.WriteText(Mod, "Pos := PosTree[Adr + ");
                     F1 = F.Prev;
-                    while (F1 !is null && Sets.In(EAG.Pred, F1(EAG.Nont).Sym))
+                    while (F1 !is null && Sets.In(EAG.Pred, (cast(EAG.Nont) F1).Sym))
                     {
                         F1 = F1.Prev;
                     }
@@ -561,8 +563,8 @@ void GenerateMod(bool CreateMod)
                         IO.WriteInt(Mod, FactorOffset[F1.Ind]);
                     }
                     IO.WriteText(Mod, "];\n");
-                    EvalGen.GenPredCall(F(EAG.Nont).Sym, F(EAG.Nont).Actual.Params);
-                    EvalGen.GenAnalPred(N, F(EAG.Nont).Actual.Params);
+                    EvalGen.GenPredCall((cast(EAG.Nont) F).Sym, (cast(EAG.Nont) F).Actual.Params);
+                    EvalGen.GenAnalPred(N, (cast(EAG.Nont) F).Actual.Params);
                 }
                 F = F.Next;
             }
@@ -593,11 +595,11 @@ void GenerateMod(bool CreateMod)
         if (!Error)
         {
             EvalGen.InitGen(Mod, EvalGen.sSweepPass);
-            InclFix("$");
+            InclFix('$');
             IO.WriteText(Mod, Name);
-            InclFix("$");
+            InclFix('$');
             IO.WriteInt(Mod, HyperArity());
-            InclFix("$");
+            InclFix('$');
             EvalGen.GenDeclarations;
             for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
             {
@@ -653,17 +655,17 @@ void GenerateMod(bool CreateMod)
         if (!Error)
         {
             EmitGen.GenEmitProc(Mod);
-            InclFix("$");
+            InclFix('$');
             IO.WriteText(Mod, "P");
             IO.WriteInt(Mod, EAG.StartSym);
-            InclFix("$");
+            InclFix('$');
             EmitGen.GenEmitCall(Mod);
-            InclFix("$");
+            InclFix('$');
             EmitGen.GenShowHeap(Mod);
-            InclFix("$");
+            InclFix('$');
             IO.WriteText(Mod, EAG.BaseName);
             IO.WriteText(Mod, "Eval");
-            InclFix("$");
+            InclFix('$');
             IO.Update(Mod);
             if (ShowMod)
             {
@@ -693,12 +695,12 @@ void Test()
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.WriteText(IO.Msg, "   ");
     IO.Update(IO.Msg);
-    if (EAG.Performed(Set))
+    if (EAG.Performed(SET(1 << EAG.analysed | 1 << EAG.predicates)))
     {
         EXCL(EAG.History, EAG.isSSweep);
         Init;
         SaveHistory = EAG.History;
-        EAG.History = Set;
+        EAG.History = SET(0);
         GenerateMod(false);
         EAG.History = SaveHistory;
         if (!Error)
@@ -720,12 +722,12 @@ void Generate()
     IO.WriteText(IO.Msg, "   ");
     IO.Update(IO.Msg);
     Compiled = false;
-    if (EAG.Performed(Set))
+    if (EAG.Performed(SET(1 << EAG.analysed | 1 << EAG.predicates)))
     {
         EXCL(EAG.History, EAG.isSSweep);
         Init;
         SaveHistory = EAG.History;
-        EAG.History = Set;
+        EAG.History = SET(0);
         GenerateMod(true);
         EAG.History = SaveHistory;
         if (!Error)

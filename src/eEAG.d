@@ -230,7 +230,7 @@ void Expand()
         }
         else
         {
-            HALT(99);
+            assert(0);
         }
     }
 
@@ -442,7 +442,7 @@ int NewAnonymNont(int Id)
 
 void AppDom(char Dir, int Dom)
 {
-    if (Dir == "-")
+    if (Dir == '-')
     {
         Dom = -Dom;
     }
@@ -603,9 +603,9 @@ void NewTerm(ref Factor F, int Sym, IO.Position Pos)
     }
     else
     {
-        F(Factor).Next = F1;
+        F.Next = F1;
         F1.Prev = F;
-        F = F(Factor).Next;
+        F = F.Next;
     }
 }
 
@@ -627,9 +627,9 @@ void NewNont(ref Factor F, int Sym, ParamsDesc Actual, IO.Position Pos)
     }
     else
     {
-        F(Factor).Next = F1;
+        F.Next = F1;
         F1.Prev = F;
-        F = F(Factor).Next;
+        F = F.Next;
     }
 }
 
@@ -646,7 +646,7 @@ void NewGrp(int Sym, Alt Sub)
     }
     else
     {
-        A = HNont[Sym].Def(Grp).Sub;
+        A = (cast(Grp) HNont[Sym].Def).Sub;
         while (A.Next !is null)
         {
             A = A.Next;
@@ -675,6 +675,7 @@ void NewRep(int Sym, Alt Sub, ParamsDesc Formal, IO.Position Pos)
     NEW(N);
     N.Sub = Sub;
     N.EmptyAltPos = Pos;
+    N.Scope = new ScopeDesc;
     N.Scope.Beg = nil;
     N.Scope.End = nil;
     N.Formal = Formal;
@@ -689,6 +690,7 @@ void NewAlt(ref Alt A, int Sym, ParamsDesc Formal, ParamsDesc Actual, Factor Sub
     NEW(A1);
     A1.Next = null;
     A1.Up = Sym;
+    A1.Scope = new ScopeDesc;
     A1.Scope.Beg = nil;
     A1.Scope.End = nil;
     A1.Formal = Formal;
@@ -718,7 +720,7 @@ void WriteHNont(ref IO.TextOut Out, int Nont)
 {
     if (HNont[Nont].Id < 0)
     {
-        IO.Write(Out, "A");
+        IO.Write(Out, 'A');
         IO.WriteInt(Out, -HNont[Nont].Id);
     }
     else
@@ -731,7 +733,7 @@ void WriteVar(ref IO.TextOut Out, int V)
 {
     if (Var[V].Num < 0)
     {
-        IO.Write(Out, "#");
+        IO.Write(Out, '#');
     }
     Scanner.WriteRepr(Out, MNont[Var[V].Sym].Id);
     if (ABS(Var[V].Num) > 1)
@@ -748,33 +750,33 @@ void WriteNamedHNont(ref IO.TextOut Out, int Nont)
 bool Performed(uint Needed)
 {
     Needed = Needed - History;
-    if (Needed == Set)
+    if (Needed == SET(0))
     {
         return true;
     }
     else
     {
-        if (analysed in Needed)
+        if (IN(Needed, analysed))
         {
             IO.WriteText(IO.Msg, "\n\tanalyse a specification first");
         }
-        if (predicates in Needed)
+        if (IN(Needed, predicates))
         {
             IO.WriteText(IO.Msg, "\n\tcheck for predicates first");
         }
-        if (parsable in Needed)
+        if (IN(Needed, parsable))
         {
             IO.WriteText(IO.Msg, "\n\ttest for ELL1 attribute first");
         }
-        if (isSLEAG in Needed)
+        if (IN(Needed, isSLEAG))
         {
             IO.WriteText(IO.Msg, "\n\ttest for SLEAG attribute first");
         }
-        if (isSSweep in Needed)
+        if (IN(Needed, isSSweep))
         {
             IO.WriteText(IO.Msg, "\n\ttest for single sweep attribute first");
         }
-        if (hasEvaluator in Needed)
+        if (IN(Needed, hasEvaluator))
         {
             IO.WriteText(IO.Msg, "\n\tgenerate an evaluator first");
         }
@@ -786,32 +788,56 @@ bool Performed(uint Needed)
 void Init()
 {
     NEW(ParamBuf, 1023);
+    foreach (ref param; ParamBuf)
+        param = new ParamRecord;
     NextParam = firstParam;
     ParamBuf[NextParam].Affixform = nil;
     ++NextParam;
+
     NEW(MTerm, 255);
+    foreach (ref mTerm; MTerm)
+        mTerm = new MTermRecord;
     NextMTerm = firstMTerm;
+
     NEW(MNont, 255);
+    foreach (ref mNont; MNont)
+        mNont = new MNontRecord;
     NextMNont = firstMNont;
+
     NEW(HTerm, 255);
+    foreach (ref hTerm; HTerm)
+        hTerm = new HTermRecord;
     NextHTerm = firstHTerm;
+
     NEW(HNont, 255);
+    foreach (ref hNont; HNont)
+        hNont = new HNontRecord;
     NextHNont = firstHNont;
     NextAnonym = -1;
+
     NEW(DomBuf, 255);
     NextDom = firstDom;
     DomBuf[NextDom] = nil;
     ++NextDom;
     CurSig = NextDom;
+
     NEW(MAlt, 255);
+    foreach (ref mAlt; MAlt)
+        mAlt = new MAltRecord;
     NextMAlt = firstMAlt;
+
     NEW(MembBuf, 255);
     NextMemb = firstMemb;
+
     NEW(NodeBuf, 1023);
     NextNode = firstNode;
+
     NEW(Var, 511);
+    foreach (ref var; Var)
+        var = new VarRecord;
     NextVar = firstVar;
     Scope = NextVar;
+
     NextHAlt = firstHAlt;
     NextHFactor = firstHFactor;
     Null = null;
@@ -823,14 +849,14 @@ void Init()
     NOGrp = 0;
     NOOpt = 0;
     NORep = 0;
-    History = Set;
+    History = SET(0);
     BaseName = "nothing";
     MaxMArity = 0;
 }
 
 static this()
 {
-    History = Set;
+    History = SET(0);
     BaseName = "nothing";
     IO.WriteText(IO.Msg, "Epsilon 1.02   JoDe/SteWe  22.11.96\n");
     IO.Update(IO.Msg);

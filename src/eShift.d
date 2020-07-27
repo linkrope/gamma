@@ -69,14 +69,14 @@ void Shift(int Dummy)
                 Num = 2;
                 while (HF !is null)
                 {
-                    if (HF is EAG.Term)
+                    if (cast(EAG.Term) HF !is null)
                     {
-                        EAG.AppMemb(-(HF(EAG.Term).Sym - EAG.firstHTerm + EAG.firstMTerm));
+                        EAG.AppMemb(-((cast(EAG.Term) HF).Sym - EAG.firstHTerm + EAG.firstMTerm));
                     }
-                    else if (Sets.In(GenNonts, HF(EAG.Nont).Sym))
+                    else if (Sets.In(GenNonts, (cast(EAG.Nont) HF).Sym))
                     {
-                        EAG.AppMemb(HF(EAG.Nont).Sym - EAG.firstHNont + EAG.firstMNont);
-                        Var = EAG.FindVar(HF(EAG.Nont)
+                        EAG.AppMemb((cast(EAG.Nont) HF).Sym - EAG.firstHNont + EAG.firstMNont);
+                        Var = EAG.FindVar((cast(EAG.Nont) HF)
                                 .Sym - EAG.firstHNont + EAG.firstMNont, Num, IO.UndefPos, true);
                         EAG.NodeBuf[EAG.NextNode] = -Var;
                         ++EAG.NextNode;
@@ -84,8 +84,8 @@ void Shift(int Dummy)
                         {
                             EAG.Expand;
                         }
-                        HF(EAG.Nont).Actual.Pos = IO.UndefPos;
-                        HF(EAG.Nont).Actual.Params = EAG.NextParam;
+                        (cast(EAG.Nont) HF).Actual.Pos = IO.UndefPos;
+                        (cast(EAG.Nont) HF).Actual.Params = EAG.NextParam;
                         EAG.AppParam(-Var, IO.UndefPos);
                         EAG.ParamBuf[EAG.NextParam - 1].isDef = true;
                         EAG.AppParam(nil, IO.UndefPos);
@@ -112,7 +112,7 @@ void Shift(int Dummy)
                     }
                     HF = HF.Next;
                 }
-                if (EAG.HNont[HN].Def is EAG.Rep)
+                if (cast(EAG.Rep) EAG.HNont[HN].Def !is null)
                 {
                     EAG.AppMemb(HN - EAG.firstHNont + EAG.firstMNont);
                     Var = EAG.FindVar(HN - EAG.firstHNont + EAG.firstMNont, Num, IO.UndefPos, true);
@@ -134,21 +134,21 @@ void Shift(int Dummy)
                 HA = HA.Next;
             }
             while (HA !is null);
-            if (EAG.HNont[HN].Def is EAG.Opt || EAG.HNont[HN].Def is EAG.Rep)
+            if (cast(EAG.Opt) EAG.HNont[HN].Def !is null || cast(EAG.Rep) EAG.HNont[HN].Def !is null)
             {
-                if (EAG.HNont[HN].Def is EAG.Opt)
+                if (cast(EAG.Opt) EAG.HNont[HN].Def !is null)
                 {
-                    EAG.HNont[HN].Def(EAG.Opt).Formal.Pos = IO.UndefPos;
-                    EAG.HNont[HN].Def(EAG.Opt).Formal.Params = EAG.NextParam;
-                    EAG.HNont[HN].Def(EAG.Opt).Scope.Beg = EAG.NextVar;
-                    EAG.HNont[HN].Def(EAG.Opt).Scope.End = EAG.NextVar;
+                    (cast(EAG.Opt) EAG.HNont[HN].Def).Formal.Pos = IO.UndefPos;
+                    (cast(EAG.Opt) EAG.HNont[HN].Def).Formal.Params = EAG.NextParam;
+                    (cast(EAG.Opt) EAG.HNont[HN].Def).Scope.Beg = EAG.NextVar;
+                    (cast(EAG.Opt) EAG.HNont[HN].Def).Scope.End = EAG.NextVar;
                 }
                 else
                 {
-                    EAG.HNont[HN].Def(EAG.Rep).Formal.Pos = IO.UndefPos;
-                    EAG.HNont[HN].Def(EAG.Rep).Formal.Params = EAG.NextParam;
-                    EAG.HNont[HN].Def(EAG.Rep).Scope.Beg = EAG.NextVar;
-                    EAG.HNont[HN].Def(EAG.Rep).Scope.End = EAG.NextVar;
+                    (cast(EAG.Rep) EAG.HNont[HN].Def).Formal.Pos = IO.UndefPos;
+                    (cast(EAG.Rep) EAG.HNont[HN].Def).Formal.Params = EAG.NextParam;
+                    (cast(EAG.Rep) EAG.HNont[HN].Def).Scope.Beg = EAG.NextVar;
+                    (cast(EAG.Rep) EAG.HNont[HN].Def).Scope.End = EAG.NextVar;
                 }
                 EAG.AppParam(EAG.NextNode, IO.UndefPos);
                 EAG.ParamBuf[EAG.NextParam - 1].isDef = false;
@@ -179,8 +179,8 @@ void Shift(int Dummy)
         if (Sets.In(GenNonts, HN))
         {
             EAG.HNont[HN].Sig = EAG.NextDom;
-            EAG.AppDom("+", HN - EAG.firstHNont + EAG.firstMNont);
-            EAG.AppDom("+", nil);
+            EAG.AppDom('+', HN - EAG.firstHNont + EAG.firstMNont);
+            EAG.AppDom('+', nil);
         }
     }
     Sets.Difference(EAG.All, EAG.All, Del);

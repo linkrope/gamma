@@ -4,6 +4,14 @@ import std.math;
 
 alias ABS = abs;
 
+void ASSERT(bool condition, int code = 0)
+{
+    import std.exception : enforce;
+    import  std.format : format;
+
+    enforce(condition, format!"code: %s"(code));
+}
+
 int ORD(char c)
 {
     return c;
@@ -12,6 +20,11 @@ int ORD(char c)
 void INC(ref int v, int x)
 {
     v += x;
+}
+
+void DEC(ref int v, int x)
+{
+    v -= x;
 }
 
 void COPY(T)(string x, ref T v)
@@ -30,6 +43,33 @@ void NEW(T)(ref T v)
 void NEW(T)(ref T[] v, size_t length)
 {
     v = new T[length];
+}
+
+uint SET(uint x)
+{
+    return x;
+}
+
+bool IN(uint set, size_t x)
+{
+    return (set & 1 << x) != 0;
+}
+
+void INCL(ref uint set, size_t x)
+{
+    set |= 1 << x;
+}
+
+void EXCL(ref uint set, size_t x)
+{
+    set &= ~(1 << x);
+}
+
+uint SHORT(ulong x)
+{
+    import std.conv : to;
+
+    return x.to!uint;
 }
 
 void HALT(int x)

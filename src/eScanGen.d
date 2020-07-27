@@ -18,14 +18,14 @@ void Generate()
     int Term;
     int MaxTokLen;
     int Len;
-    char[400] Str;
-    char[EAG.BaseNameLen + 10] Name;
+    char[] Str = new char[400];
+    char[] Name = new char[EAG.BaseNameLen + 10];
     bool Error;
     bool OpenError;
     bool CompileError;
     bool ShowMod;
 
-    void TestToken(ref string s, ref int Len)
+    void TestToken(ref char[] s, ref int Len)
     {
         int i;
         void Err(string Msg)
@@ -45,12 +45,12 @@ void Generate()
         }
 
         Len = 0;
-        if (s[0] != "'" && s[0] != "\"" || s[1] == '\x00' || s[1] == s[0])
+        if (s[0] != '\'' && s[0] != '"' || s[1] == '\x00' || s[1] == s[0])
         {
             Err("must be non empty string");
             return;
         }
-        if (s[1] == "'" || s[1] == "\"" || s[1] == " ")
+        if (s[1] == '\'' || s[1] == '"' || s[1] == ' ')
         {
             i = 2;
         }
@@ -100,7 +100,7 @@ void Generate()
         }
     }
 
-    void Append(ref string Dest, string Src, string Suf)
+    void Append(ref char[] Dest, char[] Src, string Suf)
     {
         int i;
         int j;
@@ -120,12 +120,12 @@ void Generate()
         Dest[i] = '\x00';
     }
 
-    ShowMod = IO.IsOption("m");
+    ShowMod = IO.IsOption('m');
     IO.WriteString(IO.Msg, "ScanGen writing ");
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.WriteString(IO.Msg, "   ");
     IO.Update(IO.Msg);
-    if (EAG.Performed(Set))
+    if (EAG.Performed(SET(1 << EAG.analysed)))
     {
         Error = false;
         MaxTokLen = lenOfPredefinedToken;
@@ -143,19 +143,17 @@ void Generate()
             IO.OpenIn(Fix, "eScanGen.Fix", OpenError);
             if (OpenError)
             {
-                IO.WriteText(IO.Msg, "\n  error: cannot open eScanGen.Fix\n");
-                IO.Update(IO.Msg);
-                HALT(99);
+                throw new Exception("error: cannot open eScanGen.Fix");
             }
             Append(Name, EAG.BaseName, "Scan");
             IO.CreateModOut(Mod, Name);
-            InclFix("$");
+            InclFix('$');
             IO.WriteString(Mod, Name);
-            InclFix("$");
+            InclFix('$');
             IO.WriteInt(Mod, MaxTokLen + 1);
-            InclFix("$");
+            InclFix('$');
             IO.WriteInt(Mod, EAG.NextHTerm - EAG.firstHTerm + firstUserTok);
-            InclFix("$");
+            InclFix('$');
             for (Term = EAG.firstHTerm; Term <= EAG.NextHTerm - 1; ++Term)
             {
                 IO.WriteText(Mod, "\t\tEnter(");
@@ -164,9 +162,9 @@ void Generate()
                 Scanner.WriteRepr(Mod, EAG.HTerm[Term].Id);
                 IO.WriteText(Mod, ");\n");
             }
-            InclFix("$");
+            InclFix('$');
             IO.WriteString(Mod, Name);
-            InclFix("$");
+            InclFix('$');
             IO.CloseIn(Fix);
             IO.Update(Mod);
             if (ShowMod)
@@ -202,26 +200,26 @@ static this()
     {
         IsIdent[i] = false;
     }
-    for (i = ORD("A"); i <= ORD("Z"); ++i)
+    for (i = ORD('A'); i <= ORD('Z'); ++i)
     {
         IsIdent[i] = true;
     }
-    for (i = ORD("a"); i <= ORD("z"); ++i)
+    for (i = ORD('a'); i <= ORD('z'); ++i)
     {
         IsIdent[i] = true;
     }
-    for (i = ORD("0"); i <= ORD("9"); ++i)
+    for (i = ORD('0'); i <= ORD('9'); ++i)
     {
         IsIdent[i] = true;
     }
-    for (i = 0; i <= ORD(" "); ++i)
+    for (i = 0; i <= ORD(' '); ++i)
     {
         IsSymbol[i] = false;
     }
-    for (i = ORD(" ") + 1; i <= IsSymbol.length - 1; ++i)
+    for (i = ORD(' ') + 1; i <= IsSymbol.length - 1; ++i)
     {
         IsSymbol[i] = !IsIdent[i];
     }
-    IsSymbol[ORD("'")] = false;
-    IsSymbol[ORD("\"")] = false;
+    IsSymbol[ORD('\'')] = false;
+    IsSymbol[ORD('"')] = false;
 }

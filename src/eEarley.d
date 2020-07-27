@@ -49,6 +49,7 @@ void Expand()
         else
         {
             HALT(99);
+            assert(0);
         }
     }
 
@@ -404,9 +405,15 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def)
 void Init()
 {
     NEW(MSymBuf, 2047);
+    foreach (ref mSym; MSymBuf)
+        mSym = new MSymRecord;
     NextMSym = firstMSym;
+
     NEW(ItemBuf, 1023);
+    foreach (ref item; ItemBuf)
+        item = new ItemRecord;
     NextItem = firstItem;
+
     Predicted = null;
 }
 
