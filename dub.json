@@ -1,0 +1,10 @@
+{
+	"name": "epsilon",
+	"description": "Extended Affix Grammar compiler compiler",
+	"authors": ["Mario Kröplin"],
+	"copyright": "Copyright © 2020, Mario Kröplin",
+	"targetType": "executable",
+	"mainSourceFile": "src/epsilon.d",
+	"importPaths": ["include", "src"],
+	"sourcePaths": ["include", "src"]
+}

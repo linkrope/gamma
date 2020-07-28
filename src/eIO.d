@@ -2,12 +2,12 @@ module eIO;
 
 import runtime;
 import Texts;
-import TextFrames;
-import Viewers;
-import MenuViewers;
-import Oberon;
+// import TextFrames;
+// import Viewers;
+// import MenuViewers;
+// import Oberon;
 import Files;
-import Compiler;
+// import Compiler;
 
 const eol = '\n';
 const optCh1 = '\\';
