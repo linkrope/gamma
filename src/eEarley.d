@@ -56,6 +56,8 @@ void Expand()
     if (NextMSym >= MSymBuf.length)
     {
         NEW(MSymBuf1, NewLen(MSymBuf.length));
+        foreach (ref mSym; MSymBuf1)
+            mSym = new MSymRecord;
         for (i = firstMSym; i <= MSymBuf.length - 1; ++i)
         {
             MSymBuf1[i] = MSymBuf[i];
@@ -65,6 +67,8 @@ void Expand()
     if (NextItem >= ItemBuf.length)
     {
         NEW(ItemBuf1, NewLen(ItemBuf.length));
+        foreach (ref item; ItemBuf1)
+            item = new ItemRecord;
         for (i = firstItem; i <= ItemBuf.length - 1; ++i)
         {
             ItemBuf1[i] = ItemBuf[i];

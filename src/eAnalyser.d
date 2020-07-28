@@ -193,7 +193,7 @@ void Specification()
          */
         void Params(ref EAG.ParamsDesc Actual, ref EAG.ParamsDesc Formal)
         {
-            EAG.ParamsDesc P = new EAG.ParamsDesc;
+            EAG.ParamsDesc P;
             bool isFormal;
             char Dir;
             int Sym;
@@ -852,7 +852,7 @@ void CheckSemantics()
 
 void ComputeEAGSets()
 {
-    class EdgeRecord
+    struct EdgeRecord
     {
         EAG.Alt Dest;
         int Next;
