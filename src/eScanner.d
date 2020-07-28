@@ -30,6 +30,7 @@ int NextIdent;
 int[97] HashTable;
 IO.TextIn In;
 int ErrorCounter;
+bool verbose;
 
 void Error(string String)
 {
@@ -408,7 +409,8 @@ void Get(ref char Tok)
         Tok = c;
         IO.Read(In, c);
     }
-    trace(Tok);
+    if (verbose)
+        trace(Tok);
 }
 
 void trace(char tok)
