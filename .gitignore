@@ -1,0 +1,16 @@
+.dub
+core
+docs.json
+__dummy.html
+docs/
+/epsilon
+epsilon.so
+epsilon.dylib
+epsilon.dll
+epsilon.a
+epsilon.lib
+epsilon-test-*
+*.exe
+*.o
+*.obj
+*.lst

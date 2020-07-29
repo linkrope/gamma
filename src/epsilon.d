@@ -1,6 +1,7 @@
 module epsilon;
 
 import Analyser = eAnalyser;
+import Predicates = ePredicates;
 import Scanner = eScanner;
 
 void main(string[] args)
@@ -42,4 +43,7 @@ void main(string[] args)
     Scanner.verbose = verbose;
     Analyser.Analyse(file);
     Analyser.Warnings;
+    Predicates.Check;
+    if (verbose)
+        Predicates.List;
 }

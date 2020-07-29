@@ -31,7 +31,7 @@ void List()
 
 void Check()
 {
-    class DependRecord
+    struct DependRecord
     {
         int Dest;
         int Next;
