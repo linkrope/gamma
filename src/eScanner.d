@@ -13,7 +13,7 @@ const num = '0';
 const ide = 'A';
 alias OpenCharBuf = char[];
 
-class IdentRecord
+struct IdentRecord
 {
     int Repr;
     int HashNext;
@@ -436,6 +436,4 @@ static this()
 {
     NEW(CharBuf, 1023);
     NEW(Ident, 255);
-    foreach (ref ident; Ident)
-        ident = new IdentRecord;
 }

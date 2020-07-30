@@ -1567,7 +1567,7 @@ void GenerateMod(bool ParsePass)
             Dest[i] = Src[i];
             ++i;
         }
-        while (Suf[j] != '\x00' && i < Dest.length - 1)
+        while (j < Suf.length && i < Dest.length - 1)
         {
             Dest[i] = Suf[j];
             ++i;

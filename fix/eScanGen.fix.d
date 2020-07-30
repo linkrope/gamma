@@ -18,11 +18,21 @@ const eot = 0;
 const undef = 1;
 const whitespace = 2;
 const comment = int.min;
-const string = 0;
+const string_ = 0;
 const ident = 1;
 const none = 2;
-// TODO OpenNode = POINTER TO ARRAY OF RECORD Ch: CHAR; Tok, Next, Sub: INTEGER END;
+
+struct NodeRecord
+{
+    char Ch;
+    int Tok;
+    int Next;
+    int Sub;
+}
+
+alias OpenNode = NodeRecord[];
 OpenNode Node;
+
 int NextNode;
 char[maxTokLen][maxTok] NameTab;
 bool[256] IsWhitespace;
@@ -31,7 +41,8 @@ char Ch;
 int Mode;
 char StringCh;
 IO.Position Pos;
-// TODO: Get*: PROCEDURE (VAR Tok: INTEGER);
+
+void function(ref int Tok) Get;
 
 void CopyBuf()
 {
@@ -116,7 +127,7 @@ void Enter(int Tok, string Name)
                 }
                 else
                 {
-                    HALT(99);
+                    assert(0);
                 }
             }
         }
@@ -139,7 +150,7 @@ void Enter(int Tok, string Name)
     }
     Ptr = ORD(Name[0]);
     i = 0;
-    while (Name[i] != '\x00')
+    while (i < Name.length)
     {
         while (Node[Ptr].Ch != Name[i] && Node[Ptr].Next != nil)
         {
@@ -151,13 +162,13 @@ void Enter(int Tok, string Name)
             Ptr = Node[Ptr].Next;
         }
         ++i;
-        if (Node[Ptr].Sub != nil && Name[i] != '\x00')
+        if (Node[Ptr].Sub != nil && i < Name.length)
         {
             Ptr = Node[Ptr].Sub;
         }
         else
         {
-            while (i < Name.length - 1)
+            while (i < Name.length)
             {
                 Insert(Node[Ptr].Sub, Name[i]);
                 Ptr = Node[Ptr].Sub;
@@ -263,19 +274,19 @@ void Comment()
             Error("Comment not closed");
             break;
         }
-        else if (Ch == "(")
+        else if (Ch == '(')
         {
             GetCh;
-            if (Ch == "*")
+            if (Ch == '*')
             {
                 GetCh;
                 ++Level;
             }
         }
-        else if (Ch == "*")
+        else if (Ch == '*')
         {
             GetCh;
-            if (Ch == ")")
+            if (Ch == ')')
             {
                 GetCh;
                 --Level;
@@ -296,7 +307,7 @@ void Get2(ref int Tok)
 {
     switch (Mode)
     {
-    case string:
+    case string_:
         if (Ch == EOT)
         {
             Tok = eot;
@@ -339,10 +350,10 @@ void Get2(ref int Tok)
         {
             Keyword(Tok);
         }
-        else if (Ch == "\"" || Ch == "'")
+        else if (Ch == '"' || Ch == '\'')
         {
             StringCh = Ch;
-            Mode = string;
+            Mode = string_;
             Tok = Node[ORD(Ch)].Tok;
             GetCh;
         }
@@ -362,7 +373,7 @@ void Get3(ref int Tok)
 {
     switch (Mode)
     {
-    case string:
+    case string_:
         if (Ch == EOT)
         {
             Tok = eot;
@@ -410,10 +421,10 @@ void Get3(ref int Tok)
         {
             Keyword(Tok);
         }
-        else if (Ch == "\"" || Ch == "'")
+        else if (Ch == '"' || Ch == '\'')
         {
             StringCh = Ch;
-            Mode = string;
+            Mode = string_;
             Tok = Node[ORD(Ch)].Tok;
             GetCh;
         }
@@ -429,39 +440,32 @@ void Get3(ref int Tok)
     }
 }
 
-void Init()
+void Init(IO.TextIn Input)
 {
-    char[512] Name;
-    bool Error;
-    IO.InputName(Name);
-    IO.OpenIn(In, Name, Error);
-    if (Error)
-    {
-        IO.WriteText(IO.Msg, "error: cannot open input\n");
-        IO.Update(IO.Msg);
-        HALT(99);
-    }
+    In = Input;
     CurCh = firstChBuf;
     NextCh = firstChBuf;
-    Ch = " ";
+    Ch = ' ';
     Mode = none;
-    Get = Get2;
+    Get = &Get2;
 }
 
 void BuildTree()
 {
+    import std.conv : to;
+
     int i;
     for (i = 0; i <= IsIdent.length - 1; ++i)
     {
-        if (CHR(i) >= "A" && CHR(i) <= "Z")
+        if ('A' <= CHR(i) && CHR(i) <= 'Z')
         {
             IsIdent[i] = true;
         }
-        else if (CHR(i) >= "a" && CHR(i) <= "z")
+        else if ('a' <= CHR(i)  && CHR(i) <= 'z')
         {
             IsIdent[i] = true;
         }
-        else if (CHR(i) >= "0" && CHR(i) <= "9")
+        else if ('0' <= CHR(i)  && CHR(i) <= '9')
         {
             IsIdent[i] = true;
         }
@@ -472,7 +476,7 @@ void BuildTree()
     }
     for (i = 0; i <= IsWhitespace.length - 1; ++i)
     {
-        if (CHR(i) <= " " || CHR(i) > "~")
+        if (CHR(i) <= ' ' || CHR(i) > '~')
         {
             IsWhitespace[i] = true;
         }
@@ -483,7 +487,7 @@ void BuildTree()
     }
     IsWhitespace[ORD(EOT)] = false;
     NEW(Node, 255);
-    NextNode = ORD("~") + 1;
+    NextNode = ORD('~') + 1;
     for (i = firstNode; i <= NextNode; ++i)
     {
         Node[i].Ch = CHR(i);
@@ -495,9 +499,9 @@ void BuildTree()
     COPY("endTok", NameTab[0]);
     COPY("undefTok", NameTab[1]);
     COPY("sepTok", NameTab[2]);
-    Enter(whitespace, IO.eol);
+    Enter(whitespace, IO.eol.to!string);
     Enter(comment, "(*");
-    $
+$
 }
 
 static this()
@@ -505,4 +509,5 @@ static this()
     BuildTree;
 }
 
+// END $.
 $

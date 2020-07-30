@@ -1,15 +1,12 @@
 module epsilon;
 
-import Analyser = eAnalyser;
-import Predicates = ePredicates;
-import Scanner = eScanner;
+import std.stdio;
 
 void main(string[] args)
 {
     import core.stdc.stdlib : exit, EXIT_FAILURE, EXIT_SUCCESS;
-    import std.exception : enforce;
     import std.getopt : defaultGetoptPrinter, getopt, GetoptResult;
-    import std.range : dropOne, front;
+    import std.range : dropOne, empty, front;
     import std.stdio : stderr, writefln, writeln;
 
     bool verbose;
@@ -20,8 +17,6 @@ void main(string[] args)
         result = getopt(args,
                 "verbose|v", "Print debug output.", &verbose,
         );
-        enforce(args.dropOne.length == 1,
-                "exactly one file is required");
     }
     catch (Exception exception)
     {
@@ -32,13 +27,26 @@ void main(string[] args)
     {
         import std.path : baseName;
 
-        writefln!"Usage: %s [options] file"(args.front.baseName);
-        writeln("Compile the Extended Affix Grammar file into a compiler.");
+        writefln!"Usage: %s [options] <file>..."(args.front.baseName);
+        writeln("Compile each Extended Affix Grammar file into a compiler.");
         defaultGetoptPrinter("Options:", result.options);
         exit(EXIT_SUCCESS);
     }
 
-    const file = args.dropOne.front;
+    if (args.dropOne.empty)
+        compile(stdin, verbose);
+
+    foreach (arg; args.dropOne)
+        compile(File(arg), verbose);
+}
+
+void compile(File file, bool verbose)
+{
+    import Analyser = eAnalyser;
+    import IO = eIO;
+    import Predicates = ePredicates;
+    import ScanGen = eScanGen;
+    import Scanner = eScanner;
 
     Scanner.verbose = verbose;
     Analyser.Analyse(file);
@@ -46,4 +54,6 @@ void main(string[] args)
     Predicates.Check;
     if (verbose)
         Predicates.List;
+    IO.option['m'] = false; // -m: modules are shown, not compiled directly
+    ScanGen.Generate;
 }

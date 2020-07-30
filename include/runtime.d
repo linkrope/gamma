@@ -12,6 +12,12 @@ void ASSERT(bool condition, int code = 0)
     enforce(condition, format!"code: %s"(code));
 }
 
+char CHR(int x)
+{
+    import std.conv : to;
+    return x.to!char;
+}
+
 int ORD(char c)
 {
     return c;

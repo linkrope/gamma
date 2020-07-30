@@ -111,7 +111,7 @@ void Generate()
             Dest[i] = Src[i];
             ++i;
         }
-        while (Suf[j] != '\x00' && i < Dest.length - 1)
+        while (j < Suf.length && i < Dest.length - 1)
         {
             Dest[i] = Suf[j];
             ++i;
@@ -140,7 +140,7 @@ void Generate()
         }
         if (!Error)
         {
-            IO.OpenIn(Fix, "eScanGen.Fix", OpenError);
+            IO.OpenIn(Fix, "fix/eScanGen.fix.d", OpenError);
             if (OpenError)
             {
                 throw new Exception("error: cannot open eScanGen.Fix");
@@ -156,7 +156,7 @@ void Generate()
             InclFix('$');
             for (Term = EAG.firstHTerm; Term <= EAG.NextHTerm - 1; ++Term)
             {
-                IO.WriteText(Mod, "\t\tEnter(");
+                IO.WriteText(Mod, "    Enter(");
                 IO.WriteInt(Mod, Term - EAG.firstHTerm + firstUserTok);
                 IO.WriteText(Mod, ", ");
                 Scanner.WriteRepr(Mod, EAG.HTerm[Term].Id);

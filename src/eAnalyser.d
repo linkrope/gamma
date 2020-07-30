@@ -1,11 +1,12 @@
 module eAnalyser;
 
 import runtime;
-import Sets = eSets;
-import IO = eIO;
-import Scanner = eScanner;
 import EAG = eEAG;
 import Earley = eEarley;
+import IO = eIO;
+import Scanner = eScanner;
+import Sets = eSets;
+import std.stdio;
 
 const nil = EAG.nil;
 char Tok;
@@ -1029,14 +1030,12 @@ void ComputeEAGSets()
     }
 }
 
-void Analyse(string Name)
+void Analyse(File file)
 {
-    import std.file : readText;
-
     bool OpenError;
     Str("Analysing ...      ");
     IO.Update(IO.Msg);
-    IO.TextIn In = new IO.TextIn(readText!(char[])(Name));
+    IO.TextIn In = new IO.TextIn(file);
 
     /+
     if (OpenError)

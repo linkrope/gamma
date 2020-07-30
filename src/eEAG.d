@@ -24,7 +24,7 @@ struct ParamsDesc
     IO.Position Pos;
 }
 
-class ParamRecord
+struct ParamRecord
 {
     int Affixform;
     IO.Position Pos;
@@ -45,7 +45,7 @@ struct ScopeDesc
 
 alias OpenNodeBuf = int[];
 
-class VarRecord
+struct VarRecord
 {
     int Sym;
     int Num;
@@ -137,7 +137,7 @@ int CurSig;
 const firstMAlt = 1;
 const firstMemb = 1;
 
-class MAltRecord
+struct MAltRecord
 {
     int Left;
     int Right;
@@ -157,14 +157,14 @@ const firstMNont = 1;
 const firstHTerm = 0;
 const firstHNont = 0;
 
-class MTermRecord
+struct MTermRecord
 {
     int Id;
 }
 
 alias OpenMTerm = MTermRecord[];
 
-class MNontRecord
+struct MNontRecord
 {
     int Id;
     int MRule;
@@ -174,14 +174,14 @@ class MNontRecord
 
 alias OpenMNont = MNontRecord[];
 
-class HTermRecord
+struct HTermRecord
 {
     int Id;
 }
 
 alias OpenHTerm = HTermRecord[];
 
-class HNontRecord
+struct HNontRecord
 {
     int Id;
     int NamedId;
@@ -237,8 +237,6 @@ void Expand()
     if (NextParam >= ParamBuf.length)
     {
         NEW(ParamBuf1, NewLen(ParamBuf.length));
-        foreach (ref param; ParamBuf1)
-            param = new ParamRecord;
         for (i = firstParam; i <= ParamBuf.length - 1; ++i)
         {
             ParamBuf1[i] = ParamBuf[i];
@@ -248,8 +246,6 @@ void Expand()
     if (NextMTerm >= MTerm.length)
     {
         NEW(MTerm1, NewLen(MTerm.length));
-        foreach (ref mTerm; MTerm1)
-            mTerm = new MTermRecord;
         for (i = firstMTerm; i <= MTerm.length - 1; ++i)
         {
             MTerm1[i] = MTerm[i];
@@ -259,8 +255,6 @@ void Expand()
     if (NextMNont >= MNont.length)
     {
         NEW(MNont1, NewLen(MNont.length));
-        foreach (ref mNont; MNont1)
-            mNont = new MNontRecord;
         for (i = firstMNont; i <= MNont.length - 1; ++i)
         {
             MNont1[i] = MNont[i];
@@ -270,8 +264,6 @@ void Expand()
     if (NextHTerm >= HTerm.length)
     {
         NEW(HTerm1, NewLen(HTerm.length));
-        foreach (ref hTerm; HTerm1)
-            hTerm = new HTermRecord;
         for (i = firstHTerm; i <= HTerm.length - 1; ++i)
         {
             HTerm1[i] = HTerm[i];
@@ -281,8 +273,6 @@ void Expand()
     if (NextHNont >= HNont.length)
     {
         NEW(HNont1, NewLen(HNont.length));
-        foreach (ref hNont; HNont1)
-            hNont = new HNontRecord;
         for (i = firstHNont; i <= HNont.length - 1; ++i)
         {
             HNont1[i] = HNont[i];
@@ -301,8 +291,6 @@ void Expand()
     if (NextMAlt >= MAlt.length)
     {
         NEW(MAlt1, NewLen(MAlt.length));
-        foreach (ref mAlt; MAlt1)
-            mAlt = new MAltRecord;
         for (i = firstMAlt; i <= MAlt.length - 1; ++i)
         {
             MAlt1[i] = MAlt[i];
@@ -330,8 +318,6 @@ void Expand()
     if (NextVar >= Var.length)
     {
         NEW(Var1, NewLen(Var.length));
-        foreach (ref var; Var1)
-            var = new VarRecord;
         for (i = firstVar; i <= Var.length - 1; ++i)
         {
             Var1[i] = Var[i];
@@ -761,7 +747,7 @@ void WriteNamedHNont(ref IO.TextOut Out, int Nont)
 
 bool Performed(uint Needed)
 {
-    Needed = Needed - History;
+    Needed = Needed & ~History;
     if (Needed == SET(0))
     {
         return true;
@@ -800,30 +786,20 @@ bool Performed(uint Needed)
 void Init()
 {
     NEW(ParamBuf, 1023);
-    foreach (ref param; ParamBuf)
-        param = new ParamRecord;
     NextParam = firstParam;
     ParamBuf[NextParam].Affixform = nil;
     ++NextParam;
 
     NEW(MTerm, 255);
-    foreach (ref mTerm; MTerm)
-        mTerm = new MTermRecord;
     NextMTerm = firstMTerm;
 
     NEW(MNont, 255);
-    foreach (ref mNont; MNont)
-        mNont = new MNontRecord;
     NextMNont = firstMNont;
 
     NEW(HTerm, 255);
-    foreach (ref hTerm; HTerm)
-        hTerm = new HTermRecord;
     NextHTerm = firstHTerm;
 
     NEW(HNont, 255);
-    foreach (ref hNont; HNont)
-        hNont = new HNontRecord;
     NextHNont = firstHNont;
     NextAnonym = -1;
 
@@ -834,8 +810,6 @@ void Init()
     CurSig = NextDom;
 
     NEW(MAlt, 255);
-    foreach (ref mAlt; MAlt)
-        mAlt = new MAltRecord;
     NextMAlt = firstMAlt;
 
     NEW(MembBuf, 255);
@@ -845,8 +819,6 @@ void Init()
     NextNode = firstNode;
 
     NEW(Var, 511);
-    foreach (ref var; Var)
-        var = new VarRecord;
     NextVar = firstVar;
     Scope = NextVar;
 
