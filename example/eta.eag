@@ -51,7 +51,7 @@ char:
   | <+ ")": char> ")" | <+ "*": char> "*" | <+ "+": char> "+" | <+ ",": char> ","
   | <+ "-": char> "-" | <+ ".": char> "." | <+ "/": char> "/" | <+ ":": char> ":"
   | <+ ";": char> ";" | <+ "<": char> "<" | <+ "=": char> "=" | <+ ">": char> ">"
-  | <+ "?": char> "?" | <+ "@": char> "@" | <+ "[": char> "[" | <+ "\\": char> "\"
+  | <+ "?": char> "?" | <+ "@": char> "@" | <+ "[": char> "[" | <+ "\\": char> "\\"
   | <+ "]": char> "]" | <+ "^": char> "^" | <+ "_": char> "_"
   | <+ "{": char> "{" | <+ "|": char> "|" | <+ "}": char> "}" | <+ "~": char> "~".
 
@@ -249,7 +249,7 @@ MetaRule <+ MetaRule>:
        + "\n" ident "=" "\n   " MetaExpr ".": MetaRule>
     )
   ".".
-  
+
 Var* = ident digits.
 AffixForm = | AffixForm AffixForm
   | string

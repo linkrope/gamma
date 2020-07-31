@@ -37,7 +37,7 @@ void GenerateMod(bool CreateMod)
     const firstEdge = 1;
     const firstStack = 0;
 
-    class EdgeRecord
+    struct EdgeRecord
     {
         int Dest;
         int Next;
@@ -45,7 +45,7 @@ void GenerateMod(bool CreateMod)
 
     alias OpenEdge = EdgeRecord[];
 
-    class FactorRecord
+    struct FactorRecord
     {
         int Vars;
         int CountAppl;
@@ -53,7 +53,7 @@ void GenerateMod(bool CreateMod)
         EAG.Factor F;
     }
 
-    class VarRecord
+    struct VarRecord
     {
         int Factors;
     }
@@ -347,7 +347,7 @@ void GenerateMod(bool CreateMod)
                             IO.WritePos(IO.Msg, EAG.ParamBuf[P].Pos);
                             IO.WriteText(IO.Msg, "  variable '");
                             EAG.WriteVar(IO.Msg, -Node);
-                            IO.WriteText(IO.Msg, " is not defined");
+                            IO.WriteText(IO.Msg, "' is not defined");
                             IO.Update(IO.Msg);
                             Error = true;
                         }

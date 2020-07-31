@@ -43,17 +43,25 @@ void main(string[] args)
 void compile(File file, bool verbose)
 {
     import Analyser = eAnalyser;
+    import ELL1Gen = eELL1Gen;
     import IO = eIO;
     import Predicates = ePredicates;
     import ScanGen = eScanGen;
     import Scanner = eScanner;
+    import SLEAGGen = eSLEAGGen;
+    import SSweep = eSSweep;
 
+    IO.option['m'] = false; // -m: modules are shown, not compiled directly
+    IO.option['p'] = false; // -p: parser ignores regular token marks at Hypernonterminals
     Scanner.verbose = verbose;
+
     Analyser.Analyse(file);
     Analyser.Warnings;
     Predicates.Check;
     if (verbose)
         Predicates.List;
-    IO.option['m'] = false; // -m: modules are shown, not compiled directly
+    ELL1Gen.Test;
+    SLEAGGen.Test;
+    // FIXME: SSweep.Test;
     ScanGen.Generate;
 }

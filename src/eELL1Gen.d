@@ -18,7 +18,7 @@ const firstEdge = 1;
 const firstGenSet = 1;
 const firstGenSetT = 1;
 
-class NontRecord
+struct NontRecord
 {
     Sets.OpenSet First;
     Sets.OpenSet Follow;
@@ -36,21 +36,21 @@ class NontRecord
 
 alias OpenNont = NontRecord[];
 
-class AltRecord
+struct AltRecord
 {
     Sets.OpenSet Dir;
 }
 
 alias OpenAlt = AltRecord[];
 
-class FactorRecord
+struct FactorRecord
 {
     int Rec;
 }
 
 alias OpenFactor = FactorRecord[];
 
-class EdgeRecord
+struct EdgeRecord
 {
     int Dest;
     int Next;
