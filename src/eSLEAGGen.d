@@ -1498,9 +1498,9 @@ void GenIncRefCnt(int Var, int n)
     if (n != 1)
     {
         Int(n);
-        Str(" *");
+        Str(" * ");
     }
-    Str(" refConst); \n");
+    Str("refConst); \n");
 }
 
 void GenOverflowGuard(int n)
@@ -1572,9 +1572,7 @@ void GenDeclarations()
         {
             if (c == '\x00')
             {
-                IO.WriteText(IO.Msg, "\n\terror: unexpected end of eSLEAGGen.Fix\n");
-                IO.Update(IO.Msg);
-                HALT(99);
+                throw new Exception("error: unexpected end of eSLEAGGen.Fix");
             }
             IO.Write(Mod, c);
             IO.Read(Fix, c);
@@ -1589,9 +1587,7 @@ void GenDeclarations()
         {
             if (c == '\x00')
             {
-                IO.WriteText(IO.Msg, "\n\terror: unexpected end of eSLEAGGen.Fix\n");
-                IO.Update(IO.Msg);
-                HALT(99);
+                throw new Exception("error: unexpected end of eSLEAGGen.Fix");
             }
             IO.Read(Fix, c);
         }
@@ -1677,12 +1673,10 @@ void GenDeclarations()
         Append(Name, EAG.BaseName, ".EvalTab");
     }
     TabTimeStamp = IO.TimeStamp();
-    IO.OpenIn(Fix, "eSLEAGGen.Fix", OpenError);
+    IO.OpenIn(Fix, "fix/eSLEAGGen.fix.d", OpenError);
     if (OpenError)
     {
-        IO.WriteText(IO.Msg, "\n\terror: could not open eELL1Gen.Fix\n");
-        IO.Update(IO.Msg);
-        HALT(99);
+        throw new Exception("error: could not open eELL1Gen.Fix");
     }
     InclFix('$');
     Int(FirstHeap - 1);
@@ -1695,7 +1689,7 @@ void GenDeclarations()
     }
     else
     {
-        Str("LONGINT");
+        Str("long");
     }
     InclFix('$');
     if (SavePos)
@@ -1704,7 +1698,7 @@ void GenDeclarations()
     }
     else
     {
-        Str("POINTER TO ARRAY OF HeapType");
+        Str("HeapType[]");
     }
     InclFix('$');
     if (SavePos)
@@ -1826,11 +1820,11 @@ void GenAnalPred(int Sym, int P)
 
     void GenEqualErrMsg(int Sym, int Var)
     {
-        Str("\''");
+        Str("\"'");
         EAG.WriteVar(Mod, Var);
         Str("' failed in '");
         EAG.WriteNamedHNont(Mod, Sym);
-        Str("'\'");
+        Str("'\"");
     }
 
     void GenAnalErrMsg(int Sym)
@@ -1928,7 +1922,7 @@ void GenAnalPred(int Sym, int P)
                 {
                     EAG.Var[V].Def = true;
                     GenVar(VarName[V]);
-                    Str(" := ");
+                    Str(" = ");
                     GenHeap(NodeName[Node], n);
                     Str("; ");
                     if (EAG.Var[EAG.Var[V].Neg].Def)
@@ -1995,7 +1989,7 @@ void GenAnalPred(int Sym, int P)
                 else
                 {
                     GenVar(NodeName[Node1]);
-                    Str(" := ");
+                    Str(" = ");
                     GenHeap(NodeName[Node], n);
                     Str("; ");
                     GenAnalTree(Node1);
@@ -2030,7 +2024,7 @@ void GenAnalPred(int Sym, int P)
                     if (AffixName[P] != VarName[V])
                     {
                         GenVar(VarName[V]);
-                        Str(" := ");
+                        Str(" = ");
                         GenVar(AffixName[P]);
                         Str("; \n");
                     }
@@ -2120,7 +2114,7 @@ void GenSynTree(int Node, Sets.OpenSet RepVar, ref int Next)
     int Alt;
     Alt = EAG.NodeBuf[Node];
     GenHeap(0, Next);
-    Str(" := ");
+    Str(" = ");
     Int(MAltNum[Alt]);
     Str("; ");
     Next1 = Next;
@@ -2134,13 +2128,13 @@ void GenSynTree(int Node, Sets.OpenSet RepVar, ref int Next)
             if (Sets.In(RepVar, V))
             {
                 GenVar(VarName[V]);
-                Str(" := NextHeap + ");
+                Str(" = NextHeap + ");
                 Int(Next1 + n);
             }
             else
             {
                 GenHeap(0, Next1 + n);
-                Str(" := ");
+                Str(" = ");
                 GenVar(VarName[V]);
             }
             Str("; ");
@@ -2148,7 +2142,7 @@ void GenSynTree(int Node, Sets.OpenSet RepVar, ref int Next)
         else
         {
             GenHeap(0, Next1 + n);
-            Str(" := ");
+            Str(" = ");
             if (UseConst && EAG.MAlt[EAG.NodeBuf[Node1]].Arity == 0)
             {
                 Int(Leaf[EAG.NodeBuf[Node1]]);
@@ -2173,7 +2167,7 @@ void Gen1SynTree(int Node, Sets.OpenSet RepVar, bool IsPred)
     int Node1;
     int V;
     GenHeap(NodeName[Node], 0);
-    Str(" := ");
+    Str(" = ");
     Int(MAltNum[EAG.NodeBuf[Node]]);
     Str("; ");
     for (n = 1; n <= EAG.MAlt[EAG.NodeBuf[Node]].Arity; ++n)
@@ -2185,7 +2179,7 @@ void Gen1SynTree(int Node, Sets.OpenSet RepVar, bool IsPred)
             if (Sets.In(RepVar, V))
             {
                 GenVar(VarName[V]);
-                Str(" := ");
+                Str(" = ");
                 GenVar(NodeName[Node]);
                 Str(" + ");
                 Int(n);
@@ -2194,7 +2188,7 @@ void Gen1SynTree(int Node, Sets.OpenSet RepVar, bool IsPred)
             else
             {
                 GenHeap(NodeName[Node], n);
-                Str(" := ");
+                Str(" = ");
                 GenVar(VarName[V]);
                 Str("; ");
                 if (IsPred)
@@ -2208,7 +2202,7 @@ void Gen1SynTree(int Node, Sets.OpenSet RepVar, bool IsPred)
             if (UseConst)
             {
                 GenHeap(NodeName[Node], n);
-                Str(" := ");
+                Str(" = ");
                 Int(Leaf[EAG.NodeBuf[Node1]]);
                 Str("; ");
                 GenIncRefCnt(-Leaf[EAG.NodeBuf[Node1]], 1);
@@ -2219,9 +2213,9 @@ void Gen1SynTree(int Node, Sets.OpenSet RepVar, bool IsPred)
                 GenHeap(NodeName[Node], n);
                 Str("); Heap[");
                 GenHeap(NodeName[Node], n);
-                Str("] := ");
+                Str("] = ");
                 Int(MAltNum[EAG.NodeBuf[Node1]]);
-                Str("; ");
+                Str(";");
             }
         }
         else
@@ -2234,7 +2228,7 @@ void Gen1SynTree(int Node, Sets.OpenSet RepVar, bool IsPred)
                 GenHeap(NodeName[Node], n);
                 Str("); ");
                 GenVar(NodeName[Node1]);
-                Str(" := ");
+                Str(" = ");
                 GenHeap(NodeName[Node], n);
             }
             else
@@ -2242,10 +2236,10 @@ void Gen1SynTree(int Node, Sets.OpenSet RepVar, bool IsPred)
                 GenVar(NodeName[Node1]);
                 Str("); ");
                 GenHeap(NodeName[Node], n);
-                Str(" := ");
+                Str(" = ");
                 GenVar(NodeName[Node1]);
             }
-            Str("; \n");
+            Str(";\n");
             Gen1SynTree(Node1, RepVar, IsPred);
         }
     }
@@ -2292,7 +2286,7 @@ void GenSynPred(int Sym, int P)
             if (UseConst && AffixPlace[P] >= 0)
             {
                 GenVar(AffixName[P]);
-                Str(" := ");
+                Str(" = ");
                 Int(AffixPlace[P]);
                 Str("; \n");
                 if (UseRefCnt)
@@ -2310,7 +2304,7 @@ void GenSynPred(int Sym, int P)
                 if (AffixName[P] != VarName[V])
                 {
                     GenVar(AffixName[P]);
-                    Str(" := ");
+                    Str(" = ");
                     GenVar(VarName[V]);
                     Str(";\n");
                 }
@@ -2330,7 +2324,7 @@ void GenSynPred(int Sym, int P)
                 else
                 {
                     GenVar(AffixName[P]);
-                    Str(" := NextHeap; ");
+                    Str(" = NextHeap; ");
                     Next = 0;
                     GenSynTree(Tree, EmptySet, Next);
                     GenHeapInc(Next);
@@ -2375,12 +2369,12 @@ void GenRepStart(int Sym)
             else
             {
                 GenVar(FormalName[Dom]);
-                Str(" := NextHeap; INC(NextHeap); ");
+                Str(" = NextHeap; ++NextHeap; ");
             }
             GenVar(AffixName[P]);
-            Str(" := ");
+            Str(" = ");
             GenVar(FormalName[Dom]);
-            Str("; \n");
+            Str(";\n");
         }
         ++P;
         ++Dom;
@@ -2428,7 +2422,7 @@ void GenHangIn(int P, bool Guard)
             if (UseConst && AffixPlace[P] >= 0)
             {
                 GenHeap(AffixName[P], 0);
-                Str(" := ");
+                Str(" = ");
                 Int(AffixPlace[P]);
                 Str("; \n");
                 if (UseRefCnt)
@@ -2441,7 +2435,7 @@ void GenHangIn(int P, bool Guard)
                 if (AffixName[P] != VarName[-Tree])
                 {
                     GenHeap(AffixName[P], 0);
-                    Str(" := ");
+                    Str(" = ");
                     GenVar(VarName[-Tree]);
                     Str("; \n");
                     if (Guard)
@@ -2462,7 +2456,7 @@ void GenHangIn(int P, bool Guard)
                     GenVar(NodeName[Tree]);
                     Str("); ");
                     GenHeap(AffixName[P], 0);
-                    Str(" := ");
+                    Str(" = ");
                     GenVar(NodeName[Tree]);
                     Str("; \n");
                     if (Guard)
@@ -2474,7 +2468,7 @@ void GenHangIn(int P, bool Guard)
                 else
                 {
                     GenHeap(AffixName[P], 0);
-                    Str(" := NextHeap");
+                    Str(" = NextHeap");
                     if (Next != 0)
                     {
                         Str(" + ");
@@ -2490,7 +2484,7 @@ void GenHangIn(int P, bool Guard)
                 if (Guard)
                 {
                     GenVar(NodeName[Tree]);
-                    Str(" := undef; \n");
+                    Str(" = undef; \n");
                 }
             }
             if (Guard)
@@ -2523,7 +2517,7 @@ void GenRepAlt(int Sym, EAG.Alt A)
         if (!EAG.ParamBuf[P].isDef && AffixName[P] != FormalName[Dom])
         {
             GenVar(FormalName[Dom]);
-            Str(" := ");
+            Str(" = ");
             GenVar(AffixName[P]);
             Str("; \n");
         }
@@ -2575,7 +2569,7 @@ void GenRepAlt(int Sym, EAG.Alt A)
             if (Guard && VarAppls[-EAG.ParamBuf[P1].Affixform] == 0)
             {
                 GenVar(AffixName[P1]);
-                Str(" := undef; \n");
+                Str(" = undef; \n");
             }
         }
         ++P;
@@ -2643,18 +2637,18 @@ void GenRepEnd(int Sym)
             if (UseRefCnt)
             {
                 GenVar(AffixName[P]);
-                Str(" := ");
+                Str(" = ");
                 GenVar(FormalName[Dom]);
                 Str("; ");
             }
             GenVar(FormalName[Dom]);
-            Str(" := ");
+            Str(" = ");
             GenHeap(FormalName[Dom], 0);
             Str("; \n");
             if (UseRefCnt)
             {
                 GenHeap(AffixName[P], 0);
-                Str(" := 0; FreeHeap(");
+                Str(" = 0; FreeHeap(");
                 GenVar(AffixName[P]);
                 Str("); \n");
             }
@@ -2683,23 +2677,23 @@ void GenFormalParams(int N, bool ParNeeded)
     {
         if (!ParNeeded)
         {
-            Str("; ");
+            Str(", ");
         }
         while (true)
         {
             if (EAG.DomBuf[Dom] > 0)
             {
-                Str("VAR ");
+                Str("ref ");
             }
+            Str("HeapType ");
             GenVar(i);
-            Str(": HeapType");
             ++i;
             ++Dom;
             if (EAG.DomBuf[Dom] == EAG.nil)
             {
                 break;
             }
-            Str("; ");
+            Str(", ");
         }
     }
     if (ParNeeded)
@@ -2718,20 +2712,16 @@ void GenVarDecl(int N)
     int i;
     if (HNontVars[N] - HNontFVars[N] >= 0)
     {
-        Str("\tVAR ");
         for (i = HNontFVars[N]; i <= HNontVars[N]; ++i)
         {
-            if (i != HNontFVars[N])
-            {
-                Str(", ");
-            }
+            Str("HeapType ");
             GenVar(i);
+            Str(";\n");
         }
-        Str(": HeapType;\n");
     }
     if (Sets.In(EAG.Pred, N))
     {
-        Str("\tVAR Failed: BOOLEAN; \n");
+        Str("bool Failed;\n");
     }
 }
 
@@ -2921,7 +2911,7 @@ void GenPredProcs()
                     GenAnalPred(N, A.Actual.Params);
                     Level = IfLevel;
                     GenSynPred(N, FormalParams);
-                    Str("Failed := FALSE; \n");
+                    Str("Failed = FALSE; \n");
                     CleanLevel(Level);
                     Str(" END; (* ");
                     EAG.WriteHNont(Mod, N);
@@ -2934,14 +2924,14 @@ void GenPredProcs()
                 else
                 {
                     GenSynPred(N, FormalParams);
-                    Str("Failed := FALSE; \n");
+                    Str("Failed = FALSE; \n");
                 }
             }
         }
 
         Node = EAG.HNont[N].Def;
         AltLevel = 0;
-        Str("\tFailed := TRUE; \n");
+        Str("\tFailed = TRUE; \n");
         if (cast(EAG.Rep) Node !is null || cast(EAG.Opt) Node !is null)
         {
             if (cast(EAG.Opt) Node !is null)
@@ -2958,7 +2948,7 @@ void GenPredProcs()
             GenAnalPred(N, P);
             Level = IfLevel;
             GenSynPred(N, P);
-            Str("Failed := FALSE; \n");
+            Str("Failed = FALSE; \n");
             CleanLevel(Level);
             ++AltLevel;
         }
@@ -2999,7 +2989,7 @@ void GenPredProcs()
             if (!EAG.ParamBuf[P].isDef)
             {
                 GenVar(AffixName[P]);
-                Str(" := errVal; ");
+                Str(" = errVal; ");
                 if (UseRefCnt)
                 {
                     Str("INC(Heap[errVal], refConst); ");

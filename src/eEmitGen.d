@@ -97,22 +97,23 @@ void GenEmitProc(IO.TextOut Mod)
 
             A = EAG.MNont[N].MRule;
             ANum = 1;
-            IO.WriteText(Mod, "\tCASE Heap[Ptr] MOD arityConst OF \n");
+            IO.WriteText(Mod, "switch (MOD(Heap[Ptr], arityConst))\n");
+            IO.WriteText(Mod, "{\n");
             while (A != EAG.nil)
             {
                 if (ANum > CaseLabels)
                 {
-                    IO.WriteString(IO.Msg, "internal error: Too many metaalts in ");
+                    IO.WriteString(IO.Msg, "internal error: Too many meta alts in ");
                     Scanner.WriteRepr(IO.Msg, EAG.MTerm[N].Id);
                     IO.WriteLn(IO.Msg);
                     IO.Update(IO.Msg);
-                    HALT(99);
+                    assert(0);
                 }
                 F = EAG.MAlt[A].Right;
                 arity = 0;
-                IO.WriteText(Mod, "\t| ");
+                IO.WriteText(Mod, "case ");
                 IO.WriteInt(Mod, ANum);
-                IO.WriteText(Mod, ": ");
+                IO.WriteText(Mod, ":\n");
                 while (EAG.MembBuf[F] != EAG.nil)
                 {
                     M = EAG.MembBuf[F];
@@ -146,18 +147,22 @@ void GenEmitProc(IO.TextOut Mod)
                         }
                     }
                     ++F;
+                    IO.WriteLn(Mod);
                 }
-                IO.WriteLn(Mod);
+                IO.WriteText(Mod, "break;\n");
                 A = EAG.MAlt[A].Next;
                 ++ANum;
             }
-            IO.WriteText(Mod, "\tELSE IO.WriteInt(Out, Heap[Ptr]) \n\tEND \n");
+            IO.WriteText(Mod, "default:\n");
+            IO.WriteText(Mod, "IO.WriteInt(Out, Heap[Ptr]);\n");
+            IO.WriteText(Mod, "}\n");
         }
 
         for (N = EAG.firstMNont; N <= EAG.NextMNont - 1; ++N)
         {
             if (Sets.In(MNonts, N))
             {
+                IO.WriteText(Mod, "// ");
                 IO.WriteText(Mod, "PROCEDURE ^ ");
                 GenProcName(N, MNonts);
                 IO.WriteText(Mod, "(Ptr: HeapType);\n");
@@ -168,15 +173,13 @@ void GenEmitProc(IO.TextOut Mod)
         {
             if (Sets.In(MNonts, N))
             {
-                IO.WriteText(Mod, "PROCEDURE ");
+                IO.WriteText(Mod, "void ");
                 GenProcName(N, MNonts);
-                IO.WriteText(Mod, "(Ptr: HeapType);\n");
-                IO.WriteText(Mod,
-                        "BEGIN \n\tINC(OutputSize, ((Heap[Ptr] MOD refConst) DIV arityConst) + 1); \n");
+                IO.WriteText(Mod, "(HeapType Ptr)\n");
+                IO.WriteText(Mod, "{\n");
+                IO.WriteText(Mod, "INC(OutputSize, DIV(MOD(Heap[Ptr], refConst), arityConst) + 1);\n");
                 GenAlts(N);
-                IO.WriteText(Mod, "END ");
-                GenProcName(N, MNonts);
-                IO.WriteText(Mod, ";\n\n");
+                IO.WriteText(Mod, "}\n\n");
             }
         }
     }
@@ -202,27 +205,32 @@ void GenEmitProc(IO.TextOut Mod)
 
 void GenShowHeap(IO.TextOut Mod)
 {
-    IO.WriteText(Mod, "\t\tIF IO.IsOption(\"i\") THEN \n");
-    IO.WriteText(Mod, "\t\t\tIO.WriteText(IO.Msg, \"\\ttree of \"); ");
-    IO.WriteText(Mod, "IO.WriteInt(IO.Msg, OutputSize); \n\t\t\t");
-    IO.WriteString(Mod, "IO.WriteText(IO.Msg, \" uses \"); IO.WriteInt(IO.Msg, CountHeap()); ");
-    IO.WriteText(Mod, "IO.WriteText(IO.Msg, \" of \"); \n\t\t\t");
-    IO.WriteString(Mod,
-            "IO.WriteInt(IO.Msg, NextHeap);  IO.WriteText(IO.Msg, \" allocated, with \"); ");
-    IO.WriteText(Mod, "IO.WriteInt(IO.Msg, predefined + 1); \n\t\t\t");
-    IO.WriteText(Mod, "IO.WriteText(IO.Msg, \" predefined\\n\"); IO.Update(IO.Msg); \n\t\tEND; \n");
+    IO.WriteText(Mod, "if (IO.IsOption('i'))\n");
+    IO.WriteText(Mod, "{\n");
+    IO.WriteText(Mod, "IO.WriteText(IO.Msg, \"    tree of \"); ");
+    IO.WriteText(Mod, "IO.WriteInt(IO.Msg, OutputSize); \n");
+    // FIXME: undefined identifier CountHeap
+    IO.WriteString(Mod, "IO.WriteText(IO.Msg, \" uses \"); /* IO.WriteInt(IO.Msg, CountHeap()); */");
+    IO.WriteText(Mod, "IO.WriteText(IO.Msg, \" of \"); \n");
+    IO.WriteString(Mod,"IO.WriteInt(IO.Msg, NextHeap);  IO.WriteText(IO.Msg, \" allocated, with \"); ");
+    IO.WriteText(Mod, "IO.WriteInt(IO.Msg, predefined + 1);\n");
+    IO.WriteText(Mod, "IO.WriteText(IO.Msg, \" predefined\\n\"); IO.Update(IO.Msg);\n");
+    IO.WriteText(Mod, "}\n");
 }
 
 void GenEmitCall(IO.TextOut Mod)
 {
-    IO.WriteText(Mod, "\t\t\tIF ");
+    IO.WriteText(Mod, "if (");
     if (IO.IsOption('w'))
     {
-        IO.WriteText(Mod, "~ ");
+        IO.WriteText(Mod, "!");
     }
-    IO.WriteText(Mod, "IO.IsOption(\'w\') THEN IO.CreateOut(Out, \'");
+    IO.WriteText(Mod, "IO.IsOption('w'))\n");
+    IO.WriteText(Mod, "IO.CreateOut(Out, \"");
     IO.WriteString(Mod, EAG.BaseName);
-    IO.WriteText(Mod, ".Out\') ELSE Out := IO.Msg END; \n\t\t\t");
+    IO.WriteText(Mod, ".Out\");\n");
+    IO.WriteText(Mod, "else\n");
+    IO.WriteText(Mod, "Out = IO.Msg;\n");
     IO.WriteString(Mod, "Emit");
     IO.WriteInt(Mod, StartMNont);
     IO.WriteString(Mod, "Type");
@@ -234,5 +242,5 @@ void GenEmitCall(IO.TextOut Mod)
     {
         IO.Write(Mod, '3');
     }
-    IO.WriteText(Mod, "(V1); IO.WriteLn(Out); IO.Show(Out); \n");
+    IO.WriteText(Mod, "(V1); IO.WriteLn(Out); IO.Update(Out);\n");
 }

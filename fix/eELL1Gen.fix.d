@@ -1,5 +1,7 @@
 module $;
+
 import runtime;
+import std.stdio;
 import IO = eIO;
 import S = $;
 
@@ -25,7 +27,6 @@ bool ParserTabIsLoaded;
 IO.TextOut Out;
 
 $
-
 void ParserExpand()
 {
     OpenRecStack RecStack1;
@@ -39,7 +40,7 @@ void ParserExpand()
         }
         else
         {
-            HALT(99);
+            assert(0);
         }
     }
 
@@ -101,7 +102,8 @@ void ReadParserTab(string Name)
         return;
     }
     IO.GetSet(Tab, s);
-    if (s != Set)
+    if (s != SET(1 << 0 | 1 << 2 | 1 << 3 | 1 << 6 | 1 << 9 | 1 << 13 | 1 << 18
+            | 1 << 19 | 1 << 20 | 1 << 24 | 1 << 25 | 1 << 27 | 1 << 28 | 1 << 31))
     {
         LoadError("incompatible SET format in table");
         return;
@@ -134,7 +136,7 @@ void ParserInit()
     RecTop = firstRecStack;
     ErrorCounter = 0;
     IsRepairMode = false;
-    LongErrorMsgs = IO.IsOption("v");
+    LongErrorMsgs = IO.IsOption('v');
 }
 
 void WriteTokSet(TokSet Toks)
@@ -142,7 +144,7 @@ void WriteTokSet(TokSet Toks)
     int Tok1;
     for (Tok1 = 0; Tok1 <= nToks - 1; ++Tok1)
     {
-        if (MOD(Tok1, M) in Toks[DIV(Tok1, M)])
+        if (IN(Toks[DIV(Tok1, M)], MOD(Tok1, M)))
         {
             S.WriteRepr(IO.Msg, Tok1);
             IO.WriteText(IO.Msg, " ");
@@ -207,7 +209,7 @@ void SkipTokens(int Recover)
             GlobalRecoverySet[j] = GlobalRecoverySet[j] + Set[RecStack[i]][j];
         }
     }
-    while (!(MOD(Tok, M) in GlobalRecoverySet[DIV(Tok, M)]))
+    while (!IN(GlobalRecoverySet[DIV(Tok, M)], MOD(Tok, M)))
     {
         S.Get(Tok);
     }
@@ -248,16 +250,27 @@ void RecoveryTerminal(int ExpectedTok, int Recover)
 }
 
 $
-
-void Compile()
+void main(string[] args)
 {
+    import std.range : dropOne, empty;
+
+    if (args.dropOne.empty)
+        Compile(stdin);
+
+    foreach (arg; args.dropOne)
+        Compile(File(arg));
+}
+
+void Compile(File file)
+{
+    auto In = new IO.TextIn(file);
     HeapType V1;
-    if (ParserTabIsLoaded && EvalInitSucceeds() $)
+    if (ParserTabIsLoaded && EvalInitSucceeds()$)
     {
         IO.WriteText(IO.Msg, "$ compiler: compiling...\n");
         IO.Update(IO.Msg);
         ParserInit;
-        S.Init;
+        S.Init(In);
         S.Get(Tok);
         $(V1);
         $
@@ -279,4 +292,5 @@ static this()
     Reset;
 }
 
+// END $.
 $

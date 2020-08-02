@@ -23,12 +23,12 @@ int ORD(char c)
     return c;
 }
 
-void INC(ref int v, int x)
+void INC(T)(ref T v, T x)
 {
     v += x;
 }
 
-void DEC(ref int v, int x)
+void DEC(T)(ref T v, T x)
 {
     v -= x;
 }
@@ -76,13 +76,6 @@ uint SHORT(ulong x)
     import std.conv : to;
 
     return x.to!uint;
-}
-
-void HALT(int x)
-{
-    import core.stdc.stdlib : exit;
-
-    exit(x);
 }
 
 /**

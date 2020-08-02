@@ -18,9 +18,7 @@ void TraverseSyntaxTree(OpenTree SyntaxTree, OpenPos PosHeap, long ErrCounter,
     HeapType V1;
     if (HyperArity != hyperArityConst)
     {
-        IO.WriteText(IO.Msg, "\n   internal error: 'arityConst' is wrong\n");
-        IO.Update(IO.Msg);
-        HALT(99);
+        throw new Exception("internal error: 'arityConst' is wrong");
     }
     Tree = SyntaxTree;
     PosTree = PosHeap;

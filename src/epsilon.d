@@ -49,7 +49,6 @@ void compile(File file, bool verbose)
     import ScanGen = eScanGen;
     import Scanner = eScanner;
     import SLEAGGen = eSLEAGGen;
-    import SSweep = eSSweep;
 
     IO.option['m'] = false; // -m: modules are shown, not compiled directly
     IO.option['p'] = false; // -p: parser ignores regular token marks at Hypernonterminals
@@ -62,6 +61,26 @@ void compile(File file, bool verbose)
         Predicates.List;
     ELL1Gen.Test;
     SLEAGGen.Test;
-    // FIXME: SSweep.Test;
+
     ScanGen.Generate;
+    ELL1Gen.Generate;
+
+    build(IO.files);
+}
+
+void build(string[] files)
+{
+    import core.stdc.stdlib : exit;
+    import std.string : join;
+    import std.process : spawnProcess, wait;
+
+    const args = "dmd" ~ files ~ "include/runtime.d" ~ "src/eIO.d";
+
+    writefln!"%s"(args.join(' '));
+
+    auto pid = spawnProcess(args);
+    const status = wait(pid);
+
+    if (status)
+        exit(status);
 }

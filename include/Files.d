@@ -1,3 +1,0 @@
-module Files;
-
-struct Rider {}

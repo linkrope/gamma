@@ -28,9 +28,7 @@ void Error(IO.Position Pos, string ErrMsg)
     ++ErrorCounter;
     if (ErrorCounter > 25)
     {
-        Str("\nToo many errors !\n");
-        IO.Update(IO.Msg);
-        HALT(99);
+        throw new Exception("Too many errors !");
     }
     Str("\n  ");
     IO.WritePos(IO.Msg, Pos);

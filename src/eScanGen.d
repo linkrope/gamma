@@ -91,9 +91,7 @@ void Generate()
         {
             if (c == '\x00')
             {
-                IO.WriteText(IO.Msg, "\n  error: unexpected end of eScanGen.Fix\n");
-                IO.Update(IO.Msg);
-                HALT(99);
+                throw new Exception("error: unexpected end of eScanGen.Fix");
             }
             IO.Write(Mod, c);
             IO.Read(Fix, c);

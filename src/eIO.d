@@ -1,19 +1,15 @@
 module eIO;
 
 import runtime;
-import Texts;
-// import TextFrames;
-// import Viewers;
-// import MenuViewers;
-// import Oberon;
-import Files;
-// import Compiler;
+import std.stdio;
 
 const eol = '\n';
 const optCh1 = '\\';
 const optCh2 = '-';
 const standardCompileOpts = 's';
 bool[char] option;
+bool[char][char] longOption;
+string[] files;
 
 struct Position
 {
@@ -22,8 +18,6 @@ struct Position
 
 class TextIn
 {
-    import std.stdio : File;
-
     char[] text;
     long offset;
 
@@ -38,8 +32,6 @@ class TextIn
 
 class TextOut
 {
-    import std.stdio : File;
-
     string Name;
     File file;
     char[] text;
@@ -57,21 +49,12 @@ class TextOut
     }
 }
 
-class File
-{
-    Files.Rider Rider;
-    bool NewFile;
-}
-
 TextOut Msg;
 Position UndefPos;
-Texts.Reader ParamReader;
 char ParamCh;
 
 void OpenIn(ref TextIn In, string Name, ref bool Error)
 {
-    import std.stdio : File;
-
     // TODO: error handling
     In = new TextIn(File(Name));
 }
@@ -132,7 +115,6 @@ void CloseOut(ref TextOut Out)
 void Show(TextOut Out)
 {
     import std.file : readText;
-    import std.stdio : write;
 
     write(readText!(char[])(Out.Name));
 }
@@ -147,6 +129,7 @@ void WriteText(TextOut Out, char[] Str)
     import std.string : fromStringz;
 
     Out.text ~= fromStringz(Str.ptr);
+    // TODO: escaping
     /+
     int i;
     char c;
@@ -223,130 +206,53 @@ void WriteLn(TextOut Out)
 
 void Compile(TextOut Out, ref bool Error)
 {
-    import std.stdio : writefln;
-
-    writefln!"\nTODO: compile %s"(Out.Name);
+    writeln;
+    files = Out.Name ~ files;
 }
 
 void OpenFile(ref File F, string Name, ref bool Error)
 {
-    assert(false, "not implemented");
-    /+
-    Files.File File;
-    File = Files.Old(Name);
-    if (File !is null)
-    {
-        NEW(F);
-        Files.Set(F.Rider, File, 0);
-        F.NewFile = false;
-        Error = false;
-    }
-    else
-    {
-        F = null;
-        Error = true;
-    }
-    +/
+    // TODO: error handling
+    F = File(Name, "r");
 }
 
 void CreateFile(ref File F, char[] Name)
 {
-    assert(false, "not implemented");
-    /+
-    NEW(F);
-    if (Name != "")
-    {
-        Files.Set(F.Rider, Files.New(Name), 0);
-    }
-    else
-    {
-        Files.Set(F.Rider, Files.New("IOFilStd.Bin"), 0);
-    }
-    F.NewFile = true;
-    +/
+    import std.string : fromStringz;
+
+    F = File(fromStringz(Name.ptr), "w");
 }
 
 void CloseFile(ref File F)
 {
-    assert(false, "not implemented");
-    /+
-    Files.Close(Files.Base(F.Rider));
-    if (F.NewFile)
-    {
-        Files.Register(Files.Base(F.Rider));
-    }
-    F = null;
-    +/
+    F.close;
 }
 
 void GetLInt(File F, ref long i)
 {
-    assert(false, "not implemented");
-    /+
-    Files.ReadLInt(F.Rider, i);
-    +/
+    F.readf!"long %s\n"(i);
 }
 
 void GetSet(File F, ref uint s)
 {
-    assert(false, "not implemented");
-    /+
-    Files.ReadSet(F.Rider, s);
-    +/
+    F.readf!"set %s\n"(s);
 }
 
 void PutLInt(File F, long i)
 {
-    assert(false, "not implemented");
-    /+
-    Files.WriteLInt(F.Rider, i);
-    +/
+    F.writefln!"long %s"(i);
 }
 
 void PutSet(File F, uint s)
 {
-    assert(false, "not implemented");
-    /+
-    Files.WriteSet(F.Rider, s);
-    +/
+    F.writefln!"set %s"(s);
 }
 
 long TimeStamp()
 {
-    assert(false, "not implemented");
-    /+
-    return Oberon.Time();
-    +/
-}
+    import core.time : MonoTime;
 
-void NextParam(ref string String)
-{
-    assert(false, "not implemented");
-    /+
-    long i;
-    while (ParamCh <= " " && ParamCh != '\x00')
-    {
-        Texts.Read(ParamReader, ParamCh);
-    }
-    i = 0;
-    while (i < String.length - 1 && ParamCh > " ")
-    {
-        String[i] = ParamCh;
-        Texts.Read(ParamReader, ParamCh);
-        ++i;
-    }
-    String[i] = '\x00';
-    +/
-}
-
-void FirstParam(ref string String)
-{
-    assert(false, "not implemented");
-    /+
-    Texts.OpenReader(ParamReader, Oberon.Par.text, Oberon.Par.pos);
-    Texts.Read(ParamReader, ParamCh);
-    NextParam(String);
-    +/
+    return MonoTime.currTime.ticks;
 }
 
 bool IsOption(char c1)
@@ -356,117 +262,11 @@ bool IsOption(char c1)
 
 bool IsLongOption(char c1, char c2)
 {
-    string String;
-    int i;
-    char c;
-    if (c1 < 'a' || 'z' < c1)
-    {
-        return false;
-    }
-    else if (c2 < 'A' || 'Z' < c2)
-    {
-        return false;
-    }
-    FirstParam(String);
-    while (String[0] == optCh1 || String[0] == optCh2)
-    {
-        i = 1;
-        c = String[1];
-        while ('A' <= c && c <= 'Z' || 'a' <= c && c <= 'z')
-        {
-            if (c == c1 && String[i + 1] == c2)
-            {
-                return true;
-            }
-            ++i;
-            c = String[i];
-        }
-        NextParam(String);
-    }
-    return false;
-}
-
-void NumOption(ref long Num)
-{
-    string String;
-    int i;
-    int d;
-    char c;
-    Num = 0;
-    FirstParam(String);
-    while (String[0] == optCh1 || String[0] == optCh2)
-    {
-        i = 1;
-        c = String[1];
-        if ('0' <= c && c <= '9')
-        {
-            do
-            {
-                d = ORD(c) - ORD('0');
-                if (Num <= DIV(long.max - d, 10))
-                {
-                    Num = Num * 10 + d;
-                }
-                else
-                {
-                    Num = long.max;
-                }
-                ++i;
-                c = String[i];
-            }
-            while (!(c < '0' || '9' < c));
-            return;
-        }
-        NextParam(String);
-    }
-}
-
-void StringOption(ref char[] Str)
-{
-    string String;
-    int i;
-    char c;
-    Str[0] = '\x00';
-    FirstParam(String);
-    while (String[0] == optCh1 || String[0] == optCh2)
-    {
-        if (String[1] == '"')
-        {
-            i = 2;
-            c = String[2];
-            while (c != '"' && c != '\x00' && i < Str.length + 1)
-            {
-                Str[i - 2] = c;
-                ++i;
-                c = String[i];
-            }
-            if (c == '"')
-            {
-                Str[i - 2] = '\x00';
-            }
-            else
-            {
-                Str[0] = '\x00';
-            }
-            return;
-        }
-        NextParam(String);
-    }
-}
-
-void InputName(ref string Name)
-{
-    FirstParam(Name);
-    while (Name[0] == optCh1 || Name[0] == optCh2)
-    {
-        NextParam(Name);
-    }
+    return longOption.get(c1, null).get(c2, false);
 }
 
 static this()
 {
-    import std.stdio : stdout;
-
     Msg = new TextOut(stdout);
     // Msg.Txt = Oberon.Log;
     // Texts.OpenWriter(Msg.W);

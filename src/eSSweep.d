@@ -99,9 +99,7 @@ void GenerateMod(bool CreateMod)
         {
             if (c == '\x00')
             {
-                IO.WriteText(IO.Msg, "\n  error: unexpected end of eSSweep.Fix\n");
-                IO.Update(IO.Msg);
-                HALT(99);
+                throw new Exception("error: unexpected end of eSSweep.Fix");
             }
             IO.Write(Mod, c);
             IO.Read(Fix, c);
@@ -586,9 +584,7 @@ void GenerateMod(bool CreateMod)
         IO.OpenIn(Fix, "eSSweep.Fix", OpenError);
         if (OpenError)
         {
-            IO.WriteText(IO.Msg, "\n  error: could not open eSSweep.Fix\n");
-            IO.Update(IO.Msg);
-            HALT(99);
+            throw new Exception("error: could not open eSSweep.Fix");
         }
         Append(Name, EAG.BaseName, "Eval");
         IO.CreateModOut(Mod, Name);

@@ -48,7 +48,6 @@ void Expand()
         }
         else
         {
-            HALT(99);
             assert(0);
         }
     }
@@ -293,7 +292,7 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def)
             }
             else
             {
-                HALT(99);
+                assert(0);
             }
             while (EAG.NextMemb >= EAG.MembBuf.length)
             {
@@ -329,7 +328,7 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def)
             }
             else
             {
-                HALT(99);
+                assert(0);
             }
             while (EAG.NextNode >= EAG.NodeBuf.length)
             {
