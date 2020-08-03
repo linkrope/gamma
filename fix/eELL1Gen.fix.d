@@ -252,7 +252,44 @@ void RecoveryTerminal(int ExpectedTok, int Recover)
 $
 void main(string[] args)
 {
-    import std.range : dropOne, empty;
+    import core.stdc.stdlib : exit, EXIT_FAILURE, EXIT_SUCCESS;
+    import std.getopt : defaultGetoptPrinter, getopt, GetoptResult;
+    import std.range : dropOne, empty, front;
+
+    bool info;
+    bool verbose;
+    bool write;
+    GetoptResult result;
+
+    try
+    {
+        result = getopt(args,
+                "info|i", "Show heap usage information.", &info,
+                "verbose|v", "Print verbose parser error messages.", &verbose,
+                "write|w", "Toggle default for writing output.", &write,
+        );
+    }
+    catch (Exception exception)
+    {
+        stderr.writefln!"error: %s"(exception.msg);
+        exit(EXIT_FAILURE);
+    }
+    if (result.helpWanted)
+    {
+        import std.path : baseName;
+
+        writefln!"Usage: %s [options] <file>..."(args.front.baseName);
+        writeln("Compile each file.");
+        defaultGetoptPrinter("Options:", result.options);
+        exit(EXIT_SUCCESS);
+    }
+
+    if (info)
+        IO.option['i'] = true;
+    if (verbose)
+        IO.option['v'] = true;
+    if (write)
+        IO.option['w'] = true;
 
     if (args.dropOne.empty)
         Compile(stdin);

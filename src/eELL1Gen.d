@@ -1115,15 +1115,18 @@ void GenerateMod(bool ParsePass)
                             }
                             else
                             {
-                                IO.WriteText(Mod, "IF Tok # ");
+                                IO.WriteText(Mod, "if (Tok != ");
                                 IO.WriteInt(Mod, (cast(EAG.Term) F).Sym - EAG.firstHTerm + firstUserTok);
-                                IO.WriteText(Mod, " THEN RecoveryTerminal(");
+                                IO.WriteText(Mod, ")\n");
+                                IO.WriteText(Mod, "RecoveryTerminal(");
                                 IO.WriteInt(Mod, (cast(EAG.Term) F).Sym - EAG.firstHTerm + firstUserTok);
                                 IO.WriteText(Mod, ", ");
                                 IO.WriteInt(Mod, Factor[F.Ind].Rec - firstGenSet);
-                                IO.WriteText(Mod, ")\n");
-                                IO.WriteText(Mod, "ELSE S.Get(Tok); IsRepairMode = false\n");
-                                IO.WriteText(Mod, "END;\n");
+                                IO.WriteText(Mod, ");\n");
+                                IO.WriteText(Mod, "else\n");
+                                IO.WriteText(Mod, "{\n");
+                                IO.WriteText(Mod, "S.Get(Tok); IsRepairMode = false;\n");
+                                IO.WriteText(Mod, "}\n");
                             }
                         }
                         else
@@ -1145,17 +1148,16 @@ void GenerateMod(bool ParsePass)
                             {
                                 if (FirstNontCall)
                                 {
-                                    IO.WriteText(Mod,
-                                            "IF RecTop >= LEN(RecStack^) THEN ParserExpand END;\n");
+                                    IO.WriteText(Mod, "if (RecTop >= RecStack.length) ParserExpand;\n");
                                     FirstNontCall = false;
                                 }
                                 if (TwoCalls)
                                 {
-                                    IO.WriteText(Mod, "RecStack[RecTop - 1] := ");
+                                    IO.WriteText(Mod, "RecStack[RecTop - 1] = ");
                                 }
                                 else
                                 {
-                                    IO.WriteText(Mod, "RecStack[RecTop] := ");
+                                    IO.WriteText(Mod, "RecStack[RecTop] = ");
                                 }
                                 IO.WriteInt(Mod, Factor[F.Ind].Rec - firstGenSet);
                                 if (TwoCalls)
@@ -1169,21 +1171,24 @@ void GenerateMod(bool ParsePass)
                                 if (UseReg && !Sets.In(RegNonts, N)
                                         && Sets.In(RegNonts, (cast(EAG.Nont) F).Sym))
                                 {
-                                    IO.WriteText(Mod, "S.Get := S.Get3;\n");
+                                    IO.WriteText(Mod, "S.Get = &S.Get3;\n");
                                 }
                                 IO.WriteText(Mod, "P");
                                 IO.WriteInt(Mod, (cast(EAG.Nont) F).Sym);
                                 EvalGen.GenActualParams((cast(EAG.Nont) F).Actual.Params, true);
                                 IO.WriteText(Mod, ";");
-                                IO.WriteText(Mod, "   (* ");
+                                IO.WriteText(Mod, " // ");
                                 EAG.WriteHNont(Mod, (cast(EAG.Nont) F).Sym);
-                                IO.WriteText(Mod, " *)\n");
+                                IO.WriteText(Mod, "\n");
                                 if (UseReg && !Sets.In(RegNonts, N)
                                         && Sets.In(RegNonts, (cast(EAG.Nont) F).Sym))
                                 {
-                                    IO.WriteText(Mod, "IF Tok = sepTok THEN S.Get(Tok); ");
-                                    IO.WriteText(Mod, "IsRepairMode = false END;\n");
-                                    IO.WriteText(Mod, "S.Get := S.Get2;\n");
+                                    IO.WriteText(Mod, "if (Tok == sepTok)\n");
+                                    IO.WriteText(Mod, "{\n");
+                                    IO.WriteText(Mod, "S.Get(Tok);\n");
+                                    IO.WriteText(Mod, "IsRepairMode = false;\n");
+                                    IO.WriteText(Mod, "}\n");
+                                    IO.WriteText(Mod, "S.Get = &S.Get2;\n");
                                 }
                                 if (F.Next !is null && cast(EAG.Nont) F.Next !is null
                                         && Sets.In(GenNonts, (cast(EAG.Nont) F.Next).Sym)
@@ -1262,9 +1267,11 @@ void GenerateMod(bool ParsePass)
                 }
                 if (LoopNeeded)
                 {
-                    IO.WriteText(Mod, "LOOP\n");
+                    IO.WriteText(Mod, "loop: while (1)\n");
+                    IO.WriteText(Mod, "{\n");
                 }
-                IO.WriteText(Mod, "\tCASE Tok OF\n");
+                IO.WriteText(Mod, "switch (Tok)\n");
+                IO.WriteText(Mod, "{\n");
                 do
                 {
                     if (!LoopNeeded && Sets.Disjoint(Alt[A.Ind].Dir, Poss))
@@ -1276,7 +1283,7 @@ void GenerateMod(bool ParsePass)
                         IO.Update(IO.Msg);
                         Warning = true;
                     }
-                    IO.WriteText(Mod, "\t| ");
+                    IO.WriteText(Mod, "case ");
                     FirstTok = true;
                     for (Tok = 0; Tok <= nToks - 1; ++Tok)
                     {
@@ -1284,13 +1291,14 @@ void GenerateMod(bool ParsePass)
                         {
                             if (!FirstTok)
                             {
-                                IO.WriteText(Mod, ", ");
+                                IO.WriteText(Mod, ":\n");
+                                IO.WriteText(Mod, "case ");
                             }
                             IO.WriteInt(Mod, Tok);
                             FirstTok = false;
                         }
                     }
-                    IO.WriteText(Mod, " : \n");
+                    IO.WriteText(Mod, ":\n");
                     EvalGen.InitScope(A.Scope);
                     EvalGen.GenAnalPred(N, A.Formal.Params);
                     TraverseFactors(A.Sub, FirstNontCall, Alt[A.Ind].Dir);
@@ -1304,7 +1312,11 @@ void GenerateMod(bool ParsePass)
                     }
                     if (LoopNeeded)
                     {
-                        IO.WriteText(Mod, "\t\tEXIT\n");
+                        IO.WriteText(Mod, "break loop;\n");
+                    }
+                    else
+                    {
+                        IO.WriteText(Mod, "break;\n");
                     }
                     A = A.Next;
                 }
@@ -1312,8 +1324,9 @@ void GenerateMod(bool ParsePass)
                 if (LoopNeeded)
                 {
                     A = Nont[N].DefaultAlt;
-                    IO.WriteText(Mod, "\tELSE\n");
-                    IO.WriteText(Mod, "\t\tIF IsRepairMode THEN\n");
+                    IO.WriteText(Mod, "default:\n");
+                    IO.WriteText(Mod, "if (IsRepairMode)\n");
+                    IO.WriteText(Mod, "{\n");
                     Sets.Difference(Toks, AllToks, Toks);
                     EvalGen.InitScope(A.Scope);
                     EvalGen.GenAnalPred(N, A.Formal.Params);
@@ -1326,17 +1339,22 @@ void GenerateMod(bool ParsePass)
                     {
                         EvalGen.GenSynPred(N, A.Formal.Params);
                     }
-                    IO.WriteText(Mod, "\t\t\tEXIT END;\n");
-                    IO.WriteText(Mod, "\t\tErrorRecovery(");
+                    IO.WriteText(Mod, "break loop;\n");
+                    IO.WriteText(Mod, "}\n");
+                    IO.WriteText(Mod, "ErrorRecovery(");
                     IO.WriteInt(Mod, Nont[N].AltExp - firstGenSet);
                     IO.WriteText(Mod, ", ");
                     IO.WriteInt(Mod, Nont[N].AltRec - firstGenSet);
-                    IO.WriteText(Mod, ")\n");
+                    IO.WriteText(Mod, ");\n");
                 }
-                IO.WriteText(Mod, "\tEND;\n");
+                else
+                {
+                    IO.WriteText(Mod, "default: assert(0);\n");
+                }
+                IO.WriteText(Mod, "}\n");
                 if (LoopNeeded)
                 {
-                    IO.WriteText(Mod, "END;\n");
+                    IO.WriteText(Mod, "}\n");
                 }
             }
         }

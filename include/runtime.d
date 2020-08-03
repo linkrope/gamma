@@ -23,12 +23,12 @@ int ORD(char c)
     return c;
 }
 
-void INC(T)(ref T v, T x)
+void INC(T)(ref T v, T x = 1)
 {
     v += x;
 }
 
-void DEC(T)(ref T v, T x)
+void DEC(T)(ref T v, T x = 1)
 {
     v -= x;
 }
