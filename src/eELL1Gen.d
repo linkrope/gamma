@@ -1403,7 +1403,8 @@ void GenerateMod(bool ParsePass)
                 IO.Update(IO.Msg);
                 Warning = true;
             }
-            IO.WriteText(Mod, "LOOP\n");
+            IO.WriteText(Mod, "while (1)\n");
+            IO.WriteText(Mod, "{");
             IO.WriteText(Mod, "if (");
             TestOneToken(Nont[N].First, ExactOneToken, TheOneToken);
             if (ExactOneToken)
@@ -1413,15 +1414,17 @@ void GenerateMod(bool ParsePass)
             }
             else
             {
-                IO.WriteText(Mod, " IN(SetT[");
+                IO.WriteText(Mod, "IN(SetT[");
                 IO.WriteInt(Mod, DIV(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
                 IO.WriteText(Mod, "][Tok], ");
                 IO.WriteInt(Mod, MOD(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
                 IO.WriteText(Mod, ")");
             }
             IO.WriteText(Mod, ")\n");
+            IO.WriteText(Mod, "{\n");
             TraverseAlts(EAG.HNont[N].Def.Sub, FirstNontCall, Nont[N].First);
-            IO.WriteText(Mod, "\t\tEXIT\n");
+            IO.WriteText(Mod, "break;\n");
+            IO.WriteText(Mod, "}\n");
             IO.WriteText(Mod, "else if (");
             TestOneToken(Nont[N].Follow, ExactOneToken, TheOneToken);
             if (ExactOneToken)
@@ -1431,24 +1434,25 @@ void GenerateMod(bool ParsePass)
             }
             else
             {
-                IO.WriteText(Mod, " IN(SetT[");
+                IO.WriteText(Mod, "IN(SetT[");
                 IO.WriteInt(Mod, DIV(Nont[N].FollowIndex - firstGenSetT, nElemsPerSET));
                 IO.WriteText(Mod, "][Tok], ");
                 IO.WriteInt(Mod, MOD(Nont[N].FollowIndex - firstGenSetT, nElemsPerSET));
                 IO.WriteText(Mod, ")");
             }
-            IO.WriteText(Mod, "|| IsRepairMode THEN\n");
+            IO.WriteText(Mod, " || IsRepairMode)\n");
+            IO.WriteText(Mod, "{\n");
             EvalGen.InitScope((cast(EAG.Opt) EAG.HNont[N].Def).Scope);
             EvalGen.GenAnalPred(N, (cast(EAG.Opt) EAG.HNont[N].Def).Formal.Params);
             EvalGen.GenSynPred(N, (cast(EAG.Opt) EAG.HNont[N].Def).Formal.Params);
-            IO.WriteText(Mod, "\t\tEXIT\n");
-            IO.WriteText(Mod, "\tEND;\n");
-            IO.WriteText(Mod, "\tErrorRecovery(");
+            IO.WriteText(Mod, "break;\n");
+            IO.WriteText(Mod, "}\n");
+            IO.WriteText(Mod, "ErrorRecovery(");
             IO.WriteInt(Mod, Nont[N].OptExp - firstGenSet);
             IO.WriteText(Mod, ", ");
             IO.WriteInt(Mod, Nont[N].OptRec - firstGenSet);
-            IO.WriteText(Mod, ")\n");
-            IO.WriteText(Mod, "END;\n");
+            IO.WriteText(Mod, ");\n");
+            IO.WriteText(Mod, "}\n");
         }
         else if (cast(EAG.Rep) EAG.HNont[N].Def !is null)
         {

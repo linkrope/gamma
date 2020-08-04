@@ -1,5 +1,6 @@
 module epsilon;
 
+import runtime;
 import std.stdio;
 
 void main(string[] args)
@@ -43,6 +44,7 @@ void main(string[] args)
 void compile(File file, bool verbose)
 {
     import Analyser = eAnalyser;
+    import EAG = eEAG;
     import ELL1Gen = eELL1Gen;
     import IO = eIO;
     import Predicates = ePredicates;
@@ -62,10 +64,14 @@ void compile(File file, bool verbose)
     ELL1Gen.Test;
     SLEAGGen.Test;
 
+    if (!IN(EAG.History, EAG.isSLEAG))
+        return;
+
     ScanGen.Generate;
     ELL1Gen.Generate;
 
     build(IO.files);
+    IO.files = null;
 }
 
 void build(string[] files)
