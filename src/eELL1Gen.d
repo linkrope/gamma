@@ -1526,8 +1526,7 @@ void GenerateMod(bool ParsePass)
         IO.PutLInt(Tab, magicNumber);
         IO.PutLInt(Tab, TabTimeStamp);
         IO.PutLInt(Tab, 31);
-        IO.PutSet(Tab, SET(1 << 0 | 1 << 2 | 1 << 3 | 1 << 6 | 1 << 9 | 1 << 13 | 1 << 18
-                | 1 << 19 | 1 << 20 | 1 << 24 | 1 << 25 | 1 << 27 | 1 << 28 | 1 << 31));
+        IO.PutSet(Tab, SET(0, 2, 3, 6, 9, 13, 18, 19, 20, 24, 25, 27, 28, 31));
         for (i = firstGenSetT; i <= NextGenSetT - 1; i = i + nElemsPerSET)
         {
             if (nElemsPerSET <= NextGenSetT - i)
@@ -1540,7 +1539,7 @@ void GenerateMod(bool ParsePass)
             }
             for (Tok = 0; Tok <= nToks - 1; ++Tok)
             {
-                s = SET(0);
+                s = SET;
                 for (j = 0; j <= m - 1; ++j)
                 {
                     if (Sets.In(GenSetT[i + j], Tok))
@@ -1752,7 +1751,7 @@ void Test()
     IO.WriteText(IO.Msg, "ELL(1) testing    ");
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.Update(IO.Msg);
-    if (EAG.Performed(SET(1 << EAG.analysed | 1 << EAG.predicates)))
+    if (EAG.Performed(SET(EAG.analysed, EAG.predicates)))
     {
         EXCL(EAG.History, EAG.parsable);
         Init;
@@ -1778,7 +1777,7 @@ void Generate()
     IO.WriteText(IO.Msg, "   ");
     IO.Update(IO.Msg);
     Compiled = false;
-    if (EAG.Performed(SET(1 << EAG.analysed | 1 << EAG.predicates | 1 << EAG.isSLEAG)))
+    if (EAG.Performed(SET(EAG.analysed, EAG.predicates, EAG.isSLEAG)))
     {
         EXCL(EAG.History, EAG.parsable);
         Init;
@@ -1809,13 +1808,13 @@ void GenerateParser()
     IO.WriteText(IO.Msg, "   ");
     IO.Update(IO.Msg);
     Compiled = false;
-    if (EAG.Performed(SET(1 << EAG.analysed | 1 << EAG.predicates | 1 << EAG.hasEvaluator)))
+    if (EAG.Performed(SET(EAG.analysed, EAG.predicates, EAG.hasEvaluator)))
     {
         EXCL(EAG.History, EAG.parsable);
         Init;
         if (GrammarOk())
         {
-            EAG.History = SET(0);
+            EAG.History = SET;
             Shift.Shift(0);
             ComputeDir;
             if (!Error)

@@ -748,7 +748,7 @@ void WriteNamedHNont(ref IO.TextOut Out, int Nont)
 bool Performed(uint Needed)
 {
     Needed = Needed & ~History;
-    if (Needed == SET(0))
+    if (Needed == SET)
     {
         return true;
     }
@@ -833,14 +833,14 @@ void Init()
     NOGrp = 0;
     NOOpt = 0;
     NORep = 0;
-    History = SET(0);
+    History = SET;
     BaseName = "nothing";
     MaxMArity = 0;
 }
 
 static this()
 {
-    History = SET(0);
+    History = SET;
     BaseName = "nothing";
     IO.WriteText(IO.Msg, "Epsilon 1.02   JoDe/SteWe  22.11.96\n");
     IO.Update(IO.Msg);

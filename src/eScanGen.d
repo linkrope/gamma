@@ -123,7 +123,7 @@ void Generate()
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.WriteString(IO.Msg, "   ");
     IO.Update(IO.Msg);
-    if (EAG.Performed(SET(1 << EAG.analysed)))
+    if (EAG.Performed(SET(EAG.analysed)))
     {
         Error = false;
         MaxTokLen = lenOfPredefinedToken;

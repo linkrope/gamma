@@ -12,7 +12,7 @@ void List()
     IO.WriteString(IO.Msg, "Predicates in     ");
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.WriteText(IO.Msg, ": ");
-    if (EAG.Performed(SET(1 << EAG.analysed | 1 << EAG.predicates)))
+    if (EAG.Performed(SET(EAG.analysed, EAG.predicates)))
     {
         for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
         {
@@ -120,7 +120,7 @@ void Check()
     IO.WriteString(IO.Msg, "Predicates in     ");
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.Update(IO.Msg);
-    if (EAG.Performed(SET(1 << EAG.analysed)))
+    if (EAG.Performed(SET(EAG.analysed)))
     {
         EXCL(EAG.History, EAG.predicates);
         NEW(HNont, EAG.NextHNont);

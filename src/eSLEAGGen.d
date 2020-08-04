@@ -411,7 +411,7 @@ void Test()
     IO.WriteString(IO.Msg, "SLEAG testing   ");
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.Update(IO.Msg);
-    if (EAG.Performed(SET(1 << EAG.analysed | 1 << EAG.predicates)))
+    if (EAG.Performed(SET(EAG.analysed, EAG.predicates)))
     {
         EXCL(EAG.History, EAG.isSLEAG);
         InitTest;

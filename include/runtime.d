@@ -51,24 +51,26 @@ void NEW(T)(ref T[] v, size_t length)
     v = new T[length];
 }
 
-uint SET(uint x)
+uint SET(size_t[] elements...)
 {
-    return x;
+    import std.algorithm : map, reduce;
+
+    return reduce!"a | b"(0, elements.map!(element => 1 << element));
 }
 
 bool IN(uint set, size_t x)
 {
-    return (set & 1 << x) != 0;
+    return (set & SET(x)) != 0;
 }
 
 void INCL(ref uint set, size_t x)
 {
-    set |= 1 << x;
+    set |= SET(x);
 }
 
 void EXCL(ref uint set, size_t x)
 {
-    set &= ~(1 << x);
+    set &= ~SET(x);
 }
 
 uint SHORT(ulong x)

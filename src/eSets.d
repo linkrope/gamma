@@ -11,7 +11,7 @@ void New(ref OpenSet s0, int MaxElem)
     NEW(s0, DIV(MaxElem, M) + 1);
     for (n = 0; n <= DIV(MaxElem, M); ++n)
     {
-        s0[n] = SET(0);
+        s0[n] = SET;
     }
 }
 
@@ -30,7 +30,7 @@ void Empty(ref OpenSet s0)
     int n;
     for (n = 0; n <= SHORT(s0.length - 1); ++n)
     {
-        s0[n] = SET(0);
+        s0[n] = SET;
     }
 }
 
@@ -234,7 +234,7 @@ bool IsEmpty(OpenSet s1)
     int n;
     for (n = 0; n <= SHORT(s1.length) - 1; ++n)
     {
-        if (s1[n] != SET(0))
+        if (s1[n] != SET)
         {
             return false;
         }
@@ -274,7 +274,7 @@ bool Disjoint(OpenSet s1, OpenSet s2)
     int n;
     for (n = 0; n <= SHORT(s1.length) - 1; ++n)
     {
-        if ((s1[n] & s2[n]) != SET(0))
+        if ((s1[n] & s2[n]) != SET)
         {
             return false;
         }

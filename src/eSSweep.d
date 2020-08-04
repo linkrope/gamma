@@ -691,12 +691,12 @@ void Test()
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.WriteText(IO.Msg, "   ");
     IO.Update(IO.Msg);
-    if (EAG.Performed(SET(1 << EAG.analysed | 1 << EAG.predicates)))
+    if (EAG.Performed(SET(EAG.analysed, EAG.predicates)))
     {
         EXCL(EAG.History, EAG.isSSweep);
         Init;
         SaveHistory = EAG.History;
-        EAG.History = SET(0);
+        EAG.History = SET;
         GenerateMod(false);
         EAG.History = SaveHistory;
         if (!Error)
@@ -718,12 +718,12 @@ void Generate()
     IO.WriteText(IO.Msg, "   ");
     IO.Update(IO.Msg);
     Compiled = false;
-    if (EAG.Performed(SET(1 << EAG.analysed | 1 << EAG.predicates)))
+    if (EAG.Performed(SET(EAG.analysed, EAG.predicates)))
     {
         EXCL(EAG.History, EAG.isSSweep);
         Init;
         SaveHistory = EAG.History;
-        EAG.History = SET(0);
+        EAG.History = SET;
         GenerateMod(true);
         EAG.History = SaveHistory;
         if (!Error)

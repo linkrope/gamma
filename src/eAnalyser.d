@@ -1084,7 +1084,7 @@ void Warnings()
     bool NoWarnings;
     Str("Analyser");
     IO.Update(IO.Msg);
-    if (EAG.Performed(SET(1 << EAG.analysed)))
+    if (EAG.Performed(SET(EAG.analysed)))
     {
         Sets.New(Unreach, EAG.NextHNont);
         Sets.New(Unprod, EAG.NextHNont);

@@ -102,8 +102,7 @@ void ReadParserTab(string Name)
         return;
     }
     IO.GetSet(Tab, s);
-    if (s != SET(1 << 0 | 1 << 2 | 1 << 3 | 1 << 6 | 1 << 9 | 1 << 13 | 1 << 18
-            | 1 << 19 | 1 << 20 | 1 << 24 | 1 << 25 | 1 << 27 | 1 << 28 | 1 << 31))
+    if (s != SET(0, 2, 3, 6, 9, 13, 18, 19, 20, 24, 25, 27, 28, 31))
     {
         LoadError("incompatible SET format in table");
         return;
