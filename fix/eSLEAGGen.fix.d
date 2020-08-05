@@ -1,4 +1,4 @@
-import runtime;
+// eSLEAGGen.Fix Version 1.02 --  4.12.96
 
 const errVal = 0;
 const predefined = $;
@@ -135,7 +135,7 @@ void FreeHeap(HeapType Node)
     }
 }
 
-$ long CountHeap()
+long CountHeap()
 {
     long i;
     long HeapCells;
@@ -153,7 +153,7 @@ $ long CountHeap()
     return HeapCells;
 }
 
-long CountHeap()
+$ long CountHeap()
 {
     return NextHeap;
 }
@@ -325,5 +325,7 @@ bool EvalInitSucceeds()
     $
     return true;
 }
+
+// eSLEAGGen.Fix end
 
 $

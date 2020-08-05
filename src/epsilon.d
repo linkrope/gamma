@@ -9,14 +9,25 @@ void main(string[] args)
     import std.getopt : defaultGetoptPrinter, getopt, GetoptResult;
     import std.range : dropOne, empty, front;
     import std.stdio : stderr, writefln, writeln;
+    import IO = eIO;
 
+    bool c, dR, m, p, r;
+    bool space;
     bool verbose;
+    bool write;
     GetoptResult result;
 
     try
     {
         result = getopt(args,
+                "c", "Disable collapsing constant trees.", &c,
+                "dR", "Debug reference counting.", &dR,
+                "m", "Modules are shown, not compiled directly.", &m,
+                "p", "Parser ignores regular token marks at hyper-nonterminals.", &p,
+                "r", "Disable reference counting in compiled compiler.", &r,
+                "space|s", "Compiled compiler uses space instead of newline as separator.", &space,
                 "verbose|v", "Print debug output.", &verbose,
+                "write|w", "Write compilation output as default.", &write,
         );
     }
     catch (Exception exception)
@@ -34,15 +45,25 @@ void main(string[] args)
         exit(EXIT_SUCCESS);
     }
 
+    IO.option['c'] = c;
+    IO.option['m'] = m;
+    IO.option['p'] = p;
+    IO.option['r'] = r;
+    IO.option['s'] = space;
+    IO.option['v'] = verbose;
+    IO.option['w'] = write;
+    IO.longOption['d']['R'] = dR;
+
     if (args.dropOne.empty)
-        compile(stdin, verbose);
+        compile(stdin);
 
     foreach (arg; args.dropOne)
-        compile(File(arg), verbose);
+        compile(File(arg));
 }
 
-void compile(File file, bool verbose)
+void compile(File file)
 {
+    import std.range : empty;
     import Analyser = eAnalyser;
     import EAG = eEAG;
     import ELL1Gen = eELL1Gen;
@@ -51,18 +72,16 @@ void compile(File file, bool verbose)
     import ScanGen = eScanGen;
     import Scanner = eScanner;
     import SLEAGGen = eSLEAGGen;
-
-    IO.option['m'] = false; // -m: modules are shown, not compiled directly
-    IO.option['p'] = false; // -p: parser ignores regular token marks at Hypernonterminals
-    Scanner.verbose = verbose;
+    import SSweep = eSSweep;
 
     Analyser.Analyse(file);
     Analyser.Warnings;
     Predicates.Check;
-    if (verbose)
+    if (IO.IsOption('v'))
         Predicates.List;
     ELL1Gen.Test;
     SLEAGGen.Test;
+    // FIXME: SSweep.Test;
 
     if (!IN(EAG.History, EAG.isSLEAG))
         return;
@@ -70,8 +89,11 @@ void compile(File file, bool verbose)
     ScanGen.Generate;
     ELL1Gen.Generate;
 
-    build(IO.files);
-    IO.files = null;
+    if (!IO.files.empty)
+    {
+        build(IO.files);
+        IO.files = null;
+    }
 }
 
 void build(string[] files)

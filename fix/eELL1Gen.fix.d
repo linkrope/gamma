@@ -283,12 +283,9 @@ void main(string[] args)
         exit(EXIT_SUCCESS);
     }
 
-    if (info)
-        IO.option['i'] = true;
-    if (verbose)
-        IO.option['v'] = true;
-    if (write)
-        IO.option['w'] = true;
+    IO.option['i'] = info;
+    IO.option['v'] = verbose;
+    IO.option['w'] = write;
 
     if (args.dropOne.empty)
         Compile(stdin);

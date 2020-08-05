@@ -209,8 +209,7 @@ void GenShowHeap(IO.TextOut Mod)
     IO.WriteText(Mod, "{\n");
     IO.WriteText(Mod, "IO.WriteText(IO.Msg, \"    tree of \"); ");
     IO.WriteText(Mod, "IO.WriteInt(IO.Msg, OutputSize); \n");
-    // FIXME: undefined identifier CountHeap
-    IO.WriteString(Mod, "IO.WriteText(IO.Msg, \" uses \"); /* IO.WriteInt(IO.Msg, CountHeap()); */");
+    IO.WriteString(Mod, "IO.WriteText(IO.Msg, \" uses \"); IO.WriteInt(IO.Msg, CountHeap());");
     IO.WriteText(Mod, "IO.WriteText(IO.Msg, \" of \"); \n");
     IO.WriteString(Mod,"IO.WriteInt(IO.Msg, NextHeap);  IO.WriteText(IO.Msg, \" allocated, with \"); ");
     IO.WriteText(Mod, "IO.WriteInt(IO.Msg, predefined + 1);\n");

@@ -409,7 +409,7 @@ void Get(ref char Tok)
         Tok = c;
         IO.Read(In, c);
     }
-    if (verbose)
+    if (IO.IsOption('v'))
         trace(Tok);
 }
 
