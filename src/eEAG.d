@@ -83,6 +83,21 @@ class AltDesc
     IO.Position Pos;
 }
 
+void assign(AltDesc lhs, AltDesc rhs)
+in (lhs !is null)
+in (rhs !is null)
+{
+    lhs.Ind = rhs.Ind;
+    lhs.Up = rhs.Up;
+    lhs.Next = rhs.Next;
+    lhs.Sub = rhs.Sub;
+    lhs.Last = rhs.Last;
+    lhs.Formal = rhs.Formal;
+    lhs.Actual = rhs.Actual;
+    lhs.Scope = rhs.Scope;
+    lhs.Pos = rhs.Pos;
+}
+
 class Grp : RuleDesc
 {
 }

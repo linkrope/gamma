@@ -84,7 +84,7 @@ void PushPos()
 void PopPos(HeapType Arity)
 {
     long i;
-    for (i = NextHeap + Arity; i <= NextHeap; i = i + -1)
+    for (i = NextHeap + Arity; i >= NextHeap; --i)
     {
         PosHeap[i] = PosStack[PosTop];
         --PosTop;

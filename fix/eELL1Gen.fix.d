@@ -252,6 +252,7 @@ $
 void main(string[] args)
 {
     import core.stdc.stdlib : exit, EXIT_FAILURE, EXIT_SUCCESS;
+    import std.exception : ErrnoException;
     import std.getopt : defaultGetoptPrinter, getopt, GetoptResult;
     import std.range : dropOne, empty, front;
 
@@ -290,8 +291,17 @@ void main(string[] args)
     if (args.dropOne.empty)
         Compile(stdin);
 
-    foreach (arg; args.dropOne)
-        Compile(File(arg));
+    try
+    {
+        foreach (arg; args.dropOne)
+            Compile(File(arg));
+    }
+    catch (ErrnoException exception)
+    {
+        stderr.writefln!"error: %s"(exception.msg);
+        exit(EXIT_FAILURE);
+    }
+
 }
 
 void Compile(File file)

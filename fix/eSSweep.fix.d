@@ -1,4 +1,5 @@
 module $;
+
 import runtime;
 import IO = eIO;
 
@@ -11,7 +12,9 @@ OpenPos PosTree;
 long ErrorCounter;
 IO.Position Pos;
 IO.TextOut Out;
+
 $
+
 void TraverseSyntaxTree(OpenTree SyntaxTree, OpenPos PosHeap, long ErrCounter,
         TreeType Adr, int HyperArity)
 {
@@ -40,4 +43,5 @@ void TraverseSyntaxTree(OpenTree SyntaxTree, OpenPos PosHeap, long ErrCounter,
     PosTree = null;
 }
 
+// END $.
 $

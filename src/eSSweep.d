@@ -184,7 +184,7 @@ void GenerateMod(bool CreateMod)
         do
         {
             NEW(A1);
-            A1 = A;
+            EAG.assign(A1, A);
             A1.Sub = null;
             A1.Last = null;
             A1.Next = null;
@@ -486,33 +486,34 @@ void GenerateMod(bool CreateMod)
         EAG.Factor F1;
         int AltIndex;
         EvalGen.ComputeVarNames(N, false);
-        IO.WriteText(Mod, "PROCEDURE P");
+        IO.WriteText(Mod, "void P");
         IO.WriteInt(Mod, N);
-        IO.WriteText(Mod, "(Adr : TreeType");
+        IO.WriteText(Mod, "(TreeType Adr");
         EvalGen.GenFormalParams(N, false);
-        IO.WriteText(Mod, ");");
-        IO.WriteText(Mod, "   (* ");
+        IO.WriteText(Mod, ")");
+        IO.WriteText(Mod, " // ");
         EAG.WriteHNont(Mod, N);
         if (EAG.HNont[N].Id < 0)
         {
             IO.WriteText(Mod, " in ");
             EAG.WriteNamedHNont(Mod, N);
         }
-        IO.WriteText(Mod, " *)\n");
+        IO.WriteText(Mod, "\n");
+        IO.WriteText(Mod, "{\n");
         EvalGen.GenVarDecl(N);
-        IO.WriteText(Mod, "BEGIN\n");
-        IO.WriteText(Mod, "\tCASE Tree[Adr] MOD hyperArityConst OF\n");
+        IO.WriteText(Mod, "switch (MOD(Tree[Adr], hyperArityConst))\n");
+        IO.WriteText(Mod, "{\n");
         A = EAG.HNont[N].Def.Sub;
         AltIndex = indexOfFirstAlt;
         do
         {
-            IO.WriteText(Mod, "\t\t| ");
+            IO.WriteText(Mod, "case ");
             IO.WriteInt(Mod, AltIndex);
-            IO.WriteText(Mod, " : \n");
+            IO.WriteText(Mod, ":\n");
             EvalGen.InitScope(A.Scope);
             if (EvalGen.PosNeeded(A.Formal.Params))
             {
-                IO.WriteText(Mod, "Pos := PosTree[Adr];\n");
+                IO.WriteText(Mod, "Pos = PosTree[Adr];\n");
             }
             EvalGen.GenAnalPred(N, A.Formal.Params);
             F = A.Sub;
@@ -521,23 +522,23 @@ void GenerateMod(bool CreateMod)
                 if (!Sets.In(EAG.Pred, (cast(EAG.Nont) F).Sym))
                 {
                     EvalGen.GenSynPred(N, (cast(EAG.Nont) F).Actual.Params);
-                    IO.WriteText(Mod, "\t\tP");
+                    IO.WriteText(Mod, "P");
                     IO.WriteInt(Mod, (cast(EAG.Nont) F).Sym);
                     IO.WriteText(Mod, "(Tree[Adr + ");
                     IO.WriteInt(Mod, FactorOffset[F.Ind]);
                     IO.WriteText(Mod, "]");
                     EvalGen.GenActualParams((cast(EAG.Nont) F).Actual.Params, false);
-                    IO.WriteText(Mod, ");   (* ");
+                    IO.WriteText(Mod, "); // ");
                     EAG.WriteHNont(Mod, (cast(EAG.Nont) F).Sym);
                     if (EAG.HNont[(cast(EAG.Nont) F).Sym].Id < 0)
                     {
                         IO.WriteText(Mod, " in ");
                         EAG.WriteNamedHNont(Mod, (cast(EAG.Nont) F).Sym);
                     }
-                    IO.WriteText(Mod, " *)\n");
+                    IO.WriteText(Mod, "\n");
                     if (EvalGen.PosNeeded((cast(EAG.Nont) F).Actual.Params))
                     {
-                        IO.WriteText(Mod, "Pos := PosTree[Adr + ");
+                        IO.WriteText(Mod, "Pos = PosTree[Adr + ");
                         IO.WriteInt(Mod, FactorOffset[F.Ind]);
                         IO.WriteText(Mod, "];\n");
                     }
@@ -546,7 +547,7 @@ void GenerateMod(bool CreateMod)
                 else
                 {
                     EvalGen.GenSynPred(N, (cast(EAG.Nont) F).Actual.Params);
-                    IO.WriteText(Mod, "Pos := PosTree[Adr + ");
+                    IO.WriteText(Mod, "Pos = PosTree[Adr + ");
                     F1 = F.Prev;
                     while (F1 !is null && Sets.In(EAG.Pred, (cast(EAG.Nont) F1).Sym))
                     {
@@ -567,21 +568,21 @@ void GenerateMod(bool CreateMod)
                 F = F.Next;
             }
             EvalGen.GenSynPred(N, A.Formal.Params);
+            IO.WriteText(Mod, "break;\n");
             A = A.Next;
             ++AltIndex;
         }
         while (A !is null);
-        IO.WriteText(Mod, "\tEND;\n");
-        IO.WriteText(Mod, "END P");
-        IO.WriteInt(Mod, N);
-        IO.WriteText(Mod, ";\n\n");
+        IO.WriteText(Mod, "default: assert(0);\n");
+        IO.WriteText(Mod, "}\n");
+        IO.WriteText(Mod, "}\n\n");
     }
 
     EvalGen.InitTest;
     Error = Error || !EvalGen.PredsOK();
     if (CreateMod)
     {
-        IO.OpenIn(Fix, "eSSweep.Fix", OpenError);
+        IO.OpenIn(Fix, "fix/eSSweep.fix.d", OpenError);
         if (OpenError)
         {
             throw new Exception("error: could not open eSSweep.Fix");
@@ -601,6 +602,7 @@ void GenerateMod(bool CreateMod)
             {
                 if (Sets.In(GenNonts, N))
                 {
+                    IO.WriteText(Mod, "// ");
                     IO.WriteText(Mod, "PROCEDURE^ P");
                     IO.WriteInt(Mod, N);
                     IO.WriteText(Mod, "(Adr : TreeType");

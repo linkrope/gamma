@@ -1622,7 +1622,7 @@ void GenerateMod(bool ParsePass)
     IO.WriteText(Mod, Name);
     if (ParsePass)
     {
-        IO.WriteText(Mod, ", Eval := ");
+        IO.WriteText(Mod, ", Eval = ");
         IO.WriteText(Mod, EAG.BaseName);
         IO.WriteText(Mod, "Eval");
     }
@@ -1702,11 +1702,11 @@ void GenerateMod(bool ParsePass)
     {
         IO.WriteText(Mod,
                 "Eval.TraverseSyntaxTree(Heap, PosHeap, ErrorCounter, V1, arityConst);\n");
-        IO.WriteText(Mod, "\t\tIF IO.IsOption(\"i\") THEN \n");
-        IO.WriteText(Mod, "\t\t\tIO.WriteText(IO.Msg, \"\\tsyntax tree uses twice \");\n");
-        IO.WriteText(Mod,
-                "\t\t\tIO.WriteInt(IO.Msg, NextHeap); IO.WriteLn(IO.Msg); IO.Update(IO.Msg);\n");
-        IO.WriteText(Mod, "\t\tEND;");
+        IO.WriteText(Mod, "if (IO.IsOption('i'))\n");
+        IO.WriteText(Mod, "{\n");
+        IO.WriteText(Mod, "IO.WriteText(IO.Msg, \"\\tsyntax tree uses twice \");\n");
+        IO.WriteText(Mod, "IO.WriteInt(IO.Msg, NextHeap); IO.WriteLn(IO.Msg); IO.Update(IO.Msg);\n");
+        IO.WriteText(Mod, "}");
     }
     else
     {

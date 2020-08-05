@@ -870,8 +870,10 @@ void ComputeVarNames(int N, bool Embed)
                     for (n = 1; n <= Arity; ++n)
                     {
                         Node1 = EAG.NodeBuf[Node + n];
-                        NeedVar = !(UseConst && AffixPlace[P] > 0) && UseRefCnt && (Var == AffixName[P]
-                                || n != Arity) && Node1 >= 0
+                        NeedVar = !(UseConst && AffixPlace[P] > 0)
+                            && UseRefCnt
+                            && (Var == AffixName[P] || n != Arity)
+                            && Node1 >= 0
                             && EAG.MAlt[EAG.NodeBuf[Node1]].Arity > 0;
                         if (NeedVar)
                         {
