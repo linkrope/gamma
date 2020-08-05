@@ -54,6 +54,10 @@ void Generate()
         {
             i = 2;
         }
+        else if (s[1] == '\\')
+        {
+            i = 3;
+        }
         else if (IsIdent[ORD(s[1])])
         {
             i = 2;

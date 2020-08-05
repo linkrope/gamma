@@ -251,12 +251,11 @@ void Get(ref char Tok)
         int OldNextChar;
         OldNextChar = NextChar;
         Terminator = c;
+        c = str;
         do
         {
             if (NextChar == CharBuf.length)
-            {
                 Expand;
-            }
             CharBuf[NextChar] = c;
             ++NextChar;
             IO.Read(In, c);
@@ -273,18 +272,21 @@ void Get(ref char Tok)
                 NextChar = OldNextChar;
                 Val = errorIdent;
                 do
-                {
                     IO.Read(In, c);
-                }
-                while (!(c == Terminator || c == IO.eol || c == eot));
+                while (c != Terminator && c != IO.eol && c != eot);
                 if (c == Terminator)
-                {
                     IO.Read(In, c);
-                }
                 return;
             }
+            else if (c == str && Terminator != str)
+            {
+                CharBuf[NextChar] = '\\';
+                ++NextChar;
+                if (NextChar == CharBuf.length)
+                    Expand;
+            }
         }
-        while (!(c == Terminator));
+        while (c != Terminator);
         IO.Read(In, c);
         if (NextChar == OldNextChar + 1)
         {
@@ -294,9 +296,7 @@ void Get(ref char Tok)
             return;
         }
         if (NextChar == CharBuf.length)
-        {
             Expand;
-        }
         CharBuf[NextChar] = IO.eol;
         LookUp(OldNextChar);
     }

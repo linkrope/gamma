@@ -1,5 +1,4 @@
 ! Eta (Konverter)  MK 08.96
-! FIXME: replace "`" back to '"' or to "\""
 
 Eta <+ Spec>:
   Specification <Spec>.
@@ -36,9 +35,9 @@ digit:
   | <+ "8": digit> "8" | <+ "9": digit> "9".
 
 char = letter | digit | "'"
-  | " " | "!" | "`" | "#" | "$" | "%" | "&" | "(" | ")" | "*" | "+" | ","
+  | " " | "!" | '"' | "#" | "$" | "%" | "&" | "(" | ")" | "*" | "+" | ","
   | "-" | "." | "/" | ":" | ";" | "<" | "=" | ">" | "?" | "@" | "[" | "\\"
-  | "]" | "^" | "_" (* | "`" *) | "{" | "|" | "}" | "~".
+  | "]" | "^" | "_" | "`" | "{" | "|" | "}" | "~".
 
 char:
     <+ letter: char>
@@ -47,13 +46,13 @@ char:
       LETTER <letter>
   | <+ digit: char>
       digit <digit>
-  | <+ " ": char> " " | <+ "!": char> "!" | <+ "`": char> "`" | <+ "#": char> "#"
+  | <+ " ": char> " " | <+ "!": char> "!" | <+ '"': char> '"' | <+ "#": char> "#"
   | <+ "$": char> "$" | <+ "%": char> "%" | <+ "&": char> "&" | <+ "(": char> "("
   | <+ ")": char> ")" | <+ "*": char> "*" | <+ "+": char> "+" | <+ ",": char> ","
   | <+ "-": char> "-" | <+ ".": char> "." | <+ "/": char> "/" | <+ ":": char> ":"
   | <+ ";": char> ";" | <+ "<": char> "<" | <+ "=": char> "=" | <+ ">": char> ">"
   | <+ "?": char> "?" | <+ "@": char> "@" | <+ "[": char> "[" | <+ "\\": char> "\\"
-  | <+ "]": char> "]" | <+ "^": char> "^" | <+ "_": char> "_" (* | <+ "`": char> "`" *)
+  | <+ "]": char> "]" | <+ "^": char> "^" | <+ "_": char> "_" | <+ "`": char> "`"
   | <+ "{": char> "{" | <+ "|": char> "|" | <+ "}": char> "}" | <+ "~": char> "~".
 
 chars = | char chars.
@@ -88,7 +87,7 @@ number* <+ digit digits: digits>:
         digit <digit>  <digits>
     } <+ : digits>.
 
-string* = "'" chars "'" | "`" chars "`".
+string* = "'" chars "'" | '"' chars '"'.
 
 string* <+ string>:
   "'"
@@ -99,13 +98,13 @@ string* <+ string>:
           { <+ char chars: chars>
               char <char>  <chars>
           } <+ : chars>
-    | <+ "`" "'" "`": string>
+    | <+ '"' "'" '"': string>
         "'" "'"
     )
   "'".
 
 MetaT:
-    <+ "`" chars "`": string>
+    <+ '"' chars '"': string>
       ident <chars>
   | <+ string>
       string <string>.
