@@ -136,6 +136,18 @@ class Nont : FactorDesc
     IO.Position Pos;
 }
 
+void assign(Nont lhs, Nont rhs)
+in (lhs !is null)
+in (rhs !is null)
+{
+    lhs.Ind = rhs.Ind;
+    lhs.Prev = rhs.Prev;
+    lhs.Next = rhs.Next;
+    lhs.Sym = rhs.Sym;
+    lhs.Actual = rhs.Actual;
+    lhs.Pos = rhs.Pos;
+}
+
 int NextHAlt;
 int NextHFactor;
 int NOAlt;

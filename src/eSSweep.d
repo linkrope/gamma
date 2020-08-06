@@ -189,13 +189,9 @@ void GenerateMod(bool CreateMod)
             A1.Last = null;
             A1.Next = null;
             if (A2 !is null)
-            {
                 A2.Next = A1;
-            }
             else
-            {
                 Def.Sub = A1;
-            }
             A2 = A1;
             F = A.Sub;
             F2 = null;
@@ -204,18 +200,14 @@ void GenerateMod(bool CreateMod)
                 if (cast(EAG.Nont) F !is null && Sets.In(GenFactors, (cast(EAG.Nont) F).Sym))
                 {
                     NEW(F1);
-                    F1 = (cast(EAG.Nont) F);
+                    EAG.assign(F1, cast(EAG.Nont) F);
                     F1.Prev = F2;
                     F1.Next = null;
                     A1.Last = F1;
                     if (F2 !is null)
-                    {
                         F2.Next = F1;
-                    }
                     else
-                    {
                         A1.Sub = F1;
-                    }
                     F2 = F1;
                 }
                 F = F.Next;
@@ -228,13 +220,9 @@ void GenerateMod(bool CreateMod)
                 F1.Prev = A1.Last;
                 A1.Last = F1;
                 if (A1.Sub is null)
-                {
                     A1.Sub = F1;
-                }
                 if (F1.Prev !is null)
-                {
                     F1.Prev.Next = F1;
-                }
                 F1.Next = null;
                 F1.Sym = N;
                 F1.Pos = A1.Actual.Pos;
