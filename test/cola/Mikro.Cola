@@ -1,0 +1,500 @@
+programm(+ CODE)
+
+programmkopf
+block                   (+ CODE)
+konstantendefinition      (- TABELLE, + TABELLE)
+konstantendefinitionen    (- TABELLE, + TABELLE)
+konstantendefinitionsteil (+ TABELLE)
+variablendeklaration      (- TABELLE, - N4, + TABELLE, + N4)
+variablendeklarationen    (- TABELLE, - N4, + TABELLE, + N4)
+variablendeklarationsteil (- TABELLE, + TABELLE, + CODE)
+typ                       (+ TYP)
+ausdruck                (- TABELLE, - N2, + TYP, + CODE, + N2)
+ausdrucksteil           (- TABELLE, - TYP, - CODE, - N2, + TYP,+CODE,+N2)
+teilausdruck            (- TABELLE, - N2, + TYP, + CODE, + N2)
+term                    (- TABELLE, - N2, + TYP, + CODE, + N2)
+terme                   (- TABELLE, - N2, + TYP, + CODE, + N2)
+ersterterm              (- TABELLE, - N2, + TYP, + CODE, + N2)
+faktor                  (- TABELLE, - N2, + TYP, + CODE, + N2)
+faktoren                (- TABELLE, - N2, + TYP, + CODE, + N2)
+ersterfaktor            (- TABELLE, - N2, + TYP, + CODE, + N2)
+bezeichner              (- TABELLE, - N2, + TYP, + CODE, + N2)
+konstante               (+ TYP, + N1)
+additionsop             (+ TYP, + N5)
+mulop                   (+ TYP, + N5)
+relation                (+ N5)
+signum                  (- N2, + TYP, + CODE, + N2)
+satzfolge               (- TABELLE, - N2, + CODE, + N2)
+saetze                  (- TABELLE, - N2, + CODE, + N2)
+satz                    (- TABELLE, - N2, + CODE, + N2)
+zuweisung               (- TABELLE, - N2, + CODE, + N2)
+eingabe                 (- TABELLE, - N2, + CODE, + N2)
+ausgabe                 (- TABELLE, - N2, + CODE, + N2)
+bedingung               (- TABELLE, - N2, + CODE, + N2)
+sonstteil               (- TABELLE, - N2, - CODE, + CODE, + N2)
+vorbedingteschleife     (- TABELLE, - N2, + CODE, + N2)
+nachbedingteschleife    (- TABELLE, - N2, + CODE, + N2)
+zaehlschleife           (- TABELLE, - N2, + CODE, + N2)
+richtung                (+ BEFEHL, + BEFEHL, + N5)
+zielbezeichner          (- TABELLE, + TYP, + N4)
+
+name            (+ NAME)
+buchstabe       (+ ALPHA)
+ziffer          (+ ZIFFER)
+zahl            (+ N1)
+alphanum        (+ ALPHANUM)
+;
+ungleich        (- NAME, - NAME)
+entferne        (- ALPHANUMS, - ALPHANUM, + ALPHANUMS)
+
+bezeichner_nicht_deklariert     (- NAME, - TABELLE)
+bezeichner_deklariert           (- NAME, - TABELLE, + TYP, + N4, + ART)
+
+ermittle_op     (- TYP, + N5)
+erhoehe         (- N, + N)
+wahr
+
+mache_code      (- N, - ART, + CODE)
+pruefe_typ      (- TYP, - CODE, - TYP, - CODE, + CODE)
+linkswert       (- ART)
+.
+
+
+ALPHA:          a;b;c;d;e;f;g;h;i;j;k;l;m;n;o;p;q;r;s;t;u;v;w;x;y;z.
+
+ALPHANUM:       ALPHA;
+                ZIFFER.
+
+ALPHANUMS:      ALPHANUM ALPHANUMS; .
+
+ART:            konstante; variable.
+
+BEFEHL:         'ft1';
+		'fd1';
+		'ft2';
+                'fd2';
+                jmp;
+                jpc.
+
+CODE:           CODE CODE;
+                lit N1 ';';
+                lod N3 ',' N4 ';';
+                sto N3 ',' N4 ';';
+                sti N3 ',' N4 ';';
+                int N1 ';';
+                ret ';';
+                opr N5 ';';
+                wrt N5 ';';
+                red ';';
+                BEFEHL N2 ';'.
+
+NAME:           ALPHA;
+                NAME ALPHANUM.
+
+TABELLE:        leer;
+                NAME TYP N4 ART TABELLE.
+
+TYP:            integer; boolean; kein.
+
+N:              ZIFFER;
+                N ZIFFER.
+
+ZIFFER:         '0';'1';'2';'3';'4';'5';'6';'7';'8';'9'.
+
+programm(CODE ret ';'):
+        programmkopf
+        block(CODE)
+        '.' .
+
+programmkopf:
+        'PROGRAM'
+        name(NAME)
+        ';'.
+
+block(CODE1 CODE2):
+        konstantendefinitionsteil(TABELLE1)
+        variablendeklarationsteil(TABELLE1, TABELLE2, CODE1)
+        satzfolge(TABELLE2, '1', CODE2, N22).
+
+konstantendefinitionsteil(leer): .
+konstantendefinitionsteil(TABELLE):
+        'CONST'
+        konstantendefinitionen(leer, TABELLE).
+
+konstantendefinitionen(TABELLE1, TABELLE2):
+        konstantendefinition(TABELLE1, TABELLE2)
+        ';'.
+konstantendefinitionen(TABELLE1, TABELLE3):
+        konstantendefinition(TABELLE1, TABELLE2)
+        ';'
+        konstantendefinitionen(TABELLE2, TABELLE3).
+
+konstantendefinition(TABELLE, NAME integer N1 konstante TABELLE):
+        name(NAME)
+        bezeichner_nicht_deklariert(NAME, TABELLE)
+        '='
+        zahl(N1).
+
+variablendeklarationsteil(TABELLE, TABELLE, int '3' ';'): .
+variablendeklarationsteil(TABELLE1, TABELLE2, int N4 ';'):
+        'VAR'
+        variablendeklarationen(TABELLE1, '3', TABELLE2, N4).
+
+variablendeklarationen(TABELLE1, N41, TABELLE2, N42):
+        variablendeklaration(TABELLE1, N41, TABELLE2, N42)
+        ';'.
+variablendeklarationen(TABELLE1, N41, TABELLE3, N43):
+        variablendeklaration(TABELLE1, N41, TABELLE2, N42)
+        ';'
+        variablendeklarationen(TABELLE2, N42, TABELLE3, N43).
+
+variablendeklaration(TABELLE, N41, NAME TYP N41 variable TABELLE, N42):
+        name(NAME)
+        bezeichner_nicht_deklariert(NAME, TABELLE)
+        erhoehe(N41, N42)
+        ':'
+        typ(TYP).
+
+typ(integer):
+        'INTEGER'.
+typ(boolean):
+        'BOOLEAN'.
+
+satzfolge(TABELLE, N21, CODE, N22):
+        'BEGIN'
+        saetze(TABELLE, N21, CODE, N22)
+        'END'.
+
+saetze(TABELLE, N21, CODE, N22):
+        satz(TABELLE, N21, CODE, N22).
+saetze(TABELLE, N21, CODE1 CODE2, N23):
+        satz(TABELLE, N21, CODE1, N22)
+        ';'
+        saetze(TABELLE, N22, CODE2, N23).
+
+satz(TABELLE, N21, CODE, N22):
+        zuweisung(TABELLE, N21, CODE, N22).
+satz(TABELLE, N21, CODE, N22):
+        eingabe(TABELLE, N21, CODE, N22).
+satz(TABELLE, N21, CODE, N22):
+        ausgabe(TABELLE, N21, CODE, N22).
+satz(TABELLE, N21, CODE, N22):
+        satzfolge(TABELLE, N21, CODE, N22).
+satz(TABELLE, N21, CODE, N22):
+        bedingung(TABELLE, N21, CODE, N22).
+satz(TABELLE, N21, CODE, N22):
+        vorbedingteschleife(TABELLE, N21, CODE, N22).
+satz(TABELLE, N21, CODE, N22):
+        nachbedingteschleife(TABELLE, N21, CODE, N22).
+satz(TABELLE, N21, CODE, N22):
+        zaehlschleife(TABELLE, N21, CODE, N22).
+
+zuweisung(TABELLE, N21, CODE sto '0' ',' N4 ';', N23):
+        zielbezeichner(TABELLE, TYP, N4)
+        ':='
+        ausdruck(TABELLE, N21, TYP, CODE, N22)
+        erhoehe(N22, N23).
+
+eingabe(TABELLE, N21, red ';' sto '0' ',' N4 ';', N23):
+        'READ'
+        '('
+        zielbezeichner(TABELLE, integer, N4)
+        ')'
+        erhoehe(N21, N22)
+        erhoehe(N22, N23).
+
+ausgabe(TABELLE, N21, CODE wrt N5 ';', N23):
+        'WRITE'
+        '('
+        ausdruck(TABELLE, N21, TYP, CODE, N22)
+        ermittle_op(TYP, N5)
+        erhoehe(N22, N23)
+        ')'.
+
+bedingung(TABELLE, N21, CODE3, N25):
+        'IF'
+        ausdruck(TABELLE, N21, boolean, CODE1, N22)
+        'THEN'
+        saetze(TABELLE, N22, CODE2, N23)
+	erhoehe(N23, N24)
+        sonstteil(TABELLE, N24, CODE1 jpc N24 ';' CODE2, CODE3, N25)
+        'END'.
+
+sonstteil(TABELLE, N21, CODE1, CODE1, N21): .
+sonstteil(TABELLE, N21, CODE1, CODE1 CODE2, N22):
+        'ELSE'
+        saetze(TABELLE, N21, CODE2, N22).
+
+vorbedingteschleife(TABELLE, N21,CODE1 jpc N25 ';' CODE2 jmp N21 ';',N25):
+        'WHILE'
+        ausdruck(TABELLE, N21, boolean, CODE1, N22)
+        'DO'
+        erhoehe(N22, N23)
+        saetze(TABELLE, N23, CODE2, N24)
+        erhoehe(N24, N25)
+        'END'.
+
+nachbedingteschleife(TABELLE, N21, CODE1 CODE2 jpc N21 ';', N24):
+        'REPEAT'
+        saetze(TABELLE, N21, CODE1, N22)
+        'UNTIL'
+        ausdruck(TABELLE, N22, boolean, CODE2, N23)
+        erhoehe(N23, N24).
+
+zaehlschleife(TABELLE, N21, CODE1 sto '0' ',' N4 ';' CODE2
+                lod '0' ',' N4 ';' BEFEHL1 N213 ';' CODE4
+                lod '0' ',' N4 ';' BEFEHL2 N213 ';' lit '1' ';'
+                opr N5 ';' sto '0' ',' N4 ';' jmp N26 ';', N213):
+        'FOR'
+        zielbezeichner(TABELLE, integer, N4)
+        ':='
+        ausdruck(TABELLE, N21, integer, CODE1, N22)
+        erhoehe(N22, N23)
+        richtung(BEFEHL1, BEFEHL2, N5)
+        ausdruck(TABELLE, N23, integer, CODE2, N24)
+        'DO'
+        erhoehe(N24, N25)
+        erhoehe(N25, N26)
+        saetze(TABELLE, N26, CODE4, N27)
+        erhoehe(N27, N28)
+        erhoehe(N28, N29)
+        erhoehe(N29, N210)
+        erhoehe(N210, N211)
+        erhoehe(N211, N212)
+	erhoehe(N212, N213)
+        'END'.
+
+richtung('ft1', 'ft2', '2'):
+        'TO'.
+richtung('fd1', 'fd2', '3'):
+        'DOWNTO'.
+
+ausdruck(TABELLE, N21, TYP2, CODE2, N23):
+        teilausdruck(TABELLE, N21, TYP1, CODE1, N22)
+        ausdrucksteil(TABELLE, TYP1, CODE1, N22, TYP2, CODE2, N23).
+
+ausdrucksteil(TABELLE, TYP, CODE, N21, TYP, CODE, N21): .
+ausdrucksteil(TABELLE, TYP, CODE1, N21, boolean,
+                CODE1 CODE2 opr N5 ';', N23):
+        relation(N5)
+        teilausdruck(TABELLE, N21, TYP, CODE2, N22)
+        erhoehe(N22, N23).
+
+teilausdruck(TABELLE, N21, TYP1, CODE3, N23):
+        ersterterm(TABELLE, N21, TYP1, CODE1, N22)
+        terme(TABELLE, N22, TYP2, CODE2, N23)
+        pruefe_typ(TYP1, CODE1, TYP2, CODE2, CODE3).
+
+terme(TABELLE, N21, kein, ret ';', N21):.
+terme(TABELLE, N21, TYP1, CODE3, N24):
+        additionsop(TYP1, N5)
+        term(TABELLE, N21, TYP1, CODE1, N22)
+	erhoehe(N22, N23)
+        terme(TABELLE, N23, TYP2, CODE2, N24)
+        pruefe_typ(TYP1, CODE1 opr N5 ';', TYP2, CODE2, CODE3).
+
+ersterterm(TABELLE, N21, TYP1, CODE3, N23):
+        ersterfaktor(TABELLE, N21, TYP1, CODE1, N22)
+        faktoren(TABELLE, N22, TYP2, CODE2, N23)
+        pruefe_typ(TYP1, CODE1, TYP2, CODE2, CODE3).
+
+term(TABELLE, N21, TYP1, CODE3, N23):
+        faktor(TABELLE, N21, TYP1, CODE1, N22)
+        faktoren(TABELLE, N22, TYP2, CODE2, N23)
+        pruefe_typ(TYP1, CODE1, TYP2, CODE2, CODE3).
+
+faktoren(TABELLE, N21, kein, ret ';', N21):.
+faktoren(TABELLE, N21, TYP1, CODE3, N24):
+        mulop(TYP1, N5)
+        faktor(TABELLE, N21, TYP1, CODE1, N22)
+        erhoehe(N22, N23)
+        faktoren(TABELLE, N23, TYP2, CODE2, N24)
+        pruefe_typ(TYP1, CODE1 opr N5 ';', TYP2, CODE2, CODE3).
+
+ersterfaktor(TABELLE, N21, TYP2, CODE3, N23):
+        signum(N21, TYP1, CODE1, N22)
+        faktor(TABELLE, N22, TYP2, CODE2, N23)
+        pruefe_typ(TYP2, CODE2, TYP1, CODE1, CODE3).
+
+faktor(TABELLE, N21, boolean, CODE opr '8' ';', N23):
+        'NOT'
+        faktor(TABELLE, N21, boolean, CODE, N22)
+	erhoehe(N22, N23).
+faktor(TABELLE, N21, TYP, CODE, N22):
+        '('
+        ausdruck(TABELLE, N21, TYP, CODE, N22)
+        ')'.
+faktor(TABELLE, N21, TYP, CODE, N22):
+        bezeichner(TABELLE, N21, TYP, CODE, N22).
+faktor(TABELLE, N21, TYP, lit N1 ';', N22):
+        konstante(TYP, N1)
+        erhoehe(N21, N22).
+
+additionsop(integer, '2'):
+	'+'.
+additionsop(integer, '3'):
+	'-'.
+additionsop(boolean, '6'):
+	'OR'.
+
+mulop(integer, '4'):
+	'*'.
+mulop(integer, '5'):
+	'DIV'.
+mulop(boolean, '7'):
+	'AND'.
+
+relation('9'):
+	'='.
+relation('1' '0'):
+	'<>'.
+relation('1' '1'):
+	'<'.
+relation('1' '2'):
+	'>='.
+relation('1' '3'):
+	'>'.
+relation('1' '4'):
+	'<='.
+
+signum(N2, kein, ret ';', N2): .
+signum(N2, kein, ret ';', N2):
+	'+'.
+signum(N21, integer, opr '1' ';', N22):
+        '-'
+        erhoehe(N21, N22).
+
+zielbezeichner(TABELLE, TYP, N4):
+        name(NAME)
+        bezeichner_deklariert(NAME, TABELLE, TYP, N4, ART)
+        linkswert(ART).
+
+bezeichner(TABELLE, N21, TYP, CODE, N22):
+        name(NAME)
+        bezeichner_deklariert(NAME, TABELLE, TYP, N4, ART)
+        mache_code(N4, ART, CODE)
+        erhoehe(N21, N22).
+
+konstante(integer, N1):
+        zahl(N1).
+konstante(boolean, '1'):
+        'TRUE'.
+konstante(boolean, '0'):
+        'FALSE'.
+
+bezeichner_deklariert(NAME, NAME TYP N4 ART TABELLE, TYP, N4, ART): wahr.
+bezeichner_deklariert(NAME1, NAME2 TYP2 N41 ART1 TABELLE, TYP3, N42, ART2):
+        ungleich(NAME1, NAME2)
+        bezeichner_deklariert(NAME1, TABELLE, TYP3, N42, ART2).
+
+
+bezeichner_nicht_deklariert(NAME, leer): wahr.
+bezeichner_nicht_deklariert(NAME1, NAME2 TYP N ART TABELLE):
+        ungleich(NAME1, NAME2)
+        bezeichner_nicht_deklariert(NAME1, TABELLE).
+
+ungleich(ALPHA1, ALPHA2):
+        entferne(a b c d e f g h i j k l m n o p q r s t u v w x y z,
+          ALPHA1, ALPHANUMS1)
+        entferne(ALPHANUMS1, ALPHA2, ALPHANUMS2).
+ungleich(ALPHA, NAME ALPHANUM):
+        wahr.
+ungleich(NAME ALPHANUM, ALPHA):
+        wahr.
+ungleich(NAME1 ALPHANUM1, NAME2 ALPHANUM2):
+        ungleich(NAME1, NAME2).
+ungleich(NAME1 ALPHANUM1, NAME2 ALPHANUM2):
+        entferne(a b c d e f g h i j k l m n o p q r s t u v w x y z
+          '0' '1' '2' '3' '4' '5' '6' '7' '8' '9', ALPHANUM1, ALPHANUMS1)
+        entferne(ALPHANUMS1, ALPHANUM2, ALPHANUMS2).
+
+entferne(ALPHANUM ALPHANUMS, ALPHANUM, ALPHANUMS):
+        wahr.
+entferne(ALPHANUM1 ALPHANUMS1, ALPHANUM, ALPHANUM1 ALPHANUMS2):
+        entferne(ALPHANUMS1, ALPHANUM, ALPHANUMS2).
+
+
+erhoehe('0', '1'): wahr.
+erhoehe('1', '2'): wahr.
+erhoehe('2', '3'): wahr.
+erhoehe('3', '4'): wahr.
+erhoehe('4', '5'): wahr.
+erhoehe('5', '6'): wahr.
+erhoehe('6', '7'): wahr.
+erhoehe('7', '8'): wahr.
+erhoehe('8', '9'): wahr.
+erhoehe('9', '1' '0'): wahr.
+erhoehe(N1 '9', N2 '0'):
+        erhoehe(N1, N2).
+erhoehe(N1 ZIFFER1, N1 ZIFFER2):
+        entferne('0' '1' '2' '3' '4' '5' '6' '7' '8', ZIFFER1, ALPHANUMS)
+        erhoehe(ZIFFER1, ZIFFER2).
+
+
+ermittle_op(integer, '0'): wahr.
+ermittle_op(boolean, '1'): wahr.
+
+
+wahr: .
+
+mache_code(N4, variable,  lod '0' ',' N4 ';'): wahr.
+mache_code(N1, konstante, lit N1 ';'): wahr.
+
+pruefe_typ(TYP, CODE1, TYP, CODE2, CODE1 CODE2): wahr.
+pruefe_typ(TYP, CODE1, kein, CODE2, CODE1): wahr.
+
+linkswert(variable): wahr.
+
+
+name(ALPHA):
+        buchstabe(ALPHA).
+name(NAME ALPHANUM):
+        name(NAME) alphanum(ALPHANUM).
+
+alphanum(ALPHA):
+        buchstabe(ALPHA).
+alphanum(ZIFFER):
+        ziffer(ZIFFER).
+
+zahl(ZIFFER):
+        ziffer(ZIFFER).
+zahl(N ZIFFER):
+        zahl(N) ziffer(ZIFFER).
+
+buchstabe(a): 'a'.
+buchstabe(b): 'b'.
+buchstabe(c): 'c'.
+buchstabe(d): 'd'.
+buchstabe(e): 'e'.
+buchstabe(f): 'f'.
+buchstabe(g): 'g'.
+buchstabe(h): 'h'.
+buchstabe(i): 'i'.
+buchstabe(j): 'j'.
+buchstabe(k): 'k'.
+buchstabe(l): 'l'.
+buchstabe(m): 'm'.
+buchstabe(n): 'n'.
+buchstabe(o): 'o'.
+buchstabe(p): 'p'.
+buchstabe(q): 'q'.
+buchstabe(r): 'r'.
+buchstabe(s): 's'.
+buchstabe(t): 't'.
+buchstabe(u): 'u'.
+buchstabe(v): 'v'.
+buchstabe(w): 'w'.
+buchstabe(x): 'x'.
+buchstabe(y): 'y'.
+buchstabe(z): 'z'.
+
+ziffer('0'):   '0'.
+ziffer('1'):   '1'.
+ziffer('2'):   '2'.
+ziffer('3'):   '3'.
+ziffer('4'):   '4'.
+ziffer('5'):   '5'.
+ziffer('6'):   '6'.
+ziffer('7'):   '7'.
+ziffer('8'):   '8'.
+ziffer('9'):   '9'.

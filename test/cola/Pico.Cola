@@ -1,0 +1,287 @@
+program (+ CODE)
+
+ (* -- Nontermspezifikationen: *)
+assignment              (- TABELLE)
+block                   (- TABELLE)
+compoundstatement       (- TABELLE)
+constant		(+ TYP)
+expression              (- TABELLE, + TYP)
+identifier              (- TABELLE, + TYP)
+operation               (+ TYP)
+programheading
+statement               (- TABELLE)
+statements              (- TABELLE)
+type                    (+ TYP)
+variabledeclaration     (+ TABELLE)
+variabledeclarations    (- TABELLE, + TABELLE)
+variabledeclarationpart (- TABELLE, + TABELLE)
+write                   (- TABELLE)
+
+(* -- Tokenspezifikationen: *)
+
+ident   (+ NAME)
+letter  (+ ALPHA)
+digit   (+ ZIFFER)
+number  (+ ZAHL)
+letgit  (+ ALPHANUM)
+
+begin_symbol
+boolean_symbol
+end_symbol
+false_symbol
+integer_symbol
+program_symbol
+true_symbol
+var_symbol
+write_symbol
+plus_symbol
+mult_symbol
+zuweisung_symbol
+semikolon_symbol
+klammerauf_symbol
+klammerzu_symbol
+doppelpunkt_symbol
+punkt_symbol
+;
+(* -- Praedikatspezifikationen: *)
+
+nicht_in        (- NAME, - TABELLE)
+ist_in          (- NAME, - TABELLE, + TYP)
+verschieden     (- NAME, - NAME)
+ungleich        (- ALPHANUM, - ALPHANUM)
+ist_vor         (- ALPHANUM, - ALPHANUM, - NAME)
+ist_in_seq      (- ALPHANUM, - NAME)
+.
+
+(* -- METAREGELN: *)
+
+ALPHA:      a;b;c;d;e;f;g;h;i;j;k;l;m;n;o;p;q;r;s;t;u;v;w;x;y;z.
+
+ALPHANUM:       ALPHA letter;
+                ZIFFER digit.
+
+CODE:           'ok'; 'nicht ok'.
+
+LEER:           .
+
+NAME:           ALPHA letter;
+                NAME ALPHANUM.
+
+TABELLE:        LEER;
+                NAME TYP TABELLE.
+
+TYP:            integer; boolean.
+
+ZAHL:           ZIFFER;
+                ZAHL ZIFFER.
+
+ZIFFER:         null;eins;zwei;drei;vier;fuenf;sechs;sieben;acht;neun.
+
+(* -- HYPERREGELN: *)
+
+(* -- kontextfreie Deklarationen *)
+
+program('ok'):
+        programheading
+        block()
+        punkt_symbol .
+
+programheading:
+        program_symbol
+        ident(NAME)
+        semikolon_symbol.
+
+block(TABELLE1):
+        variabledeclarationpart(TABELLE1, TABELLE2)
+        compoundstatement(TABELLE2).
+
+variabledeclarationpart(TABELLE, TABELLE): .
+variabledeclarationpart(TABELLE1, TABELLE2):
+        var_symbol
+        variabledeclarations(TABELLE1, TABELLE2).
+
+variabledeclarations(TABELLE, NAME TYP TABELLE):
+        variabledeclaration(NAME TYP)
+        nicht_in(NAME, TABELLE)
+        semikolon_symbol.
+variabledeclarations(TABELLE1, TABELLE2):
+        variabledeclaration(NAME TYP)
+        nicht_in(NAME, TABELLE1)
+        semikolon_symbol
+        variabledeclarations(NAME TYP TABELLE1, TABELLE2).
+
+variabledeclaration(NAME TYP):
+        ident(NAME)
+        doppelpunkt_symbol
+        type(TYP).
+
+type(integer): integer_symbol.
+type(boolean): boolean_symbol.
+
+compoundstatement(TABELLE):
+        begin_symbol
+        statements(TABELLE)
+        end_symbol.
+
+statements(TABELLE):
+        statement(TABELLE).
+statements(TABELLE):
+        statement(TABELLE)
+        semikolon_symbol
+        statements(TABELLE).
+
+statement(TABELLE):    assignment(TABELLE).
+statement(TABELLE):    write(TABELLE).
+statement(TABELLE):    compoundstatement(TABELLE).
+
+assignment(TABELLE):
+        identifier(TABELLE, TYP)
+        zuweisung_symbol
+        expression(TABELLE, TYP).
+
+identifier(TABELLE, TYP):
+        ident(NAME)
+        ist_in(NAME, TABELLE, TYP).
+
+write(TABELLE):
+        write_symbol
+        klammerauf_symbol
+        expression(TABELLE, TYP)
+        klammerzu_symbol.
+
+expression(TABELLE, TYP):   identifier(TABELLE, TYP).
+expression(TABELLE, TYP):   constant(TYP).
+expression(TABELLE, TYP):
+        klammerauf_symbol
+        expression(TABELLE, TYP)
+        operation(TYP)
+        expression(TABELLE, TYP)
+        klammerzu_symbol.
+
+constant(integer):     number(ZAHL).
+constant(boolean):     true_symbol.
+constant(boolean):     false_symbol.
+
+operation(integer):    plus_symbol.
+operation(integer):    mult_symbol.
+
+(* -- Praedikatdeklarationen *)
+
+ist_in(NAME, NAME TYP TABELLE, TYP): .
+ist_in(NAME1, NAME2 TYP1 TABELLE, TYP2):
+        verschieden(NAME1, NAME2)
+        ist_in(NAME1, TABELLE, TYP2).
+
+nicht_in(NAME, LEER): .
+nicht_in(NAME1, NAME2 TYP TABELLE):
+        verschieden(NAME1, NAME2)
+        nicht_in(NAME1, TABELLE).
+
+verschieden(ALPHA1 letter, ALPHA2 letter):
+        ungleich(ALPHA1 letter, ALPHA2 letter).
+verschieden(NAME ALPHANUM, ALPHA1 letter): .
+verschieden(ALPHA1 letter, NAME ALPHANUM): .
+verschieden(NAME1 ALPHANUM, NAME2 ALPHANUM):
+        verschieden(NAME1, NAME2).
+verschieden(NAME1 ALPHANUM1, NAME2 ALPHANUM2):
+        ungleich(ALPHANUM1, ALPHANUM2).
+
+ungleich(ALPHANUM1, ALPHANUM2):
+        ist_vor(ALPHANUM2, ALPHANUM1,
+        a letter b letter c letter d letter e letter f letter g letter h
+        letter i letter j letter k letter l letter m letter n letter o
+        letter p letter q letter r letter s letter t letter u letter v
+        letter w letter x letter y letter z letter
+        null digit eins digit zwei digit drei digit vier digit fuenf digit
+        sechs digit sieben digit acht digit neun digit).
+ungleich(ALPHANUM1, ALPHANUM2):
+        ist_vor(ALPHANUM1, ALPHANUM2,
+        a letter b letter c letter d letter e letter f letter g letter h
+        letter i letter j letter k letter l letter m letter n letter o
+        letter p letter q letter r letter s letter t letter u letter v
+        letter w letter x letter y letter z letter
+        null digit eins digit zwei digit drei digit vier digit fuenf digit
+        sechs digit sieben digit acht digit neun digit).
+
+ist_vor(ALPHANUM1, ALPHANUM2, NAME ALPHANUM2):
+        ist_in_seq(ALPHANUM1, NAME).
+ist_vor(ALPHANUM1, ALPHANUM2, NAME ALPHANUM3):
+        ist_vor(ALPHANUM1, ALPHANUM2, NAME).
+
+ist_in_seq(ALPHA letter, ALPHA letter): .
+ist_in_seq(ALPHANUM, NAME ALPHANUM): .
+ist_in_seq(ALPHANUM1, NAME ALPHANUM2):
+        ist_in_seq(ALPHANUM1, NAME).
+
+(* -- Tokendeklarationen *)
+
+begin_symbol        :'BEGIN'        .
+boolean_symbol      :'BOOLEAN'      .
+end_symbol          :'END'          .
+false_symbol        :'FALSE'        .
+integer_symbol      :'INTEGER'      .
+program_symbol      :'PROGRAM'      .
+true_symbol         :'TRUE'         .
+var_symbol          :'VAR'          .
+write_symbol        :'WRITE'        .
+plus_symbol         :'+'            .
+mult_symbol         :'*'            .
+zuweisung_symbol    :':='           .
+semikolon_symbol    :';'            .
+klammerauf_symbol   :'('            .
+klammerzu_symbol    :')'            .
+doppelpunkt_symbol  :':'            .
+punkt_symbol        :'.'            .
+
+ident(ALPHA letter):
+        letter(ALPHA).
+ident(NAME ALPHANUM):
+        ident(NAME) letgit(ALPHANUM).
+
+letgit(ALPHA letter):
+        letter(ALPHA).
+letgit(ZIFFER digit):
+        digit(ZIFFER).
+
+number(ZIFFER):
+        digit(ZIFFER).
+number(ZAHL ZIFFER):
+        number(ZAHL) digit(ZIFFER).
+
+letter(a): 'a'.
+letter(b): 'b'.
+letter(c): 'c'.
+letter(d): 'd'.
+letter(e): 'e'.
+letter(f): 'f'.
+letter(g): 'g'.
+letter(h): 'h'.
+letter(i): 'i'.
+letter(j): 'j'.
+letter(k): 'k'.
+letter(l): 'l'.
+letter(m): 'm'.
+letter(n): 'n'.
+letter(o): 'o'.
+letter(p): 'p'.
+letter(q): 'q'.
+letter(r): 'r'.
+letter(s): 's'.
+letter(t): 't'.
+letter(u): 'u'.
+letter(v): 'v'.
+letter(w): 'w'.
+letter(x): 'x'.
+letter(y): 'y'.
+letter(z): 'z'.
+
+digit(null):   '0'.
+digit(eins):   '1'.
+digit(zwei):   '2'.
+digit(drei):   '3'.
+digit(vier):   '4'.
+digit(fuenf):  '5'.
+digit(sechs):  '6'.
+digit(sieben): '7'.
+digit(acht):   '8'.
+digit(neun):   '9'.

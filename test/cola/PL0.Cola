@@ -1,0 +1,618 @@
+programm(+ CODE)
+
+programmkopf
+block                     (- TABELLE, - N2, - N4, + CODE, + N2)
+konstantendefinition      (- TABELLE, + TABELLE)
+konstantendefinitionen    (- TABELLE, + TABELLE)
+konstantendefinitionsteil (- TABELLE, + TABELLE)
+variablendeklaration      (- TABELLE, - N4, + TABELLE, + N4)
+variablendeklarationen    (- TABELLE, - N4, + TABELLE, + N4)
+variablendeklarationsteil (- TABELLE, - N4, + TABELLE, + N4)
+typ                       (+ TYP)
+prozedurdeklarationsteil  (- TABELLE, - N2, + TABELLE, + CODE, + N2)
+prozedurdeklarationen     (- TABELLE, - N2, + TABELLE, + CODE, + N2)
+prozedurdeklaration       (- TABELLE, - N2, + TABELLE, + CODE, + N2)
+parameterdeklarationsteil (+ LOC, + N4)
+parameterliste            (- LOC, - N4, + LOC, + N4)
+parameter                 (- LOC, - N4, + LOC, + N4)
+ausdruck                  (- TABELLE, - ZP, - N2, + TYP, + CODE, + N2)
+teilausdruck              (- TABELLE, - ZP, - N2, + TYP, + CODE, + N2)
+terme            (- TABELLE, - ZP, - N2, - VORZEICHEN, + TYP, + CODE, + N2)
+faktoren         (- TABELLE, - ZP, - N2, - VORZEICHEN, + TYP, + CODE, + N2)
+faktor           (- TABELLE, - ZP, - N2, - VORZEICHEN, + TYP, + CODE, + N2)
+vorzeichen                (+ VORZEICHEN)
+bezeichner                (- TABELLE, - ZP, - N2, + TYP, + CODE, + N2)
+konstante                 (+ TYP, + N1)
+addop                     (+ TYP, + N5)
+mulop                     (+ TYP, + N5)
+relation                  (+ N5)
+satzfolge                 (- TABELLE, - N2, + CODE, + N2)
+saetze                    (- TABELLE, - N2, + CODE, + N2)
+satz                      (- TABELLE, - N2, + CODE, + N2)
+zuweisung                 (- TABELLE, - N2, + CODE, + N2)
+eingabe                   (- TABELLE, - N2, + CODE, + N2)
+ausgabe                   (- TABELLE, - N2, + CODE, + N2)
+prozeduraufruf            (- TABELLE, - N2, + CODE, + N2)
+aktuelleparameter         (- TABELLE, - LISTE, - N2, + CODE, + N2)
+bedingung                 (- TABELLE, - N2, + CODE, + N2)
+vorbedingteschleife       (- TABELLE, - N2, + CODE, + N2)
+nachbedingteschleife      (- TABELLE, - N2, + CODE, + N2)
+zaehlschleife             (- TABELLE, - N2, + CODE, + N2)
+richtung                  (+ BEFEHL, + BEFEHL, + N5)
+zielbezeichner            (- TABELLE, + TYP, + ATTR, + N3)
+
+
+name            (+ NAME)
+buchstabe       (+ ALPHA)
+ziffer          (+ ZIFFER)
+zahl            (+ N1)
+alphanum        (+ ALPHANUM)
+;
+ungleich        (- NAME, - NAME)
+entferne        (- ALPHANUMS, - ALPHANUM, + ALPHANUMS)
+
+bezeichner_nicht_deklariert     (- NAME, - LOC)
+bezeichner_deklariert           (- NAME, - TABELLE, + TYP, + ATTR, + N3)
+
+ermittle_op     (- TYP, + N5)
+erhoehe         (- N, + N)
+wahr
+
+ladecode        (- ATTR, - ZP, - N2, - N3, + CODE, + N2)
+speichercode    (- ATTR, - N2, - N3, + CODE, + N2)
+vorzeichencode  (- CODE, - N2, - VORZEICHEN, + CODE, + N2)
+typliste        (- LOC, + LISTE)
+.
+
+
+ALPHA:          a;b;c;d;e;f;g;h;i;j;k;l;m;n;o;p;q;r;s;t;u;v;w;x;y;z.
+
+ALPHANUM:       ALPHA;
+                ZIFFER.
+
+ALPHANUMS:      ALPHANUM ALPHANUMS; .
+
+ATTR:           konstante N1;
+                ZP N4;
+                prozedur N2 LISTE.
+
+ZP:             refpar;
+                wertpar.
+
+BEFEHL:         'ft1';
+                'fd1';
+                'ft2';
+                'fd2'.
+
+CODE:           CODE CODE;
+                lit N1 ';';
+                lod N3 ',' N4 ';';
+                lda N3 ',' N4 ';';
+                ldi N3 ',' N4 ';';
+                sto N3 ',' N4 ';';
+                sti N3 ',' N4 ';';
+                int N1 ';';
+                mst ';';
+                cal N3 ',' N2 ';';
+                ret ';';
+                opr N5 ';';
+                wrt N5 ';';
+                red ';';
+                jmp N2 ';';
+                jpc N2 ';';
+                BEFEHL N2 ';'.
+
+NAME:           ALPHA;
+                NAME ALPHANUM.
+
+TABELLE:        leer;
+                LOC TABELLE.
+
+LOC:            leer;
+                NAME TYP ATTR LOC.
+
+LISTE:          leer;
+                TYP ZP LISTE.
+
+TYP:            integer; boolean; kein.
+
+N:              ZIFFER;
+                N ZIFFER.
+
+ZIFFER:         '0';'1';'2';'3';'4';'5';'6';'7';'8';'9'.
+
+VORZEICHEN:     plus;
+                minus.
+
+
+programm(CODE):
+        programmkopf
+        block(leer leer, '0', '3', CODE, N21)
+        '.' .
+
+programmkopf:
+        'PROGRAM'
+        name(NAME)
+        ';'.
+
+block(TABELLE1, N21, N41, jmp N23 ';' CODE1 int N42 ';' CODE2 ret ';',N26):
+        konstantendefinitionsteil(TABELLE1, TABELLE2)
+        variablendeklarationsteil(TABELLE2, N41, TABELLE3, N42)
+        erhoehe(N21, N22)
+        prozedurdeklarationsteil(TABELLE3, N22, TABELLE4, CODE1, N23)
+        erhoehe(N23, N24)
+        satzfolge(TABELLE4, N24, CODE2, N25)
+        erhoehe(N25, N26).
+block(TABELLE1, N21, N41, int N42 ';' CODE2 ret ';', N24):
+        konstantendefinitionsteil(TABELLE1, TABELLE2)
+        variablendeklarationsteil(TABELLE2, N41, TABELLE3, N42)
+        erhoehe(N21, N22)
+        satzfolge(TABELLE3, N22, CODE2, N23)
+        erhoehe(N23, N24).
+
+konstantendefinitionsteil(TABELLE, TABELLE): .
+konstantendefinitionsteil(TABELLE1, TABELLE2):
+        'CONST'
+        konstantendefinitionen(TABELLE1, TABELLE2).
+
+
+konstantendefinitionen(TABELLE1, TABELLE2):
+        konstantendefinition(TABELLE1, TABELLE2)
+        ';'.
+konstantendefinitionen(TABELLE1, TABELLE3):
+        konstantendefinition(TABELLE1, TABELLE2)
+        ';'
+        konstantendefinitionen(TABELLE2, TABELLE3).
+
+konstantendefinition(LOC TABELLE, NAME integer konstante N1 LOC TABELLE):
+        name(NAME)
+        bezeichner_nicht_deklariert(NAME, LOC)
+        '='
+        zahl(N1).
+
+variablendeklarationsteil(TABELLE, N4, TABELLE, N4): .
+variablendeklarationsteil(TABELLE1, N41, TABELLE2, N42):
+        'VAR'
+        variablendeklarationen(TABELLE1, N41, TABELLE2, N42).
+
+
+variablendeklarationen(TABELLE1, N41, TABELLE2, N42):
+        variablendeklaration(TABELLE1, N41, TABELLE2, N42)
+        ';'.
+variablendeklarationen(TABELLE1, N41, TABELLE3, N43):
+        variablendeklaration(TABELLE1, N41, TABELLE2, N42)
+        ';'
+        variablendeklarationen(TABELLE2, N42, TABELLE3, N43).
+
+variablendeklaration(LOC TABELLE,N41,NAME TYP wertpar N41 LOC TABELLE,N42):
+        name(NAME)
+        bezeichner_nicht_deklariert(NAME, LOC)
+        erhoehe(N41, N42)
+        ':'
+        typ(TYP).
+
+typ(integer):
+        'INTEGER'.
+typ(boolean):
+        'BOOLEAN'.
+
+prozedurdeklarationsteil(TABELLE1, N21, TABELLE2, CODE, N22):
+        prozedurdeklarationen(TABELLE1, N21, TABELLE2, CODE, N22)
+        ';'.
+
+prozedurdeklarationen(TABELLE1, N21, TABELLE2, CODE, N23):
+        prozedurdeklaration(TABELLE1, N21, TABELLE2, CODE, N23).
+prozedurdeklarationen(TABELLE1, N21, TABELLE3, CODE1 CODE2, N23):
+        prozedurdeklarationen(TABELLE1, N21, TABELLE2, CODE1, N22)
+        ';'
+        prozedurdeklaration(TABELLE2, N22, TABELLE3, CODE2, N23).
+
+prozedurdeklaration(LOC TABELLE, N21,
+                    NAME kein prozedur N21 LISTE LOC TABELLE, CODE, N22):
+        'PROCEDURE'
+        name(NAME)
+        bezeichner_nicht_deklariert(NAME, LOC)
+        parameterdeklarationsteil(LOC1, N41)
+        typliste(LOC1, LISTE)
+        ';'
+        block(LOC1 NAME kein prozedur N21 LISTE LOC TABELLE, N21, N41,
+              CODE, N22).
+
+parameterdeklarationsteil(leer, '3'): .
+parameterdeklarationsteil(LOC, N4):
+        '('
+        parameterliste(leer, '3', LOC, N4)
+        ')'.
+
+parameterliste(LOC1, N41, LOC2, N42):
+        parameter(LOC1, N41, LOC2, N42).
+parameterliste(LOC1, N41, LOC3, N43):
+        parameter(LOC1, N41, LOC2, N42)
+        ','
+        parameterliste(LOC2, N42, LOC3, N43).
+
+parameter(LOC1, N41, NAME TYP wertpar N41 LOC1, N42):
+        name(NAME)
+        bezeichner_nicht_deklariert(NAME, LOC1)
+        ':'
+        typ(TYP)
+        erhoehe(N41, N42).
+parameter(LOC1, N41, NAME TYP refpar N41 LOC1, N42):
+        'VAR'
+        name(NAME)
+        bezeichner_nicht_deklariert(NAME, LOC1)
+        ':'
+        typ(TYP)
+        erhoehe(N41, N42).
+
+
+satzfolge(TABELLE, N21, CODE, N22):
+        'BEGIN'
+        saetze(TABELLE, N21, CODE, N22)
+        'END'.
+
+saetze(TABELLE, N21, CODE, N22):
+        satz(TABELLE, N21, CODE, N22).
+saetze(TABELLE, N21, CODE1 CODE2, N23):
+        satz(TABELLE, N21, CODE1, N22)
+        ';'
+        saetze(TABELLE, N22, CODE2, N23).
+
+satz(TABELLE, N21, CODE, N22):
+        zuweisung(TABELLE, N21, CODE, N22).
+satz(TABELLE, N21, CODE, N22):
+        eingabe(TABELLE, N21, CODE, N22).
+satz(TABELLE, N21, CODE, N22):
+        ausgabe(TABELLE, N21, CODE, N22).
+satz(TABELLE, N21, CODE, N22):
+        prozeduraufruf(TABELLE, N21, CODE, N22).
+satz(TABELLE, N21, CODE, N22):
+        satzfolge(TABELLE, N21, CODE, N22).
+satz(TABELLE, N21, CODE, N22):
+        bedingung(TABELLE, N21, CODE, N22).
+satz(TABELLE, N21, CODE, N22):
+        vorbedingteschleife(TABELLE, N21, CODE, N22).
+satz(TABELLE, N21, CODE, N22):
+        nachbedingteschleife(TABELLE, N21, CODE, N22).
+satz(TABELLE, N21, CODE, N22):
+        zaehlschleife(TABELLE, N21, CODE, N22).
+
+zuweisung(TABELLE, N21, CODE1 CODE2, N23):
+        zielbezeichner(TABELLE, TYP, ATTR, N3)
+        ':='
+        ausdruck(TABELLE, wertpar, N21, TYP, CODE1, N22)
+        speichercode(ATTR, N22, N3, CODE2, N23).
+
+eingabe(TABELLE, N21, red ';' CODE, N23):
+        'READ'
+        '('
+        zielbezeichner(TABELLE, integer, ATTR, N3)
+        ')'
+        erhoehe(N21, N22)
+        speichercode(ATTR, N22, N3, CODE, N23).
+
+ausgabe(TABELLE, N21, CODE wrt N5 ';', N23):
+        'WRITE'
+        '('
+        ausdruck(TABELLE, wertpar, N21, TYP, CODE, N22)
+        ermittle_op(TYP, N5)
+        erhoehe(N22, N23)
+        ')'.
+
+prozeduraufruf(TABELLE, N21, mst ';' CODE cal N3 ',' N25 ';', N24):
+        name(NAME)
+        bezeichner_deklariert(NAME, TABELLE, kein, prozedur N25 LISTE, N3)
+        erhoehe(N21, N22)
+        '('
+        aktuelleparameter(TABELLE, LISTE, N22, CODE, N23)
+        ')'
+        erhoehe(N23, N24).
+prozeduraufruf(TABELLE, N21, mst ';' cal N3 ',' N25 ';', N24):
+        name(NAME)
+        bezeichner_deklariert(NAME, TABELLE, kein, prozedur N25 leer, N3)
+        erhoehe(N21, N23)
+        erhoehe(N23, N24).
+
+aktuelleparameter(TABELLE, TYP ZP leer, N21, CODE, N22):
+        ausdruck(TABELLE, ZP, N21, TYP, CODE, N22).
+aktuelleparameter(TABELLE, TYP ZP LISTE, N21, CODE1 CODE2, N23):
+        aktuelleparameter(TABELLE, LISTE, N21, CODE1, N22)
+        ','
+        ausdruck(TABELLE, ZP, N22, TYP, CODE2, N23).
+
+bedingung(TABELLE, N21, CODE1 jpc N24 ';' CODE2, N24):
+        'IF'
+        ausdruck(TABELLE, wertpar, N21, boolean, CODE1, N22)
+        'THEN'
+        erhoehe(N22, N23)
+        saetze(TABELLE, N23, CODE2, N24)
+        'END'.
+bedingung(TABELLE, N21, CODE1 jpc N25 ';' CODE2 jmp N26 ';' CODE3, N26):
+        'IF'
+        ausdruck(TABELLE, wertpar, N21, boolean, CODE1, N22)
+        'THEN'
+        erhoehe(N22, N23)
+        saetze(TABELLE, N23, CODE2, N24)
+        'ELSE'
+        erhoehe(N24, N25)
+        saetze(TABELLE, N25, CODE3, N26)
+        'END'.
+
+vorbedingteschleife(TABELLE, N21,CODE1 jpc N25 ';' CODE2 jmp N21 ';',N25):
+        'WHILE'
+        ausdruck(TABELLE, wertpar, N21, boolean, CODE1, N22)
+        'DO'
+        erhoehe(N22, N23)
+        saetze(TABELLE, N23, CODE2, N24)
+        erhoehe(N24, N25)
+        'END'.
+
+nachbedingteschleife(TABELLE, N21, CODE1 CODE2 jpc N21 ';', N24):
+        'REPEAT'
+        saetze(TABELLE, N21, CODE1, N22)
+        'UNTIL'
+        ausdruck(TABELLE, wertpar, N22, boolean, CODE2, N23)
+        erhoehe(N23, N24).
+
+zaehlschleife(TABELLE, N21, CODE1 CODE2 CODE3 CODE4 BEFEHL1 N213 ';' CODE5
+                CODE6 BEFEHL2 N213 ';' lit '1' ';'
+                opr N5 ';' CODE7 jmp N26 ';', N213):
+        'FOR'
+        zielbezeichner(TABELLE, integer, ATTR, N3)
+        ':='
+        ausdruck(TABELLE, wertpar, N21, integer, CODE1, N22)
+        richtung(BEFEHL1, BEFEHL2, N5)
+        speichercode(ATTR, N22, N3, CODE2, N23)
+        ausdruck(TABELLE, wertpar, N23, integer, CODE3, N24)
+        'DO'
+        ladecode(ATTR, wertpar, N24, N3, CODE4, N25)
+        erhoehe(N25, N26)
+        saetze(TABELLE, N26, CODE5, N27)
+        'END'
+        ladecode(ATTR, wertpar, N27, N3, CODE6, N28)
+        erhoehe(N28, N29)
+        erhoehe(N29, N210)
+        erhoehe(N210, N211)
+        speichercode(ATTR, N211, N3, CODE7, N212)
+        erhoehe(N212, N213).
+
+richtung('ft1', 'ft2', '2'):
+        'TO'.
+richtung('fd1', 'fd2', '3'):
+        'DOWNTO'.
+
+ausdruck(TABELLE, ZP, N21, TYP, CODE, N22):
+        teilausdruck(TABELLE, ZP, N21, TYP, CODE, N22).
+
+ausdruck(TABELLE, wertpar, N21, boolean, CODE1 CODE2 opr N5 ';', N24):
+        teilausdruck(TABELLE, wertpar, N21, TYP, CODE1, N22)
+        relation(N5)
+        teilausdruck(TABELLE, wertpar, N22, TYP, CODE2, N23)
+        erhoehe(N23, N24).
+
+teilausdruck(TABELLE, ZP, N21, TYP, CODE, N22):
+        terme(TABELLE, ZP, N21, plus, TYP, CODE, N22).
+
+teilausdruck(TABELLE, wertpar, N21, integer, CODE, N22):
+        vorzeichen(VORZEICHEN)
+        terme(TABELLE, wertpar, N21, VORZEICHEN, integer, CODE, N22).
+
+terme(TABELLE, ZP, N21, VORZEICHEN, TYP, CODE, N22):
+        faktoren(TABELLE, ZP, N21, VORZEICHEN, TYP, CODE, N22).
+
+terme(TABELLE, wertpar, N21, VORZEICHEN, TYP, CODE1 CODE2 opr N5 ';', N24):
+        terme(TABELLE, wertpar, N21, VORZEICHEN, TYP, CODE1, N22)
+        addop(TYP, N5)
+        faktoren(TABELLE, wertpar, N22, plus, TYP, CODE2, N23)
+        erhoehe(N23, N24).
+
+faktoren(TABELLE, ZP, N21, VORZEICHEN, TYP, CODE, N22):
+        faktor(TABELLE, ZP, N21, VORZEICHEN, TYP, CODE, N22).
+faktoren(TABELLE,wertpar,N21,VORZEICHEN, TYP, CODE1 CODE2 opr N5 ';', N24):
+        faktoren(TABELLE, wertpar, N21, VORZEICHEN, TYP, CODE1, N22)
+        mulop(TYP, N5)
+        faktor(TABELLE, wertpar, N22, plus, TYP, CODE2, N23)
+        erhoehe(N23, N24).
+
+faktor(TABELLE, wertpar, N21, VORZEICHEN, boolean, CODE opr '8' ';', N23):
+        'NOT'
+        faktor(TABELLE, wertpar, N21, VORZEICHEN, boolean, CODE, N22)
+        erhoehe(N22, N23).
+
+faktor(TABELLE, ZP, N21, VORZEICHEN, TYP, CODE2, N23):
+        '('
+        ausdruck(TABELLE, ZP, N21, TYP, CODE1, N22)
+        vorzeichencode(CODE1, N22, VORZEICHEN, CODE2, N23)
+        ')'.
+faktor(TABELLE, ZP, N21, VORZEICHEN, TYP, CODE2, N23):
+        bezeichner(TABELLE, ZP, N21, TYP, CODE1, N22)
+        vorzeichencode(CODE1, N22, VORZEICHEN, CODE2, N23).
+
+faktor(TABELLE, wertpar, N21, VORZEICHEN, TYP, CODE, N23):
+        konstante(TYP, N1)
+        erhoehe(N21, N22)
+        vorzeichencode(lit N1 ';', N22, VORZEICHEN, CODE, N23).
+
+vorzeichen(plus):
+        '+'.
+vorzeichen(minus):
+        '-'.
+
+addop(integer, '2'):
+        '+'.
+addop(integer, '3'):
+        '-'.
+addop(boolean, '6'):
+        'OR'.
+
+mulop(integer, '4'):
+        '*'.
+mulop(integer, '5'):
+        'DIV'.
+mulop(boolean, '7'):
+        'AND'.
+
+relation('9'):
+        '='.
+relation('1' '0'):
+        '<>'.
+relation('1' '1'):
+        '<'.
+relation('1' '2'):
+        '>='.
+relation('1' '3'):
+        '>'.
+relation('1' '4'):
+        '<='.
+
+zielbezeichner(TABELLE, TYP, ZP N4, N3):
+        name(NAME)
+        bezeichner_deklariert(NAME, TABELLE, TYP, ZP N4, N3).
+
+bezeichner(TABELLE, ZP, N21, TYP, CODE, N22):
+        name(NAME)
+        bezeichner_deklariert(NAME, TABELLE, TYP, ATTR, N3)
+        ladecode(ATTR, ZP, N21, N3, CODE, N22).
+
+konstante(integer, N1):
+        zahl(N1).
+konstante(boolean, '1'):
+        'TRUE'.
+konstante(boolean, '0'):
+        'FALSE'.
+
+bezeichner_deklariert(NAME, NAME TYP ATTR LOC TABELLE, TYP, ATTR, '0'):
+        wahr.
+bezeichner_deklariert(NAME1, NAME2 TYP2 ATTR2 LOC TABELLE, TYP3, ATTR3,N3):
+        ungleich(NAME1, NAME2)
+        bezeichner_deklariert(NAME1, LOC TABELLE, TYP3, ATTR3, N3).
+bezeichner_deklariert(NAME, leer TABELLE, TYP, ATTR, N32):
+        bezeichner_deklariert(NAME, TABELLE, TYP, ATTR, N31)
+        erhoehe(N31, N32).
+
+bezeichner_nicht_deklariert(NAME, leer): wahr.
+bezeichner_nicht_deklariert(NAME1, NAME2 TYP ATTR LOC):
+        ungleich(NAME1, NAME2)
+        bezeichner_nicht_deklariert(NAME1, LOC).
+
+
+ungleich(ALPHA1, ALPHA2):
+        entferne(a b c d e f g h i j k l m n o p q r s t u v w x y z,
+          ALPHA1, ALPHANUMS1)
+        entferne(ALPHANUMS1, ALPHA2, ALPHANUMS2).
+ungleich(ALPHA, NAME ALPHANUM):
+        wahr.
+ungleich(NAME ALPHANUM, ALPHA):
+        wahr.
+ungleich(NAME1 ALPHANUM1, NAME2 ALPHANUM2):
+        ungleich(NAME1, NAME2).
+ungleich(NAME1 ALPHANUM1, NAME2 ALPHANUM2):
+        entferne(a b c d e f g h i j k l m n o p q r s t u v w x y z
+          '0' '1' '2' '3' '4' '5' '6' '7' '8' '9', ALPHANUM1, ALPHANUMS1)
+        entferne(ALPHANUMS1, ALPHANUM2, ALPHANUMS2).
+
+entferne(ALPHANUM ALPHANUMS, ALPHANUM, ALPHANUMS):
+        wahr.
+entferne(ALPHANUM1 ALPHANUMS1, ALPHANUM, ALPHANUM1 ALPHANUMS2):
+        entferne(ALPHANUMS1, ALPHANUM, ALPHANUMS2).
+
+
+erhoehe('0', '1'): wahr.
+erhoehe('1', '2'): wahr.
+erhoehe('2', '3'): wahr.
+erhoehe('3', '4'): wahr.
+erhoehe('4', '5'): wahr.
+erhoehe('5', '6'): wahr.
+erhoehe('6', '7'): wahr.
+erhoehe('7', '8'): wahr.
+erhoehe('8', '9'): wahr.
+erhoehe('9', '1' '0'): wahr.
+erhoehe(N1 '9', N2 '0'):
+        erhoehe(N1, N2).
+erhoehe(N1 ZIFFER1, N1 ZIFFER2):
+        erhoehe(ZIFFER1, ZIFFER2).
+
+ermittle_op(integer, '0'): wahr.
+ermittle_op(boolean, '1'): wahr.
+
+wahr: .
+
+
+ladecode(konstante N1, wertpar, N21, N3, lit N1 ';', N22):
+        erhoehe(N21, N22).
+ladecode(wertpar N4, wertpar, N21, N3, lod N3 ',' N4 ';', N22):
+        erhoehe(N21, N22).
+ladecode(refpar N4, wertpar, N21, N3, ldi N3 ',' N4 ';', N22):
+        erhoehe(N21, N22).
+ladecode(wertpar N4, refpar, N21, N3, lda N3 ',' N4 ';', N22):
+        erhoehe(N21, N22).
+ladecode(refpar N4, refpar, N21, N3, lod N3 ',' N4 ';', N22):
+        erhoehe(N21, N22).
+
+speichercode(wertpar N4, N21, N3, sto N3 ',' N4 ';', N22):
+        erhoehe(N21, N22).
+speichercode(refpar N4, N21, N3, sti N3 ',' N4 ';', N22):
+        erhoehe(N21, N22).
+
+
+vorzeichencode(CODE, N2, plus, CODE, N2): wahr.
+vorzeichencode(CODE, N21, minus, CODE opr '1' ';', N22):
+        erhoehe(N21, N22).
+
+typliste(leer, leer): wahr.
+typliste(NAME TYP ZP N4 LOC, TYP ZP LISTE):
+        typliste(LOC, LISTE).
+
+
+name(ALPHA):
+        buchstabe(ALPHA).
+name(NAME ALPHANUM):
+        name(NAME) alphanum(ALPHANUM).
+
+alphanum(ALPHA):
+        buchstabe(ALPHA).
+alphanum(ZIFFER):
+        ziffer(ZIFFER).
+
+zahl(ZIFFER):
+        ziffer(ZIFFER).
+zahl(N ZIFFER):
+        zahl(N) ziffer(ZIFFER).
+
+buchstabe(a): 'a'.
+buchstabe(b): 'b'.
+buchstabe(c): 'c'.
+buchstabe(d): 'd'.
+buchstabe(e): 'e'.
+buchstabe(f): 'f'.
+buchstabe(g): 'g'.
+buchstabe(h): 'h'.
+buchstabe(i): 'i'.
+buchstabe(j): 'j'.
+buchstabe(k): 'k'.
+buchstabe(l): 'l'.
+buchstabe(m): 'm'.
+buchstabe(n): 'n'.
+buchstabe(o): 'o'.
+buchstabe(p): 'p'.
+buchstabe(q): 'q'.
+buchstabe(r): 'r'.
+buchstabe(s): 's'.
+buchstabe(t): 't'.
+buchstabe(u): 'u'.
+buchstabe(v): 'v'.
+buchstabe(w): 'w'.
+buchstabe(x): 'x'.
+buchstabe(y): 'y'.
+buchstabe(z): 'z'.
+
+ziffer('0'):   '0'.
+ziffer('1'):   '1'.
+ziffer('2'):   '2'.
+ziffer('3'):   '3'.
+ziffer('4'):   '4'.
+ziffer('5'):   '5'.
+ziffer('6'):   '6'.
+ziffer('7'):   '7'.
+ziffer('8'):   '8'.
+ziffer('9'):   '9'.
