@@ -3,25 +3,24 @@ module ePredicates;
 import runtime;
 import Sets = eSets;
 import IO = eIO;
-import Scanner = eScanner;
 import EAG = eEAG;
 
 void List()
 {
-    int Sym;
+    int N;
     IO.WriteString(IO.Msg, "Predicates in     ");
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.WriteText(IO.Msg, ": ");
     if (EAG.Performed(SET(EAG.analysed, EAG.predicates)))
     {
-        for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
+        for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
         {
-            if (Sets.In(EAG.Pred, Sym))
+            if (Sets.In(EAG.Pred, N))
             {
                 IO.WriteText(IO.Msg, "\n\t");
-                IO.WritePos(IO.Msg, EAG.HNont[Sym].Def.Sub.Pos);
+                IO.WritePos(IO.Msg, EAG.HNont[N].Def.Sub.Pos);
                 IO.WriteString(IO.Msg, " :  ");
-                EAG.WriteHNont(IO.Msg, Sym);
+                EAG.WriteHNont(IO.Msg, N);
             }
         }
     }
@@ -31,55 +30,58 @@ void List()
 
 void Check()
 {
-    struct DependRecord
+    struct EdgeRecord
     {
         int Dest;
         int Next;
     }
 
     int[] HNont;
-    DependRecord[] DependBuf;
-    int NextDepend;
+    EdgeRecord[] Edge;
+    int NextEdge;
     int[] Stack;
     int Top;
-    Sets.OpenSet Prod;
+    Sets.OpenSet CoPred;
     Sets.OpenSet Pred;
-    Sets.OpenSet Reach;
     int NOPreds;
-    int Sym;
+    int N;
 
-    void NewDepend(int From, int To)
+    void NewEdge(int From, int To)
     {
-        DependBuf[NextDepend].Dest = To;
-        DependBuf[NextDepend].Next = HNont[From];
-        HNont[From] = NextDepend;
-        ++NextDepend;
+        Edge[NextEdge].Dest = To;
+        Edge[NextEdge].Next = HNont[From];
+        HNont[From] = NextEdge;
+        ++NextEdge;
     }
 
-    void PutProd(int Sym)
+    void PutCoPred(int N)
     {
-        if (!Sets.In(Prod, Sym))
+        if (!Sets.In(CoPred, N))
         {
-            Sets.Incl(Prod, Sym);
-            Stack[Top] = Sym;
+            Sets.Incl(CoPred, N);
+            Stack[Top] = N;
             ++Top;
         }
     }
 
-    void BuiltDependencies()
+    void BuiltEdge()
     {
         EAG.Alt A;
         EAG.Factor F;
-        int Sym;
-        for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
+        int N;
+        for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
         {
-            HNont[Sym] = -1;
+            HNont[N] = -1;
         }
-        for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
+        for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
         {
-            if (Sets.In(EAG.Prod, Sym))
+            if (Sets.In(EAG.All, N))
             {
-                A = EAG.HNont[Sym].Def.Sub;
+                if (!Sets.In(EAG.Null, N))
+                {
+                    PutCoPred(N);
+                }
+                A = EAG.HNont[N].Def.Sub;
                 do
                 {
                     F = A.Sub;
@@ -87,11 +89,11 @@ void Check()
                     {
                         if (cast(EAG.Term) F !is null)
                         {
-                            PutProd(Sym);
+                            PutCoPred(N);
                         }
                         else
                         {
-                            NewDepend((cast(EAG.Nont) F).Sym, Sym);
+                            NewEdge((cast(EAG.Nont) F).Sym, N);
                         }
                         F = F.Next;
                     }
@@ -111,8 +113,8 @@ void Check()
             Dep = HNont[Stack[Top]];
             while (Dep >= 0)
             {
-                PutProd(DependBuf[Dep].Dest);
-                Dep = DependBuf[Dep].Next;
+                PutCoPred(Edge[Dep].Dest);
+                Dep = Edge[Dep].Next;
             }
         }
     }
@@ -124,22 +126,22 @@ void Check()
     {
         EXCL(EAG.History, EAG.predicates);
         NEW(HNont, EAG.NextHNont);
-        NEW(DependBuf, EAG.NONont + 1);
-        NextDepend = 0;
+        NEW(Edge, EAG.NONont + 1);
+        NextEdge = 0;
         NEW(Stack, EAG.NextHNont);
         Top = 0;
-        Sets.New(Prod, EAG.NextHNont);
+        Sets.New(CoPred, EAG.NextHNont);
         Sets.New(Pred, EAG.NextHNont);
-        BuiltDependencies;
+        BuiltEdge;
         ClearStack;
-        Sets.Difference(Pred, EAG.Prod, Prod);
+        Sets.Difference(Pred, EAG.Prod, CoPred);
         Sets.Excl(Pred, EAG.StartSym);
         EAG.Pred = Pred;
         INCL(EAG.History, EAG.predicates);
         NOPreds = 0;
-        for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont; ++Sym)
+        for (N = EAG.firstHNont; N <= EAG.NextHNont; ++N)
         {
-            if (Sets.In(Pred, Sym))
+            if (Sets.In(Pred, N))
             {
                 ++NOPreds;
             }

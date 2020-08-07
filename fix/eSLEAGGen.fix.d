@@ -5,7 +5,7 @@ const predefined = $;
 const arityConst = $;
 const undef = -1;
 const initialHeapSize = 8192;
-alias HeapType = $;
+$
 alias OpenHeap = $;
 OpenHeap Heap;
 HeapType NextHeap;
