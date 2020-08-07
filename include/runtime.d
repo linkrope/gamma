@@ -51,6 +51,13 @@ void NEW(T)(ref T[] v, size_t length)
     v = new T[length];
 }
 
+void NEW(T)(ref T[][] v, size_t x, size_t y)
+{
+    v = new T[][x];
+    foreach (ref w; v)
+        w = new T[y];
+}
+
 uint SET(size_t[] elements...)
 {
     import std.algorithm : map, reduce;
