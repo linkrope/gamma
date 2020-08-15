@@ -1,0 +1,11 @@
+! eine Nicht-OEAG, die eine SOAG ist und mit lokalem Backtracking ermittelt wird
+
+N = "0" .
+
+S<+"0": N>: 'a'.
+
+B<- N1: N, - N2: N, + N2: N, + N1: N>:
+	B<"0", N6, N3, N4>
+	C<N4,N5>C<N5,N6>.
+
+C<- N1: N, + "0": N>: 'a'.
