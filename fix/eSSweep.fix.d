@@ -7,6 +7,8 @@ const hyperArityConst = $;
 alias TreeType = long;
 alias OpenTree = TreeType[];
 alias OpenPos = IO.Position[];
+// alias HeapType = long;
+
 OpenTree Tree;
 OpenPos PosTree;
 long ErrorCounter;
@@ -15,7 +17,7 @@ IO.TextOut Out;
 
 $
 
-void TraverseSyntaxTree(OpenTree SyntaxTree, OpenPos PosHeap, long ErrCounter,
+void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter,
         TreeType Adr, int HyperArity)
 {
     HeapType V1;
@@ -23,8 +25,8 @@ void TraverseSyntaxTree(OpenTree SyntaxTree, OpenPos PosHeap, long ErrCounter,
     {
         throw new Exception("internal error: 'arityConst' is wrong");
     }
-    Tree = SyntaxTree;
-    PosTree = PosHeap;
+    Tree = Tree1;
+    PosTree = PosTree1;
     ErrorCounter = ErrCounter;
     $(Adr, V1);
     if (ErrorCounter > 0)

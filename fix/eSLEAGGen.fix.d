@@ -1,12 +1,14 @@
-// eSLEAGGen.Fix Version 1.02 --  4.12.96
+// eSLEAGGen.Fix Version 1.03 --  dk 20.11.97
 
 const errVal = 0;
 const predefined = $;
 const arityConst = $;
 const undef = -1;
 const initialHeapSize = 8192;
+
 $
 alias OpenHeap = $;
+
 OpenHeap Heap;
 HeapType NextHeap;
 long OutputSize;
@@ -19,6 +21,7 @@ $
 const maxArity = $;
 const refConst = $;
 HeapType[maxArity] FreeList;
+
 $ void EvalExpand()
 {
     OpenHeap Heap1;
@@ -327,5 +330,4 @@ bool EvalInitSucceeds()
 }
 
 // eSLEAGGen.Fix end
-
 $
