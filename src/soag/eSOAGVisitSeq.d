@@ -207,7 +207,7 @@ void TopSort(int R)
     int BN;
     SOAG.Instruction Instr;
     Stacks.Reset(ZeroInDeg);
-    for (BO = SOAG.Rule[R].AffOcc.End; BO <= SOAG.Rule[R].AffOcc.Beg; BO = BO + -1)
+    for (BO = SOAG.Rule[R].AffOcc.End; BO >= SOAG.Rule[R].AffOcc.Beg; --BO)
     {
         BN = SOAG.AffOcc[BO].AffOccNum.InRule;
         InDeg[BN] = 0;
@@ -234,7 +234,7 @@ void TopSort(int R)
             HashTab.Enter(Instr);
             SOAG.AppVS(Instr);
         }
-        for (BO = SOAG.Rule[R].AffOcc.End; BO <= SOAG.Rule[R].AffOcc.Beg; BO = BO + -1)
+        for (BO = SOAG.Rule[R].AffOcc.End; BO >= SOAG.Rule[R].AffOcc.Beg; --BO)
         {
             BN = SOAG.AffOcc[BO].AffOccNum.InRule;
             if (Sets.In(SOAG.Rule[R].TDP[AN], BN))

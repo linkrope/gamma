@@ -2,18 +2,17 @@ module $;
 
 import runtime;
 import IO = eIO;
-import Stacks = eLIStacks;
+import Stacks = soag.eLIStacks;
 
 const nil = -1;
 const initialStorageSize = 128;
 const syntacticPart = 0;
 const hyperArityConst = $;
-const $
-
+$
 alias TreeType = long;
 alias OpenTree = TreeType[];
 alias OpenPos = IO.Position[];
-alias HeapType = long;
+// alias HeapType = long;
 alias IndexType = long;
 
 OpenTree Tree;
@@ -43,9 +42,7 @@ IndexType NextSemTree;
 IndexType NextVar;
 
 // insert evaluator global things
-
 $
-
 void ExpandSemTree()
 {
     OpenSemTree SemTree1;
@@ -92,9 +89,7 @@ void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter,
     HeapType V1;
     if (HyperArity != hyperArityConst)
     {
-        IO.WriteText(IO.Msg, "\n   internal error: 'arityConst' is wrong\n");
-        IO.Update(IO.Msg);
-        HALT(99);
+        throw new Exception("internal error: 'arityConst' is wrong");
     }
     Tree = Tree1;
     PosTree = PosTree1;
@@ -120,7 +115,7 @@ void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter,
         $
     }
     $
-    if (IO.IsOption("i"))
+    if (IO.IsOption('i'))
     {
         IO.WriteText(IO.Msg, "\tsemantic tree of ");
         IO.WriteInt(IO.Msg, AffixVarCount);

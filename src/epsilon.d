@@ -12,11 +12,12 @@ void main(string[] args)
     import std.stdio : stderr, writefln, writeln;
     import IO = eIO;
 
-    bool c, dR, m, p, r;
+    bool c, dR, m, o, p, r;
     bool space;
-    bool sweep;
     bool verbose;
     bool write;
+    bool sweep;
+    bool soag;
     GetoptResult result;
 
     try
@@ -26,11 +27,13 @@ void main(string[] args)
                 "dR", "Debug reference counting.", &dR,
                 "m", "Modules are shown, not compiled directly.", &m,
                 "p", "Parser ignores regular token marks at hyper-nonterminals.", &p,
+                "o", "Disable optimizing of variable storage in compiled compiler.", &o,
                 "r", "Disable reference counting in compiled compiler.", &r,
                 "space|s", "Compiled compiler uses space instead of newline as separator.", &space,
-                "sweep", "Compile single-sweep evaluator.", &sweep,
                 "verbose|v", "Print debug output.", &verbose,
                 "write|w", "Write compilation output as default.", &write,
+                "sweep", "Compile single-sweep evaluator.", &sweep,
+                "soag", "Compile SOAG evaluator.", &soag,
         );
     }
     catch (Exception exception)
@@ -50,6 +53,7 @@ void main(string[] args)
 
     IO.option['c'] = c;
     IO.option['m'] = m;
+    IO.option['o'] = o;
     IO.option['p'] = p;
     IO.option['r'] = r;
     IO.option['s'] = space;
@@ -58,12 +62,12 @@ void main(string[] args)
     IO.longOption['d']['R'] = dR;
 
     if (args.dropOne.empty)
-        compile(stdin, sweep);
+        compile(stdin, sweep, soag);
 
     try
     {
         foreach (arg; args.dropOne)
-            compile(File(arg), sweep);
+            compile(File(arg), sweep, soag);
     }
     catch (ErrnoException exception)
     {
@@ -72,7 +76,7 @@ void main(string[] args)
     }
 }
 
-void compile(File file, bool sweep)
+void compile(File file, bool sweep, bool soag)
 {
     import std.range : empty;
     import Analyser = eAnalyser;
@@ -83,6 +87,7 @@ void compile(File file, bool sweep)
     import ScanGen = eScanGen;
     import Scanner = eScanner;
     import SLEAGGen = eSLEAGGen;
+    import SOAGGen = soag.eSOAGGen;
     import SSweep = eSSweep;
 
     Analyser.Analyse(file);
@@ -94,7 +99,7 @@ void compile(File file, bool sweep)
 
     bool success = false;
 
-    if (!sweep)
+    if (!sweep && !soag)
     {
         SLEAGGen.Test;
         if (IN(EAG.History, EAG.isSLEAG))
@@ -104,7 +109,7 @@ void compile(File file, bool sweep)
             success = true;
         }
     }
-    if (!success)
+    if (!success && !soag)
     {
         SSweep.Test;
         if (IN(EAG.History, EAG.isSSweep))
@@ -114,6 +119,13 @@ void compile(File file, bool sweep)
             ELL1Gen.GenerateParser;
             success = true;
         }
+    }
+    if (!success)
+    {
+        ScanGen.Generate;
+        SOAGGen.Generate;
+        ELL1Gen.GenerateParser;
+        success = true;
     }
     if (success)
     {
@@ -128,7 +140,7 @@ void build(string[] files)
     import std.string : join;
     import std.process : spawnProcess, wait;
 
-    const args = "dmd" ~ files ~ "include/runtime.d" ~ "src/eIO.d";
+    const args = "dmd" ~ files ~ "include/runtime.d" ~ "src/eIO.d" ~ "src/soag/eLIStacks.d";
 
     writefln!"%s"(args.join(' '));
 
