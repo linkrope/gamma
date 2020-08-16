@@ -1481,7 +1481,7 @@ void GenVisitRule(int R)
     {
         onlyoneVisit = false;
         Ind;
-        WrS("switch (VisitNo)\n"); // TODO: break?
+        WrS("switch (VisitNo)\n");
         Ind;
         WrS("{\n");
         INC(Indent, cTab);
@@ -1535,6 +1535,8 @@ void GenVisitRule(int R)
             GenLeave(SO, VisitNo);
             if (VisitNo < SOAGVisitSeq.GetMaxVisitNo(SO))
             {
+                Ind;
+                WrS("break;\n");
                 DEC(Indent, cTab);
                 ++VisitNo;
                 PosNeeded = true;
@@ -1547,6 +1549,11 @@ void GenVisitRule(int R)
             }
             else
             {
+                if (!onlyoneVisit)
+                {
+                    Ind;
+                    WrS("break;\n");
+                }
                 DEC(Indent, cTab);
             }
         }
