@@ -37,13 +37,13 @@
     dub run -- example/count3.eag --soag
     echo | ./S
 
+    dub run -- example/count5.eag --soag
+    echo a a a b b b | ./S
+
     dub run -- example/count4.eag --soag
     echo a a a | ./S
 
 - [ ] FIXME: 0?
-
-    dub run -- example/count5.eag --soag
-    echo a a a b b b | ./S
 
 ## example: decl appl
 
@@ -67,28 +67,24 @@
 
     dub run -- example/single-sweep.eag --soag
 
-- [ ] FIXME: eSOAGOptimizer.d(118): Range violation
-
     dub run -- example/single-sweep.eag --soag -o
     echo a b c d e | ./S
+
+- [ ] FIXME: eSOAGOptimizer.d(118): Range violation
 
 ## example: not OEAG
 
     dub run -- example/not-oeag1.eag --soag
-
-- [ ] TODO: left recursion over non-terminals
+    echo b c | ./S
 
     dub run -- example/not-oeag2.eag --soag
-
-- [ ] TODO: left recursion over non-terminals
+    echo b c c | ./S
 
     dub run -- example/not-oeag3.eag --soag
-
-- [ ] TODO: left recursion over non-terminals
+    echo b a a | ./S
 
     dub run -- example/not-oeag4.eag --soag
-
-- [ ] TODO: left recursion over non-terminals
+    echo b a a | ./S
 
 ## example: eta
 
@@ -105,15 +101,14 @@
     dub run -- example/unequal.eag --soag
     ./OberonO test/oberon0/Sample.Mod
 
-- [ ] FIXME: OberonOEval.d(394): Range violation
-
     dub run -- example/abstract-syntax.eag --soag
     ./OberonOa test/oberon0/Sample.Mod
-
-- [ ] FIXME: infinite loop
 
     dub run -- example/type-tables.eag --soag
     dub run -- example/type-resolution.eag --soag
     dub run -- example/symbol-tables.eag --soag
     dub run -- example/symbol-resolution.eag --soag
     dub run -- example/type-check.eag --soag
+
+- [ ] FIXME: OberonOEval.d(394): Range violation
+- [ ] FIXME: infinite loop
