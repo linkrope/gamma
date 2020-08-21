@@ -140,7 +140,7 @@ void build(string[] files)
     import std.string : join;
     import std.process : spawnProcess, wait;
 
-    const args = "dmd" ~ files ~ "include/runtime.d" ~ "src/eIO.d" ~ "src/soag/eLIStacks.d";
+    const args = "dmd" ~ files ~ "include/runtime.d" ~ "src/eIO.d" ~ "src/soag/eLIStacks.d" ~ "-g";
 
     writefln!"%s"(args.join(' '));
 
