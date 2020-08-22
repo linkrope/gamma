@@ -126,6 +126,12 @@ void compile(File file, bool sweep, bool soag)
         SOAGGen.Generate;
         ELL1Gen.GenerateParser;
         success = true;
+        if (IO.IsOption('v'))
+        {
+            import SOAGProtocol = soag.eSOAGProtocol;
+
+            SOAGProtocol.WriteSyms;
+        }
     }
     if (success)
     {

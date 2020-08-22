@@ -66,11 +66,10 @@
 ## example: single sweep
 
     dub run -- example/single-sweep.eag --soag
-
-    dub run -- example/single-sweep.eag --soag -o
     echo a b c d e | ./S
 
 - [ ] FIXME: eSOAGOptimizer.d(118): Range violation
+- [x] works without optimization
 
 ## example: not OEAG
 
@@ -93,6 +92,7 @@
     ./Eta test/cola/PL0.Cola
 
 - [ ] FIXME: EtaEval.d(5195): Range violation
+- [x] works without optimization
 
 ## example: oberon 0
 
@@ -112,3 +112,4 @@
 
 - [ ] FIXME: OberonOEval.d(394): Range violation
 - [ ] FIXME: infinite loop
+- [ ] FIXME: segmentation fault without optimization

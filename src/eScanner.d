@@ -101,6 +101,16 @@ void Init(IO.TextIn Input)
     ErrorCounter = 0;
 }
 
+public string toString(int Id)
+{
+    import std.string : fromStringz;
+
+    char[] Name = new char[256];
+
+    GetRepr(Id, Name);
+    return fromStringz(Name.ptr).idup;
+}
+
 void GetRepr(int Id, ref char[] Name)
 {
     int k;

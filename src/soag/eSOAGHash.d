@@ -48,12 +48,12 @@ void Reset()
 void Init(int MaxAffInRule)
 {
     import std.conv : to;
-    import std.math : log;
+    import std.math : log2;
 
     int Exp;
     int i;
     // Exp = SHORT(ENTIER(Math.ln(MaxAffInRule) / Math.ln(2)) + 1);
-    Exp = (log(MaxAffInRule) / log(2)).to!int + 1;
+    Exp = log2(MaxAffInRule).to!int + 1;
     MaxHashTabIndex = 2;
     for (i = 2; i <= Exp; ++i)
     {
