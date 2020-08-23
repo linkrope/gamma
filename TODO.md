@@ -19,12 +19,13 @@
     echo a b a b c a b a b | ./S
 
 - [ ] FIXME: 0?
+- [x] works when non-terminal is not merged with anonymous non-terminal
 
 ## example: hello world
 
     dub run -- example/hello-world.eag --soag
 
- - [ ] FIXME: Conversion negative overflow
+ - [x] FIXME: Conversion negative overflow
 
 ## example: count
 
@@ -44,6 +45,7 @@
     echo a a a | ./S
 
 - [ ] FIXME: 0?
+- [x] works when non-terminal is not merged with anonymous non-terminal
 
 ## example: decl appl
 

@@ -46,6 +46,7 @@ void Reset()
  * SEM: reserviert Speicher für die Hash-Tabelle und setzt die max. Hash-Adresse
  */
 void Init(int MaxAffInRule)
+in (MaxAffInRule > 0)
 {
     import std.conv : to;
     import std.math : log2;

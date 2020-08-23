@@ -130,7 +130,7 @@ void compile(File file, bool sweep, bool soag)
         {
             import SOAGProtocol = soag.eSOAGProtocol;
 
-            SOAGProtocol.WriteSyms;
+            SOAGProtocol.WriteRulesL4;
         }
     }
     if (success)

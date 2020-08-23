@@ -262,7 +262,8 @@ void Generate()
     SOAG.Instruction Instr;
     MaxTry = 0;
     ComputeVisitNo;
-    HashTab.Init(SOAG.MaxAffNumInRule);
+    // HashTab.Init(SOAG.MaxAffNumInRule); // does not work if (MaxAffNumInRule == 0)
+    HashTab.Init(SOAG.MaxAffNumInRule + 1);
     Stacks.New(ZeroInDeg, 32);
     NEW(InDeg, SOAG.MaxAffNumInRule + 1);
     for (R = SOAG.firstRule; R <= SOAG.NextRule - 1; ++R)
@@ -276,8 +277,7 @@ void Generate()
             {
                 MaxTry = HashTab.MaxTry;
             }
-            for (SO = SOAG.Rule[R].SymOcc.Beg + 1; SO <= SOAG.Rule[R].SymOcc.End;
-                    ++SO)
+            for (SO = SOAG.Rule[R].SymOcc.Beg + 1; SO <= SOAG.Rule[R].SymOcc.End; ++SO)
             {
                 Instr = CompleteTraversal(SO);
                 if (!HashTab.IsIn(Instr))

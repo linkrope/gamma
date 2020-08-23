@@ -29,6 +29,15 @@ struct ParamRecord
     int Affixform;
     IO.Position Pos;
     bool isDef;
+
+    public string toString() const
+    {
+        import std.format : format;
+
+        if (Affixform == nil)
+            return "Param()";
+        return format!"Param(%s %s)"(isDef ? "def" : "app", Affixform);
+    }
 }
 
 alias OpenParamBuf = ParamRecord[];
@@ -41,6 +50,13 @@ struct ScopeDesc
 {
     int Beg;
     int End;
+
+    public string toString() const
+    {
+        import std.format : format;
+
+        return format!"Scope(Beg=%s, End=%s)"(Beg, End);
+    }
 }
 
 alias OpenNodeBuf = int[];
@@ -134,6 +150,7 @@ class Nont : FactorDesc
     int Sym;
     ParamsDesc Actual;
     IO.Position Pos;
+
 }
 
 void assign(Nont lhs, Nont rhs)
@@ -739,6 +756,15 @@ void NewAlt(ref Alt A, int Sym, ParamsDesc Formal, ParamsDesc Actual, Factor Sub
 void WriteHTerm(ref IO.TextOut Out, int Term)
 {
     Scanner.WriteRepr(Out, HTerm[Term].Id);
+}
+
+public string HNontToString(int Nont)
+{
+    import std.format : format;
+
+    if (HNont[Nont].Id < 0)
+        return format!"A%s"(-HNont[Nont].Id);
+    return Scanner.toString(HNont[Nont].Id);
 }
 
 void WriteHNont(ref IO.TextOut Out, int Nont)

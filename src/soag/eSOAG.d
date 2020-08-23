@@ -23,6 +23,18 @@ struct SymDesc
     int FirstOcc;
     int MaxPart;
     EAG.ScopeDesc AffPos;
+
+    public string toString() const
+    {
+        import std.format : format;
+
+        string[] items;
+
+        items ~= format!"FirstOcc=%s"(FirstOcc);
+        items ~= format!"MaxPart=%s"(MaxPart);
+        items ~= format!"AffPos=%s"(AffPos);
+        return format!"Sym(%-(%s, %))"(items);
+    }
 }
 
 alias OpenTDP = Sets.OpenSet[];
@@ -55,12 +67,37 @@ struct SymOccDesc
     EAG.Nont Nont;
     EAG.ScopeDesc AffOcc;
     int Next;
+
+    public string toString() const
+    {
+        import std.format : format;
+
+        string[] items;
+
+        items ~= EAG.HNontToString(SymInd);
+        items ~= format!"RuleInd=%s"(RuleInd);
+        items ~= format!"Nont=%s"(Nont);
+        items ~= format!"AffOcc=%s"(AffOcc);
+        items ~= format!"Next=%s"(Next);
+        return format!"SymOcc(%-(%s, %))"(items);
+    }
 }
 
 struct AffOccNumRecord
 {
     int InRule;
     int InSym;
+
+    public string toString() const
+    {
+        import std.format : format;
+
+        string[] items;
+
+        items ~= format!"InRule=%s"(InRule);
+        items ~= format!"InSym=%s"(InSym);
+        return format!"AffOccNum(%-(%s, %))"(items);
+    }
 }
 
 struct AffOccDesc
@@ -68,6 +105,18 @@ struct AffOccDesc
     int ParamBufInd;
     int SymOccInd;
     AffOccNumRecord AffOccNum;
+
+    public string toString() const
+    {
+        import std.format : format;
+
+        string[] items;
+
+        items ~= format!"ParamBufInd=%s"(ParamBufInd);
+        items ~= format!"SymOccInd=%s"(SymOccInd);
+        items ~= AffOccNum.toString;
+        return format!"AffOcc(%-(%s, %))"(items);
+    }
 }
 
 class InstructionDesc

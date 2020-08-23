@@ -1,0 +1,13 @@
+! -----------------------   w c w -> w
+
+S <+ w: w>:
+  w <w> "c" w <w>.
+
+x = "a" | "b".
+w = | x w.
+
+! SOAG seems to have difficulties when a non-terminal is merged with an anonymous non-terminal
+w <+ w: w>:
+  <w>
+  { <+ x w: w> <x> ( <+ "a": x> "a" | <+ "b": x> "b" )  <w>
+  } <+ : w>.

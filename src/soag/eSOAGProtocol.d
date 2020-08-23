@@ -74,7 +74,6 @@ void WriteAffix(int i)
 void WriteAffOcc(int a)
 {
     int p;
-    int m;
     p = SOAG.AffOcc[a].ParamBufInd;
     if (EAG.ParamBuf[p].isDef)
     {
@@ -148,13 +147,13 @@ void WriteSymOccData(int s)
     IO.WriteString(Out, "         SymInd: ");
     IO.WriteInt(Out, SOAG.SymOcc[s].SymInd);
     IO.WriteLn(Out);
-    IO.WriteString(Out, "        RulrInd: ");
+    IO.WriteString(Out, "        RuleInd: ");
     IO.WriteInt(Out, SOAG.SymOcc[s].RuleInd);
     IO.WriteLn(Out);
     IO.WriteString(Out, "           Next: ");
     IO.WriteInt(Out, SOAG.SymOcc[s].Next);
     IO.WriteLn(Out);
-    IO.WriteString(Out, "  AffOcc.Beg: ");
+    IO.WriteString(Out, "     AffOcc.Beg: ");
     IO.WriteInt(Out, SOAG.SymOcc[s].AffOcc.Beg);
     IO.WriteLn(Out);
     IO.WriteString(Out, "           .End: ");
@@ -173,7 +172,7 @@ void WriteRuleData(int r)
     IO.WriteString(Out, "           .End: ");
     IO.WriteInt(Out, SOAG.Rule[r].SymOcc.End);
     IO.WriteLn(Out);
-    IO.WriteString(Out, "  AffOcc.Beg: ");
+    IO.WriteString(Out, "     AffOcc.Beg: ");
     IO.WriteInt(Out, SOAG.Rule[r].AffOcc.Beg);
     IO.WriteLn(Out);
     IO.WriteString(Out, "           .End: ");
@@ -413,9 +412,9 @@ void WriteAffPos(int SymInd)
         IO.WriteLn(Out);
         IO.WriteString(Out, "    PartNum: ");
         IO.WriteInt(Out, SOAG.PartNum[i]);
-        IO.WriteString(Out, "    StorageType: ");
         if (SOAG.StorageName != null)
         {
+            IO.WriteString(Out, "    StorageType: ");
             if (SOAG.StorageName[i] < 0)
             {
                 IO.WriteString(Out, "GlobalVar");
