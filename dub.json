@@ -1,10 +1,21 @@
 {
-	"name": "epsilon",
-	"description": "Extended Affix Grammar compiler compiler",
-	"authors": ["Mario Kröplin"],
-	"copyright": "Copyright © 2020, Mario Kröplin",
-	"targetType": "executable",
-	"mainSourceFile": "src/epsilon.d",
-	"importPaths": ["include", "src"],
-	"sourcePaths": ["include", "src"]
+    "name": "epsilon",
+    "description": "Extended Affix Grammar compiler compiler",
+    "authors": ["Mario Kröplin"],
+    "copyright": "Copyright © 2020, Mario Kröplin",
+    "sourcePaths": ["include", "src"],
+    "importPaths": ["include", "src"],
+    "mainSourceFile": "src/epsilon.d",
+    "configurations": [
+        {
+            "name": "epsilon",
+            "targetType": "executable"
+        },
+        {
+            "name": "example",
+            "sourcePaths": ["test"],
+            "importPaths": ["test"],
+            "preBuildCommands": ["$DUB build"]
+        }
+    ]
 }
