@@ -1,15 +1,12 @@
 vscode:
   extensions:
     - webfreak.code-d@0.22.0:K65wBqeoqTvGoea7XwBc+A==
-
     - grammarcraft.epsilon-eag@0.0.8:9zTVLwpsuuFv9Fk2o2Mu/g==
-
     - grammarcraft.epsilon-eag-light-theme@0.0.8:5z3BIl0S3hl/HGLYCRtnkw==
-
     - grammarcraft.epsilon-eag-dark-theme@0.0.8:eOg01Ya9U3S14AzEi1JcSg==
 
 image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - init: dub test
+  - init: dub build
