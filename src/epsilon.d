@@ -124,14 +124,14 @@ void compile(File file, bool sweep, bool soag)
     {
         ScanGen.Generate;
         SOAGGen.Generate;
-        ELL1Gen.GenerateParser;
-        success = true;
         if (IO.IsOption('v'))
         {
             import SOAGProtocol = soag.eSOAGProtocol;
 
             SOAGProtocol.WriteRulesL4;
         }
+        ELL1Gen.GenerateParser;
+        success = true;
     }
     if (success)
     {

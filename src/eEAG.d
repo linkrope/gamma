@@ -22,6 +22,13 @@ struct ParamsDesc
 {
     int Params;
     IO.Position Pos;
+
+    public string toString() const
+    {
+        import std.format : format;
+
+        return format!"ParamsDesc(Params=%s)"(Params);
+    }
 }
 
 struct ParamRecord
@@ -97,6 +104,21 @@ class AltDesc
     ParamsDesc Actual;
     ScopeDesc Scope;
     IO.Position Pos;
+
+    public override string toString() const
+    {
+        import std.format : format;
+
+        string[] items;
+
+        items ~= format!"Ind=%s"(Ind);
+        items ~= format!"Up=%s"(Up);
+        // TODO: Next, Sub, Last
+        items ~= format!"Formal=%s"(Formal);
+        items ~= format!"Actual=%s"(Actual);
+        items ~= Scope.toString;
+        return format!"Alt(%-(%s, %))"(items);
+    }
 }
 
 void assign(AltDesc lhs, AltDesc rhs)
