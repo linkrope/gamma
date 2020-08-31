@@ -14,7 +14,7 @@ void New(ref Stack S, int Len)
     ALists.New(S.aList, Len);
 }
 
-///
+@("create new empty stack")
 unittest
 {
     Stack stack;
@@ -28,7 +28,7 @@ void Reset(ref Stack S)
     ALists.Reset(S.aList);
 }
 
-///
+@("reset stack")
 unittest
 {
     Stack stack;
@@ -44,7 +44,7 @@ void Push(ref Stack S, int Val)
     ALists.Append(S.aList, Val);
 }
 
-///
+@("push value on stack")
 unittest
 {
     Stack stack;
@@ -62,7 +62,7 @@ in (!IsEmpty(S))
     ALists.Delete(S.aList, S.aList.Last);
 }
 
-///
+@("pop value from non-empty stack")
 unittest
 {
     Stack stack;

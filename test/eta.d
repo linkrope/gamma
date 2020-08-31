@@ -2,9 +2,11 @@ module test.eta;
 
 import core.exception;
 import std.exception;
+import std.format;
 import std.stdio;
 import test.helper;
 
+@("compile eta.eag as SLEAG and run compiler")
 unittest
 {
     run("./epsilon --space example/eta.eag")
@@ -15,10 +17,11 @@ unittest
     writeln("    FAILED");
 }
 
-static foreach (eag; ["example/eta.eag", "example/eta-utf8.eag"])
+static foreach (eag; ["eta.eag", "eta-utf8.eag"])
+    @(format!"compile %s as SOAG and run compiler"(eag))
     unittest
     {
-        run("./epsilon --soag -o --space " ~ eag)
+        run("./epsilon --soag -o --space example/" ~ eag)
             .shouldMatch("Grammar is SOEAG");
         run("./Eta test/cola/Pico.Cola")
             .shouldMatch(`^program < \+ 'ok' : CODE > : $`);

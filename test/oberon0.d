@@ -1,7 +1,9 @@
 module test.oberon0;
 
+import std.format;
 import test.helper;
 
+@("compile and run Oberon-0 frontend")
 unittest
 {
     run("./epsilon example/frontend.eag")
@@ -14,10 +16,11 @@ unittest
         .shouldMatch("^  31 errors detected$");
 }
 
-static foreach (eag; ["example/oberon0.eag", "example/unequal.eag"])
+static foreach (eag; ["oberon0.eag", "unequal.eag"])
+    @(format!"compile %s and run Oberon-0 compiler"(eag))
     unittest
     {
-        run("./epsilon --space " ~ eag)
+        run("./epsilon --space example/" ~ eag)
             .shouldMatch("SLEAG testing   OberonO   ok");
         run("./OberonO test/oberon0/Sample.Mod")
             .shouldMatch("^L1 .* RET 0 $");
@@ -27,6 +30,7 @@ static foreach (eag; ["example/oberon0.eag", "example/unequal.eag"])
             .shouldMatch("^  31 errors detected$");
     }
 
+@("compile and run Oberon-0 compiler pipeline")
 unittest
 {
     run("./epsilon --space example/abstract-syntax.eag")

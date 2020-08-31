@@ -2,6 +2,7 @@ module test.sleag;
 
 import test.helper;
 
+@("compile abc.eag as SLEAG and run compiler")
 unittest
 {
     run("./epsilon --space example/abc.eag")
@@ -10,6 +11,7 @@ unittest
         .shouldMatch(`^\| \| \| $`);
 }
 
+@("compile ab.eag as SLEAG and run compiler")
 unittest
 {
     run("./epsilon --space example/ab.eag")
@@ -18,6 +20,7 @@ unittest
         .shouldMatch("^i i i $");
 }
 
+@("compile ab-ebnf.eag as SLEAG and run compiler")
 unittest
 {
     run("./epsilon --space example/ab-ebnf.eag")
@@ -26,6 +29,7 @@ unittest
         .shouldMatch("^i i i $");
 }
 
+@("compile w-w.eag as SLEAG and run compiler")
 unittest
 {
     run("./epsilon --space example/w-w.eag")
@@ -34,6 +38,7 @@ unittest
         .shouldMatch("^a b a b $");
 }
 
+@("compile hello-world.eag as SLEAG and run compiler")
 unittest
 {
     run("./epsilon example/hello-world.eag")
@@ -42,6 +47,7 @@ unittest
         .shouldMatch("^Hello World!$");
 }
 
+@("compile count1.eag as SLEAG and run compiler")
 unittest
 {
     run("./epsilon --space example/count1.eag")
@@ -50,6 +56,7 @@ unittest
         .shouldMatch("^Number 1 3 $");
 }
 
+@("compile count5.eag as SLEAG and run compiler")
 unittest
 {
     run("./epsilon example/count5.eag")
@@ -58,6 +65,7 @@ unittest
         .shouldMatch("^3$");
 }
 
+@("compile decl-appl.eag as SLEAG and run compiler")
 unittest
 {
     run("./epsilon --space example/decl-appl.eag")
@@ -66,6 +74,7 @@ unittest
         .shouldMatch("^ba ; ab ; $");
 }
 
+@("compile ident-list.eag as SLEAG and run compiler")
 unittest
 {
     run("./epsilon --space example/ident-list.eag")

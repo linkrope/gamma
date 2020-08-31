@@ -100,7 +100,7 @@ long DIV(long D, long d)
     return q;
 }
 
-///
+@("compute DIV for floored division")
 unittest
 {
     assert(DIV(8, 3) == 2);
@@ -121,7 +121,7 @@ long MOD(long D, long d)
     return r;
 }
 
-///
+@("compute MOD for floored division")
 unittest
 {
     assert(MOD(8, 3) == 2);

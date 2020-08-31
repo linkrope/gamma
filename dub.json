@@ -15,7 +15,10 @@
             "name": "example",
             "sourcePaths": ["test"],
             "importPaths": ["test"],
-            "preBuildCommands": ["$DUB build"]
+			"preBuildCommands": ["$DUB build"],
+			"dependencies": {
+				"silly": "~>1.0.2"
+			}
         }
     ]
 }

@@ -15,7 +15,7 @@ void New(ref OpenSet s0, int MaxElem)
     }
 }
 
-///
+@("create new empty set")
 unittest
 {
     OpenSet set;
@@ -34,7 +34,7 @@ void Empty(ref OpenSet s0)
     }
 }
 
-///
+@("reset set")
 unittest
 {
     OpenSet set = [1234, 5678];
@@ -50,7 +50,7 @@ void Incl(ref OpenSet s0, int n)
 }
 
 
-///
+@("include element in set")
 unittest
 {
     OpenSet set = [1, 0];
@@ -65,7 +65,7 @@ void Excl(ref OpenSet s0, int n)
     EXCL(s0[DIV(n, M)], MOD(n, M));
 }
 
-///
+@("exclude element from set")
 unittest
 {
     OpenSet set = [1, 1];
@@ -84,7 +84,7 @@ void Assign(ref OpenSet s0, OpenSet s1)
     }
 }
 
-///
+@("copy set")
 unittest
 {
     OpenSet set = [1234, 5678];
@@ -103,7 +103,7 @@ void Complement(ref OpenSet s0, OpenSet s1)
     }
 }
 
-///
+@("compute complement of set")
 unittest
 {
     OpenSet set = [1234, 5678];
@@ -124,7 +124,7 @@ void Union(ref OpenSet s0, OpenSet s1, OpenSet s2)
     }
 }
 
-///
+@("compute set union")
 unittest
 {
     OpenSet set = [1234, 5678];
@@ -145,7 +145,7 @@ void Difference(ref OpenSet s0, OpenSet s1, OpenSet s2)
     }
 }
 
-///
+@("compute set difference")
 unittest
 {
     OpenSet set = [1234, 5678];
@@ -166,7 +166,7 @@ void Intersection(ref OpenSet s0, OpenSet s1, OpenSet s2)
     }
 }
 
-///
+@("compute set intersection")
 unittest
 {
     OpenSet set = [1234, 5678];
@@ -187,7 +187,7 @@ void SymmetricDifference(ref OpenSet s0, OpenSet s1, OpenSet s2)
     }
 }
 
-///
+@("compute symmetric difference")
 unittest
 {
     OpenSet set = [1234, 5678];
@@ -202,7 +202,7 @@ bool In(OpenSet s1, int n)
     return IN(s1[DIV(n, M)], MOD(n, M));
 }
 
-///
+@("check if element is included in set")
 unittest
 {
     assert(In([1, 1], 32));
@@ -222,7 +222,7 @@ bool Included(OpenSet s1, OpenSet s2)
     return true;
 }
 
-///
+@("check if one set is included in another set")
 unittest
 {
     assert(Included([0b1010, 0b0101], [0b1000, 0b0001]));
@@ -242,7 +242,7 @@ bool IsEmpty(OpenSet s1)
     return true;
 }
 
-///
+@("check if set is empty")
 unittest
 {
     assert(IsEmpty([0, 0]));
@@ -262,7 +262,7 @@ bool Equal(OpenSet s1, OpenSet s2)
     return true;
 }
 
-///
+@("check if sets are equal")
 unittest
 {
     assert(Equal([0, 1], [0, 1]));
@@ -282,7 +282,7 @@ bool Disjoint(OpenSet s1, OpenSet s2)
     return true;
 }
 
-///
+@("check if sets are disjoint")
 unittest
 {
     assert(Disjoint([0b1010, 0b0101], [0b0001, 0b1000]));
@@ -294,7 +294,7 @@ int nSetsUsed(OpenSet s1)
     return SHORT(s1.length);
 }
 
-///
+@("get number of 32-bit sets used to store set")
 unittest
 {
     assert(nSetsUsed([1234, 5678]) == 2);
@@ -305,7 +305,7 @@ uint ConvertToSET(OpenSet s1, int Index)
     return s1[Index];
 }
 
-///
+@("get 32-bit set at given index")
 unittest
 {
     assert(ConvertToSET([1234, 5678], 1) == 5678);
