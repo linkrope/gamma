@@ -9,6 +9,7 @@ import IO = eIO;
 import Protocol = soag.eSOAGProtocol;
 import ASets = soag.eASets;
 import BSets = soag.eBSets;
+import std.stdio;
 
 const unor = -1;
 const nil = 0;
@@ -310,7 +311,7 @@ void ComputeDefAffOcc(int R)
         }
         else
         {
-            IO.WritePos(IO.Msg, EAG.Var[V].Pos);
+            writeln(EAG.Var[V].Pos);
             SOAG.Error(SOAG.notLeftDefined, "eSOAGPartition.ComputeDefAffOcc");
         }
     }

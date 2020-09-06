@@ -7,6 +7,7 @@ import IO = eIO;
 import Scanner = eScanner;
 import Sets = eSets;
 import std.stdio;
+import io : Position, TextIn;
 
 const nil = EAG.nil;
 char Tok;
@@ -23,17 +24,15 @@ void Str(char[] s)
     IO.WriteText(IO.Msg, s);
 }
 
-void Error(IO.Position Pos, string ErrMsg)
+void Error(Position Pos, string ErrMsg)
 {
+    import std.exception : enforce;
+
     ++ErrorCounter;
-    if (ErrorCounter > 25)
-    {
-        throw new Exception("Too many errors !");
-    }
-    Str("\n  ");
-    IO.WritePos(IO.Msg, Pos);
-    Str("\t");
-    Str(ErrMsg);
+    enforce(ErrorCounter <= 25, "Too many errors!");
+    writeln;
+    writeln(Pos);
+    writeln(ErrMsg);
 }
 /**
  * Specification:
@@ -153,7 +152,7 @@ void Specification()
         EAG.Alt HExpr;
         EAG.ParamsDesc Actual;
         EAG.ParamsDesc Formal;
-        IO.Position AltPos;
+        Position AltPos;
 
         void Distribute(int Sym, EAG.Alt A, int Sig, EAG.ParamsDesc Formal)
         {
@@ -206,7 +205,7 @@ void Specification()
                 short Uneq;
                 int Cnt;
                 int Num;
-                IO.Position Pos;
+                Position Pos;
                 Cnt = 0;
                 while (true)
                 {
@@ -360,7 +359,7 @@ void Specification()
          * HyperExpr:
          *   [FormalParams] HyperTerm [ActualParams] {"|" [FormalParams] HyperTerm [ActualParams]}.
          */
-        void HyperExpr(int HNont, int Id, char Left, ref EAG.Alt HExpr, IO.Position AltPos)
+        void HyperExpr(int HNont, int Id, char Left, ref EAG.Alt HExpr, Position AltPos)
         {
             EAG.ParamsDesc Actual;
             EAG.ParamsDesc Formal;
@@ -383,7 +382,7 @@ void Specification()
                 EAG.Alt HExpr;
                 EAG.ParamsDesc Formal;
                 char Left;
-                IO.Position Pos;
+                Position Pos;
                 First = null;
                 Last = null;
                 while (true)
@@ -825,8 +824,8 @@ void CheckSemantics()
             if (!EAG.Var[n].Def)
             {
                 ++ErrorCounter;
-                Str("\n  ");
-                IO.WritePos(IO.Msg, EAG.Var[n].Pos);
+                writeln;
+                writeln(EAG.Var[n].Pos);
                 Str("\tVariable '");
                 EAG.WriteVar(IO.Msg, n);
                 Str("' never on defining position!");
@@ -1028,21 +1027,12 @@ void ComputeEAGSets()
     }
 }
 
-void Analyse(File file)
+void Analyse(TextIn textIn)
 {
-    bool OpenError;
     Str("Analysing ...      ");
     IO.Update(IO.Msg);
-    IO.TextIn In = new IO.TextIn(file);
 
-    /+
-    if (OpenError)
-    {
-        Str("\n  error: cannot open input");
-    }
-    +/
-
-    Scanner.Init(In);
+    Scanner.Init(textIn);
     EAG.Init;
     Earley.Init;
     ErrorCounter = 0;

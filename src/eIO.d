@@ -11,11 +11,6 @@ bool[char] option;
 bool[char][char] longOption;
 string[] files;
 
-struct Position
-{
-    long Offset;
-}
-
 class TextIn
 {
     char[] text;
@@ -34,8 +29,6 @@ class TextOut
 {
     string Name;
     File file;
-    char[] text;
-    bool IsShown;
 
     this(string name)
     {
@@ -50,8 +43,6 @@ class TextOut
 }
 
 TextOut Msg;
-Position UndefPos;
-char ParamCh;
 
 void OpenIn(ref TextIn In, string Name, ref bool Error)
 {
@@ -75,16 +66,6 @@ void Read(TextIn In, ref char c)
     ++In.offset;
 }
 
-void Pos(TextIn In, ref Position Pos)
-{
-    Pos = Position(In.offset);
-}
-
-void PrevPos(TextIn In, ref Position Pos)
-{
-    Pos = Position(In.offset - 1);
-}
-
 void CreateModOut(ref TextOut Out, char[] Name)
 {
     import std.string : fromStringz;
@@ -101,9 +82,7 @@ void CreateOut(ref TextOut Out, string Name)
 
 void Update(TextOut Out)
 {
-    Out.file.write(Out.text);
     Out.file.flush;
-    Out.text = null;
 }
 
 void CloseOut(ref TextOut Out)
@@ -121,14 +100,14 @@ void Show(TextOut Out)
 
 void WriteText(TextOut Out, string Str)
 {
-    Out.text ~= Str;
+    Out.file.write(Str);
 }
 
 void WriteText(TextOut Out, char[] Str)
 {
     import std.string : fromStringz;
 
-    Out.text ~= fromStringz(Str.ptr);
+    Out.file.write(fromStringz(Str.ptr));
     // TODO: escaping
     /+
     int i;
@@ -176,32 +155,22 @@ void WriteString(T)(TextOut Out, T Str)
 
 void Write(TextOut Out, char c)
 {
-    Out.text ~= c;
+    Out.file.write(c);
 }
 
 void WriteInt(TextOut Out, long i)
 {
-    import std.format : format;
-
-    Out.text ~= format!"%d"(i);
+    Out.file.writef!"%d"(i);
 }
 
 void WriteIntF(TextOut Out, long i, int Len)
 {
-    import std.format : format;
-
-    Out.text ~= format!"%*d"(Len, i);
-}
-
-void WritePos(TextOut Out, Position Pos)
-{
-    WriteString(Out, "pos ");
-    WriteIntF(Out, Pos.Offset, 6);
+    Out.file.writef!"%*d"(Len, i);
 }
 
 void WriteLn(TextOut Out)
 {
-    Out.text ~= '\n';
+    Out.file.writeln;
 }
 
 void Compile(TextOut Out, ref bool Error)
@@ -271,6 +240,4 @@ static this()
     // Msg.Txt = Oberon.Log;
     // Texts.OpenWriter(Msg.W);
     Msg.Name = "System.Log";
-    Msg.IsShown = true;
-    UndefPos.Offset = -1;
 }

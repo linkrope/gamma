@@ -4,6 +4,7 @@ import runtime;
 import Sets = eSets;
 import IO = eIO;
 import Scanner = eScanner;
+import io : Position;
 
 const nil = 0;
 const empty = 0;
@@ -21,7 +22,7 @@ const firstHFactor = 0;
 struct ParamsDesc
 {
     int Params;
-    IO.Position Pos;
+    Position Pos;
 
     public string toString() const
     {
@@ -34,7 +35,7 @@ struct ParamsDesc
 struct ParamRecord
 {
     int Affixform;
-    IO.Position Pos;
+    Position Pos;
     bool isDef;
 
     public string toString() const
@@ -73,7 +74,7 @@ struct VarRecord
     int Sym;
     int Num;
     int Neg;
-    IO.Position Pos;
+    Position Pos;
     bool Def;
 }
 
@@ -103,7 +104,7 @@ class AltDesc
     ParamsDesc Formal;
     ParamsDesc Actual;
     ScopeDesc Scope;
-    IO.Position Pos;
+    Position Pos;
 
     public override string toString() const
     {
@@ -142,14 +143,14 @@ class Grp : RuleDesc
 
 class Opt : RuleDesc
 {
-    IO.Position EmptyAltPos;
+    Position EmptyAltPos;
     ScopeDesc Scope;
     ParamsDesc Formal;
 }
 
 class Rep : RuleDesc
 {
-    IO.Position EmptyAltPos;
+    Position EmptyAltPos;
     ScopeDesc Scope;
     ParamsDesc Formal;
 }
@@ -164,14 +165,14 @@ class FactorDesc
 class Term : FactorDesc
 {
     int Sym;
-    IO.Position Pos;
+    Position Pos;
 }
 
 class Nont : FactorDesc
 {
     int Sym;
     ParamsDesc Actual;
-    IO.Position Pos;
+    Position Pos;
 
 }
 
@@ -392,7 +393,7 @@ void Expand()
     }
 }
 
-void AppParam(int Affixform, IO.Position Pos)
+void AppParam(int Affixform, Position Pos)
 {
     ParamBuf[NextParam].Affixform = Affixform;
     ParamBuf[NextParam].Pos = Pos;
@@ -608,7 +609,7 @@ void AppMemb(int Val)
     }
 }
 
-int FindVar(int Sym, int Num, IO.Position Pos, bool Def)
+int FindVar(int Sym, int Num, Position Pos, bool Def)
 {
     int V;
     V = Scope;
@@ -652,7 +653,7 @@ int FindVar(int Sym, int Num, IO.Position Pos, bool Def)
     return V;
 }
 
-void NewTerm(ref Factor F, int Sym, IO.Position Pos)
+void NewTerm(ref Factor F, int Sym, Position Pos)
 {
     Term F1;
     ++NOTerm;
@@ -675,7 +676,7 @@ void NewTerm(ref Factor F, int Sym, IO.Position Pos)
     }
 }
 
-void NewNont(ref Factor F, int Sym, ParamsDesc Actual, IO.Position Pos)
+void NewNont(ref Factor F, int Sym, ParamsDesc Actual, Position Pos)
 {
     Nont F1;
     ++NONont;
@@ -721,7 +722,7 @@ void NewGrp(int Sym, Alt Sub)
     }
 }
 
-void NewOpt(int Sym, Alt Sub, ParamsDesc Formal, IO.Position Pos)
+void NewOpt(int Sym, Alt Sub, ParamsDesc Formal, Position Pos)
 {
     Opt N;
     ++NOOpt;
@@ -734,7 +735,7 @@ void NewOpt(int Sym, Alt Sub, ParamsDesc Formal, IO.Position Pos)
     HNont[Sym].Def = N;
 }
 
-void NewRep(int Sym, Alt Sub, ParamsDesc Formal, IO.Position Pos)
+void NewRep(int Sym, Alt Sub, ParamsDesc Formal, Position Pos)
 {
     Rep N;
     ++NORep;
@@ -748,7 +749,7 @@ void NewRep(int Sym, Alt Sub, ParamsDesc Formal, IO.Position Pos)
 }
 
 void NewAlt(ref Alt A, int Sym, ParamsDesc Formal, ParamsDesc Actual, Factor Sub,
-        Factor Last, IO.Position Pos)
+        Factor Last, Position Pos)
 {
     Alt A1;
     ++NOAlt;

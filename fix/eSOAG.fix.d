@@ -3,6 +3,8 @@ module $;
 import runtime;
 import IO = eIO;
 import Stacks = soag.eLIStacks;
+import io : Position;
+import std.stdio;
 
 const nil = -1;
 const initialStorageSize = 128;
@@ -11,7 +13,7 @@ const hyperArityConst = $;
 $
 alias TreeType = long;
 alias OpenTree = TreeType[];
-alias OpenPos = IO.Position[];
+alias OpenPos = Position[];
 // alias HeapType = long;
 alias IndexType = long;
 
@@ -19,14 +21,14 @@ OpenTree Tree;
 OpenPos PosTree;
 long ErrorCounter;
 int AffixVarCount;
-IO.Position Pos;
+Position Pos;
 IO.TextOut Out;
 HeapType RefIncVar;
 
 class SemTreeEntry
 {
     long Rule;
-    IO.Position Pos;
+    Position Pos;
     IndexType Adr;
     IndexType VarInd;
 }

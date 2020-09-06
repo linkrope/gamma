@@ -2,6 +2,9 @@ module eScanner;
 
 import runtime;
 import IO = eIO;
+import io : Position, TextIn;
+import std.conv : to;
+import std.stdio;
 
 const nil = 0;
 const firstChar = 0;
@@ -21,21 +24,20 @@ struct IdentRecord
 
 alias OpenIdent = IdentRecord[];
 int Val;
-IO.Position Pos;
-char c;
+Position Pos;
 OpenCharBuf CharBuf;
 int NextChar;
 OpenIdent Ident;
 int NextIdent;
 int[97] HashTable;
-IO.TextIn In;
+TextIn In;
 int ErrorCounter;
 bool verbose;
 
 void Error(string String)
 {
-    IO.WriteText(IO.Msg, "\n  ");
-    IO.WritePos(IO.Msg, Pos);
+    writeln;
+    writeln(IO.Msg, Pos);
     IO.WriteText(IO.Msg, "  ");
     IO.WriteText(IO.Msg, String);
     IO.Update(IO.Msg);
@@ -81,10 +83,9 @@ void Expand()
     }
 }
 
-void Init(IO.TextIn Input)
+void Init(TextIn Input)
 {
     int i;
-    c = ' ';
     CharBuf[firstChar] = str;
     CharBuf[firstChar + 1] = 'e';
     CharBuf[firstChar + 2] = 'r';
@@ -160,22 +161,25 @@ void Get(ref char Tok)
      */
     void Comment()
     {
-        int Lev;
-        char c1;
-        Lev = 1;
-        c = ' ';
+        int Lev = 1;
+        dchar c;
+        dchar c1;
+
         while (true)
         {
             c1 = c;
-            IO.Read(In, c);
+            In.popFront;
+            c = In.front;
             if (c1 == '(' && c == '*')
             {
-                IO.Read(In, c);
+                In.popFront;
+                c = In.front;
                 ++Lev;
             }
             else if (c1 == '*' && c == ')')
             {
-                IO.Read(In, c);
+                In.popFront;
+                c = In.front;
                 --Lev;
                 if (Lev == 0)
                 {
@@ -186,9 +190,9 @@ void Get(ref char Tok)
             {
                 do
                 {
-                    IO.Read(In, c);
+                    In.popFront;
                 }
-                while (!(c == IO.eol || c == eot));
+                while (In.front != IO.eol && In.front != eot);
             }
             if (c == eot)
             {
@@ -257,18 +261,18 @@ void Get(ref char Tok)
 
     void String()
     {
-        char Terminator;
-        int OldNextChar;
-        OldNextChar = NextChar;
-        Terminator = c;
-        c = str;
+        dchar Terminator = In.front;
+        int OldNextChar = NextChar;
+        dchar c = str;
+
         do
         {
             if (NextChar == CharBuf.length)
                 Expand;
-            CharBuf[NextChar] = c;
+            CharBuf[NextChar] = c.to!char;
             ++NextChar;
-            IO.Read(In, c);
+            In.popFront;
+            c = In.front;
             if (c == IO.eol || c == eot)
             {
                 Error("string terminator not in this line");
@@ -282,10 +286,10 @@ void Get(ref char Tok)
                 NextChar = OldNextChar;
                 Val = errorIdent;
                 do
-                    IO.Read(In, c);
-                while (c != Terminator && c != IO.eol && c != eot);
-                if (c == Terminator)
-                    IO.Read(In, c);
+                    In.popFront;
+                while (In.front != Terminator && In.front != IO.eol && In.front != eot);
+                if (In.front == Terminator)
+                    In.popFront;
                 return;
             }
             else if (c == str && Terminator != str)
@@ -297,7 +301,7 @@ void Get(ref char Tok)
             }
         }
         while (c != Terminator);
-        IO.Read(In, c);
+        In.popFront;
         if (NextChar == OldNextChar + 1)
         {
             Error("illegal empty string");
@@ -313,19 +317,19 @@ void Get(ref char Tok)
 
     void Ident()
     {
-        int OldNextChar;
-        OldNextChar = NextChar;
+        int OldNextChar = NextChar;
+
         do
         {
             if (NextChar == CharBuf.length)
             {
                 Expand;
             }
-            CharBuf[NextChar] = c;
+            CharBuf[NextChar] = In.front.to!char;
             ++NextChar;
-            IO.Read(In, c);
+            In.popFront;
         }
-        while ('A' <= c && c <= 'Z' || 'a' <= c && c <= 'z');
+        while ('A' <= In.front && In.front <= 'Z' || 'a' <= In.front && In.front <= 'z');
         if (NextChar == CharBuf.length)
         {
             Expand;
@@ -337,14 +341,14 @@ void Get(ref char Tok)
     void Number()
     {
         int d;
-        bool Ok;
+        bool Ok = true;
+
         Val = 0;
-        Ok = true;
         do
         {
             if (Ok)
             {
-                d = ORD(c) - ORD('0');
+                d = ORD(In.front.to!char) - ORD('0');
                 if (Val <= 999)
                 {
                     Val = Val * 10 + d;
@@ -356,30 +360,30 @@ void Get(ref char Tok)
                     Val = 0;
                 }
             }
-            IO.Read(In, c);
+            In.popFront;
         }
-        while ('0' <= c && c <= '9');
+        while ('0' <= In.front && In.front <= '9');
     }
 
     while (true)
     {
-        while (c <= ' ' && c != eot)
+        while (In.front <= ' ' && In.front != eot)
         {
-            IO.Read(In, c);
+            In.popFront;
         }
-        if (c == '!')
+        if (In.front == '!')
         {
             do
             {
-                IO.Read(In, c);
+                In.popFront;
             }
-            while (c != IO.eol && c != eot);
+            while (In.front != IO.eol && In.front != eot);
         }
-        else if (c == '(')
+        else if (In.front == '(')
         {
-            IO.PrevPos(In, Pos);
-            IO.Read(In, c);
-            if (c == '*')
+            Pos = In.position;
+            In.popFront;
+            if (In.front == '*')
             {
                 Comment;
             }
@@ -394,30 +398,30 @@ void Get(ref char Tok)
             break;
         }
     }
-    IO.PrevPos(In, Pos);
-    if (c == str || c == '\'')
+    Pos = In.position;
+    if (In.front == str || In.front == '\'')
     {
         Tok = str;
         String;
     }
-    else if ('A' <= c && c <= 'Z' || 'a' <= c && c <= 'z')
+    else if ('A' <= In.front && In.front <= 'Z' || 'a' <= In.front && In.front <= 'z')
     {
         Tok = ide;
         Ident;
     }
-    else if ('0' <= c && c <= '9')
+    else if ('0' <= In.front && In.front <= '9')
     {
         Tok = num;
         Number;
     }
-    else if (c == '~' || c == eot)
+    else if (In.front == '~' || In.front == eot)
     {
         Tok = eot;
     }
     else
     {
-        Tok = c;
-        IO.Read(In, c);
+        Tok = In.front.to!char;
+        In.popFront;
     }
     if (IO.IsOption('v'))
         trace(Tok);
@@ -427,7 +431,7 @@ void trace(char tok)
 {
     import std.stdio : write, writef, writeln;
 
-    writef!"%6d: "(Pos.Offset);
+    write(Pos, ' ');
     if (tok == ide || tok == str)
     {
         write((tok == ide) ? "ide" : "str");

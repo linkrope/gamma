@@ -2,6 +2,7 @@ module epsilon;
 
 import runtime;
 import std.stdio;
+import io : TextIn;
 
 void main(string[] args)
 {
@@ -62,12 +63,12 @@ void main(string[] args)
     IO.longOption['d']['R'] = dR;
 
     if (args.dropOne.empty)
-        compile(stdin, sweep, soag);
+        compile(TextIn("stdin", stdin), sweep, soag);
 
     try
     {
         foreach (arg; args.dropOne)
-            compile(File(arg), sweep, soag);
+            compile(TextIn(arg), sweep, soag);
     }
     catch (ErrnoException exception)
     {
@@ -76,7 +77,7 @@ void main(string[] args)
     }
 }
 
-void compile(File file, bool sweep, bool soag)
+void compile(TextIn textIn, bool sweep, bool soag)
 {
     import std.range : empty;
     import Analyser = eAnalyser;
@@ -90,7 +91,7 @@ void compile(File file, bool sweep, bool soag)
     import SOAGGen = soag.eSOAGGen;
     import SSweep = eSSweep;
 
-    Analyser.Analyse(file);
+    Analyser.Analyse(textIn);
     Analyser.Warnings;
     Predicates.Check;
     if (IO.IsOption('v'))
@@ -146,7 +147,7 @@ void build(string[] files)
     import std.string : join;
     import std.process : spawnProcess, wait;
 
-    const args = "dmd" ~ files ~ "include/runtime.d" ~ "src/eIO.d" ~ "src/soag/eLIStacks.d" ~ "-g";
+    const args = "dmd" ~ files ~ "include/runtime.d" ~ "src/eIO.d" ~ "src/io.d" ~ "src/soag/eLIStacks.d" ~ "-g";
 
     writefln!"%s"(args.join(' '));
 

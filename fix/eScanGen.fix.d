@@ -1,15 +1,17 @@
 module $;
 import runtime;
 import IO = eIO;
+import io : Position, TextIn;
+import std.stdio;
 
 const EOT = '\x00';
 const firstChBuf = 0;
 const chBufLen = 512;
 char[chBufLen] ChBuf;
-IO.Position[chBufLen] PosBuf;
+Position[chBufLen] PosBuf;
 int CurCh;
 int NextCh;
-IO.TextIn In;
+TextIn In;
 const nil = 0;
 const firstNode = 1;
 const maxTokLen = $;
@@ -40,7 +42,7 @@ bool[256] IsIdent;
 char Ch;
 int Mode;
 char StringCh;
-IO.Position Pos;
+Position Pos;
 
 void function(ref int Tok) Get;
 
@@ -65,7 +67,7 @@ void GetCh()
 {
     if (CurCh == NextCh)
     {
-        IO.Read(In, Ch);
+        Read(In, Ch);
     }
     else
     {
@@ -78,8 +80,8 @@ void GetBufCh()
 {
     if (CurCh == NextCh)
     {
-        IO.Pos(In, PosBuf[NextCh]);
-        IO.Read(In, Ch);
+        PosBuf[NextCh] = In.position;
+        Read(In, Ch);
         ChBuf[NextCh] = Ch;
         ++NextCh;
         ++CurCh;
@@ -95,7 +97,8 @@ void GetPos()
 {
     if (CurCh == NextCh)
     {
-        IO.PrevPos(In, Pos);
+        // FIXME: IO.PrevPos(In, Pos);
+        Pos = In.position;
     }
     else
     {
@@ -259,7 +262,8 @@ void Comment()
 
     void Error(string Txt)
     {
-        IO.WritePos(IO.Msg, Pos);
+        writeln;
+        writeln(Pos);
         IO.WriteString(IO.Msg, "  ");
         IO.WriteString(IO.Msg, Txt);
         IO.WriteLn(IO.Msg);
@@ -440,7 +444,7 @@ void Get3(ref int Tok)
     }
 }
 
-void Init(IO.TextIn Input)
+void Init(TextIn Input)
 {
     In = Input;
     CurCh = firstChBuf;
@@ -502,6 +506,15 @@ void BuildTree()
     Enter(whitespace, IO.eol.to!string);
     Enter(comment, "(*");
 $
+}
+
+void Read(ref TextIn In, ref char c)
+{
+    import std.conv : to;
+
+    c = In.front.to!char;
+    if (!In.empty)
+        In.popFront;
 }
 
 static this()

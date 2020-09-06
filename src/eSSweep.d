@@ -6,6 +6,8 @@ import IO = eIO;
 import EAG = eEAG;
 import EmitGen = eEmitGen;
 import EvalGen = eSLEAGGen;
+import io : UndefPos;
+import std.stdio;
 
 const nil = 0;
 const indexOfFirstAlt = 1;
@@ -227,7 +229,7 @@ void GenerateMod(bool CreateMod)
                 F1.Sym = N;
                 F1.Pos = A1.Actual.Pos;
                 F1.Actual = A1.Actual;
-                A1.Actual.Pos = IO.UndefPos;
+                A1.Actual.Pos = UndefPos;
                 A1.Actual.Params = EAG.empty;
             }
             A = A.Next;
@@ -255,7 +257,7 @@ void GenerateMod(bool CreateMod)
                 A1.Pos = (cast(EAG.Rep) EAG.HNont[N].Def).EmptyAltPos;
             }
             A1.Actual.Params = EAG.empty;
-            A1.Actual.Pos = IO.UndefPos;
+            A1.Actual.Pos = UndefPos;
             A2.Next = A1;
         }
         EAG.HNont[N].Def = Def;
@@ -329,8 +331,8 @@ void GenerateMod(bool CreateMod)
                     case appl:
                         if (!Def && !Sets.In(DefVars, -Node))
                         {
-                            IO.WriteText(IO.Msg, "\n  ");
-                            IO.WritePos(IO.Msg, EAG.ParamBuf[P].Pos);
+                            writeln;
+                            writeln(EAG.ParamBuf[P].Pos);
                             IO.WriteText(IO.Msg, "  variable '");
                             EAG.WriteVar(IO.Msg, -Node);
                             IO.WriteText(IO.Msg, "' is not defined");
@@ -456,8 +458,8 @@ void GenerateMod(bool CreateMod)
             }
             else
             {
-                IO.WriteText(IO.Msg, "\n  ");
-                IO.WritePos(IO.Msg, A.Pos);
+                writeln;
+                writeln(A.Pos);
                 IO.WriteText(IO.Msg, "  alternative is not single sweep");
                 IO.Update(IO.Msg);
                 Error = true;

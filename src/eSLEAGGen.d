@@ -4,6 +4,8 @@ import runtime;
 import Sets = eSets;
 import IO = eIO;
 import EAG = eEAG;
+import io : Position;
+import std.stdio;
 
 const parsePass = 0;
 const onePass = 1;
@@ -192,13 +194,13 @@ bool TestHNont(int N, bool EmitErr, bool SLEAG)
     bool isLEAG;
     int V;
 
-    void Error(IO.Position Pos, string Msg)
+    void Error(Position Pos, string Msg)
     {
         isSLEAG = false;
         if (EmitErr)
         {
-            IO.WriteText(IO.Msg, "\n\t");
-            IO.WritePos(IO.Msg, Pos);
+            writeln;
+            writeln(Pos);
             IO.WriteText(IO.Msg, "\t");
             IO.WriteText(IO.Msg, Msg);
             IO.Update(IO.Msg);

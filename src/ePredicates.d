@@ -4,6 +4,7 @@ import runtime;
 import Sets = eSets;
 import IO = eIO;
 import EAG = eEAG;
+import std.stdio;
 
 void List()
 {
@@ -17,8 +18,8 @@ void List()
         {
             if (Sets.In(EAG.Pred, N))
             {
-                IO.WriteText(IO.Msg, "\n\t");
-                IO.WritePos(IO.Msg, EAG.HNont[N].Def.Sub.Pos);
+                writeln;
+                writeln(EAG.HNont[N].Def.Sub.Pos);
                 IO.WriteString(IO.Msg, " :  ");
                 EAG.WriteHNont(IO.Msg, N);
             }

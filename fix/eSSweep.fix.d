@@ -2,17 +2,19 @@ module $;
 
 import runtime;
 import IO = eIO;
+import io : Position;
+import std.stdio;
 
 const hyperArityConst = $;
 alias TreeType = long;
 alias OpenTree = TreeType[];
-alias OpenPos = IO.Position[];
+alias OpenPos = Position[];
 // alias HeapType = long;
 
 OpenTree Tree;
 OpenPos PosTree;
 long ErrorCounter;
-IO.Position Pos;
+Position Pos;
 IO.TextOut Out;
 
 $

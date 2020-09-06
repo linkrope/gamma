@@ -164,9 +164,8 @@ $ long CountHeap()
 $ void SetErr()
 {
     ++ErrorCounter;
-    IO.WriteText(IO.Msg, "  ");
-    IO.WritePos(IO.Msg, $Pos);
-    IO.WriteText(IO.Msg, "  ");
+    writeln;
+    writeln($Pos);
 }
 
 void Error(string Msg)

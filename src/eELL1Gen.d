@@ -7,6 +7,8 @@ import EAG = eEAG;
 import EvalGen = eSLEAGGen;
 import EmitGen = eEmitGen;
 import Shift = eShift;
+import io : Position;
+import std.stdio;
 
 const nil = 0;
 const endTok = 0;
@@ -492,7 +494,8 @@ void ComputeDir()
                     if (Nont[N1].Anonym)
                     {
                         IO.WriteText(IO.Msg, " (EBNF at ");
-                        IO.WritePos(IO.Msg, EAG.HNont[N1].Def.Sub.Pos);
+                        writeln;
+                        writeln(EAG.HNont[N1].Def.Sub.Pos);
                         IO.WriteText(IO.Msg, ")");
                     }
                 }
@@ -543,13 +546,13 @@ void ComputeDir()
         }
     }
 
-    void Conflict(int N, IO.Position Pos, Sets.OpenSet Dir, Sets.OpenSet PrevDirs)
+    void Conflict(int N, Position Pos, Sets.OpenSet Dir, Sets.OpenSet PrevDirs)
     {
         Sets.OpenSet Toks;
         Warning = true;
         Sets.New(Toks, nToks);
-        IO.WriteText(IO.Msg, "\n  ");
-        IO.WritePos(IO.Msg, Pos);
+        writeln;
+        writeln(Pos);
         IO.WriteText(IO.Msg, "  director set conflict in ");
         EAG.WriteNamedHNont(IO.Msg, N);
         IO.WriteText(IO.Msg, ": ");
@@ -1276,8 +1279,8 @@ void GenerateMod(bool ParsePass)
                 {
                     if (!LoopNeeded && Sets.Disjoint(Alt[A.Ind].Dir, Poss))
                     {
-                        IO.WriteText(IO.Msg, "\n  ");
-                        IO.WritePos(IO.Msg, A.Pos);
+                        writeln;
+                        writeln(A.Pos);
                         IO.WriteText(IO.Msg, "  dead alternative in ");
                         EAG.WriteNamedHNont(IO.Msg, N);
                         IO.Update(IO.Msg);
@@ -1387,8 +1390,8 @@ void GenerateMod(bool ParsePass)
         {
             if (Sets.Included(Nont[N].Follow, Poss) && Sets.Disjoint(Nont[N].First, Poss))
             {
-                IO.WriteText(IO.Msg, "\n  ");
-                IO.WritePos(IO.Msg, EAG.HNont[N].Def.Sub.Pos);
+                writeln;
+                writeln(EAG.HNont[N].Def.Sub.Pos);
                 IO.WriteText(IO.Msg, "  dead [ ] - brackets in ");
                 EAG.WriteNamedHNont(IO.Msg, N);
                 IO.Update(IO.Msg);
@@ -1396,8 +1399,8 @@ void GenerateMod(bool ParsePass)
             }
             else if (Sets.Included(Nont[N].First, Poss))
             {
-                IO.WriteText(IO.Msg, "\n  ");
-                IO.WritePos(IO.Msg, EAG.HNont[N].Def.Sub.Pos);
+                writeln;
+                writeln(EAG.HNont[N].Def.Sub.Pos);
                 IO.WriteText(IO.Msg, "  useless [ ] - brackets in ");
                 EAG.WriteNamedHNont(IO.Msg, N);
                 IO.Update(IO.Msg);
@@ -1458,8 +1461,8 @@ void GenerateMod(bool ParsePass)
         {
             if (Sets.Included(Nont[N].Follow, Poss) && Sets.Disjoint(Nont[N].First, Poss))
             {
-                IO.WriteText(IO.Msg, "\n  ");
-                IO.WritePos(IO.Msg, EAG.HNont[N].Def.Sub.Pos);
+                writeln;
+                writeln(EAG.HNont[N].Def.Sub.Pos);
                 IO.WriteText(IO.Msg, "  dead { } - braces in ");
                 EAG.WriteNamedHNont(IO.Msg, N);
                 IO.Update(IO.Msg);

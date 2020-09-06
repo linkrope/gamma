@@ -4,6 +4,8 @@ import runtime;
 import std.stdio;
 import IO = eIO;
 import S = $;
+import io : Position, TextIn;
+import std.stdio;
 
 const nToks = $;
 const tokSetLen = $;
@@ -151,43 +153,43 @@ void WriteTokSet(TokSet Toks)
     }
 }
 
-void ErrorMessageTok(IO.Position Pos, int Tok1)
+void ErrorMessageTok(Position Pos, int Tok1)
 {
-    IO.WriteText(IO.Msg, "  ");
-    IO.WritePos(IO.Msg, Pos);
+    writeln;
+    writeln(Pos);
     IO.WriteText(IO.Msg, "  syntax error, expected: ");
     S.WriteRepr(IO.Msg, Tok1);
     IO.WriteLn(IO.Msg);
     IO.Update(IO.Msg);
 }
 
-void ErrorMessageTokSet(IO.Position Pos, ref TokSet Toks)
+void ErrorMessageTokSet(Position Pos, ref TokSet Toks)
 {
-    IO.WriteText(IO.Msg, "  ");
-    IO.WritePos(IO.Msg, Pos);
+    writeln;
+    writeln(Pos);
     IO.WriteText(IO.Msg, "  syntax error, expected: ");
     WriteTokSet(Toks);
     IO.WriteLn(IO.Msg);
     IO.Update(IO.Msg);
 }
 
-void RestartMessage(IO.Position Pos)
+void RestartMessage(Position Pos)
 {
     if (LongErrorMsgs)
     {
-        IO.WriteText(IO.Msg, "  ");
-        IO.WritePos(IO.Msg, Pos);
+        writeln;
+        writeln(Pos);
         IO.WriteText(IO.Msg, "      restart point\n");
         IO.Update(IO.Msg);
     }
 }
 
-void RepairMessage(IO.Position Pos, int Tok1)
+void RepairMessage(Position Pos, int Tok1)
 {
     if (LongErrorMsgs)
     {
-        IO.WriteText(IO.Msg, "  ");
-        IO.WritePos(IO.Msg, Pos);
+        writeln;
+        writeln(Pos);
         IO.WriteText(IO.Msg, "      symbol inserted: ");
         S.WriteRepr(IO.Msg, Tok1);
         IO.WriteLn(IO.Msg);
@@ -289,12 +291,12 @@ void main(string[] args)
     IO.option['w'] = write;
 
     if (args.dropOne.empty)
-        Compile(stdin);
+        Compile(TextIn("stdin", stdin));
 
     try
     {
         foreach (arg; args.dropOne)
-            Compile(File(arg));
+            Compile(TextIn(arg));
     }
     catch (ErrnoException exception)
     {
@@ -304,16 +306,16 @@ void main(string[] args)
 
 }
 
-void Compile(File file)
+void Compile(TextIn textIn)
 {
-    auto In = new IO.TextIn(file);
     HeapType V1;
+
     if (ParserTabIsLoaded && EvalInitSucceeds()$)
     {
         IO.WriteText(IO.Msg, "$ compiler: compiling...\n");
         IO.Update(IO.Msg);
         ParserInit;
-        S.Init(In);
+        S.Init(textIn);
         S.Get(Tok);
         $(V1);
         $

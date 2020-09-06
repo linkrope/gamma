@@ -3,6 +3,8 @@ module eEarley;
 import runtime;
 import IO = eIO;
 import EAG = eEAG;
+import io : Position;
+import std.stdio;
 
 const end = int.min;
 const nil = EAG.nil;
@@ -13,7 +15,7 @@ struct MSymRecord
 {
     int Sym;
     int Num;
-    IO.Position Pos;
+    Position Pos;
 }
 
 alias OpenMSymBuf = MSymRecord[];
@@ -77,7 +79,7 @@ int StartAffixform()
     return NextMSym;
 }
 
-void AppMSym(int Sym, int Num, IO.Position Pos)
+void AppMSym(int Sym, int Num, Position Pos)
 {
     if (NextMSym >= MSymBuf.length)
     {
@@ -89,7 +91,7 @@ void AppMSym(int Sym, int Num, IO.Position Pos)
     ++NextMSym;
 }
 
-void EndAffixform(IO.Position Pos)
+void EndAffixform(Position Pos)
 {
     AppMSym(end, 0, Pos);
 }
@@ -371,8 +373,8 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def)
             Scanner;
             if (CurList == NextItem)
             {
-                IO.WriteText(IO.Msg, "\n  ");
-                IO.WritePos(IO.Msg, MSymBuf[CurSym].Pos);
+                writeln;
+                writeln(MSymBuf[CurSym].Pos);
                 IO.WriteText(IO.Msg, "  affixform incorrect");
                 IO.Update(IO.Msg);
                 Tree = nil;
