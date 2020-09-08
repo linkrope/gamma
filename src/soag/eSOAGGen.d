@@ -11,6 +11,7 @@ import SLEAGGen = eSLEAGGen;
 import EmitGen = eEmitGen;
 import SOAGOptimizer = soag.eSOAGOptimizer;
 import Protocol = soag.eSOAGProtocol;
+import io : TextIn;
 
 const cTab = 1;
 const firstAffixOffset = 0;
@@ -495,9 +496,10 @@ void GenAffPos(int S, int AN)
  * SEM: Generiert einen Zugriff auf den Inhalt eines Affixes
  */
 void GenAffix(int V)
+in (AffixOffset[V] != notApplied)
 {
     int AP;
-    ASSERT(AffixOffset[V] != notApplied);
+
     if (AffixOffset[V] == optimizedStorage)
     {
         AP = GetCorrespondedAffPos(SOAG.DefAffOcc[V]);
@@ -523,9 +525,10 @@ void GenAffix(int V)
  *      nur in Kombination mit der Prozedur GenClose zu verwenden
  */
 void GenAffixAssign(int V)
+in (AffixOffset[V] != notApplied)
 {
     int AP;
-    ASSERT(AffixOffset[V] != notApplied);
+
     if (AffixOffset[V] == optimizedStorage)
     {
         AP = GetCorrespondedAffPos(SOAG.DefAffOcc[V]);
@@ -1528,7 +1531,9 @@ void GenVisitRule(int R)
         {
             SO = SOAG.Rule[R].SymOcc.Beg;
             VN = (cast(SOAG.Leave) SOAG.VS[i]).VisitNo;
-            ASSERT(VN == VisitNo);
+
+            assert(VN == VisitNo);
+
             Ind;
             WrS("// Visit-abschließende Synthese\n");
             GenSynPred(SO, VisitNo);
@@ -1661,22 +1666,26 @@ void GenerateModule()
 {
     int R;
     char[] Name = new char[EAG.BaseNameLen + 10];
-    IO.TextIn Fix;
+    TextIn Fix;
     int StartRule;
 
     void InclFix(char Term)
     {
-        char c;
-        IO.Read(Fix, c);
+        import std.conv : to;
+        import std.exception : enforce;
+
+        char c = Fix.front.to!char;
+
         while (c != Term)
         {
-            if (c == '\x00')
-            {
-                throw new Exception("error: unexpected end of eSOAG.Fix");
-            }
+            enforce(c != 0,
+                    "error: unexpected end of eSOAG.fix.d");
+
             IO.Write(Out, c);
-            IO.Read(Fix, c);
+            Fix.popFront;
+            c = Fix.front.to!char;
         }
+        Fix.popFront;
     }
 
     void Append(ref char[] Dest, char[] Src, string Suf)
@@ -1699,11 +1708,7 @@ void GenerateModule()
         Dest[i] = '\x00';
     }
 
-    IO.OpenIn(Fix, "fix/eSOAG.fix.d", Error);
-    if (Error)
-    {
-        throw new Exception("error: could not open eSOAG.Fix");
-    }
+    Fix = TextIn("fix/eSOAG.fix.d");
     Append(Name, EAG.BaseName, "Eval");
     IO.CreateModOut(Out, Name);
     SLEAGGen.InitGen(Out, SLEAGGen.sSweepPass);
@@ -1787,7 +1792,6 @@ void GenerateModule()
         }
     }
     SLEAGGen.FinitGen;
-    IO.CloseIn(Fix);
     IO.CloseOut(Out);
 }
 

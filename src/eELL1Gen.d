@@ -7,7 +7,7 @@ import EAG = eEAG;
 import EvalGen = eSLEAGGen;
 import EmitGen = eEmitGen;
 import Shift = eShift;
-import io : Position;
+import io : Position, TextIn;
 import std.stdio;
 
 const nil = 0;
@@ -1077,7 +1077,7 @@ void ComputeSets()
 void GenerateMod(bool ParsePass)
 {
     IO.TextOut Mod;
-    IO.TextIn Fix;
+    TextIn Fix;
     int N;
     int Tok;
     Sets.OpenSet AllToks;
@@ -1570,17 +1570,21 @@ void GenerateMod(bool ParsePass)
 
     void InclFix(char Term)
     {
-        char c;
-        IO.Read(Fix, c);
+        import std.conv : to;
+        import std.exception : enforce;
+
+        char c = Fix.front.to!char;
+
         while (c != Term)
         {
-            if (c == '\x00')
-            {
-                throw new Exception("error: unexpected end of eELL1Gen.Fix");
-            }
+            enforce(c != 0,
+                    "error: unexpected end of eELL1Gen.fix.d");
+
             IO.Write(Mod, c);
-            IO.Read(Fix, c);
+            Fix.popFront;
+            c = Fix.front.to!char;
         }
+        Fix.popFront;
     }
 
     void Append(ref char[] Dest, char[] Src, string Suf)
@@ -1604,11 +1608,7 @@ void GenerateMod(bool ParsePass)
     }
 
     Sets.New(AllToks, nToks);
-    IO.OpenIn(Fix, "fix/eELL1Gen.fix.d", OpenError);
-    if (OpenError)
-    {
-        throw new Exception("error: could not open eELL1Gen.Fix");
-    }
+    Fix = TextIn("fix/eELL1Gen.fix.d");
     IO.CreateModOut(Mod, EAG.BaseName);
     if (ParsePass)
     {
@@ -1748,7 +1748,6 @@ void GenerateMod(bool ParsePass)
             IO.Show(Mod);
         }
     }
-    IO.CloseIn(Fix);
     IO.CloseOut(Mod);
     EvalGen.FinitGen;
 }

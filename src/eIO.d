@@ -11,20 +11,6 @@ bool[char] option;
 bool[char][char] longOption;
 string[] files;
 
-class TextIn
-{
-    char[] text;
-    long offset;
-
-    this(File file)
-    {
-        char[] buffer;
-
-        while (file.readln(buffer))
-            this.text ~= buffer;
-    }
-}
-
 class TextOut
 {
     string Name;
@@ -43,28 +29,6 @@ class TextOut
 }
 
 TextOut Msg;
-
-void OpenIn(ref TextIn In, string Name, ref bool Error)
-{
-    // TODO: error handling
-    In = new TextIn(File(Name));
-}
-
-void CloseIn(ref TextIn In)
-{
-    In = null;
-}
-
-void Read(TextIn In, ref char c)
-{
-    if (In.offset >= In.text.length)
-    {
-        c = 0;
-        return;
-    }
-    c = In.text[In.offset];
-    ++In.offset;
-}
 
 void CreateModOut(ref TextOut Out, char[] Name)
 {

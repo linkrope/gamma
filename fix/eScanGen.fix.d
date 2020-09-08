@@ -43,6 +43,7 @@ char Ch;
 int Mode;
 char StringCh;
 Position Pos;
+Position PrevPos;
 
 void function(ref int Tok) Get;
 
@@ -97,8 +98,7 @@ void GetPos()
 {
     if (CurCh == NextCh)
     {
-        // FIXME: IO.PrevPos(In, Pos);
-        Pos = In.position;
+        Pos = PrevPos;
     }
     else
     {
@@ -513,6 +513,7 @@ void Read(ref TextIn In, ref char c)
     import std.conv : to;
 
     c = In.front.to!char;
+    PrevPos = In.position;
     if (!In.empty)
         In.popFront;
 }

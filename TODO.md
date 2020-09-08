@@ -1,7 +1,3 @@
-## Position
-
-- change Position to something useful outside the Oberon system
-
 ## Output Directory
 
 - introduce an output directory to be able to run tests in parallel

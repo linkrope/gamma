@@ -4,14 +4,6 @@ import std.math;
 
 alias ABS = abs;
 
-void ASSERT(bool condition, int code = 0)
-{
-    import std.exception : enforce;
-    import  std.format : format;
-
-    enforce(condition, format!"code: %s"(code));
-}
-
 char CHR(int x)
 {
     import std.conv : to;

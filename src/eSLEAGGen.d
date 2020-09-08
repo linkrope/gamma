@@ -4,7 +4,7 @@ import runtime;
 import Sets = eSets;
 import IO = eIO;
 import EAG = eEAG;
-import io : Position;
+import io : Position, TextIn;
 import std.stdio;
 
 const parsePass = 0;
@@ -303,7 +303,8 @@ bool TestHNont(int N, bool EmitErr, bool SLEAG)
         }
     }
 
-    ASSERT(Sets.In(EAG.Prod, N), 98);
+    assert(Sets.In(EAG.Prod, N));
+
     isSLEAG = true;
     isLEAG = true;
     Prepare(N);
@@ -494,7 +495,8 @@ void ComputeNodeIdent()
     RefConst = 0;
     for (A = EAG.firstMAlt; A <= EAG.NextMAlt - 1; ++A)
     {
-        ASSERT(NodeIdent[A] >= 0, 89);
+        assert(NodeIdent[A] >= 0);
+
         temp = NodeIdent[A] + EAG.MAlt[A].Arity * MaxMAlt;
         NodeIdent[A] = temp;
         if (RefConst < NodeIdent[A])
@@ -1304,8 +1306,9 @@ void ComputeVarNames(int N, bool Embed)
         }
     }
 
-    ASSERT(Sets.In(EAG.Prod, N), 98);
-    ASSERT(!Sets.In(HNontDef, N), 97);
+    assert(Sets.In(EAG.Prod, N));
+    assert(!Sets.In(HNontDef, N));
+
     NEW(FreeVar, 63);
     NEW(RefCnt, 63);
     Bla(N);
@@ -1543,9 +1546,8 @@ void GenHeapInc(int n)
 
 void GenDeclarations()
 {
-    IO.TextIn Fix;
+    TextIn Fix;
     char[] Name = new char[EAG.BaseNameLen + 10];
-    bool OpenError;
     long TabTimeStamp;
 
     void Append(ref char[] Dest, char[] Src, string Suf)
@@ -1570,31 +1572,39 @@ void GenDeclarations()
 
     void InclFix(char Term)
     {
-        char c;
-        IO.Read(Fix, c);
+        import std.conv : to;
+        import std.exception : enforce;
+
+        char c = Fix.front.to!char;
+
         while (c != Term)
         {
-            if (c == '\x00')
-            {
-                throw new Exception("error: unexpected end of eSLEAGGen.Fix");
-            }
+            enforce(c != 0,
+                    "error: unexpected end of eSLEAGGen.fix.d");
+
             IO.Write(Mod, c);
-            IO.Read(Fix, c);
+            Fix.popFront;
+            c = Fix.front.to!char;
         }
+        Fix.popFront;
     }
 
     void SkipFix(char Term)
     {
-        char c;
-        IO.Read(Fix, c);
+        import std.conv : to;
+        import std.exception : enforce;
+
+        char c = Fix.front.to!char;
+
         while (c != Term)
         {
-            if (c == '\x00')
-            {
-                throw new Exception("error: unexpected end of eSLEAGGen.Fix");
-            }
-            IO.Read(Fix, c);
+            enforce(c != 0,
+                    "error: unexpected end of eSLEAGGen.fix.d");
+
+            Fix.popFront;
+            c = Fix.front.to!char;
         }
+        Fix.popFront;
     }
 
     void GenTabFile(long TabTimeStamp)
@@ -1677,11 +1687,7 @@ void GenDeclarations()
         Append(Name, EAG.BaseName, ".EvalTab");
     }
     TabTimeStamp = IO.TimeStamp();
-    IO.OpenIn(Fix, "fix/eSLEAGGen.fix.d", OpenError);
-    if (OpenError)
-    {
-        throw new Exception("error: could not open eELL1Gen.Fix");
-    }
+    Fix = TextIn("fix/eSLEAGGen.fix.d");
     InclFix('$');
     Int(FirstHeap - 1);
     InclFix('$');
@@ -1767,7 +1773,6 @@ void GenDeclarations()
     }
     InclFix('$');
     GenTabFile(TabTimeStamp);
-    IO.CloseIn(Fix);
 }
 
 bool PosNeeded(int P)
@@ -2020,7 +2025,8 @@ void GenAnalPred(int Sym, int P)
                 V = -Tree;
                 if (EAG.Var[V].Def)
                 {
-                    ASSERT(AffixName[P] != VarName[V]);
+                    assert(AffixName[P] != VarName[V]);
+
                     GenEqualPred(AffixName[P], V, true);
                     if (MakeRefCnt)
                     {
@@ -2760,7 +2766,8 @@ void GenActualParams(int P, bool ParNeeded)
         }
         while (true)
         {
-            ASSERT(AffixName[P] >= 0, 89);
+            assert(AffixName[P] >= 0);
+
             GenVar(AffixName[P]);
             ++P;
             if (EAG.ParamBuf[P].Affixform == EAG.nil)
@@ -2783,10 +2790,11 @@ void GenPredProcs()
     void GenForward(int N)
     {
         void GenPredCover(int N)
+        in (Sets.In(EAG.Pred, N))
         {
             int Dom;
             int i;
-            ASSERT(Sets.In(EAG.Pred, N), 98);
+
             Str("void Check");
             Int(N);
             Str("(string ErrMsg");
@@ -2897,8 +2905,9 @@ void GenPredProcs()
             int Level;
             if (F !is null)
             {
-                ASSERT(cast(EAG.Nont) F !is null, 99);
-                ASSERT(Sets.In(EAG.Pred, (cast(EAG.Nont) F).Sym), 98);
+                assert(cast(EAG.Nont) F !is null);
+                assert(Sets.In(EAG.Pred, (cast(EAG.Nont) F).Sym));
+
                 GenSynPred(N, (cast(EAG.Nont) F).Actual.Params);
                 Str("if (Pred");
                 Int((cast(EAG.Nont) F).Sym);
@@ -3049,8 +3058,8 @@ void GenPredProcs()
 }
 
 void GenPredCall(int N, int ActualParams)
+in (Sets.In(EAG.Pred, N))
 {
-    ASSERT(Sets.In(EAG.Pred, N), 90);
     Str("Check");
     Int(N);
     Str("(\"");

@@ -93,8 +93,9 @@ void PopPos(HeapType Arity)
         --PosTop;
     }
 }
-
-$ void GetHeap(HeapType Arity, ref HeapType Node)
+$
+void GetHeap(HeapType Arity, ref HeapType Node)
+out (; DIV(Heap[Node], refConst) == 0)
 {
     if (FreeList[Arity] == 0)
     {
@@ -112,14 +113,14 @@ $ void GetHeap(HeapType Arity, ref HeapType Node)
         FreeList[Arity] = Heap[FreeList[Arity]];
         Heap[Node] = 0;
     }
-    ASSERT(DIV(Heap[Node], refConst) == 0, 95);
 }
 
 void FreeHeap(HeapType Node)
+in (Node >= 0)
 {
     long RArity;
     HeapType i;
-    ASSERT(Node >= 0, 97);
+
     if (DIV(Heap[Node], refConst) <= 0)
     {
         RArity = DIV(MOD(Heap[Node], refConst), arityConst);
@@ -127,8 +128,10 @@ void FreeHeap(HeapType Node)
         {
             FreeHeap(Heap[i]);
         }
-        ASSERT(DIV(Heap[Node], refConst) == 0, 96);
-        ASSERT(Node > 0, 95);
+
+        assert(DIV(Heap[Node], refConst) == 0);
+        assert(Node > 0);
+
         Heap[Node] = FreeList[RArity];
         FreeList[RArity] = Node;
     }

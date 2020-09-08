@@ -6,7 +6,7 @@ import IO = eIO;
 import EAG = eEAG;
 import EmitGen = eEmitGen;
 import EvalGen = eSLEAGGen;
-import io : UndefPos;
+import io : TextIn, UndefPos;
 import std.stdio;
 
 const nil = 0;
@@ -63,9 +63,8 @@ void GenerateMod(bool CreateMod)
     int N;
     int V;
     IO.TextOut Mod;
-    IO.TextIn Fix;
+    TextIn Fix;
     char[] Name = new char[EAG.BaseNameLen + 10];
-    bool OpenError;
     bool CompileError;
     EAG.Rule SavedNontDef;
     int SavedNextHFactor;
@@ -95,17 +94,21 @@ void GenerateMod(bool CreateMod)
 
     void InclFix(char Term)
     {
-        char c;
-        IO.Read(Fix, c);
+        import std.conv : to;
+        import std.exception : enforce;
+
+        char c = Fix.front.to!char;
+
         while (c != Term)
         {
-            if (c == '\x00')
-            {
-                throw new Exception("error: unexpected end of eSSweep.Fix");
-            }
+            enforce(c != 0,
+                    "error: unexpected end of eSSweep.fix.d");
+
             IO.Write(Mod, c);
-            IO.Read(Fix, c);
+            Fix.popFront;
+            c = Fix.front.to!char;
         }
+        Fix.popFront;
     }
 
     void Append(ref char[] Dest, char[] Src, string Suf)
@@ -572,11 +575,7 @@ void GenerateMod(bool CreateMod)
     Error = Error || !EvalGen.PredsOK();
     if (CreateMod)
     {
-        IO.OpenIn(Fix, "fix/eSSweep.fix.d", OpenError);
-        if (OpenError)
-        {
-            throw new Exception("error: could not open eSSweep.Fix");
-        }
+        Fix = TextIn("fix/eSSweep.fix.d");
         Append(Name, EAG.BaseName, "Eval");
         IO.CreateModOut(Mod, Name);
         if (!Error)
@@ -670,7 +669,6 @@ void GenerateMod(bool CreateMod)
             }
         }
         EvalGen.FinitGen;
-        IO.CloseIn(Fix);
         IO.CloseOut(Mod);
     }
     EvalGen.FinitTest;

@@ -4,6 +4,7 @@ import runtime;
 import IO = eIO;
 import Scanner = eScanner;
 import EAG = eEAG;
+import io : TextIn;
 
 const firstUserTok = 3;
 const lenOfPredefinedToken = 8;
@@ -13,7 +14,7 @@ int i;
 
 void Generate()
 {
-    IO.TextIn Fix;
+    TextIn Fix;
     IO.TextOut Mod;
     int Term;
     int MaxTokLen;
@@ -21,7 +22,6 @@ void Generate()
     char[] Str = new char[400];
     char[] Name = new char[EAG.BaseNameLen + 10];
     bool Error;
-    bool OpenError;
     bool CompileError;
     bool ShowMod;
 
@@ -89,17 +89,21 @@ void Generate()
 
     void InclFix(char Term)
     {
-        char c;
-        IO.Read(Fix, c);
+        import std.conv : to;
+        import std.exception : enforce;
+
+        char c = Fix.front.to!char;
+
         while (c != Term)
         {
-            if (c == '\x00')
-            {
-                throw new Exception("error: unexpected end of eScanGen.Fix");
-            }
+            enforce(c != 0,
+                    "error: unexpected end of eScanGen.fix.d");
+
             IO.Write(Mod, c);
-            IO.Read(Fix, c);
+            Fix.popFront;
+            c = Fix.front.to!char;
         }
+        Fix.popFront;
     }
 
     void Append(ref char[] Dest, char[] Src, string Suf)
@@ -142,11 +146,7 @@ void Generate()
         }
         if (!Error)
         {
-            IO.OpenIn(Fix, "fix/eScanGen.fix.d", OpenError);
-            if (OpenError)
-            {
-                throw new Exception("error: cannot open eScanGen.Fix");
-            }
+            Fix = TextIn("fix/eScanGen.fix.d");
             Append(Name, EAG.BaseName, "Scan");
             IO.CreateModOut(Mod, Name);
             InclFix('$');
@@ -167,7 +167,6 @@ void Generate()
             InclFix('$');
             IO.WriteString(Mod, Name);
             InclFix('$');
-            IO.CloseIn(Fix);
             IO.Update(Mod);
             if (ShowMod)
             {

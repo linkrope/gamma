@@ -18,12 +18,13 @@ void GenEmitProc(IO.TextOut Mod)
     bool EmitSpace;
 
     void CalcSets(int Nont)
+    in (EAG.firstMNont <= Nont)
+    in (Nont < EAG.NextMNont)
     {
         int A;
         int F;
         int M;
-        ASSERT(Nont >= EAG.firstMNont, 98);
-        ASSERT(Nont < EAG.NextMNont, 97);
+
         if (EAG.MNont[Nont].IsToken)
         {
             Sets.Incl(Type3, Nont);
