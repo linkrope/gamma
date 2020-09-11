@@ -38,7 +38,6 @@ void New(ref BSet S, int MaxElem)
  */
 void Reset(ref BSet S)
 {
-    int i;
     ALists.Reset(S.List);
     Sets.Empty(S.BitVektor);
 }
@@ -74,6 +73,7 @@ void Insert(ref BSet S, int Elem)
 void Delete(ref BSet S, int Elem)
 {
     int i;
+
     if (Elem <= S.Max)
     {
         if (Sets.In(S.BitVektor, Elem))

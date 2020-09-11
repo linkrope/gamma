@@ -10,7 +10,7 @@ const nil = 0;
 const firstChar = 0;
 const firstIdent = 1;
 const errorIdent = firstIdent;
-const eot = '\x00';
+const eot = 0;
 const str = '"';
 const num = '0';
 const ide = 'A';
@@ -46,8 +46,6 @@ void Error(string String)
 
 void Expand()
 {
-    long i;
-
     if (NextChar >= CharBuf.length)
     {
         OpenCharBuf CharBuf1;
@@ -60,7 +58,7 @@ void Expand()
         {
             throw new Exception("internal error: CharBuf overflow");
         }
-        for (i = firstChar; i <= CharBuf.length - 1; ++i)
+        for (size_t i = firstChar; i < CharBuf.length; ++i)
         {
             CharBuf1[i] = CharBuf[i];
         }
@@ -78,7 +76,7 @@ void Expand()
         {
             throw new Exception("internal error: Ident overflow");
         }
-        for (i = firstIdent; i <= Ident.length - 1; ++i)
+        for (size_t i = firstIdent; i < Ident.length; ++i)
         {
             Ident1[i] = Ident[i];
         }
@@ -88,7 +86,6 @@ void Expand()
 
 void Init(TextIn Input)
 {
-    int i;
     CharBuf[firstChar] = str;
     CharBuf[firstChar + 1] = 'e';
     CharBuf[firstChar + 2] = 'r';
@@ -97,7 +94,7 @@ void Init(TextIn Input)
     Ident[errorIdent].Repr = firstChar;
     Ident[errorIdent + 1].Repr = NextChar;
     NextIdent = firstIdent + 1;
-    for (i = 0; i <= HashTable.length - 1; ++i)
+    for (size_t i = 0; i < HashTable.length; ++i)
     {
         HashTable[i] = nil;
     }
@@ -137,7 +134,7 @@ void GetRepr(int Id, ref char[] Name)
         Name[n] = c;
         ++n;
     }
-    Name[n] = '\x00';
+    Name[n] = 0;
 }
 
 void WriteRepr(IO.TextOut Out, int Id)
@@ -265,8 +262,8 @@ void Get(ref char Tok)
 
     void String()
     {
-        dchar Terminator = In.front;
-        int OldNextChar = NextChar;
+        const Terminator = In.front;
+        const OldNextChar = NextChar;
         dchar c = str;
 
         do
@@ -321,7 +318,7 @@ void Get(ref char Tok)
 
     void Ident()
     {
-        int OldNextChar = NextChar;
+        const OldNextChar = NextChar;
 
         do
         {

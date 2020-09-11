@@ -78,7 +78,7 @@ void WriteText(TextOut Out, char[] Str)
     char c;
     i = 0;
     c = Str[0];
-    while (c != '\x00')
+    while (c != 0)
     {
         if (c == '\\')
         {
@@ -86,7 +86,7 @@ void WriteText(TextOut Out, char[] Str)
             c = Str[i];
             switch (c)
             {
-            case '\x00':
+            case 0:
                 return;
                 break;
             case '\'':

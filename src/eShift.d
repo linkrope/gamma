@@ -8,7 +8,7 @@ import io : UndefPos;
 
 const nil = EAG.nil;
 
-void Shift(int Dummy)
+void Shift()
 {
     int HN;
     int HT;
@@ -19,6 +19,7 @@ void Shift(int Dummy)
     int Var;
     Sets.OpenSet GenNonts;
     Sets.OpenSet Del;
+
     Sets.New(GenNonts, EAG.NextHNont);
     Sets.Difference(GenNonts, EAG.All, EAG.Pred);
     Sets.New(Del, EAG.NextHNont);

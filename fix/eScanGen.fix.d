@@ -4,7 +4,7 @@ import IO = eIO;
 import io : Position, TextIn;
 import std.stdio;
 
-const EOT = '\x00';
+const EOT = 0;
 const firstChBuf = 0;
 const chBufLen = 512;
 char[chBufLen] ChBuf;

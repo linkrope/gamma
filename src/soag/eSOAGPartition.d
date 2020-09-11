@@ -55,8 +55,6 @@ int Seperator;
 
 void Expand()
 {
-    long i;
-
     long NewLen(long ArrayLen)
     {
         if (ArrayLen < DIV(int.max, 2))
@@ -73,7 +71,7 @@ void Expand()
     {
         OpenVarBuf VarBuf1 = new VarBufDesc[NewLen(VarBuf.length)];
 
-        for (i = firstVarBuf; i <= VarBuf.length - 1; ++i)
+        for (size_t i = firstVarBuf; i < VarBuf.length; ++i)
         {
             VarBuf1[i] = VarBuf[i];
         }
@@ -83,7 +81,7 @@ void Expand()
     {
         OpenChangeBuf ChangeBuf1 = new ChangeBufDesc[NewLen(ChangeBuf.length)];
 
-        for (i = firstChangeBuf; i <= ChangeBuf.length - 1; ++i)
+        for (size_t i = firstChangeBuf; i < ChangeBuf.length; ++i)
         {
             ChangeBuf1[i] = ChangeBuf[i];
         }
@@ -160,7 +158,7 @@ void AddTDPTrans(int R, int AO1, int AO2)
     int AN2;
     int AN3;
     int AN4;
-    int i;
+
     ALists.Reset(NUV);
     if (!EdgeInTDP(R, AO1, AO2))
     {
@@ -181,7 +179,7 @@ void AddTDPTrans(int R, int AO1, int AO2)
             if ((AN3 == AN1 || Sets.In(SOAG.Rule[R].TDP[AN3], AN1))
                     && !Sets.In(SOAG.Rule[R].TDP[AN3], AN2))
             {
-                for (i = ALists.firstIndex; i <= NUV.Last; ++i)
+                for (size_t i = ALists.firstIndex; i <= NUV.Last; ++i)
                 {
                     AO4 = NUV.Elem[i];
                     if (!EdgeInTDP(R, AO3, AO4))
@@ -355,10 +353,8 @@ void ComputeAffixApplCnt(int R)
         while (i < NextVarBuf)
         {
             if (EAG.Var[A].Sym == -VarBuf[i].Sym
-                    && (EAG.Var[A].Num == VarBuf[i].Num
-                        && SOAG.DefAffOcc[A] != VarBuf[i].AffOcc
-                        || EAG.Var[A].Num == -VarBuf[i].Num
-                        && SOAG.DefAffOcc[VarBuf[i].VarInd] == VarBuf[i].AffOcc))
+                    && (EAG.Var[A].Num == VarBuf[i].Num && SOAG.DefAffOcc[A] != VarBuf[i].AffOcc
+                        || EAG.Var[A].Num == -VarBuf[i].Num && SOAG.DefAffOcc[VarBuf[i].VarInd] == VarBuf[i].AffOcc))
             {
                 AN = VarBuf[i].AffOcc - SOAG.Rule[R].AffOcc.Beg;
                 DAN = SOAG.DefAffOcc[A] - SOAG.Rule[R].AffOcc.Beg;
@@ -388,7 +384,7 @@ void ComputeDP()
     int j;
     int PBI;
     int FirstSOVar;
-    EAG.Alt Alt;
+
     Phase = computeDPandIDP;
     ALists.New(MarkedEdges, 256);
     ALists.New(NUV, 56);
@@ -498,6 +494,7 @@ void Orient(int a, int b, int X, ref BSets.BSet New)
     int b1;
     int AO1;
     int AO2;
+
     BSets.Reset(New);
     CyclicTDP = false;
     NextChangeBuf = firstChangeBuf;
@@ -539,13 +536,11 @@ void Orient(int a, int b, int X, ref BSets.BSet New)
 
 void WriteDS(int XmaxAff)
 {
-    int i;
-    int j;
-    for (i = 0; i <= XmaxAff; ++i)
+    for (size_t i = 0; i <= XmaxAff; ++i)
     {
         IO.WriteText(IO.Msg, "Zeile ");
         IO.WriteInt(IO.Msg, i);
-        for (j = 0; j <= XmaxAff; ++j)
+        for (size_t j = 0; j <= XmaxAff; ++j)
         {
             IO.WriteInt(IO.Msg, DS[i][j]);
             IO.WriteString(IO.Msg, " ");
@@ -570,7 +565,7 @@ void DynTopSortSym(int X)
     int AO1;
     int AO2;
     int SO;
-    int Part;
+    int Part = 0;
     int i;
     int a1;
     int a;
@@ -578,9 +573,8 @@ void DynTopSortSym(int X)
     int c;
     int d;
     ASets.ASet tmp;
-    Part = 0;
-    XmaxAff = SOAG.SymOcc[SOAG.Sym[X].FirstOcc].AffOcc.End
-        - SOAG.SymOcc[SOAG.Sym[X].FirstOcc].AffOcc.Beg;
+
+    XmaxAff = SOAG.SymOcc[SOAG.Sym[X].FirstOcc].AffOcc.End - SOAG.SymOcc[SOAG.Sym[X].FirstOcc].AffOcc.Beg;
     for (a = 0; a <= XmaxAff; ++a)
     {
         for (b = 0; b <= XmaxAff; ++b)
@@ -591,11 +585,9 @@ void DynTopSortSym(int X)
     SO = SOAG.Sym[X].FirstOcc;
     while (SO != SOAG.nil)
     {
-        for (AO1 = SOAG.SymOcc[SO].AffOcc.Beg; AO1 <= SOAG.SymOcc[SO].AffOcc.End;
-                ++AO1)
+        for (AO1 = SOAG.SymOcc[SO].AffOcc.Beg; AO1 <= SOAG.SymOcc[SO].AffOcc.End; ++AO1)
         {
-            for (AO2 = SOAG.SymOcc[SO].AffOcc.Beg; AO2 <= SOAG.SymOcc[SO].AffOcc.End;
-                    ++AO2)
+            for (AO2 = SOAG.SymOcc[SO].AffOcc.Beg; AO2 <= SOAG.SymOcc[SO].AffOcc.End; ++AO2)
             {
                 if (EdgeInTDP(SOAG.SymOcc[SO].RuleInd, AO1, AO2))
                 {
@@ -741,7 +733,6 @@ void DynTopSort()
  */
 void Compute()
 {
-    int i;
     SOAG.Init;
     VarBuf = new VarBufDesc[50];
     ChangeBuf = new ChangeBufDesc[64];

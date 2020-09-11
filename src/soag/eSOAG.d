@@ -209,8 +209,6 @@ void Error(T)(int ErrorType, T Proc)
 
 void Expand()
 {
-    long i;
-
     long NewLen(long ArrayLen)
     {
         if (ArrayLen < DIV(int.max, 2))
@@ -227,7 +225,7 @@ void Expand()
     {
         OpenAffOcc AffOcc1 = new AffOccDesc[NewLen(AffOcc.length)];
 
-        for (i = firstAffOcc; i <= AffOcc.length - 1; ++i)
+        for (size_t i = firstAffOcc; i < AffOcc.length; ++i)
         {
             AffOcc1[i] = AffOcc[i];
         }
@@ -237,7 +235,7 @@ void Expand()
     {
         OpenSymOcc SymOcc1 = new SymOccDesc[NewLen(SymOcc.length)];
 
-        for (i = firstSymOcc; i <= SymOcc.length - 1; ++i)
+        for (size_t i = firstSymOcc; i < SymOcc.length; ++i)
         {
             SymOcc1[i] = SymOcc[i];
         }
@@ -247,7 +245,7 @@ void Expand()
     {
         OpenRule Rule1 = new RuleBase[NewLen(Rule.length)];
 
-        for (i = firstRule; i <= Rule.length - 1; ++i)
+        for (size_t i = firstRule; i < Rule.length; ++i)
         {
             Rule1[i] = Rule[i];
         }
@@ -257,7 +255,7 @@ void Expand()
     {
         OpenVS VS1 = new Instruction[NewLen(VS.length)];
 
-        for (i = firstVS; i <= VS.length - 1; ++i)
+        for (size_t i = firstVS; i < VS.length; ++i)
         {
             VS1[i] = VS[i];
         }

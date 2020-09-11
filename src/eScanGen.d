@@ -28,13 +28,14 @@ void Generate()
     void TestToken(ref char[] s, ref int Len)
     {
         int i;
+
         void Err(string Msg)
         {
-            int i;
+            int i = 0;
+
             Error = true;
             IO.WriteText(IO.Msg, "\n  error in token: ");
-            i = 0;
-            while (s[i] != '\x00')
+            while (s[i] != 0)
             {
                 IO.Write(IO.Msg, s[i]);
                 ++i;
@@ -45,7 +46,7 @@ void Generate()
         }
 
         Len = 0;
-        if (s[0] != '\'' && s[0] != '"' || s[1] == '\x00' || s[1] == s[0])
+        if (s[0] != '\'' && s[0] != '"' || s[1] == 0 || s[1] == s[0])
         {
             Err("must be non empty string");
             return;
@@ -79,7 +80,7 @@ void Generate()
             Err("contains illegal char");
             return;
         }
-        if (s[i] != s[0] || s[i + 1] != '\x00')
+        if (s[i] != s[0] || s[i + 1] != 0)
         {
             Err("contains illegal char");
             return;
@@ -112,18 +113,19 @@ void Generate()
         int j;
         i = 0;
         j = 0;
-        while (Src[i] != '\x00' && i < Dest.length - 1)
+
+        while (Src[i] != 0 && i + 1 < Dest.length)
         {
             Dest[i] = Src[i];
             ++i;
         }
-        while (j < Suf.length && i < Dest.length - 1)
+        while (j < Suf.length && i + 1 < Dest.length)
         {
             Dest[i] = Suf[j];
             ++i;
             ++j;
         }
-        Dest[i] = '\x00';
+        Dest[i] = 0;
     }
 
     ShowMod = IO.IsOption('m');
@@ -197,7 +199,7 @@ void Generate()
 
 static this()
 {
-    for (int i = 0; i <= IsIdent.length - 1; ++i)
+    for (int i = 0; i < IsIdent.length; ++i)
     {
         IsIdent[i] = false;
     }
@@ -217,7 +219,7 @@ static this()
     {
         IsSymbol[i] = false;
     }
-    for (int i = ' ' + 1; i <= IsSymbol.length - 1; ++i)
+    for (int i = ' ' + 1; i < IsSymbol.length; ++i)
     {
         IsSymbol[i] = !IsIdent[i];
     }

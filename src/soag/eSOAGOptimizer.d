@@ -27,10 +27,9 @@ ALists.AList VS;
  */
 void IncludeVDS(int S, int VN1, int VN2)
 {
-    int i;
-    bool notisElement;
-    i = ALists.firstIndex;
-    notisElement = true;
+    int i = ALists.firstIndex;
+    bool notisElement = true;
+
     while (i < VDS.Last && notisElement)
     {
         notisElement = VDS.Elem[i] != S || VDS.Elem[i + 1] != VN1 || VDS.Elem[i + 2] != VN2;
@@ -46,9 +45,8 @@ void IncludeVDS(int S, int VN1, int VN2)
 
 void WriteVDS()
 {
-    int i;
     IO.WriteText(IO.Msg, "Inhalt VDS:\n");
-    for (i = ALists.firstIndex; i <= VDS.Last; i = i + 3)
+    for (size_t i = ALists.firstIndex; i <= VDS.Last; i += 3)
     {
         EAG.WriteHNont(IO.Msg, VDS.Elem[i]);
         IO.WriteText(IO.Msg, ", ");
@@ -68,10 +66,9 @@ void WriteVDS()
  */
 void IncludeVS(int S, int VN)
 {
-    int i;
-    bool notisElement;
-    i = ALists.firstIndex;
-    notisElement = true;
+    int i = ALists.firstIndex;
+    bool notisElement = true;
+
     while (i < VS.Last && notisElement)
     {
         notisElement = VS.Elem[i] != S || VS.Elem[i + 1] != VN;
@@ -86,9 +83,8 @@ void IncludeVS(int S, int VN)
 
 void WriteVS()
 {
-    int i;
     IO.WriteText(IO.Msg, "Inhalt VS:\n");
-    for (i = ALists.firstIndex; i <= VS.Last; i = i + 2)
+    for (size_t i = ALists.firstIndex; i <= VS.Last; i += 2)
     {
         EAG.WriteHNont(IO.Msg, VS.Elem[i]);
         IO.WriteText(IO.Msg, ", ");
@@ -126,15 +122,12 @@ int GetPlanNo(int R, int AP)
  */
 int GetEVSPosforAffOcc(int R, int AP)
 {
-    int SO;
-    int VN;
+    int SO = SOAG.AffOcc[AP].SymOccInd;
+    int VN = SOAGVisitSeq.GetVisitNo(AP);
+    const S = SOAG.SymOcc[SO].SymInd;
+    const AN = SOAG.AffOcc[AP].AffOccNum.InSym;
     int V;
-    int S;
-    int AN;
-    SO = SOAG.AffOcc[AP].SymOccInd;
-    S = SOAG.SymOcc[SO].SymInd;
-    VN = SOAGVisitSeq.GetVisitNo(AP);
-    AN = SOAG.AffOcc[AP].AffOccNum.InSym;
+
     if (SO == SOAG.Rule[R].SymOcc.Beg && SOAG.IsInherited(S, AN))
     {
         if (VN == 1)
@@ -166,8 +159,8 @@ int GetEVSPosforAffOcc(int R, int AP)
  */
 int GetEVSPosforVisit(int R, int SO, int VN)
 {
-    int V;
-    V = SOAGVisitSeq.GetVisit(R, SO, VN);
+    const V = SOAGVisitSeq.GetVisit(R, SO, VN);
+
     return V * 3 + 2;
 }
 
@@ -179,8 +172,9 @@ void Init()
     int R;
     int V;
     int PlanNo;
+
     PN = new int[SOAG.NextVS];
-    for (R = SOAG.firstRule; R <= SOAG.NextRule - 1; ++R)
+    for (R = SOAG.firstRule; R < SOAG.NextRule; ++R)
     {
         PlanNo = 1;
         for (V = SOAG.Rule[R].VS.Beg; V <= SOAG.Rule[R].VS.End; ++V)
@@ -194,7 +188,7 @@ void Init()
     }
     SOAG.StorageName = new int[SOAG.NextPartNum];
     SOAG.NextStorageName = SOAG.NextPartNum;
-    for (V = SOAG.firstStorageName; V <= SOAG.NextStorageName - 1; ++V)
+    for (V = SOAG.firstStorageName; V < SOAG.NextStorageName; ++V)
     {
         SOAG.StorageName[V] = 0;
     }
@@ -218,6 +212,7 @@ void InitVDSandVS(int S, int A)
     int PN1;
     int AN;
     int AN1;
+
     ALists.Reset(VDS);
     ALists.Reset(VS);
     SO = SOAG.Sym[S].FirstOcc;
@@ -253,7 +248,6 @@ void InitVDSandVS(int S, int A)
  */
 void CompleteInitVDS()
 {
-    int i;
     int R;
     int S;
     int SO;
@@ -262,7 +256,8 @@ void CompleteInitVDS()
     int V1;
     int V2;
     int RS;
-    i = ALists.firstIndex;
+    int i = ALists.firstIndex;
+
     while (i < VDS.Last)
     {
         S = VDS.Elem[i];
@@ -309,11 +304,8 @@ void CheckStorageType(int S, int A)
     int AP2;
     int AN2;
     int VN2;
-    int t;
     int S1;
     int SO1;
-    int V1;
-    int V2;
     int PN1;
     int PN2;
 
@@ -322,14 +314,14 @@ void CheckStorageType(int S, int A)
      */
     void CheckT2P1andT1P1(int S, int A, int R, int PN1, int PN2)
     {
-        int SO1;
         int AP3;
         int AN3;
         int AP4;
         int AN4;
         int PN3;
         int PN4;
-        SO1 = SOAG.Sym[S].FirstOcc;
+        int SO1 = SOAG.Sym[S].FirstOcc;
+
         while (SO1 != SOAG.nil)
         {
             if (R == SOAG.SymOcc[SO1].RuleInd)
@@ -364,12 +356,12 @@ void CheckStorageType(int S, int A)
      */
     void CheckT2P2(int R, int PN1, int PN2)
     {
-        int t;
         int S1;
         int SO1;
         int PN;
         int VN;
-        for (t = ALists.firstIndex; t <= VS.Last; t = t + 2)
+
+        for (size_t t = ALists.firstIndex; t <= VS.Last; t += 2)
         {
             S1 = VS.Elem[t];
             VN = VS.Elem[t + 1];
@@ -394,14 +386,14 @@ void CheckStorageType(int S, int A)
      */
     void CheckT1P2andP3(int R, int PN1, int PN2)
     {
-        int t;
         int S1;
         int SO1;
         int VN3;
         int VN4;
         int PN3;
         int PN4;
-        for (t = ALists.firstIndex; t <= VDS.Last; t = t + 3)
+
+        for (int t = ALists.firstIndex; t <= VDS.Last; t += 3)
         {
             S1 = VDS.Elem[t];
             VN3 = VDS.Elem[t + 1];
@@ -431,6 +423,7 @@ void CheckStorageType(int S, int A)
         int SO2;
         int AP1;
         int PN3;
+
         for (SO2 = SOAG.Rule[R].SymOcc.Beg; SO2 <= SOAG.Rule[R].SymOcc.End; ++SO2)
         {
             if (SOAG.SymOcc[SO2].SymInd == S)
@@ -450,12 +443,12 @@ void CheckStorageType(int S, int A)
      */
     void CheckT2P4(int R, int SO, int PN1, int PN2)
     {
-        int t;
         int S2;
         int SO2;
         int VN3;
         int PN3;
-        for (t = ALists.firstIndex; t <= VS.Last; t = t + 2)
+
+        for (int t = ALists.firstIndex; t <= VS.Last; t += 2)
         {
             S2 = VS.Elem[t];
             VN3 = VS.Elem[t + 1];
@@ -480,14 +473,14 @@ void CheckStorageType(int S, int A)
      */
     void CheckT1P4(int R, int SO, int PN1, int PN2)
     {
-        int t;
         int S2;
         int SO2;
         int VN3;
         int VN4;
         int PN3;
         int PN4;
-        for (t = ALists.firstIndex; t <= VDS.Last; t = t + 3)
+
+        for (int t = ALists.firstIndex; t <= VDS.Last; t += 3)
         {
             S2 = VDS.Elem[t];
             VN3 = VDS.Elem[t + 1];
@@ -532,7 +525,7 @@ void CheckStorageType(int S, int A)
         }
         SO = SOAG.SymOcc[SO].Next;
     }
-    for (t = ALists.firstIndex; t <= VDS.Last; t = t + 3)
+    for (int t = ALists.firstIndex; t <= VDS.Last; t += 3)
     {
         S1 = VDS.Elem[t];
         VN1 = VDS.Elem[t + 1];
@@ -562,10 +555,11 @@ void Optimize()
     int S;
     int AP;
     int A;
+
     Init;
     GlobalVar = firstGlobalVar - 1;
     StackVar = firstStackVar - 1;
-    for (S = SOAG.firstSym; S <= SOAG.NextSym - 1; ++S)
+    for (S = SOAG.firstSym; S < SOAG.NextSym; ++S)
     {
         for (AP = SOAG.Sym[S].AffPos.Beg; AP <= SOAG.Sym[S].AffPos.End; ++AP)
         {

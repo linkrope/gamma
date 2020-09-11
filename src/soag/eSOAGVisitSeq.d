@@ -125,7 +125,7 @@ SOAG.Instruction MapVS(int AO)
         }
         else
         {
-            int R = SOAG.SymOcc[SO].RuleInd;
+            const R = SOAG.SymOcc[SO].RuleInd;
 
             if (SOAG.Rule[R].SymOcc.Beg == SO)
             {
@@ -173,7 +173,7 @@ SOAG.Instruction CompleteTraversal(int SO)
     }
     else
     {
-        int R = SOAG.SymOcc[SO].RuleInd;
+        const R = SOAG.SymOcc[SO].RuleInd;
 
         if (SOAG.Rule[R].SymOcc.Beg == SO)
         {
@@ -255,11 +255,9 @@ void Generate()
 {
     int R;
     int SO;
-    int MaxTry;
-    int S;
-    int V;
+    int MaxTry = 0;
     SOAG.Instruction Instr;
-    MaxTry = 0;
+
     ComputeVisitNo;
     // HashTab.Init(SOAG.MaxAffNumInRule); // does not work if (MaxAffNumInRule == 0)
     HashTab.Init(SOAG.MaxAffNumInRule + 1);

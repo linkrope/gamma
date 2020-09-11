@@ -13,8 +13,6 @@ int StartMNont;
 
 void GenEmitProc(IO.TextOut Mod)
 {
-    int Lo;
-    int Hi;
     bool EmitSpace;
 
     void CalcSets(int Nont)

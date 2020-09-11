@@ -133,12 +133,12 @@ void Specification()
         {
             Scanner.GetRepr(EAG.HNont[EAG.StartSym].Id, Name);
             i = 0;
-            while (Name[i] != '\x00' && i < EAG.BaseNameLen - 1)
+            while (Name[i] != 0 && i < EAG.BaseNameLen - 1)
             {
                 EAG.BaseName[i] = Name[i];
                 ++i;
             }
-            EAG.BaseName[i] = '\x00';
+            EAG.BaseName[i] = 0;
         }
     }
     /**
@@ -682,8 +682,8 @@ void CheckSemantics()
         {
             import std.math : abs;
 
-            int P;
-            P = Par.Params;
+            int P = Par.Params;
+
             while (EAG.DomBuf[Dom] != nil && EAG.ParamBuf[P].Affixform != nil)
             {
                 EAG.ParamBuf[P].isDef = Lhs && EAG.DomBuf[Dom] < 0 || !Lhs && EAG.DomBuf[Dom] > 0;

@@ -278,8 +278,6 @@ char[BaseNameLen] BaseName;
 
 void Expand()
 {
-    long i;
-
     long NewLen(long ArrayLen)
     {
         if (ArrayLen < DIV(int.max, 2))
@@ -296,7 +294,7 @@ void Expand()
     {
         OpenParamBuf ParamBuf1 = new ParamRecord[NewLen(ParamBuf.length)];
 
-        for (i = firstParam; i <= ParamBuf.length - 1; ++i)
+        for (size_t i = firstParam; i < ParamBuf.length; ++i)
         {
             ParamBuf1[i] = ParamBuf[i];
         }
@@ -306,7 +304,7 @@ void Expand()
     {
         OpenMTerm MTerm1 = new MTermRecord[NewLen(MTerm.length)];
 
-        for (i = firstMTerm; i <= MTerm.length - 1; ++i)
+        for (size_t i = firstMTerm; i < MTerm.length; ++i)
         {
             MTerm1[i] = MTerm[i];
         }
@@ -316,7 +314,7 @@ void Expand()
     {
         OpenMNont MNont1 = new MNontRecord[NewLen(MNont.length)];
 
-        for (i = firstMNont; i <= MNont.length - 1; ++i)
+        for (size_t i = firstMNont; i < MNont.length; ++i)
         {
             MNont1[i] = MNont[i];
         }
@@ -326,7 +324,7 @@ void Expand()
     {
         OpenHTerm HTerm1 = new HTermRecord[NewLen(HTerm.length)];
 
-        for (i = firstHTerm; i <= HTerm.length - 1; ++i)
+        for (size_t i = firstHTerm; i < HTerm.length; ++i)
         {
             HTerm1[i] = HTerm[i];
         }
@@ -336,7 +334,7 @@ void Expand()
     {
         OpenHNont HNont1 = new HNontRecord[NewLen(HNont.length)];
 
-        for (i = firstHNont; i <= HNont.length - 1; ++i)
+        for (size_t i = firstHNont; i < HNont.length; ++i)
         {
             HNont1[i] = HNont[i];
         }
@@ -346,7 +344,7 @@ void Expand()
     {
         OpenDomBuf DomBuf1 = new int[NewLen(DomBuf.length)];
 
-        for (i = firstDom; i <= DomBuf.length - 1; ++i)
+        for (size_t i = firstDom; i < DomBuf.length; ++i)
         {
             DomBuf1[i] = DomBuf[i];
         }
@@ -356,7 +354,7 @@ void Expand()
     {
         OpenMAlt MAlt1 = new MAltRecord[NewLen(MAlt.length)];
 
-        for (i = firstMAlt; i <= MAlt.length - 1; ++i)
+        for (size_t i = firstMAlt; i < MAlt.length; ++i)
         {
             MAlt1[i] = MAlt[i];
         }
@@ -366,7 +364,7 @@ void Expand()
     {
         OpenMembBuf MembBuf1 = new int[NewLen(MembBuf.length)];
 
-        for (i = firstMemb; i <= MembBuf.length - 1; ++i)
+        for (size_t i = firstMemb; i < MembBuf.length; ++i)
         {
             MembBuf1[i] = MembBuf[i];
         }
@@ -376,7 +374,7 @@ void Expand()
     {
         OpenNodeBuf NodeBuf1 = new int[NewLen(NodeBuf.length)];
 
-        for (i = firstNode; i <= NodeBuf.length - 1; ++i)
+        for (size_t i = firstNode; i < NodeBuf.length; ++i)
         {
             NodeBuf1[i] = NodeBuf[i];
         }
@@ -386,7 +384,7 @@ void Expand()
     {
         OpenVar Var1 = new VarRecord[NewLen(Var.length)];
 
-        for (i = firstVar; i <= Var.length - 1; ++i)
+        for (size_t i = firstVar; i < Var.length; ++i)
         {
             Var1[i] = Var[i];
         }

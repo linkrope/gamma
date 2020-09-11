@@ -112,11 +112,7 @@ unittest
 void Union(ref OpenSet s0, OpenSet s1, OpenSet s2)
 {
     for (size_t n = 0; n < s1.length; ++n)
-    {
-        uint s = s1[n] | s2[n];
-
-        s0[n] = s;
-    }
+        s0[n] = s1[n] | s2[n];
 }
 
 @("compute set union")
@@ -132,11 +128,7 @@ unittest
 void Difference(ref OpenSet s0, OpenSet s1, OpenSet s2)
 {
     for (size_t n = 0; n < s1.length; ++n)
-    {
-        uint s = s1[n] & ~s2[n];
-
-        s0[n] = s;
-    }
+        s0[n] = s1[n] & ~s2[n];
 }
 
 @("compute set difference")
@@ -152,11 +144,7 @@ unittest
 void Intersection(ref OpenSet s0, OpenSet s1, OpenSet s2)
 {
     for (size_t n = 0; n < s1.length; ++n)
-    {
-        uint s = s1[n] & s2[n];
-
-        s0[n] = s;
-    }
+        s0[n] = s1[n] & s2[n];
 }
 
 @("compute set intersection")
@@ -172,11 +160,7 @@ unittest
 void SymmetricDifference(ref OpenSet s0, OpenSet s1, OpenSet s2)
 {
     for (size_t n = 0; n < s1.length; ++n)
-    {
-        uint s = s1[n] ^ s2[n];
-
-        s0[n] = s;
-    }
+        s0[n] = s1[n] ^ s2[n];
 }
 
 @("compute symmetric difference")

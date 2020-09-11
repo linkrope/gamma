@@ -16,7 +16,7 @@ struct Stack
 void Expand(ref Stack S)
 {
     StackList List1;
-    int i;
+
     if (S.Elem.length < DIV(int.max, 2))
     {
         List1 = new DataType[2 * S.Elem.length + 1];
@@ -25,7 +25,7 @@ void Expand(ref Stack S)
     {
         assert(0);
     }
-    for (i = firstStackElem; i <= S.Top; ++i)
+    for (size_t i = firstStackElem; i <= S.Top; ++i)
     {
         List1[i] = S.Elem[i];
     }
@@ -46,10 +46,9 @@ void Reset(ref Stack S)
 
 void Push(ref Stack S, DataType Val)
 {
-    if (S.Top >= S.Elem.length - 2)
-    {
+    if (S.Top + 2 >= S.Elem.length)
         Expand(S);
-    }
+
     ++S.Top;
     S.Elem[S.Top] = Val;
 }

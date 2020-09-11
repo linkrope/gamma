@@ -124,7 +124,6 @@ void Insert(ref ASet S, int Elem)
  */
 void Delete(ref ASet S, int Elem)
 {
-    int Last;
     if (Elem <= S.Max)
     {
         if (Elem <= S.List.Last)

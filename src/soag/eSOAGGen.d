@@ -45,15 +45,9 @@ void ComputeNodeNames(int R)
     int Var;
     int ProcVar;
     int AP;
-    int AN;
     int Node;
     int SO;
-    int V;
     int PBI;
-    int AP1;
-    int PBI1;
-    int V1;
-    bool sameAffix;
 
     /**
      * IN: Knoten in NodeBuf[], Variablenname
@@ -64,12 +58,11 @@ void ComputeNodeNames(int R)
     void Traverse(int Node, ref int Var)
     {
         int Node1;
-        int n;
-        int Arity;
-        Arity = EAG.MAlt[EAG.NodeBuf[Node]].Arity;
+        const  Arity = EAG.MAlt[EAG.NodeBuf[Node]].Arity;
+
         ++Var;
         NodeName[Node] = Var;
-        for (n = 1; n <= Arity; ++n)
+        for (size_t n = 1; n <= Arity; ++n)
         {
             Node1 = EAG.NodeBuf[Node + n];
             if (Node1 > 0)
@@ -328,13 +321,10 @@ int HyperArity()
  */
 void Init()
 {
-    int i;
     int R;
     int SO;
     int S;
     int Offset;
-    int len;
-    int POI;
 
     LocalVars = new int[SOAG.NextRule];
     AffixVarCount = new int[SOAG.NextRule];
@@ -343,21 +333,21 @@ void Init()
     SubTreeOffset = new int[SOAG.NextSymOcc];
     FirstRule = new int[SOAG.NextSym];
     AffixAppls = new int[EAG.NextVar];
-    for (i = SOAG.firstRule; i <= SOAG.NextRule - 1; ++i)
+    for (size_t i = SOAG.firstRule; i < SOAG.NextRule; ++i)
     {
         LocalVars[i] = 0;
         AffixVarCount[i] = -1;
     }
-    for (i = EAG.firstNode; i <= EAG.NextNode - 1; ++i)
+    for (size_t i = EAG.firstNode; i < EAG.NextNode; ++i)
     {
         NodeName[i] = -1;
     }
-    for (i = EAG.firstVar; i <= EAG.NextVar - 1; ++i)
+    for (size_t i = EAG.firstVar; i < EAG.NextVar; ++i)
     {
         EAG.Var[i].Def = false;
         AffixAppls[i] = SOAG.AffixApplCnt[i];
     }
-    for (R = SOAG.firstRule; R <= SOAG.NextRule - 1; ++R)
+    for (R = SOAG.firstRule; R < SOAG.NextRule; ++R)
     {
         Offset = 0;
         for (SO = SOAG.Rule[R].SymOcc.Beg + 1; SO <= SOAG.Rule[R].SymOcc.End; ++SO)
@@ -369,7 +359,7 @@ void Init()
             }
         }
     }
-    for (S = SOAG.firstSym; S <= SOAG.NextSym - 1; ++S)
+    for (S = SOAG.firstSym; S < SOAG.NextSym; ++S)
     {
         SO = SOAG.Sym[S].FirstOcc;
         if (SO != SOAG.nil)
@@ -392,8 +382,7 @@ void Init()
 
 void Ind()
 {
-    int i;
-    for (i = 1; i <= Indent; ++i)
+    for (size_t i = 1; i <= Indent; ++i)
     {
         IO.WriteText(Out, "    ");
     }
@@ -485,8 +474,6 @@ void GenOverflowGuard(int n)
  */
 void GenAffPos(int S, int AN)
 {
-    int SN;
-    int AP;
     WrSIS("AffPos[S", S, " + ");
     WrIS(AN, "]");
 }
@@ -571,7 +558,6 @@ void GenClose()
  */
 void GenIncRefCnt(int Var)
 {
-    int AP;
     WrS("Heap[");
     if (Var < 0)
     {
@@ -592,7 +578,6 @@ void GenIncRefCnt(int Var)
  */
 void GenFreeAffix(int V)
 {
-    int AP;
     if (AffixAppls[V] == 0)
     {
         Ind;
@@ -610,12 +595,12 @@ void GenFreeAffix(int V)
  */
 void GenPopAffix(int V)
 {
-    int AP;
     if (AffixAppls[V] == 0)
     {
         if (AffixOffset[V] == optimizedStorage)
         {
-            AP = GetCorrespondedAffPos(SOAG.DefAffOcc[V]);
+            const AP = GetCorrespondedAffPos(SOAG.DefAffOcc[V]);
+
             if (SOAG.StorageName[AP] > 0)
             {
                 Ind;
@@ -1172,9 +1157,9 @@ void GenVisitCall(int SO, int VisitNo)
 }
 
 /**
- * SEM: generriert nur Kommentar
+ * SEM: generiert nur Kommentar
  */
-void GenLeave(int SO, int VisitNo)
+void GenLeave(int VisitNo)
 {
     Ind;
     WrSIS("// Leave; VisitNo: ", VisitNo, "\n");
@@ -1319,14 +1304,12 @@ void GenPredCall(int SO)
  */
 void GenVarDecls(int R)
 {
-    int SO;
-    int i;
     WrS("IndexType TreeAdr;\n");
     WrS("IndexType VI;\n");
     WrS("SemTreeEntry S;\n");
     if (LocalVars[R] > 0)
     {
-        for (i = 1; i <= LocalVars[R]; ++i)
+        for (int i = 1; i <= LocalVars[R]; ++i)
         {
             WrS("HeapType ");
             GenVar(i);
@@ -1344,6 +1327,7 @@ void GenVarDecls(int R)
 void GenPredPos(int R, int i, ref bool PosNeeded)
 {
     int k;
+
     if (PosNeeded)
     {
         --i;
@@ -1538,7 +1522,7 @@ void GenVisitRule(int R)
             Ind;
             WrS("// Visit-abschließende Synthese\n");
             GenSynPred(SO, VisitNo);
-            GenLeave(SO, VisitNo);
+            GenLeave(VisitNo);
             if (VisitNo < SOAGVisitSeq.GetMaxVisitNo(SO))
             {
                 Ind;
@@ -1695,18 +1679,18 @@ void GenerateModule()
         int j;
         i = 0;
         j = 0;
-        while (Src[i] != '\x00' && i < Dest.length - 1)
+        while (Src[i] != 0 && i + 1 < Dest.length)
         {
             Dest[i] = Src[i];
             ++i;
         }
-        while (j < Suf.length && i < Dest.length - 1)
+        while (j < Suf.length && i + 1 < Dest.length)
         {
             Dest[i] = Suf[j];
             ++i;
             ++j;
         }
-        Dest[i] = '\x00';
+        Dest[i] = 0;
     }
 
     Fix = TextIn("fix/eSOAG.fix.d");

@@ -85,7 +85,7 @@ void GenerateMod(bool CreateMod)
         {
             OpenEdge Edge1 = new EdgeRecord[2 * Edge.length];
 
-            for (i = firstEdge; i <= Edge.length - 1; ++i)
+            for (i = firstEdge; i < Edge.length; ++i)
             {
                 Edge1[i] = Edge[i];
             }
@@ -118,18 +118,18 @@ void GenerateMod(bool CreateMod)
         int j;
         i = 0;
         j = 0;
-        while (Src[i] != '\x00' && i < Dest.length - 1)
+        while (Src[i] != 0 && i + 1 < Dest.length)
         {
             Dest[i] = Src[i];
             ++i;
         }
-        while (j < Suf.length && i < Dest.length - 1)
+        while (j < Suf.length && i + 1 < Dest.length)
         {
             Dest[i] = Suf[j];
             ++i;
             ++j;
         }
-        Dest[i] = '\x00';
+        Dest[i] = 0;
     }
 
     int HyperArity()
@@ -139,6 +139,7 @@ void GenerateMod(bool CreateMod)
         int Max;
         EAG.Alt A;
         Sets.OpenSet Nonts;
+
         Sets.New(Nonts, EAG.NextHNont);
         Sets.Difference(Nonts, EAG.All, EAG.Pred);
         Max = 0;

@@ -38,8 +38,6 @@ bool[] Predicted;
 
 void Expand()
 {
-    long i;
-
     long NewLen(long ArrayLen)
     {
         if (ArrayLen <= DIV(int.max, 2))
@@ -56,7 +54,7 @@ void Expand()
     {
         OpenMSymBuf MSymBuf1 = new MSymRecord[NewLen(MSymBuf.length)];
 
-        for (i = firstMSym; i <= MSymBuf.length - 1; ++i)
+        for (size_t i = firstMSym; i < MSymBuf.length; ++i)
         {
             MSymBuf1[i] = MSymBuf[i];
         }
@@ -66,7 +64,7 @@ void Expand()
     {
         OpenItemBuf ItemBuf1 = new ItemRecord[NewLen(ItemBuf.length)];
 
-        for (i = firstItem; i <= ItemBuf.length - 1; ++i)
+        for (size_t i = firstItem; i < ItemBuf.length; ++i)
         {
             ItemBuf1[i] = ItemBuf[i];
         }

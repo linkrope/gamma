@@ -83,8 +83,6 @@ bool UseReg;
 
 void Expand()
 {
-    long i;
-
     long ExpLen(long ArrayLen)
     {
         if (ArrayLen <= DIV(int.max, 2))
@@ -101,7 +99,7 @@ void Expand()
     {
         OpenEdge Edge1 = new EdgeRecord[ExpLen(Edge.length)];
 
-        for (i = firstEdge; i <= Edge.length - 1; ++i)
+        for (size_t i = firstEdge; i < Edge.length; ++i)
         {
             Edge1[i] = Edge[i];
         }
@@ -111,7 +109,7 @@ void Expand()
     {
         OpenGenSet GenSet1 = new Sets.OpenSet[ExpLen(GenSet.length)];
 
-        for (i = firstGenSet; i <= GenSet.length - 1; ++i)
+        for (size_t i = firstGenSet; i < GenSet.length; ++i)
         {
             GenSet1[i] = GenSet[i];
         }
@@ -121,7 +119,7 @@ void Expand()
     {
         OpenGenSetT GenSetT1 = new Sets.OpenSet[ExpLen(GenSetT.length)];
 
-        for (i = firstGenSetT; i <= GenSetT.length - 1; ++i)
+        for (size_t i = firstGenSetT; i < GenSetT.length; ++i)
         {
             GenSetT1[i] = GenSetT[i];
         }
@@ -136,6 +134,7 @@ void ComputeRegNonts()
     int N;
     EAG.Alt A;
     EAG.Factor F;
+
     void TraverseRegNonts(int N)
     {
         EAG.Alt A;
@@ -1083,7 +1082,6 @@ void GenerateMod(bool ParsePass)
     int Tok;
     Sets.OpenSet AllToks;
     char[] Name = new char[EAG.BaseNameLen + 10];
-    bool OpenError;
     bool CompileError;
     long TabTimeStamp;
 
@@ -1523,19 +1521,17 @@ void GenerateMod(bool ParsePass)
 
     void WriteTab(char[] Name)
     {
-        const magicNumber = 827092037;
+        const magicNumber = 827_092_037;
         IO.File Tab;
-        int i;
-        int j;
         int m;
-        int Tok;
         uint s;
+
         IO.CreateFile(Tab, Name);
         IO.PutLInt(Tab, magicNumber);
         IO.PutLInt(Tab, TabTimeStamp);
         IO.PutLInt(Tab, 31);
         IO.PutSet(Tab, Sets.SET(0, 2, 3, 6, 9, 13, 18, 19, 20, 24, 25, 27, 28, 31));
-        for (i = firstGenSetT; i <= NextGenSetT - 1; i = i + nElemsPerSET)
+        for (int i = firstGenSetT; i < NextGenSetT; i = i + nElemsPerSET)
         {
             if (nElemsPerSET <= NextGenSetT - i)
             {
@@ -1545,10 +1541,10 @@ void GenerateMod(bool ParsePass)
             {
                 m = NextGenSetT - i;
             }
-            for (Tok = 0; Tok <= nToks - 1; ++Tok)
+            for (int Tok = 0; Tok < nToks; ++Tok)
             {
                 s = Sets.SET;
-                for (j = 0; j <= m - 1; ++j)
+                for (size_t j = 0; j < m; ++j)
                 {
                     if (Sets.In(GenSetT[i + j], Tok))
                     {
@@ -1558,9 +1554,9 @@ void GenerateMod(bool ParsePass)
                 IO.PutSet(Tab, s);
             }
         }
-        for (i = firstGenSet; i <= NextGenSet - 1; ++i)
+        for (size_t i = firstGenSet; i < NextGenSet; ++i)
         {
-            for (j = 0; j <= Sets.nSetsUsed(GenSet[i]) - 1; ++j)
+            for (int j = 0; j < Sets.nSetsUsed(GenSet[i]); ++j)
             {
                 IO.PutSet(Tab, Sets.ConvertToSET(GenSet[i], j));
             }
@@ -1594,18 +1590,19 @@ void GenerateMod(bool ParsePass)
         int j;
         i = 0;
         j = 0;
-        while (Src[i] != '\x00' && i < Dest.length - 1)
+
+        while (Src[i] != 0 && i + 1 < Dest.length)
         {
             Dest[i] = Src[i];
             ++i;
         }
-        while (j < Suf.length && i < Dest.length - 1)
+        while (j < Suf.length && i + 1 < Dest.length)
         {
             Dest[i] = Suf[j];
             ++i;
             ++j;
         }
-        Dest[i] = '\x00';
+        Dest[i] = 0;
     }
 
     Sets.New(AllToks, nToks);
@@ -1822,7 +1819,7 @@ void GenerateParser()
         if (GrammarOk())
         {
             EAG.History = Sets.SET;
-            Shift.Shift(0);
+            Shift.Shift;
             ComputeDir;
             if (!Error)
             {

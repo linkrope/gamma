@@ -646,7 +646,6 @@ void ComputeVarNames(int N, bool Embed)
     OpenInt RefCnt;
     int Top;
     int NextFreeVar;
-    int temp;
 
     void WriteRefCnt()
     {
@@ -805,7 +804,8 @@ void ComputeVarNames(int N, bool Embed)
                     {
                         Node1 = EAG.NodeBuf[Node + n];
                         NeedVar = ((isPred || UseRefCnt) && Var == AffixName[P] || n != Arity)
-                            && Node1 >= 0 && EAG.MAlt[EAG.NodeBuf[Node1]].Arity > 0;
+                            && Node1 >= 0
+                            && EAG.MAlt[EAG.NodeBuf[Node1]].Arity > 0;
                         if (NeedVar)
                         {
                             Var1 = GetFreeVar();
@@ -1322,11 +1322,6 @@ void ComputeVarNames(int N, bool Embed)
 
 void InitGen(IO.TextOut MOut, int Treatment)
 {
-    bool isSLEAG;
-    bool isLEAG;
-    int i;
-    int N;
-
     void SetFlags(int Treatment)
     {
         switch (Treatment)
@@ -1388,7 +1383,7 @@ void InitGen(IO.TextOut MOut, int Treatment)
         IO.CreateOut(RC, "Debug.RefCnt");
     }
     AffixName = new int[EAG.NextParam];
-    for (i = EAG.firstParam; i <= EAG.NextParam - 1; ++i)
+    for (size_t i = EAG.firstParam; i < EAG.NextParam; ++i)
     {
         AffixName[i] = -1;
     }
@@ -1397,7 +1392,7 @@ void InitGen(IO.TextOut MOut, int Treatment)
     VarDeps = new int[EAG.NextVar];
     VarRefCnt = new int[EAG.NextVar];
     VarDepPos = new int[EAG.NextVar];
-    for (i = EAG.firstVar; i <= EAG.NextVar - 1; ++i)
+    for (size_t i = EAG.firstVar; i < EAG.NextVar; ++i)
     {
         VarRefCnt[i] = 0;
         VarDepPos[i] = -1;
@@ -1405,7 +1400,7 @@ void InitGen(IO.TextOut MOut, int Treatment)
     }
     ActualName = new int[EAG.NextDom];
     FormalName = new int[EAG.NextDom];
-    for (i = EAG.firstDom; i <= EAG.NextDom - 1; ++i)
+    for (size_t i = EAG.firstDom; i < EAG.NextDom; ++i)
     {
         ActualName[i] = -1;
         FormalName[i] = -1;
@@ -1414,7 +1409,7 @@ void InitGen(IO.TextOut MOut, int Treatment)
     HNontFVars = new int[EAG.NextHNont];
     Sets.New(HNontDef, EAG.NextHNont);
     RepAppls = new bool[EAG.NextHNont];
-    for (i = EAG.firstHNont; i <= EAG.NextHNont - 1; ++i)
+    for (size_t i = EAG.firstHNont; i < EAG.NextHNont; ++i)
     {
         RepAppls[i] = true;
     }
@@ -1558,18 +1553,18 @@ void GenDeclarations()
         int j;
         i = 0;
         j = 0;
-        while (Src[i] != '\x00' && i < Dest.length - 1)
+        while (Src[i] != 0 && i + 1 < Dest.length)
         {
             Dest[i] = Src[i];
             ++i;
         }
-        while (j < Suf.length && i < Dest.length - 1)
+        while (j < Suf.length && i + 1 < Dest.length)
         {
             Dest[i] = Suf[j];
             ++i;
             ++j;
         }
-        Dest[i] = '\x00';
+        Dest[i] = 0;
     }
 
     void InclFix(char Term)
@@ -1612,11 +1607,10 @@ void GenDeclarations()
     void GenTabFile(long TabTimeStamp)
     {
         const errVal = 0;
-        const magic = 1818326597;
+        const magic = 1_818_326_597;
         int i;
         int P;
         int Next;
-        int Start;
         IO.File Tab;
         int[] Heap;
 
@@ -1625,7 +1619,7 @@ void GenDeclarations()
             int n;
             int Node1;
             int Next1;
-            int Len1;
+
             Heap[Next] = NodeIdent[EAG.NodeBuf[Node]];
             Next1 = Next;
             Next += 1 + EAG.MAlt[EAG.NodeBuf[Node]].Arity;
@@ -2266,8 +2260,8 @@ void Gen1SynTree(int Node, Sets.OpenSet RepVar, bool IsPred)
 
 void GetAffixSpace(int P)
 {
-    int Heap;
-    Heap = 0;
+    int Heap = 0;
+
     while (EAG.ParamBuf[P].Affixform != EAG.nil)
     {
         if (!EAG.ParamBuf[P].isDef && (!UseConst || UseConst && AffixPlace[P] < 0))
@@ -2283,10 +2277,9 @@ void GenSynPred(int Sym, int P)
 {
     int Next;
     int Tree;
-    int n;
     int V;
-    bool IsPred;
-    IsPred = Sets.In(EAG.Pred, Sym);
+    bool IsPred = Sets.In(EAG.Pred, Sym);
+
     if (!UseRefCnt)
     {
         GetAffixSpace(P);
@@ -2530,8 +2523,8 @@ void GenRepAlt(int Sym, EAG.Alt A)
     int Dom;
     int Tree;
     int Next;
-    bool Guard;
-    Guard = !RepAppls[Sym];
+    const Guard = !RepAppls[Sym];
+
     GenSynPred(Sym, A.Actual.Params);
     if (SavePos)
     {
@@ -2617,7 +2610,8 @@ void GenRepEnd(int Sym)
     int Dom;
     int Tree;
     int Next;
-    bool Guard;
+    const Guard = false; // TODO: eliminate dead code
+
     InitScope((cast(EAG.Rep) EAG.HNont[Sym].Def).Scope);
     P = (cast(EAG.Rep) EAG.HNont[Sym].Def).Formal.Params;
     P1 = EAG.HNont[Sym].Def.Sub.Actual.Params;
