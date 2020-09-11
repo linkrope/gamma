@@ -39,8 +39,6 @@ bool[] Predicted;
 void Expand()
 {
     long i;
-    OpenMSymBuf MSymBuf1;
-    OpenItemBuf ItemBuf1;
 
     long NewLen(long ArrayLen)
     {
@@ -56,7 +54,8 @@ void Expand()
 
     if (NextMSym >= MSymBuf.length)
     {
-        NEW(MSymBuf1, NewLen(MSymBuf.length));
+        OpenMSymBuf MSymBuf1 = new MSymRecord[NewLen(MSymBuf.length)];
+
         for (i = firstMSym; i <= MSymBuf.length - 1; ++i)
         {
             MSymBuf1[i] = MSymBuf[i];
@@ -65,7 +64,8 @@ void Expand()
     }
     if (NextItem >= ItemBuf.length)
     {
-        NEW(ItemBuf1, NewLen(ItemBuf.length));
+        OpenItemBuf ItemBuf1 = new ItemRecord[NewLen(ItemBuf.length)];
+
         for (i = firstItem; i <= ItemBuf.length - 1; ++i)
         {
             ItemBuf1[i] = ItemBuf[i];
@@ -284,13 +284,14 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def)
         void Init(int Start)
         {
             int i;
+
             if (Predicted is null || Predicted.length < EAG.NextMNont)
             {
-                NEW(Predicted, EAG.NextMNont);
+                Predicted = new bool[EAG.NextMNont];
             }
             if (int.max - 3 >= EAG.NextMemb)
             {
-                INC(EAG.NextMemb, 3);
+                EAG.NextMemb += 3;
             }
             else
             {
@@ -300,7 +301,7 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def)
             {
                 EAG.Expand;
             }
-            DEC(EAG.NextMemb, 3);
+            EAG.NextMemb -= 3;
             EAG.MembBuf[EAG.NextMemb] = Start;
             EAG.MembBuf[EAG.NextMemb + 1] = end;
             EAG.MembBuf[EAG.NextMemb + 2] = 0;
@@ -326,7 +327,7 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def)
             Tree = EAG.NextNode;
             if (int.max - EAG.MAlt[A].Arity - 1 >= EAG.NextNode)
             {
-                INC(EAG.NextNode, EAG.MAlt[A].Arity + 1);
+                EAG.NextNode += EAG.MAlt[A].Arity + 1;
             }
             else
             {
@@ -405,9 +406,9 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def)
 
 void Init()
 {
-    NEW(MSymBuf, 2047);
+    MSymBuf = new MSymRecord[2047];
     NextMSym = firstMSym;
-    NEW(ItemBuf, 1023);
+    ItemBuf = new ItemRecord[1023];
     NextItem = firstItem;
     Predicted = null;
 }

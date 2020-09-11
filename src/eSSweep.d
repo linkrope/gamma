@@ -20,7 +20,7 @@ bool Compiled;
 
 void Init()
 {
-    NEW(FactorOffset, EAG.NextHFactor + EAG.NextHAlt + 1);
+    FactorOffset = new int[EAG.NextHFactor + EAG.NextHAlt + 1];
     Sets.New(GenFactors, EAG.NextHNont);
     Sets.Intersection(GenFactors, EAG.Prod, EAG.Reach);
     Sets.New(GenNonts, EAG.NextHNont);
@@ -79,11 +79,12 @@ void GenerateMod(bool CreateMod)
 
     void Expand()
     {
-        OpenEdge Edge1;
         long i;
+
         if (NextEdge >= Edge.length)
         {
-            NEW(Edge1, 2 * Edge.length);
+            OpenEdge Edge1 = new EdgeRecord[2 * Edge.length];
+
             for (i = firstEdge; i <= Edge.length - 1; ++i)
             {
                 Edge1[i] = Edge[i];
@@ -173,22 +174,24 @@ void GenerateMod(bool CreateMod)
 
     void SaveAndPatchNont(int N)
     {
-        EAG.Grp Def;
         EAG.Alt A;
         EAG.Alt A1;
         EAG.Alt A2;
         EAG.Factor F;
         EAG.Nont F1;
         EAG.Nont F2;
+
         SavedNontDef = EAG.HNont[N].Def;
         SavedNextHFactor = EAG.NextHFactor;
         SavedNextHAlt = EAG.NextHAlt;
-        NEW(Def);
+
+        EAG.Grp Def = new EAG.Grp;
+
         A = EAG.HNont[N].Def.Sub;
         A2 = null;
         do
         {
-            NEW(A1);
+            A1 = new EAG.Alt;
             EAG.assign(A1, A);
             A1.Sub = null;
             A1.Last = null;
@@ -204,7 +207,7 @@ void GenerateMod(bool CreateMod)
             {
                 if (cast(EAG.Nont) F !is null && Sets.In(GenFactors, (cast(EAG.Nont) F).Sym))
                 {
-                    NEW(F1);
+                    F1 = new EAG.Nont;
                     EAG.assign(F1, cast(EAG.Nont) F);
                     F1.Prev = F2;
                     F1.Next = null;
@@ -219,7 +222,7 @@ void GenerateMod(bool CreateMod)
             }
             if (cast(EAG.Rep) EAG.HNont[N].Def !is null)
             {
-                NEW(F1);
+                F1 = new EAG.Nont;
                 F1.Ind = EAG.NextHFactor;
                 ++EAG.NextHFactor;
                 F1.Prev = A1.Last;
@@ -240,7 +243,7 @@ void GenerateMod(bool CreateMod)
         while (A !is null);
         if (cast(EAG.Opt) EAG.HNont[N].Def !is null || cast(EAG.Rep) EAG.HNont[N].Def !is null)
         {
-            NEW(A1);
+            A1 = new EAG.Alt;
             A1.Ind = EAG.NextHAlt;
             ++EAG.NextHAlt;
             A1.Up = N;
@@ -611,10 +614,10 @@ void GenerateMod(bool CreateMod)
             IO.WriteLn(Mod);
         }
     }
-    NEW(Factor, EAG.NextHFactor + EAG.NextHAlt + 1);
-    NEW(Var, EAG.NextVar + 1);
-    NEW(Edge, 127);
-    NEW(Stack, EAG.NextHFactor + 1);
+    Factor = new FactorRecord[EAG.NextHFactor + EAG.NextHAlt + 1];
+    Var = new VarRecord[EAG.NextVar + 1];
+    Edge = new EdgeRecord[127];
+    Stack = new int[EAG.NextHFactor + 1];
     Sets.New(DefVars, EAG.NextVar);
     for (V = EAG.firstVar; V <= EAG.NextVar - 1; ++V)
     {
@@ -681,18 +684,18 @@ void Test()
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.WriteText(IO.Msg, "   ");
     IO.Update(IO.Msg);
-    if (EAG.Performed(SET(EAG.analysed, EAG.predicates)))
+    if (EAG.Performed(Sets.SET(EAG.analysed, EAG.predicates)))
     {
-        EXCL(EAG.History, EAG.isSSweep);
+        Sets.EXCL(EAG.History, EAG.isSSweep);
         Init;
         SaveHistory = EAG.History;
-        EAG.History = SET;
+        EAG.History = Sets.SET;
         GenerateMod(false);
         EAG.History = SaveHistory;
         if (!Error)
         {
             IO.WriteText(IO.Msg, "ok");
-            INCL(EAG.History, EAG.isSSweep);
+            Sets.INCL(EAG.History, EAG.isSSweep);
         }
         Finit;
     }
@@ -708,18 +711,18 @@ void Generate()
     IO.WriteText(IO.Msg, "   ");
     IO.Update(IO.Msg);
     Compiled = false;
-    if (EAG.Performed(SET(EAG.analysed, EAG.predicates)))
+    if (EAG.Performed(Sets.SET(EAG.analysed, EAG.predicates)))
     {
-        EXCL(EAG.History, EAG.isSSweep);
+        Sets.EXCL(EAG.History, EAG.isSSweep);
         Init;
         SaveHistory = EAG.History;
-        EAG.History = SET;
+        EAG.History = Sets.SET;
         GenerateMod(true);
         EAG.History = SaveHistory;
         if (!Error)
         {
-            INCL(EAG.History, EAG.isSSweep);
-            INCL(EAG.History, EAG.hasEvaluator);
+            Sets.INCL(EAG.History, EAG.isSSweep);
+            Sets.INCL(EAG.History, EAG.hasEvaluator);
         }
         Finit;
     }

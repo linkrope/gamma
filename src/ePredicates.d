@@ -12,7 +12,7 @@ void List()
     IO.WriteString(IO.Msg, "Predicates in     ");
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.WriteText(IO.Msg, ": ");
-    if (EAG.Performed(SET(EAG.analysed, EAG.predicates)))
+    if (EAG.Performed(Sets.SET(EAG.analysed, EAG.predicates)))
     {
         for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
         {
@@ -123,13 +123,13 @@ void Check()
     IO.WriteString(IO.Msg, "Predicates in     ");
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.Update(IO.Msg);
-    if (EAG.Performed(SET(EAG.analysed)))
+    if (EAG.Performed(Sets.SET(EAG.analysed)))
     {
-        EXCL(EAG.History, EAG.predicates);
-        NEW(HNont, EAG.NextHNont);
-        NEW(Edge, EAG.NONont + 1);
+        Sets.EXCL(EAG.History, EAG.predicates);
+        HNont = new int[EAG.NextHNont];
+        Edge = new  EdgeRecord[EAG.NONont + 1];
         NextEdge = 0;
-        NEW(Stack, EAG.NextHNont);
+        Stack = new int[EAG.NextHNont];
         Top = 0;
         Sets.New(CoPred, EAG.NextHNont);
         Sets.New(Pred, EAG.NextHNont);
@@ -138,7 +138,7 @@ void Check()
         Sets.Difference(Pred, EAG.Prod, CoPred);
         Sets.Excl(Pred, EAG.StartSym);
         EAG.Pred = Pred;
-        INCL(EAG.History, EAG.predicates);
+        Sets.INCL(EAG.History, EAG.predicates);
         NOPreds = 0;
         for (N = EAG.firstHNont; N <= EAG.NextHNont; ++N)
         {

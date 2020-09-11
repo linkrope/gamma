@@ -49,7 +49,7 @@ void ExpandSemTree()
 {
     OpenSemTree SemTree1;
     IndexType i;
-    NEW(SemTree1, 2 * SemTree.length);
+    SemTree1 = new SemTreeEntry[2 * SemTree.length];
     for (i = 0; i <= SemTree.length - 1; ++i)
     {
         SemTree1[i] = SemTree[i];
@@ -61,7 +61,7 @@ void ExpandVar()
 {
     OpenVar Var1;
     IndexType i;
-    NEW(Var1, 2 * Var.length);
+    Var1 = new HeapType[2 * Var.length];
     for (i = 0; i <= Var.length - 1; ++i)
     {
         Var1[i] = Var[i];
@@ -75,9 +75,9 @@ $
 
 void Init()
 {
-    NEW(SemTree, initialStorageSize);
-    NEW(AffPos, $);
-    NEW(Var, 8 * initialStorageSize);
+    SemTree = new SemTreeEntry[initialStorageSize];
+    AffPos = new HeapType[$];
+    Var = new HeapType[8 * initialStorageSize];
     NextSemTree = 0;
     NextVar = 0;
     AffixVarCount = 0;
@@ -97,7 +97,7 @@ void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter, TreeT
     ErrorCounter = ErrCounter;
     Init;
     StartSymbol = NextSemTree;
-    NEW(SemTree[StartSymbol]);
+    SemTree[StartSymbol] = new SemTreeEntry;
     SemTree[StartSymbol].Adr = Adr;
     SemTree[StartSymbol].Rule = MOD($Tree[Adr], hyperArityConst);
     ++NextSemTree;

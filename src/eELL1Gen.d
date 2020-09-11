@@ -83,9 +83,6 @@ bool UseReg;
 
 void Expand()
 {
-    OpenEdge Edge1;
-    OpenGenSet GenSet1;
-    OpenGenSetT GenSetT1;
     long i;
 
     long ExpLen(long ArrayLen)
@@ -102,7 +99,8 @@ void Expand()
 
     if (NextEdge >= Edge.length)
     {
-        NEW(Edge1, ExpLen(Edge.length));
+        OpenEdge Edge1 = new EdgeRecord[ExpLen(Edge.length)];
+
         for (i = firstEdge; i <= Edge.length - 1; ++i)
         {
             Edge1[i] = Edge[i];
@@ -111,7 +109,8 @@ void Expand()
     }
     if (NextGenSet >= GenSet.length)
     {
-        NEW(GenSet1, ExpLen(GenSet.length));
+        OpenGenSet GenSet1 = new Sets.OpenSet[ExpLen(GenSet.length)];
+
         for (i = firstGenSet; i <= GenSet.length - 1; ++i)
         {
             GenSet1[i] = GenSet[i];
@@ -120,7 +119,8 @@ void Expand()
     }
     if (NextGenSetT >= GenSetT.length)
     {
-        NEW(GenSetT1, ExpLen(GenSetT.length));
+        OpenGenSetT GenSetT1 = new Sets.OpenSet[ExpLen(GenSetT.length)];
+
         for (i = firstGenSetT; i <= GenSetT.length - 1; ++i)
         {
             GenSetT1[i] = GenSetT[i];
@@ -226,14 +226,15 @@ void ComputeRegNonts()
 void Init()
 {
     int i;
+
     nToks = EAG.NextHTerm - EAG.firstHTerm + firstUserTok;
     if (EAG.NextHNont >= 1)
     {
-        NEW(Nont, EAG.NextHNont);
+        Nont = new NontRecord[EAG.NextHNont];
     }
     else
     {
-        NEW(Nont, 1);
+        Nont = new NontRecord[1];
     }
     for (i = EAG.firstHNont; i <= EAG.NextHNont - 1; ++i)
     {
@@ -251,11 +252,11 @@ void Init()
     }
     if (EAG.NextHAlt >= 1)
     {
-        NEW(Alt, EAG.NextHAlt);
+        Alt = new AltRecord[EAG.NextHAlt];
     }
     else
     {
-        NEW(Alt, 1);
+        Alt = new AltRecord[1];
     }
     for (i = EAG.firstHAlt; i <= EAG.NextHAlt - 1; ++i)
     {
@@ -263,21 +264,21 @@ void Init()
     }
     if (EAG.NextHFactor >= 1)
     {
-        NEW(Factor, EAG.NextHFactor);
+        Factor = new FactorRecord[EAG.NextHFactor];
     }
     else
     {
-        NEW(Factor, 1);
+        Factor = new FactorRecord[1];
     }
     for (i = EAG.firstHFactor; i <= EAG.NextHFactor - 1; ++i)
     {
         Factor[i].Rec = nil;
     }
-    NEW(Edge, 255);
+    Edge = new EdgeRecord[255];
     NextEdge = firstEdge;
-    NEW(GenSet, 511);
+    GenSet = new Sets.OpenSet[511];
     NextGenSet = firstGenSet;
-    NEW(GenSetT, 255);
+    GenSetT = new Sets.OpenSet[255];
     NextGenSetT = firstGenSetT;
     Sets.New(TestNonts, EAG.NextHNont);
     Sets.Difference(TestNonts, EAG.All, EAG.Pred);
@@ -567,8 +568,8 @@ void ComputeDir()
         IO.Update(IO.Msg);
     }
 
-    NEW(State, EAG.NextHNont);
-    NEW(Stack, EAG.NextHNont);
+    State = new int[EAG.NextHNont];
+    Stack = new int[EAG.NextHNont];
     Top = 0;
     Sets.New(NullAlts, EAG.NextHAlt);
     Sets.New(Toks, nToks);
@@ -863,16 +864,16 @@ void ComputeDefaultAlts()
 
     if (EAG.NextHAlt >= 1)
     {
-        NEW(Alt, EAG.NextHAlt);
+        Alt = new AltRecord[EAG.NextHAlt];
     }
     if (EAG.NextHNont >= 1)
     {
-        NEW(Stack, EAG.NextHNont);
+        Stack = new StackRecord[EAG.NextHNont];
     }
     Top = 0;
     if (EAG.NextHNont >= 1)
     {
-        NEW(StackPos, EAG.NextHNont);
+        StackPos = new int[EAG.NextHNont];
     }
     Sets.New(DefNonts, EAG.NextHNont);
     Sets.Assign(DefNonts, GenNonts);
@@ -1169,7 +1170,7 @@ void GenerateMod(bool ParsePass)
                                 }
                                 else
                                 {
-                                    IO.WriteText(Mod, "; INC(RecTop);\n");
+                                    IO.WriteText(Mod, "; ++RecTop;\n");
                                 }
                                 if (UseReg && !Sets.In(RegNonts, N)
                                         && Sets.In(RegNonts, (cast(EAG.Nont) F).Sym))
@@ -1205,7 +1206,7 @@ void GenerateMod(bool ParsePass)
                                 }
                                 if (!TwoCalls)
                                 {
-                                    IO.WriteText(Mod, "DEC(RecTop);\n");
+                                    IO.WriteText(Mod, "--RecTop;\n");
                                 }
                             }
                             else
@@ -1417,7 +1418,7 @@ void GenerateMod(bool ParsePass)
             }
             else
             {
-                IO.WriteText(Mod, "IN(SetT[");
+                IO.WriteText(Mod, "Sets.IN(SetT[");
                 IO.WriteInt(Mod, DIV(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
                 IO.WriteText(Mod, "][Tok], ");
                 IO.WriteInt(Mod, MOD(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
@@ -1437,7 +1438,7 @@ void GenerateMod(bool ParsePass)
             }
             else
             {
-                IO.WriteText(Mod, "IN(SetT[");
+                IO.WriteText(Mod, "Sets.IN(SetT[");
                 IO.WriteInt(Mod, DIV(Nont[N].FollowIndex - firstGenSetT, nElemsPerSET));
                 IO.WriteText(Mod, "][Tok], ");
                 IO.WriteInt(Mod, MOD(Nont[N].FollowIndex - firstGenSetT, nElemsPerSET));
@@ -1480,7 +1481,7 @@ void GenerateMod(bool ParsePass)
             }
             else
             {
-                IO.WriteText(Mod, "IN(SetT[");
+                IO.WriteText(Mod, "Sets.IN(SetT[");
                 IO.WriteInt(Mod, DIV(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
                 IO.WriteText(Mod, "][Tok], ");
                 IO.WriteInt(Mod, MOD(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
@@ -1499,7 +1500,7 @@ void GenerateMod(bool ParsePass)
             }
             else
             {
-                IO.WriteText(Mod, "IN(SetT[");
+                IO.WriteText(Mod, "Sets.IN(SetT[");
                 IO.WriteInt(Mod, DIV(Nont[N].FollowIndex - firstGenSetT, nElemsPerSET));
                 IO.WriteText(Mod, "][Tok], ");
                 IO.WriteInt(Mod, MOD(Nont[N].FollowIndex - firstGenSetT, nElemsPerSET));
@@ -1533,7 +1534,7 @@ void GenerateMod(bool ParsePass)
         IO.PutLInt(Tab, magicNumber);
         IO.PutLInt(Tab, TabTimeStamp);
         IO.PutLInt(Tab, 31);
-        IO.PutSet(Tab, SET(0, 2, 3, 6, 9, 13, 18, 19, 20, 24, 25, 27, 28, 31));
+        IO.PutSet(Tab, Sets.SET(0, 2, 3, 6, 9, 13, 18, 19, 20, 24, 25, 27, 28, 31));
         for (i = firstGenSetT; i <= NextGenSetT - 1; i = i + nElemsPerSET)
         {
             if (nElemsPerSET <= NextGenSetT - i)
@@ -1546,12 +1547,12 @@ void GenerateMod(bool ParsePass)
             }
             for (Tok = 0; Tok <= nToks - 1; ++Tok)
             {
-                s = SET;
+                s = Sets.SET;
                 for (j = 0; j <= m - 1; ++j)
                 {
                     if (Sets.In(GenSetT[i + j], Tok))
                     {
-                        INCL(s, j);
+                        Sets.INCL(s, j);
                     }
                 }
                 IO.PutSet(Tab, s);
@@ -1757,9 +1758,9 @@ void Test()
     IO.WriteText(IO.Msg, "ELL(1) testing    ");
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.Update(IO.Msg);
-    if (EAG.Performed(SET(EAG.analysed, EAG.predicates)))
+    if (EAG.Performed(Sets.SET(EAG.analysed, EAG.predicates)))
     {
-        EXCL(EAG.History, EAG.parsable);
+        Sets.EXCL(EAG.History, EAG.parsable);
         Init;
         if (GrammarOk())
         {
@@ -1767,7 +1768,7 @@ void Test()
             if (!(Error || Warning))
             {
                 IO.WriteText(IO.Msg, "   ok");
-                INCL(EAG.History, EAG.parsable);
+                Sets.INCL(EAG.History, EAG.parsable);
             }
         }
         Finit;
@@ -1783,9 +1784,9 @@ void Generate()
     IO.WriteText(IO.Msg, "   ");
     IO.Update(IO.Msg);
     Compiled = false;
-    if (EAG.Performed(SET(EAG.analysed, EAG.predicates, EAG.isSLEAG)))
+    if (EAG.Performed(Sets.SET(EAG.analysed, EAG.predicates, EAG.isSLEAG)))
     {
-        EXCL(EAG.History, EAG.parsable);
+        Sets.EXCL(EAG.History, EAG.parsable);
         Init;
         if (GrammarOk())
         {
@@ -1795,7 +1796,7 @@ void Generate()
                 ComputeDefaultAlts;
                 ComputeSets;
                 GenerateMod(false);
-                INCL(EAG.History, EAG.parsable);
+                Sets.INCL(EAG.History, EAG.parsable);
             }
         }
         Finit;
@@ -1814,13 +1815,13 @@ void GenerateParser()
     IO.WriteText(IO.Msg, "   ");
     IO.Update(IO.Msg);
     Compiled = false;
-    if (EAG.Performed(SET(EAG.analysed, EAG.predicates, EAG.hasEvaluator)))
+    if (EAG.Performed(Sets.SET(EAG.analysed, EAG.predicates, EAG.hasEvaluator)))
     {
-        EXCL(EAG.History, EAG.parsable);
+        Sets.EXCL(EAG.History, EAG.parsable);
         Init;
         if (GrammarOk())
         {
-            EAG.History = SET;
+            EAG.History = Sets.SET;
             Shift.Shift(0);
             ComputeDir;
             if (!Error)

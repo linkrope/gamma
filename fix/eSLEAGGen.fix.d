@@ -24,10 +24,9 @@ HeapType[maxArity] FreeList;
 
 $ void EvalExpand()
 {
-    OpenHeap Heap1;
-    long i;
-    NEW(Heap1, 2 * Heap.length);
-    for (i = 0; i <= Heap.length - 1; ++i)
+    OpenHeap Heap1 = new HeapType[2 * Heap.length];
+
+    for (size_t i = 0; i <= Heap.length - 1; ++i)
     {
         Heap1[i] = Heap[i];
     }
@@ -41,12 +40,10 @@ void Reset()
 
 $ void EvalExpand()
 {
-    OpenHeap Heap1;
-    OpenPos PosHeap1;
-    long i;
-    NEW(Heap1, 2 * Heap.length);
-    NEW(PosHeap1, 2 * Heap.length);
-    for (i = 0; i <= Heap.length - 1; ++i)
+    OpenHeap Heap1 = new HeapType[2 * Heap.length];
+    OpenPos PosHeap1 = new Position[2 * Heap.length];
+
+    for (size_t i = 0; i <= Heap.length - 1; ++i)
     {
         Heap1[i] = Heap[i];
         PosHeap1[i] = PosHeap[i];
@@ -66,10 +63,9 @@ void PushPos()
 {
     void PosExpand()
     {
-        OpenPos PosStack1;
-        long i;
-        NEW(PosStack1, PosStack.length * 2);
-        for (i = 0; i <= PosStack.length - 1; ++i)
+        OpenPos PosStack1 = new Position[PosStack.length * 2];
+
+        for (size_t i = 0; i <= PosStack.length - 1; ++i)
         {
             PosStack1[i] = PosStack[i];
         }
@@ -86,8 +82,7 @@ void PushPos()
 
 void PopPos(HeapType Arity)
 {
-    long i;
-    for (i = NextHeap + Arity; i >= NextHeap; --i)
+    for (size_t i = NextHeap + Arity; i >= NextHeap; --i)
     {
         PosHeap[i] = PosStack[PosTop];
         --PosTop;
@@ -105,7 +100,7 @@ out (; DIV(Heap[Node], refConst) == 0)
             EvalExpand;
         }
         Heap[NextHeap] = 0;
-        INC(NextHeap, Arity + 1);
+        NextHeap += Arity + 1;
     }
     else
     {
@@ -137,7 +132,7 @@ in (Node >= 0)
     }
     else
     {
-        DEC(Heap[Node], refConst);
+        Heap[Node] -= refConst;
     }
 }
 
@@ -152,7 +147,7 @@ long CountHeap()
         Node = FreeList[i];
         while (Node != 0)
         {
-            DEC(HeapCells, i + 1);
+            HeapCells -= i + 1;
             Node = Heap[Node];
         }
     }
@@ -200,7 +195,7 @@ void AnalyseError(ref HeapType V, string Msg)
         IO.WriteLn(IO.Msg);
         IO.Update(IO.Msg);
         $
-        INC(Heap[errVal], refConst);
+        Heap[errVal] += refConst;
         FreeHeap(V);
         $
         V = errVal;
@@ -296,7 +291,7 @@ bool EvalInitSucceeds()
     }
     if (Heap is null)
     {
-        NEW(Heap, initialHeapSize);
+        Heap = new HeapType[initialHeapSize];
     }
     while (predefined >= Heap.length)
     {
@@ -322,10 +317,10 @@ bool EvalInitSucceeds()
     OutputSize = 0;
     $
     PosTop = -1;
-    NEW(PosStack, 128);
+    PosStack = new Position[128];
     if (PosHeap is null)
     {
-        NEW(PosHeap, Heap.length);
+        PosHeap = new Position[Heap.length];
     }
     $
     return true;

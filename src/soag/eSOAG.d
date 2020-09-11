@@ -209,11 +209,8 @@ void Error(T)(int ErrorType, T Proc)
 
 void Expand()
 {
-    OpenRule Rule1;
-    OpenSymOcc SymOcc1;
-    OpenAffOcc AffOcc1;
-    OpenVS VS1;
     long i;
+
     long NewLen(long ArrayLen)
     {
         if (ArrayLen < DIV(int.max, 2))
@@ -228,7 +225,8 @@ void Expand()
 
     if (NextAffOcc >= AffOcc.length)
     {
-        NEW(AffOcc1, NewLen(AffOcc.length));
+        OpenAffOcc AffOcc1 = new AffOccDesc[NewLen(AffOcc.length)];
+
         for (i = firstAffOcc; i <= AffOcc.length - 1; ++i)
         {
             AffOcc1[i] = AffOcc[i];
@@ -237,7 +235,8 @@ void Expand()
     }
     if (NextSymOcc >= SymOcc.length)
     {
-        NEW(SymOcc1, NewLen(SymOcc.length));
+        OpenSymOcc SymOcc1 = new SymOccDesc[NewLen(SymOcc.length)];
+
         for (i = firstSymOcc; i <= SymOcc.length - 1; ++i)
         {
             SymOcc1[i] = SymOcc[i];
@@ -246,7 +245,8 @@ void Expand()
     }
     if (NextRule >= Rule.length)
     {
-        NEW(Rule1, NewLen(Rule.length));
+        OpenRule Rule1 = new RuleBase[NewLen(Rule.length)];
+
         for (i = firstRule; i <= Rule.length - 1; ++i)
         {
             Rule1[i] = Rule[i];
@@ -255,7 +255,8 @@ void Expand()
     }
     if (NextVS >= VS.length)
     {
-        NEW(VS1, NewLen(VS.length));
+        OpenVS VS1 = new Instruction[NewLen(VS.length)];
+
         for (i = firstVS; i <= VS.length - 1; ++i)
         {
             VS1[i] = VS[i];
@@ -327,8 +328,8 @@ void AppLeftSymOcc(int leftSym, int Params)
 
 void AppEmptyRule(int leftSym, EAG.Rule EAGRule)
 {
-    EmptyRule A;
-    NEW(A);
+    EmptyRule A = new EmptyRule;
+
     Rule[NextRule] = A;
     A.Rule = EAGRule;
     A.SymOcc.Beg = NextSymOcc;
@@ -352,8 +353,8 @@ void AppEmptyRule(int leftSym, EAG.Rule EAGRule)
 
 void AppRule(EAG.Alt EAGAlt)
 {
-    OrdRule A;
-    NEW(A);
+    OrdRule A = new OrdRule;
+
     Rule[NextRule] = A;
     A.Alt = EAGAlt;
     A.SymOcc.Beg = NextSymOcc;
@@ -371,8 +372,8 @@ void AppRule(EAG.Alt EAGAlt)
 
 void AppRepRule(EAG.Alt EAGAlt)
 {
-    OrdRule A;
-    NEW(A);
+    OrdRule A = new OrdRule;
+
     Rule[NextRule] = A;
     A.Alt = EAGAlt;
     A.SymOcc.Beg = NextSymOcc;
@@ -500,13 +501,13 @@ void Init()
     int i;
     int a;
     int Max;
-    NEW(Sym, EAG.NextHNont);
-    NEW(Rule, 128);
-    NEW(SymOcc, 256);
-    NEW(AffOcc, 512);
-    NEW(VS, 512);
-    NEW(DefAffOcc, EAG.NextVar);
-    NEW(AffixApplCnt, EAG.NextVar);
+    Sym = new SymDesc[EAG.NextHNont];
+    Rule = new RuleBase[128];
+    SymOcc = new SymOccDesc[256];
+    AffOcc = new AffOccDesc[512];
+    VS = new Instruction[512];
+    DefAffOcc = new int[EAG.NextVar];
+    AffixApplCnt = new int[EAG.NextVar];
     StorageName = null;
     NextSym = EAG.NextHNont;
     NextRule = firstRule;
@@ -559,8 +560,8 @@ void Init()
         }
         if (IsEvaluatorRule(i) && Max >= 0)
         {
-            NEW(Rule[i].TDP, Max + 1);
-            NEW(Rule[i].DP, Max + 1);
+            Rule[i].TDP = new Sets.OpenSet[Max + 1];
+            Rule[i].DP = new Sets.OpenSet[Max + 1];
             for (a = firstAffOccNum; a <= Max; ++a)
             {
                 Sets.New(Rule[i].TDP[a], Max + 1);
@@ -586,7 +587,7 @@ void Init()
             Sym[i].MaxPart = 0;
         }
     }
-    NEW(PartNum, NextPartNum);
+    PartNum = new int[NextPartNum];
     MaxPart = 0;
     for (i = EAG.firstVar; i <= EAG.NextVar - 1; ++i)
     {

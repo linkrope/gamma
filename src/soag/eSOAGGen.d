@@ -335,13 +335,14 @@ void Init()
     int Offset;
     int len;
     int POI;
-    NEW(LocalVars, SOAG.NextRule);
-    NEW(AffixVarCount, SOAG.NextRule);
-    NEW(AffixOffset, EAG.NextVar);
-    NEW(NodeName, EAG.NextNode);
-    NEW(SubTreeOffset, SOAG.NextSymOcc);
-    NEW(FirstRule, SOAG.NextSym);
-    NEW(AffixAppls, EAG.NextVar);
+
+    LocalVars = new int[SOAG.NextRule];
+    AffixVarCount = new int[SOAG.NextRule];
+    AffixOffset = new int[EAG.NextVar];
+    NodeName = new int[EAG.NextNode];
+    SubTreeOffset = new int[SOAG.NextSymOcc];
+    FirstRule = new int[SOAG.NextSym];
+    AffixAppls = new int[EAG.NextVar];
     for (i = SOAG.firstRule; i <= SOAG.NextRule - 1; ++i)
     {
         LocalVars[i] = 0;
@@ -433,11 +434,11 @@ void GenHeapInc(int n)
     {
         if (n == 1)
         {
-            WrS("INC(NextHeap); \n");
+            WrS("++NextHeap; \n");
         }
         else
         {
-            WrSIS("INC(NextHeap, ", n, "); \n");
+            WrSIS("NextHeap += ", n, ";\n");
         }
     }
 }
@@ -571,7 +572,7 @@ void GenClose()
 void GenIncRefCnt(int Var)
 {
     int AP;
-    WrS("INC(Heap[");
+    WrS("Heap[");
     if (Var < 0)
     {
         GenVar(-Var);
@@ -580,7 +581,7 @@ void GenIncRefCnt(int Var)
     {
         GenAffix(Var);
     }
-    WrS("], refConst);\n");
+    WrS("] += refConst;\n");
 }
 
 /**
@@ -663,7 +664,7 @@ void GenSynPred(int SymOccInd, int VisitNo)
         GenHeap(-1, Offset);
         WrSIS(" = ", SLEAGGen.NodeIdent[Alt], ";\n");
         Offset1 = Offset;
-        INC(Offset, 1 + EAG.MAlt[Alt].Arity);
+        Offset += 1 + EAG.MAlt[Alt].Arity;
         for (n = 1; n <= EAG.MAlt[Alt].Arity; ++n)
         {
             Node1 = EAG.NodeBuf[Node + n];
@@ -765,7 +766,7 @@ void GenSynPred(int SymOccInd, int VisitNo)
                 {
                     GenHeap(NodeName[Node], n);
                     WrSIS(" = ", SLEAGGen.Leaf[EAG.NodeBuf[Node1]], "; ");
-                    WrSIS("INC(Heap[", SLEAGGen.Leaf[EAG.NodeBuf[Node1]], "], refConst);\n");
+                    WrSIS("Heap[", SLEAGGen.Leaf[EAG.NodeBuf[Node1]], "] += refConst;\n");
                 }
                 else
                 {
@@ -833,7 +834,7 @@ void GenSynPred(int SymOccInd, int VisitNo)
                     WrSI(" = ", SLEAGGen.AffixPlace[P]);
                     if (UseRefCnt)
                     {
-                        WrSIS("; INC(Heap[", SLEAGGen.AffixPlace[P], "], refConst)");
+                        WrSIS("; Heap[", SLEAGGen.AffixPlace[P], "] += refConst");
                     }
                     WrS(";\n");
                 }
@@ -1391,7 +1392,7 @@ void GenVisitRule(int R)
     Protocol.Out = IO.Msg;
     WrS("{\n");
     GenVarDecls(R);
-    INC(Indent, cTab);
+    Indent += cTab;
     NontCnt = 1;
     for (SO = SOAG.Rule[R].SymOcc.Beg + 1; SO <= SOAG.Rule[R].SymOcc.End; ++SO)
     {
@@ -1405,7 +1406,7 @@ void GenVisitRule(int R)
     WrS("if (VisitNo == syntacticPart)\n");
     Ind;
     WrS("{\n");
-    INC(Indent, cTab);
+    Indent += cTab;
     Ind;
     WrSIS("if (NextSemTree >= SemTree.length - ", NontCnt, ") ExpandSemTree;\n");
     Ind;
@@ -1415,13 +1416,13 @@ void GenVisitRule(int R)
     Ind;
     WrS("SemTree[Symbol].Pos = PosTree[TreeAdr];\n");
     Ind;
-    WrSIS("INC(AffixVarCount, ", GetAffixCount(R), ");\n");
+    WrSIS("AffixVarCount += ", GetAffixCount(R), ";\n");
     if (AffixVarCount[R] > 0)
     {
         Ind;
         WrSIS("if (NextVar >= Var.length - ", AffixVarCount[R], ") ExpandVar;\n");
         Ind;
-        WrSIS("SemTree[Symbol].VarInd = NextVar; INC(NextVar, ", AffixVarCount[R], ");\n");
+        WrSIS("SemTree[Symbol].VarInd = NextVar; NextVar += ", AffixVarCount[R], ";\n");
     }
     else
     {
@@ -1431,19 +1432,19 @@ void GenVisitRule(int R)
     Ind;
     WrS("SemTree[NextSemTree] = SemTree[Symbol];\n");
     Ind;
-    WrS("INC(NextSemTree);\n");
+    WrS("++NextSemTree;\n");
     for (SO = SOAG.Rule[R].SymOcc.Beg + 1; SO <= SOAG.Rule[R].SymOcc.End; ++SO)
     {
         if (!SOAG.IsPredNont(SO))
         {
             Ind;
-            WrS("NEW(S);\n");
+            WrS("S = new SemTreeEntry;\n");
             Ind;
             WrSIS("S.Adr = Tree[TreeAdr + ", SubTreeOffset[SO], "];\n");
             Ind;
             WrSIS("S.Rule = ", FirstRule[SOAG.SymOcc[SO].SymInd] - 1, " + MOD(Tree[S.Adr], hyperArityConst);\n");
             Ind;
-            WrS("SemTree[NextSemTree] = S; INC(NextSemTree);\n");
+            WrS("SemTree[NextSemTree] = S; ++NextSemTree;\n");
         }
     }
     first = true;
@@ -1461,14 +1462,14 @@ void GenVisitRule(int R)
             WrSIS("Visit(TreeAdr + ", SubTreeOffset[SO], ", syntacticPart);\n");
         }
     }
-    DEC(Indent, cTab);
+    Indent -= cTab;
     Ind;
     WrS("}\n");
     Ind;
     WrS("else\n");
     Ind;
     WrS("{\n");
-    INC(Indent, cTab);
+    Indent += cTab;
     Ind;
     WrS("TreeAdr = SemTree[Symbol].Adr;\n");
     if (AffixVarCount[R] > 0)
@@ -1487,10 +1488,10 @@ void GenVisitRule(int R)
         WrS("switch (VisitNo)\n");
         Ind;
         WrS("{\n");
-        INC(Indent, cTab);
+        Indent += cTab;
         Ind;
         WrS("case 1:\n");
-        INC(Indent, cTab);
+        Indent += cTab;
     }
     VisitNo = 1;
     PosNeeded = true;
@@ -1542,12 +1543,12 @@ void GenVisitRule(int R)
             {
                 Ind;
                 WrS("break;\n");
-                DEC(Indent, cTab);
+                Indent -= cTab;
                 ++VisitNo;
                 PosNeeded = true;
                 Ind;
                 WrSIS("case ", VisitNo, ":\n");
-                INC(Indent, cTab);
+                Indent += cTab;
                 Ind;
                 WrS("// Visit-beginnende Analyse\n");
                 GenAnalPred(SO, VisitNo);
@@ -1559,7 +1560,7 @@ void GenVisitRule(int R)
                     Ind;
                     WrS("break;\n");
                 }
-                DEC(Indent, cTab);
+                Indent -= cTab;
             }
         }
     }
@@ -1567,10 +1568,10 @@ void GenVisitRule(int R)
     {
         Ind;
         WrS("default: assert(0);\n");
-        DEC(Indent, cTab);
+        Indent -= cTab;
         Ind;
         WrS("}\n");
-        DEC(Indent, cTab);
+        Indent -= cTab;
     }
     Ind;
     WrS("}\n");
@@ -1586,12 +1587,12 @@ void GenVisit()
     Indent = 0;
     WrS("void Visit(long Symbol, int VisitNo)\n");
     WrS("{\n");
-    INC(Indent, cTab);
+    Indent += cTab;
     Ind;
     WrS("switch (SemTree[Symbol].Rule)\n");
     Ind;
     WrS("{\n");
-    INC(Indent, cTab);
+    Indent += cTab;
     for (R = SOAG.firstRule; R <= SOAG.NextRule - 1; ++R)
     {
         if (SOAG.IsEvaluatorRule(R))
@@ -1603,7 +1604,7 @@ void GenVisit()
     }
     Ind;
     WrS("default: assert(0);\n");
-    DEC(Indent, cTab);
+    Indent -= cTab;
     Ind;
     WrS("}\n");
     WrS("}\n\n");
@@ -1822,14 +1823,14 @@ void Generate()
         IO.WriteText(IO.Msg, "-o ");
     }
     IO.Update(IO.Msg);
-    if (EAG.Performed(SET(EAG.analysed, EAG.predicates)))
+    if (EAG.Performed(Sets.SET(EAG.analysed, EAG.predicates)))
     {
         Init;
         GenerateModule;
         if (!Error)
         {
-            INCL(EAG.History, EAG.isSSweep);
-            INCL(EAG.History, EAG.hasEvaluator);
+            Sets.INCL(EAG.History, EAG.isSSweep);
+            Sets.INCL(EAG.History, EAG.hasEvaluator);
         }
     }
 }

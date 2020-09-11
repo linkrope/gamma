@@ -19,7 +19,7 @@ void Expand(ref Stack S)
     int i;
     if (S.Elem.length < DIV(int.max, 2))
     {
-        NEW(List1, 2 * S.Elem.length + 1);
+        List1 = new DataType[2 * S.Elem.length + 1];
     }
     else
     {
@@ -35,7 +35,7 @@ void Expand(ref Stack S)
 void New(ref Stack S, int Len)
 {
     S = Stack();
-    NEW(S.Elem, Len);
+    S.Elem = new DataType[Len];
     S.Top = emptyStack;
 }
 

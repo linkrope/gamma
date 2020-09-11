@@ -47,13 +47,14 @@ void Error(string String)
 void Expand()
 {
     long i;
-    OpenCharBuf CharBuf1;
-    OpenIdent Ident1;
+
     if (NextChar >= CharBuf.length)
     {
+        OpenCharBuf CharBuf1;
+
         if (CharBuf.length <= DIV(int.max, 2))
         {
-            NEW(CharBuf1, CharBuf.length * 2);
+            CharBuf1 = new char[CharBuf.length * 2];
         }
         else
         {
@@ -67,9 +68,11 @@ void Expand()
     }
     if (NextIdent >= Ident.length)
     {
+        OpenIdent Ident1;
+
         if (Ident.length <= DIV(int.max, 2))
         {
-            NEW(Ident1, Ident.length * 2);
+            Ident1 = new IdentRecord[Ident.length * 2];
         }
         else
         {
@@ -210,17 +213,18 @@ void Get(ref char Tok)
         int HashIndex;
         int m;
         int n;
+
         if (Tok == str)
         {
-            First = ORD(CharBuf[OldNextChar + 1]);
+            First = CharBuf[OldNextChar + 1];
             Len = NextChar - OldNextChar + 1;
         }
         else
         {
-            First = ORD(CharBuf[OldNextChar]);
+            First = CharBuf[OldNextChar];
             Len = NextChar - OldNextChar;
         }
-        Last = ORD(CharBuf[NextChar - 1]);
+        Last = CharBuf[NextChar - 1];
         HashIndex = cast(int) MOD(((First + Last) * 2 - Len) * 4 - First, HashTable.length);
         Val = HashTable[HashIndex];
         while (Val != nil)
@@ -340,7 +344,6 @@ void Get(ref char Tok)
 
     void Number()
     {
-        int d;
         bool Ok = true;
 
         Val = 0;
@@ -348,7 +351,8 @@ void Get(ref char Tok)
         {
             if (Ok)
             {
-                d = ORD(In.front.to!char) - ORD('0');
+                const d = In.front - '0';
+
                 if (Val <= 999)
                 {
                     Val = Val * 10 + d;
@@ -448,6 +452,6 @@ void trace(char tok)
 
 static this()
 {
-    NEW(CharBuf, 1023);
-    NEW(Ident, 255);
+    CharBuf = new char[1023];
+    Ident = new IdentRecord[255];
 }

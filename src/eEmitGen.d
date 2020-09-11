@@ -178,7 +178,7 @@ void GenEmitProc(IO.TextOut Mod)
                 GenProcName(N, MNonts);
                 IO.WriteText(Mod, "(HeapType Ptr)\n");
                 IO.WriteText(Mod, "{\n");
-                IO.WriteText(Mod, "INC(OutputSize, DIV(MOD(Heap[Ptr], refConst), arityConst) + 1);\n");
+                IO.WriteText(Mod, "OutputSize += DIV(MOD(Heap[Ptr], refConst), arityConst) + 1;\n");
                 GenAlts(N);
                 IO.WriteText(Mod, "}\n\n");
             }

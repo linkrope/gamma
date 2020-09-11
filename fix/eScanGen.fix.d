@@ -121,7 +121,7 @@ void Enter(int Tok, string Name)
             {
                 if (Node.length < DIV(int.max, 2))
                 {
-                    NEW(Node1, 2 * Node.length + 1);
+                    Node1 = new NodeRecord[2 * Node.length + 1];
                     for (i = firstNode; i <= Node.length - 1; ++i)
                     {
                         Node1[i] = Node[i];
@@ -151,7 +151,7 @@ void Enter(int Tok, string Name)
     {
         COPY(Name, NameTab[Tok]);
     }
-    Ptr = ORD(Name[0]);
+    Ptr = Name[0];
     i = 0;
     while (i < Name.length)
     {
@@ -191,7 +191,7 @@ void Symbol(ref int Tok)
 {
     int Ptr;
     int Mark;
-    Ptr = ORD(Ch);
+    Ptr = Ch;
     Tok = Node[Ptr].Tok;
     if (Node[Ptr].Sub != nil)
     {
@@ -225,7 +225,7 @@ void Keyword(ref int Tok)
     int Ptr;
     int LastPtr;
     int Mark;
-    Ptr = ORD(Ch);
+    Ptr = Ch;
     Tok = Node[Ptr].Tok;
     if (NextCh >= ChBuf.length - maxTokLen)
     {
@@ -243,7 +243,7 @@ void Keyword(ref int Tok)
         }
     }
     while (!(Ptr == nil));
-    if (Node[LastPtr].Tok != undef && !IsIdent[ORD(Ch)])
+    if (Node[LastPtr].Tok != undef && !IsIdent[Ch])
     {
         Tok = Node[LastPtr].Tok;
         CurCh = NextCh - 1;
@@ -323,15 +323,15 @@ void Get2(ref int Tok)
                 Mode = none;
             }
             GetPos;
-            Tok = Node[ORD(Ch)].Tok;
+            Tok = Node[Ch].Tok;
             GetCh;
         }
         break;
     case ident:
-        if (IsIdent[ORD(Ch)])
+        if (IsIdent[Ch])
         {
             GetPos;
-            Tok = Node[ORD(Ch)].Tok;
+            Tok = Node[Ch].Tok;
             GetCh;
         }
         else
@@ -341,7 +341,7 @@ void Get2(ref int Tok)
         }
         break;
     default:
-        while (IsWhitespace[ORD(Ch)])
+        while (IsWhitespace[Ch])
         {
             GetCh;
         }
@@ -350,7 +350,7 @@ void Get2(ref int Tok)
         {
             Tok = eot;
         }
-        else if (IsIdent[ORD(Ch)])
+        else if (IsIdent[Ch])
         {
             Keyword(Tok);
         }
@@ -358,7 +358,7 @@ void Get2(ref int Tok)
         {
             StringCh = Ch;
             Mode = string_;
-            Tok = Node[ORD(Ch)].Tok;
+            Tok = Node[Ch].Tok;
             GetCh;
         }
         else
@@ -389,15 +389,15 @@ void Get3(ref int Tok)
                 Mode = none;
             }
             GetPos;
-            Tok = Node[ORD(Ch)].Tok;
+            Tok = Node[Ch].Tok;
             GetCh;
         }
         break;
     case ident:
-        if (IsIdent[ORD(Ch)])
+        if (IsIdent[Ch])
         {
             GetPos;
-            Tok = Node[ORD(Ch)].Tok;
+            Tok = Node[Ch].Tok;
             GetCh;
         }
         else
@@ -412,16 +412,16 @@ void Get3(ref int Tok)
         {
             Tok = eot;
         }
-        else if (IsWhitespace[ORD(Ch)])
+        else if (IsWhitespace[Ch])
         {
             do
             {
                 GetCh;
             }
-            while (!!IsWhitespace[ORD(Ch)]);
+            while (!!IsWhitespace[Ch]);
             Tok = whitespace;
         }
-        else if (IsIdent[ORD(Ch)])
+        else if (IsIdent[Ch])
         {
             Keyword(Tok);
         }
@@ -429,7 +429,7 @@ void Get3(ref int Tok)
         {
             StringCh = Ch;
             Mode = string_;
-            Tok = Node[ORD(Ch)].Tok;
+            Tok = Node[Ch].Tok;
             GetCh;
         }
         else
@@ -458,18 +458,17 @@ void BuildTree()
 {
     import std.conv : to;
 
-    int i;
-    for (i = 0; i <= IsIdent.length - 1; ++i)
+    for (int i = 0; i <= IsIdent.length - 1; ++i)
     {
-        if ('A' <= CHR(i) && CHR(i) <= 'Z')
+        if ('A' <= i && i <= 'Z')
         {
             IsIdent[i] = true;
         }
-        else if ('a' <= CHR(i)  && CHR(i) <= 'z')
+        else if ('a' <= i  && i <= 'z')
         {
             IsIdent[i] = true;
         }
-        else if ('0' <= CHR(i)  && CHR(i) <= '9')
+        else if ('0' <= i  && i <= '9')
         {
             IsIdent[i] = true;
         }
@@ -478,9 +477,9 @@ void BuildTree()
             IsIdent[i] = false;
         }
     }
-    for (i = 0; i <= IsWhitespace.length - 1; ++i)
+    for (int i = 0; i <= IsWhitespace.length - 1; ++i)
     {
-        if (CHR(i) <= ' ' || CHR(i) > '~')
+        if (i <= ' ' || '~' < i)
         {
             IsWhitespace[i] = true;
         }
@@ -489,12 +488,12 @@ void BuildTree()
             IsWhitespace[i] = false;
         }
     }
-    IsWhitespace[ORD(EOT)] = false;
-    NEW(Node, 255);
-    NextNode = ORD('~') + 1;
-    for (i = firstNode; i <= NextNode; ++i)
+    IsWhitespace[EOT] = false;
+    Node = new NodeRecord[255];
+    NextNode = '~' + 1;
+    for (int i = firstNode; i <= NextNode; ++i)
     {
-        Node[i].Ch = CHR(i);
+        Node[i].Ch = i.to!char;
         Node[i].Tok = undef;
         Node[i].Next = nil;
         Node[i].Sub = nil;
@@ -508,7 +507,15 @@ void BuildTree()
 $
 }
 
-void Read(ref TextIn In, ref char c)
+private void COPY(T)(string x, ref T v)
+{
+    import std.algorithm : copy, fill;
+
+    fill(v[], '\0');
+    copy(x[], v[]);
+}
+
+private void Read(ref TextIn In, ref char c)
 {
     import std.conv : to;
 

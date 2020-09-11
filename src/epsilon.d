@@ -87,6 +87,7 @@ void compile(TextIn textIn, bool sweep, bool soag)
     import Predicates = ePredicates;
     import ScanGen = eScanGen;
     import Scanner = eScanner;
+    import Sets = eSets;
     import SLEAGGen = eSLEAGGen;
     import SOAGGen = soag.eSOAGGen;
     import SSweep = eSSweep;
@@ -103,7 +104,7 @@ void compile(TextIn textIn, bool sweep, bool soag)
     if (!sweep && !soag)
     {
         SLEAGGen.Test;
-        if (IN(EAG.History, EAG.isSLEAG))
+        if (Sets.IN(EAG.History, EAG.isSLEAG))
         {
             ScanGen.Generate;
             ELL1Gen.Generate;
@@ -113,7 +114,7 @@ void compile(TextIn textIn, bool sweep, bool soag)
     if (!success && !soag)
     {
         SSweep.Test;
-        if (IN(EAG.History, EAG.isSSweep))
+        if (Sets.IN(EAG.History, EAG.isSSweep))
         {
             ScanGen.Generate;
             SSweep.Generate;
@@ -147,7 +148,8 @@ void build(string[] files)
     import std.string : join;
     import std.process : spawnProcess, wait;
 
-    const args = "dmd" ~ files ~ "include/runtime.d" ~ "src/eIO.d" ~ "src/io.d" ~ "src/soag/eLIStacks.d" ~ "-g";
+    const args = "dmd" ~ files ~ "-g"
+        ~ "include/runtime.d" ~ "src/eIO.d" ~ "src/eSets.d" ~ "src/io.d" ~ "src/soag/eLIStacks.d";
 
     writefln!"%s"(args.join(' '));
 

@@ -6,10 +6,6 @@
 
 - specify the lowering for EBNF and various abbreviations as an EAG
 
-## runtime.d
-
-- get rid of (as much as possible of) runtime.d
-
 ## eIO.d
 
 - get rid of (as much as possible of) eIO.d
@@ -33,3 +29,16 @@
 ## String Representation
 
 - add toString functions to simplify debugging
+
+## Table Files
+
+- include .Tab and .EvalTab files in executable
+
+## Code Generation
+
+- no ident (use dfmt)
+- create intermediate language nodes
+
+## History Set
+
+- remove history state, tailored for Oberon's command execution

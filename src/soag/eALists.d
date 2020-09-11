@@ -19,7 +19,7 @@ void Expand(ref AList List)
     int i;
     if (List.Elem.length < DIV(int.max, 2))
     {
-        NEW(List1, 2 * List.Elem.length + 1);
+        List1 = new int[2 * List.Elem.length + 1];
     }
     else
     {
@@ -42,7 +42,7 @@ void New(ref AList List, int Len)
 {
     List = AList();
     List.Last = -1;
-    NEW(List.Elem, Len);
+    List.Elem = new int[Len];
 }
 
 /**

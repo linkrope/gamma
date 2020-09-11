@@ -112,28 +112,27 @@ int GetVisit(int R, int SO, int VN)
  */
 SOAG.Instruction MapVS(int AO)
 {
-    SOAG.Visit Visit;
-    SOAG.Leave Leave;
-    SOAG.Call Call;
-    int SO;
-    int R;
     if (EAG.ParamBuf[SOAG.AffOcc[AO].ParamBufInd].isDef)
     {
-        SO = SOAG.AffOcc[AO].SymOccInd;
+        int SO = SOAG.AffOcc[AO].SymOccInd;
+
         if (SOAG.IsPredNont(SO))
         {
-            NEW(Call);
+            SOAG.Call Call = new SOAG.Call;
+
             Call.SymOcc = SO;
             return Call;
         }
         else
         {
-            R = SOAG.SymOcc[SO].RuleInd;
+            int R = SOAG.SymOcc[SO].RuleInd;
+
             if (SOAG.Rule[R].SymOcc.Beg == SO)
             {
                 if (GetVisitNo(AO) - 1 > 0)
                 {
-                    NEW(Leave);
+                    SOAG.Leave Leave = new SOAG.Leave;
+
                     Leave.VisitNo = GetVisitNo(AO) - 1;
                     return Leave;
                 }
@@ -144,7 +143,8 @@ SOAG.Instruction MapVS(int AO)
             }
             else
             {
-                NEW(Visit);
+                SOAG.Visit Visit = new SOAG.Visit;
+
                 Visit.SymOcc = SO;
                 Visit.VisitNo = GetVisitNo(AO);
                 return Visit;
@@ -164,29 +164,28 @@ SOAG.Instruction MapVS(int AO)
  */
 SOAG.Instruction CompleteTraversal(int SO)
 {
-    SOAG.Visit Visit;
-    SOAG.Leave Leave;
-    SOAG.Call Call;
-    int R;
-    int MaxVisitNo;
     if (SOAG.IsPredNont(SO))
     {
-        NEW(Call);
+        SOAG.Call Call = new SOAG.Call;
+
         Call.SymOcc = SO;
         return Call;
     }
     else
     {
-        R = SOAG.SymOcc[SO].RuleInd;
+        int R = SOAG.SymOcc[SO].RuleInd;
+
         if (SOAG.Rule[R].SymOcc.Beg == SO)
         {
-            NEW(Leave);
+            SOAG.Leave Leave = new SOAG.Leave;
+
             Leave.VisitNo = GetMaxVisitNo(SO);
             return Leave;
         }
         else
         {
-            NEW(Visit);
+            SOAG.Visit Visit = new SOAG.Visit;
+
             Visit.SymOcc = SO;
             Visit.VisitNo = GetMaxVisitNo(SO);
             return Visit;
@@ -265,7 +264,7 @@ void Generate()
     // HashTab.Init(SOAG.MaxAffNumInRule); // does not work if (MaxAffNumInRule == 0)
     HashTab.Init(SOAG.MaxAffNumInRule + 1);
     Stacks.New(ZeroInDeg, 32);
-    NEW(InDeg, SOAG.MaxAffNumInRule + 1);
+    InDeg = new int[SOAG.MaxAffNumInRule + 1];
     for (R = SOAG.firstRule; R <= SOAG.NextRule - 1; ++R)
     {
         SOAG.Rule[R].VS.Beg = SOAG.NextVS;

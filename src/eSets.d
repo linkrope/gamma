@@ -7,9 +7,8 @@ alias OpenSet = uint[];
 
 void New(ref OpenSet s0, int MaxElem)
 {
-    int n;
-    NEW(s0, DIV(MaxElem, M) + 1);
-    for (n = 0; n <= DIV(MaxElem, M); ++n)
+    s0 = new uint[DIV(MaxElem, M) + 1];
+    for (int n = 0; n <= DIV(MaxElem, M); ++n)
     {
         s0[n] = SET;
     }
@@ -27,8 +26,7 @@ unittest
 
 void Empty(ref OpenSet s0)
 {
-    int n;
-    for (n = 0; n <= SHORT(s0.length - 1); ++n)
+    for (size_t n = 0; n < s0.length; ++n)
     {
         s0[n] = SET;
     }
@@ -77,8 +75,7 @@ unittest
 
 void Assign(ref OpenSet s0, OpenSet s1)
 {
-    int n;
-    for (n = 0; n <= SHORT(s1.length) - 1; ++n)
+    for (size_t n = 0; n < s1.length; ++n)
     {
         s0[n] = s1[n];
     }
@@ -96,8 +93,7 @@ unittest
 
 void Complement(ref OpenSet s0, OpenSet s1)
 {
-    int n;
-    for (n = 0; n <= SHORT(s1.length) - 1; ++n)
+    for (size_t n = 0; n < s1.length; ++n)
     {
         s0[n] = ~s1[n];
     }
@@ -115,11 +111,10 @@ unittest
 
 void Union(ref OpenSet s0, OpenSet s1, OpenSet s2)
 {
-    int n;
-    uint s;
-    for (n = 0; n <= SHORT(s1.length) - 1; ++n)
+    for (size_t n = 0; n < s1.length; ++n)
     {
-        s = s1[n] | s2[n];
+        uint s = s1[n] | s2[n];
+
         s0[n] = s;
     }
 }
@@ -136,11 +131,10 @@ unittest
 
 void Difference(ref OpenSet s0, OpenSet s1, OpenSet s2)
 {
-    int n;
-    uint s;
-    for (n = 0; n <= SHORT(s1.length) - 1; ++n)
+    for (size_t n = 0; n < s1.length; ++n)
     {
-        s = s1[n] & ~s2[n];
+        uint s = s1[n] & ~s2[n];
+
         s0[n] = s;
     }
 }
@@ -157,11 +151,10 @@ unittest
 
 void Intersection(ref OpenSet s0, OpenSet s1, OpenSet s2)
 {
-    int n;
-    uint s;
-    for (n = 0; n <= SHORT(s1.length) - 1; ++n)
+    for (size_t n = 0; n < s1.length; ++n)
     {
-        s = s1[n] & s2[n];
+        uint s = s1[n] & s2[n];
+
         s0[n] = s;
     }
 }
@@ -178,11 +171,10 @@ unittest
 
 void SymmetricDifference(ref OpenSet s0, OpenSet s1, OpenSet s2)
 {
-    int n;
-    uint s;
-    for (n = 0; n <= SHORT(s1.length) - 1; ++n)
+    for (size_t n = 0; n < s1.length; ++n)
     {
-        s = s1[n] ^ s2[n];
+        uint s = s1[n] ^ s2[n];
+
         s0[n] = s;
     }
 }
@@ -211,8 +203,7 @@ unittest
 
 bool Included(OpenSet s1, OpenSet s2)
 {
-    int n;
-    for (n = 0; n <= SHORT(s2.length) - 1; ++n)
+    for (size_t n = 0; n < s2.length; ++n)
     {
         if ((s1[n] | s2[n]) != s1[n])
         {
@@ -231,8 +222,7 @@ unittest
 
 bool IsEmpty(OpenSet s1)
 {
-    int n;
-    for (n = 0; n <= SHORT(s1.length) - 1; ++n)
+    for (size_t n = 0; n < s1.length; ++n)
     {
         if (s1[n] != SET)
         {
@@ -251,8 +241,7 @@ unittest
 
 bool Equal(OpenSet s1, OpenSet s2)
 {
-    int n;
-    for (n = 0; n <= SHORT(s1.length) - 1; ++n)
+    for (size_t n = 0; n < s1.length; ++n)
     {
         if (s1[n] != s2[n])
         {
@@ -271,8 +260,7 @@ unittest
 
 bool Disjoint(OpenSet s1, OpenSet s2)
 {
-    int n;
-    for (n = 0; n <= SHORT(s1.length) - 1; ++n)
+    for (size_t n = 0; n < s1.length; ++n)
     {
         if ((s1[n] & s2[n]) != SET)
         {
@@ -289,9 +277,9 @@ unittest
     assert(!Disjoint([0b1010, 0b0101], [0b0001, 0b0100]));
 }
 
-int nSetsUsed(OpenSet s1)
+size_t nSetsUsed(OpenSet s1)
 {
-    return SHORT(s1.length);
+    return s1.length;
 }
 
 @("get number of 32-bit sets used to store set")
@@ -309,4 +297,26 @@ uint ConvertToSET(OpenSet s1, int Index)
 unittest
 {
     assert(ConvertToSET([1234, 5678], 1) == 5678);
+}
+
+uint SET(size_t[] elements...)
+{
+    import std.algorithm : map, reduce;
+
+    return reduce!"a | b"(0, elements.map!(element => 1 << element));
+}
+
+bool IN(uint set, size_t x)
+{
+    return (set & SET(x)) != 0;
+}
+
+void INCL(ref uint set, size_t x)
+{
+    set |= SET(x);
+}
+
+void EXCL(ref uint set, size_t x)
+{
+    set &= ~SET(x);
 }

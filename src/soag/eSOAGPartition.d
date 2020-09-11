@@ -55,9 +55,8 @@ int Seperator;
 
 void Expand()
 {
-    OpenVarBuf VarBuf1;
-    OpenChangeBuf ChangeBuf1;
     long i;
+
     long NewLen(long ArrayLen)
     {
         if (ArrayLen < DIV(int.max, 2))
@@ -72,7 +71,8 @@ void Expand()
 
     if (NextVarBuf >= VarBuf.length)
     {
-        NEW(VarBuf1, NewLen(VarBuf.length));
+        OpenVarBuf VarBuf1 = new VarBufDesc[NewLen(VarBuf.length)];
+
         for (i = firstVarBuf; i <= VarBuf.length - 1; ++i)
         {
             VarBuf1[i] = VarBuf[i];
@@ -81,7 +81,8 @@ void Expand()
     }
     if (NextChangeBuf >= ChangeBuf.length)
     {
-        NEW(ChangeBuf1, NewLen(ChangeBuf.length));
+        OpenChangeBuf ChangeBuf1 = new ChangeBufDesc[NewLen(ChangeBuf.length)];
+
         for (i = firstChangeBuf; i <= ChangeBuf.length - 1; ++i)
         {
             ChangeBuf1[i] = ChangeBuf[i];
@@ -716,10 +717,13 @@ void DynTopSortSym(int X)
 void DynTopSort()
 {
     int S;
+
     ASets.New(Cur, SOAG.MaxAffNumInSym + 1);
     ASets.New(Leave, SOAG.MaxAffNumInSym + 1);
-    NEW(Deg, SOAG.MaxAffNumInSym + 1);
-    NEW(DS, SOAG.MaxAffNumInSym + 1, SOAG.MaxAffNumInSym + 1);
+    Deg = new int[SOAG.MaxAffNumInSym + 1];
+    DS = new int[][SOAG.MaxAffNumInSym + 1];
+    foreach (ref row; DS)
+        row = new int[SOAG.MaxAffNumInSym + 1];
     BSets.New(New, (SOAG.MaxAffNumInSym + 1) * (SOAG.MaxAffNumInSym + 1));
     Seperator = SOAG.MaxAffNumInSym + 1;
     ALists.New(LastCur, 16);
@@ -739,8 +743,8 @@ void Compute()
 {
     int i;
     SOAG.Init;
-    NEW(VarBuf, 50);
-    NEW(ChangeBuf, 64);
+    VarBuf = new VarBufDesc[50];
+    ChangeBuf = new ChangeBufDesc[64];
     NextVarBuf = firstVarBuf;
     NextChangeBuf = firstChangeBuf;
     OEAG = true;

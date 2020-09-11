@@ -60,7 +60,7 @@ in (MaxAffInRule > 0)
     {
         MaxHashTabIndex = MaxHashTabIndex * 2;
     }
-    NEW(HashTab, MaxHashTabIndex);
+    HashTab = new HashEntry[MaxHashTabIndex];
     Reset;
 }
 
@@ -158,12 +158,11 @@ bool IsIn(SOAG.Instruction I)
  */
 void Enter(SOAG.Instruction I)
 {
-    int Index;
-    HashEntry Entry;
     if (I !is null)
     {
-        Index = HashIndex(I);
-        NEW(Entry);
+        int Index = HashIndex(I);
+        HashEntry Entry = new HashEntry;
+
         Entry.Instr = I;
         HashTab[Index] = Entry;
     }

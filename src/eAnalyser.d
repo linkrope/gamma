@@ -637,7 +637,7 @@ void Specification()
         }
     }
     while (!(Tok == Scanner.eot));
-    INC(ErrorCounter, Scanner.ErrorCounter);
+    ErrorCounter += Scanner.ErrorCounter;
 }
 
 void CheckSemantics()
@@ -677,14 +677,17 @@ void CheckSemantics()
         EAG.Alt A;
         EAG.Factor F;
         int Sig;
+
         void CheckParamList(int Dom, EAG.ParamsDesc Par, bool Lhs)
         {
+            import std.math : abs;
+
             int P;
             P = Par.Params;
             while (EAG.DomBuf[Dom] != nil && EAG.ParamBuf[P].Affixform != nil)
             {
                 EAG.ParamBuf[P].isDef = Lhs && EAG.DomBuf[Dom] < 0 || !Lhs && EAG.DomBuf[Dom] > 0;
-                Earley.Parse(ABS(EAG.DomBuf[Dom]), EAG.ParamBuf[P].Affixform,
+                Earley.Parse(abs(EAG.DomBuf[Dom]), EAG.ParamBuf[P].Affixform,
                         EAG.ParamBuf[P].Affixform, EAG.ParamBuf[P].isDef);
                 if (EAG.ParamBuf[P].Affixform == EAG.nil)
                 {
@@ -938,10 +941,10 @@ void ComputeEAGSets()
             ++Warnings;
         }
     }
-    NEW(Deg, EAG.NextHAlt);
-    NEW(Stack, EAG.NextHNont);
+    Deg = new int[EAG.NextHAlt];
+    Stack = new int[EAG.NextHNont];
     Top = 0;
-    NEW(Edge, EAG.NextHNont + EAG.NONont + 1);
+    Edge = new EdgeRecord[EAG.NextHNont + EAG.NONont + 1];
     NextEdge = EAG.NextHNont;
     for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
     {
@@ -980,7 +983,7 @@ void ComputeEAGSets()
                 }
                 if (TermFound)
                 {
-                    INC(Deg[A.Ind], int.min);
+                    Deg[A.Ind] += int.min;
                 }
                 else
                 {
@@ -1002,7 +1005,7 @@ void ComputeEAGSets()
             {
                 if (Deg[A.Ind] < 0)
                 {
-                    DEC(Deg[A.Ind], int.min);
+                    Deg[A.Ind] -= int.min;
                     TestDeg(A);
                 }
                 A = A.Next;
@@ -1049,12 +1052,12 @@ void Analyse(TextIn textIn)
     }
     if (ErrorCounter == 0)
     {
-        INCL(EAG.History, EAG.analysed);
+        Sets.INCL(EAG.History, EAG.analysed);
         Str("   ok ");
     }
     else
     {
-        EXCL(EAG.History, EAG.analysed);
+        Sets.EXCL(EAG.History, EAG.analysed);
         Str("\nerrors occurred");
         if (NameNotified)
         {
@@ -1074,7 +1077,7 @@ void Warnings()
     bool NoWarnings;
     Str("Analyser");
     IO.Update(IO.Msg);
-    if (EAG.Performed(SET(EAG.analysed)))
+    if (EAG.Performed(Sets.SET(EAG.analysed)))
     {
         Sets.New(Unreach, EAG.NextHNont);
         Sets.New(Unprod, EAG.NextHNont);

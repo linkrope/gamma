@@ -34,7 +34,7 @@ void IncludeVDS(int S, int VN1, int VN2)
     while (i < VDS.Last && notisElement)
     {
         notisElement = VDS.Elem[i] != S || VDS.Elem[i + 1] != VN1 || VDS.Elem[i + 2] != VN2;
-        INC(i, 3);
+        i += 3;
     }
     if (notisElement)
     {
@@ -75,7 +75,7 @@ void IncludeVS(int S, int VN)
     while (i < VS.Last && notisElement)
     {
         notisElement = VS.Elem[i] != S || VS.Elem[i + 1] != VN;
-        INC(i, 2);
+        i += 2;
     }
     if (notisElement)
     {
@@ -179,7 +179,7 @@ void Init()
     int R;
     int V;
     int PlanNo;
-    NEW(PN, SOAG.NextVS);
+    PN = new int[SOAG.NextVS];
     for (R = SOAG.firstRule; R <= SOAG.NextRule - 1; ++R)
     {
         PlanNo = 1;
@@ -192,7 +192,7 @@ void Init()
             }
         }
     }
-    NEW(SOAG.StorageName, SOAG.NextPartNum);
+    SOAG.StorageName = new int[SOAG.NextPartNum];
     SOAG.NextStorageName = SOAG.NextPartNum;
     for (V = SOAG.firstStorageName; V <= SOAG.NextStorageName - 1; ++V)
     {

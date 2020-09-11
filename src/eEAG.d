@@ -278,17 +278,8 @@ char[BaseNameLen] BaseName;
 
 void Expand()
 {
-    OpenParamBuf ParamBuf1;
-    OpenHNont HNont1;
-    OpenHTerm HTerm1;
-    OpenMNont MNont1;
-    OpenMTerm MTerm1;
-    OpenDomBuf DomBuf1;
-    OpenMAlt MAlt1;
-    OpenMembBuf MembBuf1;
-    OpenNodeBuf NodeBuf1;
-    OpenVar Var1;
     long i;
+
     long NewLen(long ArrayLen)
     {
         if (ArrayLen < DIV(int.max, 2))
@@ -303,7 +294,8 @@ void Expand()
 
     if (NextParam >= ParamBuf.length)
     {
-        NEW(ParamBuf1, NewLen(ParamBuf.length));
+        OpenParamBuf ParamBuf1 = new ParamRecord[NewLen(ParamBuf.length)];
+
         for (i = firstParam; i <= ParamBuf.length - 1; ++i)
         {
             ParamBuf1[i] = ParamBuf[i];
@@ -312,7 +304,8 @@ void Expand()
     }
     if (NextMTerm >= MTerm.length)
     {
-        NEW(MTerm1, NewLen(MTerm.length));
+        OpenMTerm MTerm1 = new MTermRecord[NewLen(MTerm.length)];
+
         for (i = firstMTerm; i <= MTerm.length - 1; ++i)
         {
             MTerm1[i] = MTerm[i];
@@ -321,7 +314,8 @@ void Expand()
     }
     if (NextMNont >= MNont.length)
     {
-        NEW(MNont1, NewLen(MNont.length));
+        OpenMNont MNont1 = new MNontRecord[NewLen(MNont.length)];
+
         for (i = firstMNont; i <= MNont.length - 1; ++i)
         {
             MNont1[i] = MNont[i];
@@ -330,7 +324,8 @@ void Expand()
     }
     if (NextHTerm >= HTerm.length)
     {
-        NEW(HTerm1, NewLen(HTerm.length));
+        OpenHTerm HTerm1 = new HTermRecord[NewLen(HTerm.length)];
+
         for (i = firstHTerm; i <= HTerm.length - 1; ++i)
         {
             HTerm1[i] = HTerm[i];
@@ -339,7 +334,8 @@ void Expand()
     }
     if (NextHNont >= HNont.length)
     {
-        NEW(HNont1, NewLen(HNont.length));
+        OpenHNont HNont1 = new HNontRecord[NewLen(HNont.length)];
+
         for (i = firstHNont; i <= HNont.length - 1; ++i)
         {
             HNont1[i] = HNont[i];
@@ -348,7 +344,8 @@ void Expand()
     }
     if (NextDom >= DomBuf.length)
     {
-        NEW(DomBuf1, NewLen(DomBuf.length));
+        OpenDomBuf DomBuf1 = new int[NewLen(DomBuf.length)];
+
         for (i = firstDom; i <= DomBuf.length - 1; ++i)
         {
             DomBuf1[i] = DomBuf[i];
@@ -357,7 +354,8 @@ void Expand()
     }
     if (NextMAlt >= MAlt.length)
     {
-        NEW(MAlt1, NewLen(MAlt.length));
+        OpenMAlt MAlt1 = new MAltRecord[NewLen(MAlt.length)];
+
         for (i = firstMAlt; i <= MAlt.length - 1; ++i)
         {
             MAlt1[i] = MAlt[i];
@@ -366,7 +364,8 @@ void Expand()
     }
     if (NextMemb >= MembBuf.length)
     {
-        NEW(MembBuf1, NewLen(MembBuf.length));
+        OpenMembBuf MembBuf1 = new int[NewLen(MembBuf.length)];
+
         for (i = firstMemb; i <= MembBuf.length - 1; ++i)
         {
             MembBuf1[i] = MembBuf[i];
@@ -375,7 +374,8 @@ void Expand()
     }
     if (NextNode >= NodeBuf.length)
     {
-        NEW(NodeBuf1, NewLen(NodeBuf.length));
+        OpenNodeBuf NodeBuf1 = new int[NewLen(NodeBuf.length)];
+
         for (i = firstNode; i <= NodeBuf.length - 1; ++i)
         {
             NodeBuf1[i] = NodeBuf[i];
@@ -384,7 +384,8 @@ void Expand()
     }
     if (NextVar >= Var.length)
     {
-        NEW(Var1, NewLen(Var.length));
+        OpenVar Var1 = new VarRecord[NewLen(Var.length)];
+
         for (i = firstVar; i <= Var.length - 1; ++i)
         {
             Var1[i] = Var[i];
@@ -655,9 +656,9 @@ int FindVar(int Sym, int Num, Position Pos, bool Def)
 
 void NewTerm(ref Factor F, int Sym, Position Pos)
 {
-    Term F1;
+    Term F1 = new Term;
+
     ++NOTerm;
-    NEW(F1);
     F1.Next = null;
     F1.Sym = Sym;
     F1.Pos = Pos;
@@ -678,9 +679,9 @@ void NewTerm(ref Factor F, int Sym, Position Pos)
 
 void NewNont(ref Factor F, int Sym, ParamsDesc Actual, Position Pos)
 {
-    Nont F1;
+    Nont F1 = new Nont;
+
     ++NONont;
-    NEW(F1);
     F1.Next = null;
     F1.Sym = Sym;
     F1.Actual = Actual;
@@ -702,18 +703,18 @@ void NewNont(ref Factor F, int Sym, ParamsDesc Actual, Position Pos)
 
 void NewGrp(int Sym, Alt Sub)
 {
-    Grp N;
-    Alt A;
     if (HNont[Sym].Def is null)
     {
+        Grp N = new Grp;
+
         ++NOGrp;
-        NEW(N);
         N.Sub = Sub;
         HNont[Sym].Def = N;
     }
     else
     {
-        A = (cast(Grp) HNont[Sym].Def).Sub;
+        Alt A = (cast(Grp) HNont[Sym].Def).Sub;
+
         while (A.Next !is null)
         {
             A = A.Next;
@@ -724,9 +725,9 @@ void NewGrp(int Sym, Alt Sub)
 
 void NewOpt(int Sym, Alt Sub, ParamsDesc Formal, Position Pos)
 {
-    Opt N;
+    Opt N = new Opt;
+
     ++NOOpt;
-    NEW(N);
     N.Sub = Sub;
     N.EmptyAltPos = Pos;
     N.Scope.Beg = nil;
@@ -737,9 +738,9 @@ void NewOpt(int Sym, Alt Sub, ParamsDesc Formal, Position Pos)
 
 void NewRep(int Sym, Alt Sub, ParamsDesc Formal, Position Pos)
 {
-    Rep N;
+    Rep N = new Rep;
+
     ++NORep;
-    NEW(N);
     N.Sub = Sub;
     N.EmptyAltPos = Pos;
     N.Scope.Beg = nil;
@@ -751,9 +752,9 @@ void NewRep(int Sym, Alt Sub, ParamsDesc Formal, Position Pos)
 void NewAlt(ref Alt A, int Sym, ParamsDesc Formal, ParamsDesc Actual, Factor Sub,
         Factor Last, Position Pos)
 {
-    Alt A1;
+    Alt A1 = new Alt;
+
     ++NOAlt;
-    NEW(A1);
     A1.Next = null;
     A1.Up = Sym;
     A1.Scope.Beg = nil;
@@ -805,14 +806,16 @@ void WriteHNont(ref IO.TextOut Out, int Nont)
 
 void WriteVar(ref IO.TextOut Out, int V)
 {
+    import std.math : abs;
+
     if (Var[V].Num < 0)
     {
         IO.Write(Out, '#');
     }
     Scanner.WriteRepr(Out, MNont[Var[V].Sym].Id);
-    if (ABS(Var[V].Num) > 1)
+    if (abs(Var[V].Num) > 1)
     {
-        IO.WriteInt(Out, ABS(Var[V].Num) - 2);
+        IO.WriteInt(Out, abs(Var[V].Num) - 2);
     }
 }
 
@@ -824,33 +827,33 @@ void WriteNamedHNont(ref IO.TextOut Out, int Nont)
 bool Performed(uint Needed)
 {
     Needed = Needed & ~History;
-    if (Needed == SET)
+    if (Needed == Sets.SET)
     {
         return true;
     }
     else
     {
-        if (IN(Needed, analysed))
+        if (Sets.IN(Needed, analysed))
         {
             IO.WriteText(IO.Msg, "\n\tanalyse a specification first");
         }
-        if (IN(Needed, predicates))
+        if (Sets.IN(Needed, predicates))
         {
             IO.WriteText(IO.Msg, "\n\tcheck for predicates first");
         }
-        if (IN(Needed, parsable))
+        if (Sets.IN(Needed, parsable))
         {
             IO.WriteText(IO.Msg, "\n\ttest for ELL1 attribute first");
         }
-        if (IN(Needed, isSLEAG))
+        if (Sets.IN(Needed, isSLEAG))
         {
             IO.WriteText(IO.Msg, "\n\ttest for SLEAG attribute first");
         }
-        if (IN(Needed, isSSweep))
+        if (Sets.IN(Needed, isSSweep))
         {
             IO.WriteText(IO.Msg, "\n\ttest for single sweep attribute first");
         }
-        if (IN(Needed, hasEvaluator))
+        if (Sets.IN(Needed, hasEvaluator))
         {
             IO.WriteText(IO.Msg, "\n\tgenerate an evaluator first");
         }
@@ -861,40 +864,40 @@ bool Performed(uint Needed)
 
 void Init()
 {
-    NEW(ParamBuf, 1023);
+    ParamBuf = new ParamRecord[1023];
     NextParam = firstParam;
     ParamBuf[NextParam].Affixform = nil;
     ++NextParam;
 
-    NEW(MTerm, 255);
+    MTerm = new MTermRecord[255];
     NextMTerm = firstMTerm;
 
-    NEW(MNont, 255);
+    MNont = new MNontRecord[255];
     NextMNont = firstMNont;
 
-    NEW(HTerm, 255);
+    HTerm = new HTermRecord[255];
     NextHTerm = firstHTerm;
 
-    NEW(HNont, 255);
+    HNont = new HNontRecord[255];
     NextHNont = firstHNont;
     NextAnonym = -1;
 
-    NEW(DomBuf, 255);
+    DomBuf = new int[255];
     NextDom = firstDom;
     DomBuf[NextDom] = nil;
     ++NextDom;
     CurSig = NextDom;
 
-    NEW(MAlt, 255);
+    MAlt = new MAltRecord[255];
     NextMAlt = firstMAlt;
 
-    NEW(MembBuf, 255);
+    MembBuf = new int[255];
     NextMemb = firstMemb;
 
-    NEW(NodeBuf, 1023);
+    NodeBuf = new int[1023];
     NextNode = firstNode;
 
-    NEW(Var, 511);
+    Var = new VarRecord[511];
     NextVar = firstVar;
     Scope = NextVar;
 
@@ -909,14 +912,14 @@ void Init()
     NOGrp = 0;
     NOOpt = 0;
     NORep = 0;
-    History = SET;
+    History = Sets.SET;
     BaseName = "nothing";
     MaxMArity = 0;
 }
 
 static this()
 {
-    History = SET;
+    History = Sets.SET;
     BaseName = "nothing";
     IO.WriteText(IO.Msg, "Epsilon 1.02   JoDe/SteWe  22.11.96\n");
     IO.Update(IO.Msg);

@@ -3,6 +3,7 @@ module eScanGen;
 import runtime;
 import IO = eIO;
 import Scanner = eScanner;
+import Sets = eSets;
 import EAG = eEAG;
 import io : TextIn;
 
@@ -10,7 +11,6 @@ const firstUserTok = 3;
 const lenOfPredefinedToken = 8;
 bool[256] IsIdent;
 bool[256] IsSymbol;
-int i;
 
 void Generate()
 {
@@ -58,18 +58,18 @@ void Generate()
         {
             i = 3;
         }
-        else if (IsIdent[ORD(s[1])])
+        else if (IsIdent[s[1]])
         {
             i = 2;
-            while (IsIdent[ORD(s[i])])
+            while (IsIdent[s[i]])
             {
                 ++i;
             }
         }
-        else if (IsSymbol[ORD(s[1])])
+        else if (IsSymbol[s[1]])
         {
             i = 2;
-            while (IsSymbol[ORD(s[i])])
+            while (IsSymbol[s[i]])
             {
                 ++i;
             }
@@ -131,7 +131,7 @@ void Generate()
     IO.WriteString(IO.Msg, EAG.BaseName);
     IO.WriteString(IO.Msg, "   ");
     IO.Update(IO.Msg);
-    if (EAG.Performed(SET(EAG.analysed)))
+    if (EAG.Performed(Sets.SET(EAG.analysed)))
     {
         Error = false;
         MaxTokLen = lenOfPredefinedToken;
@@ -197,30 +197,30 @@ void Generate()
 
 static this()
 {
-    for (i = 0; i <= IsIdent.length - 1; ++i)
+    for (int i = 0; i <= IsIdent.length - 1; ++i)
     {
         IsIdent[i] = false;
     }
-    for (i = ORD('A'); i <= ORD('Z'); ++i)
+    for (int i = 'A'; i <= 'Z'; ++i)
     {
         IsIdent[i] = true;
     }
-    for (i = ORD('a'); i <= ORD('z'); ++i)
+    for (int i = 'a'; i <= 'z'; ++i)
     {
         IsIdent[i] = true;
     }
-    for (i = ORD('0'); i <= ORD('9'); ++i)
+    for (int i = '0'; i <= '9'; ++i)
     {
         IsIdent[i] = true;
     }
-    for (i = 0; i <= ORD(' '); ++i)
+    for (int i = 0; i <= ' '; ++i)
     {
         IsSymbol[i] = false;
     }
-    for (i = ORD(' ') + 1; i <= IsSymbol.length - 1; ++i)
+    for (int i = ' ' + 1; i <= IsSymbol.length - 1; ++i)
     {
         IsSymbol[i] = !IsIdent[i];
     }
-    IsSymbol[ORD('\'')] = false;
-    IsSymbol[ORD('"')] = false;
+    IsSymbol['\''] = false;
+    IsSymbol['"'] = false;
 }
