@@ -47,10 +47,9 @@ IndexType NextVar;
 $
 void ExpandSemTree()
 {
-    OpenSemTree SemTree1;
-    IndexType i;
-    SemTree1 = new SemTreeEntry[2 * SemTree.length];
-    for (i = 0; i <= SemTree.length - 1; ++i)
+    OpenSemTree SemTree1 = new SemTreeEntry[2 * SemTree.length];
+
+    for (IndexType i = 0; i <= SemTree.length - 1; ++i)
     {
         SemTree1[i] = SemTree[i];
     }
@@ -59,10 +58,9 @@ void ExpandSemTree()
 
 void ExpandVar()
 {
-    OpenVar Var1;
-    IndexType i;
-    Var1 = new HeapType[2 * Var.length];
-    for (i = 0; i <= Var.length - 1; ++i)
+    OpenVar Var1 = new HeapType[2 * Var.length];
+
+    for (IndexType i = 0; i <= Var.length - 1; ++i)
     {
         Var1[i] = Var[i];
     }
@@ -88,6 +86,7 @@ void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter, TreeT
 {
     IndexType StartSymbol;
     HeapType V1;
+
     if (HyperArity != hyperArityConst)
     {
         throw new Exception("internal error: 'arityConst' is wrong");

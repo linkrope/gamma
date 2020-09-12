@@ -23,6 +23,7 @@ void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter,
         TreeType Adr, int HyperArity)
 {
     HeapType V1;
+
     if (HyperArity != hyperArityConst)
     {
         throw new Exception("internal error: 'arityConst' is wrong");

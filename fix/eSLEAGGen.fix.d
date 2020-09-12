@@ -138,11 +138,10 @@ in (Node >= 0)
 
 long CountHeap()
 {
-    long i;
-    long HeapCells;
+    long HeapCells = NextHeap;
     HeapType Node;
-    HeapCells = NextHeap;
-    for (i = 0; i <= maxArity - 1; ++i)
+
+    for (size_t i = 0; i <= maxArity - 1; ++i)
     {
         Node = FreeList[i];
         while (Node != 0)
@@ -204,14 +203,13 @@ void AnalyseError(ref HeapType V, string Msg)
 
 bool Equal(HeapType Ptr1, HeapType Ptr2)
 {
-    long i;
     if (Ptr1 == Ptr2)
     {
         return true;
     }
     else if (MOD(Heap[Ptr1], refConst) == MOD(Heap[Ptr2], refConst))
     {
-        for (i = 1; i <= DIV(MOD(Heap[Ptr1], refConst), arityConst); ++i)
+        for (size_t i = 1; i <= DIV(MOD(Heap[Ptr1], refConst), arityConst); ++i)
         {
             if (!Equal(Heap[Ptr1 + i], Heap[Ptr2 + i]))
             {
@@ -247,12 +245,11 @@ void UnEq(HeapType Ptr1, HeapType Ptr2, string ErrMsg)
 
 bool EvalInitSucceeds()
 {
-    const magic = 1818326597;
+    const magic = 1_818_326_597;
     const name = "$";
     const tabTimeStamp = $;
     IO.File Tab;
     bool OpenError;
-    int i;
     long l;
 
     void LoadError(string Msg)
@@ -297,7 +294,7 @@ bool EvalInitSucceeds()
     {
         EvalExpand;
     }
-    for (i = 0; i <= predefined; ++i)
+    for (size_t i = 0; i <= predefined; ++i)
     {
         IO.GetLInt(Tab, l);
         Heap[i] = l;
@@ -309,7 +306,7 @@ bool EvalInitSucceeds()
         return false;
     }
     IO.CloseFile(Tab);
-    for (i = 0; i <= maxArity - 1; ++i)
+    for (size_t i = 0; i <= maxArity - 1; ++i)
     {
         FreeList[i] = 0;
     }

@@ -32,9 +32,6 @@ IO.TextOut Out;
 $
 void ParserExpand()
 {
-    OpenRecStack RecStack1;
-    long i;
-
     long ExpLen(long ArrayLen)
     {
         if (ArrayLen <= DIV(int.max, 2))
@@ -49,8 +46,9 @@ void ParserExpand()
 
     if (RecTop >= RecStack.length)
     {
-        RecStack1 = new int[ExpLen(RecStack.length)];
-        for (i = firstRecStack; i <= RecStack.length - 1; ++i)
+        OpenRecStack RecStack1 = new int[ExpLen(RecStack.length)];
+
+        for (size_t i = firstRecStack; i < RecStack.length; ++i)
         {
             RecStack1[i] = RecStack[i];
         }
@@ -60,12 +58,10 @@ void ParserExpand()
 
 void ReadParserTab(string Name)
 {
-    const magicNumber = 827092037;
+    const magicNumber = 827_092_037;
     const tabTimeStamp = $;
     IO.File Tab;
     bool OpenError;
-    int i;
-    int j;
     long l;
     uint s;
 
@@ -110,16 +106,16 @@ void ReadParserTab(string Name)
         LoadError("incompatible SET format in table");
         return;
     }
-    for (i = 0; i <= nSetT - 1; ++i)
+    for (size_t i = 0; i < nSetT; ++i)
     {
-        for (j = 0; j <= nToks - 1; ++j)
+        for (size_t j = 0; j < nToks; ++j)
         {
             IO.GetSet(Tab, SetT[i][j]);
         }
     }
-    for (i = 0; i <= nSet - 1; ++i)
+    for (size_t i = 0; i < nSet; ++i)
     {
-        for (j = 0; j <= tokSetLen - 1; ++j)
+        for (size_t j = 0; j < tokSetLen; ++j)
         {
             IO.GetSet(Tab, Set[i][j]);
         }
@@ -143,8 +139,7 @@ void ParserInit()
 
 void WriteTokSet(TokSet Toks)
 {
-    int Tok1;
-    for (Tok1 = 0; Tok1 <= nToks - 1; ++Tok1)
+    for (int Tok1 = 0; Tok1 <= nToks - 1; ++Tok1)
     {
         if (Sets.IN(Toks[DIV(Tok1, M)], MOD(Tok1, M)))
         {
@@ -200,13 +195,11 @@ void RepairMessage(Position Pos, int Tok1)
 
 void SkipTokens(int Recover)
 {
-    TokSet GlobalRecoverySet;
-    int i;
-    int j;
-    GlobalRecoverySet = Set[Recover];
-    for (i = firstRecStack; i <= RecTop - 1; ++i)
+    TokSet GlobalRecoverySet = Set[Recover];
+
+    for (size_t i = firstRecStack; i <= RecTop - 1; ++i)
     {
-        for (j = 0; j <= tokSetLen - 1; ++j)
+        for (size_t j = 0; j <= tokSetLen - 1; ++j)
         {
             GlobalRecoverySet[j] = GlobalRecoverySet[j] + Set[RecStack[i]][j];
         }

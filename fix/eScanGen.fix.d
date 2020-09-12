@@ -117,6 +117,7 @@ void Enter(int Tok, string Name)
         {
             long i;
             OpenNode Node1;
+
             if (NextNode >= Node.length)
             {
                 if (Node.length < DIV(int.max, 2))
@@ -189,9 +190,9 @@ void WriteRepr(ref IO.TextOut Out, int Tok)
 
 void Symbol(ref int Tok)
 {
-    int Ptr;
+    int Ptr = Ch;
     int Mark;
-    Ptr = Ch;
+
     Tok = Node[Ptr].Tok;
     if (Node[Ptr].Sub != nil)
     {
@@ -222,10 +223,10 @@ void Symbol(ref int Tok)
 
 void Keyword(ref int Tok)
 {
-    int Ptr;
+    int Ptr = Ch;
     int LastPtr;
     int Mark;
-    Ptr = Ch;
+
     Tok = Node[Ptr].Tok;
     if (NextCh >= ChBuf.length - maxTokLen)
     {
@@ -258,8 +259,6 @@ void Keyword(ref int Tok)
 
 void Comment()
 {
-    int Level;
-
     void Error(string Txt)
     {
         writeln;
@@ -270,7 +269,8 @@ void Comment()
         IO.Update(IO.Msg);
     }
 
-    Level = 1;
+    int Level = 1;
+
     while (true)
     {
         if (Ch == EOT)
