@@ -1,9 +1,8 @@
 module eEarley;
 
-import runtime;
-import IO = eIO;
 import EAG = eEAG;
 import io : Position;
+import runtime;
 import std.stdio;
 
 const end = int.min;
@@ -372,10 +371,9 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def)
             Scanner;
             if (CurList == NextItem)
             {
-                writeln;
-                writeln(MSymBuf[CurSym].Pos);
-                IO.WriteText(IO.Msg, "  affixform incorrect");
-                IO.Update(IO.Msg);
+                import log : error;
+
+                error!"%s affixform incorrect"(MSymBuf[CurSym].Pos);
                 Tree = nil;
                 return;
             }

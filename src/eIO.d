@@ -3,7 +3,6 @@ module eIO;
 import runtime;
 import std.stdio;
 
-const eol = '\n';
 const optCh1 = '\\';
 const optCh2 = '-';
 const standardCompileOpts = 's';
@@ -11,14 +10,17 @@ bool[char] option;
 bool[char][char] longOption;
 string[] files;
 
+TextOut Msg;
+
 class TextOut
 {
-    string Name;
+    string name;
+
     File file;
 
     this(string name)
     {
-        this.Name = name;
+        this.name = name;
         this(File(name, "w"));
     }
 
@@ -26,32 +28,45 @@ class TextOut
     {
         this.file = file;
     }
-}
 
-TextOut Msg;
+    void write(string s)
+    {
+        file.write(s);
+    }
 
-void CreateModOut(ref TextOut Out, char[] Name)
-{
-    import std.string : fromStringz;
+    void write(char[] s)
+    {
+        import std.string : fromStringz;
 
-    const name = fromStringz(Name.ptr).idup ~ ".d";
+        file.write(fromStringz(s.ptr));
+    }
 
-    CreateOut(Out, name);
-}
+    void write(char c)
+    {
+        file.write(c);
+    }
 
-void CreateOut(ref TextOut Out, string Name)
-{
-    Out = new TextOut(Name);
-}
+    void write(long i)
+    {
+        import std.conv : to;
 
-void Update(TextOut Out)
-{
-    Out.file.flush;
+        file.write(i.to!string);
+    }
+
+    void writeln()
+    {
+        file.writeln;
+    }
+
+    void flush()
+    {
+        file.flush;
+    }
 }
 
 void CloseOut(ref TextOut Out)
 {
-    Update(Out);
+    Out.flush;
     Out = null;
 }
 
@@ -59,101 +74,24 @@ void Show(TextOut Out)
 {
     import std.file : readText;
 
-    write(readText!(char[])(Out.Name));
-}
-
-void WriteText(TextOut Out, string Str)
-{
-    Out.file.write(Str);
-}
-
-void WriteText(TextOut Out, char[] Str)
-{
-    import std.string : fromStringz;
-
-    Out.file.write(fromStringz(Str.ptr));
-    // TODO: escaping
-    /+
-    int i;
-    char c;
-    i = 0;
-    c = Str[0];
-    while (c != 0)
-    {
-        if (c == '\\')
-        {
-            ++i;
-            c = Str[i];
-            switch (c)
-            {
-            case 0:
-                return;
-                break;
-            case '\'':
-                Texts.Write(Out.W, '"');
-                break;
-            case 't':
-                Texts.Write(Out.W, '\x09');
-                break;
-            case 'n':
-                Texts.Write(Out.W, eol);
-                break;
-            default:
-                Texts.Write(Out.W, c);
-            }
-        }
-        else
-        {
-            Texts.Write(Out.W, c);
-        }
-        ++i;
-        c = Str[i];
-    }
-    +/
-}
-
-void WriteString(T)(TextOut Out, T Str)
-{
-    WriteText(Out, Str);
-}
-
-void Write(TextOut Out, char c)
-{
-    Out.file.write(c);
-}
-
-void WriteInt(TextOut Out, long i)
-{
-    Out.file.writef!"%d"(i);
-}
-
-void WriteIntF(TextOut Out, long i, int Len)
-{
-    Out.file.writef!"%*d"(Len, i);
-}
-
-void WriteLn(TextOut Out)
-{
-    Out.file.writeln;
+    write(readText!(char[])(Out.name));
 }
 
 void Compile(TextOut Out, ref bool Error)
 {
     writeln;
-    files = Out.Name ~ files;
+    files = Out.name ~ files;
 }
 
-void OpenFile(ref File F, string Name, ref bool Error)
+void OpenFile(ref File F, string name, ref bool Error)
 {
     // TODO: error handling
-    F = File(Name, "r");
+    F = File(name, "r");
 }
 
-void CreateFile(ref File F, char[] Name)
+void CreateFile(ref File F, string name)
 {
-    import std.string : fromStringz;
-
-    F = File(fromStringz(Name.ptr), "w");
+    F = File(name, "w");
 }
 
 void CloseFile(ref File F)
@@ -201,7 +139,5 @@ bool IsLongOption(char c1, char c2)
 static this()
 {
     Msg = new TextOut(stdout);
-    // Msg.Txt = Oberon.Log;
-    // Texts.OpenWriter(Msg.W);
-    Msg.Name = "System.Log";
+    Msg.name = "System.Log";
 }

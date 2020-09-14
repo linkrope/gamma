@@ -1,10 +1,10 @@
 module soag.eSOAG;
 
-import runtime;
 import EAG = eEAG;
 import IO = eIO;
-import Sets = eSets;
 import Predicates = ePredicates;
+import Sets = eSets;
+import runtime;
 
 const firstSym = EAG.firstHNont;
 const firstRule = 0;
@@ -74,7 +74,7 @@ struct SymOccDesc
 
         string[] items;
 
-        items ~= EAG.HNontToString(SymInd);
+        items ~= EAG.HNontRepr(SymInd);
         items ~= format!"RuleInd=%s"(RuleInd);
         items ~= format!"Nont=%s"(Nont);
         items ~= format!"AffOcc=%s"(AffOcc);
@@ -172,38 +172,38 @@ int NextAffixApplCnt;
 int MaxAffNumInRule;
 int MaxAffNumInSym;
 int MaxPart;
-const abnormalyError = 1;
+const abnormalError = 1;
 const cyclicTDP = 2;
 const notLeftDefined = 3;
 const notEnoughMemory = 99;
 
 void Error(T)(int ErrorType, T Proc)
 {
-    IO.WriteString(IO.Msg, "ERROR: ");
+    IO.Msg.write("ERROR: ");
     switch (ErrorType)
     {
-    case abnormalyError:
-        IO.WriteText(IO.Msg, "abnormaly error ");
+    case abnormalError:
+        IO.Msg.write("abnormal error ");
         break;
     case notEnoughMemory:
-        IO.WriteText(IO.Msg, "memory allocation failed ");
+        IO.Msg.write("memory allocation failed ");
         break;
     case cyclicTDP:
-        IO.WriteText(IO.Msg, "TDP is cyclic...aborted\n");
+        IO.Msg.write("TDP is cyclic...aborted\n");
         break;
     case notLeftDefined:
-        IO.WriteText(IO.Msg, "Grammar are not left defined\n");
+        IO.Msg.write("Grammar are not left defined\n");
         break;
     default:
         assert(0);
     }
-    if (ErrorType == abnormalyError || ErrorType == notEnoughMemory)
+    if (ErrorType == abnormalError || ErrorType == notEnoughMemory)
     {
-        IO.WriteString(IO.Msg, "in procedure ");
-        IO.WriteString(IO.Msg, Proc);
-        IO.WriteLn(IO.Msg);
+        IO.Msg.write("in procedure ");
+        IO.Msg.write(Proc);
+        IO.Msg.writeln;
     }
-    IO.Update(IO.Msg);
+    IO.Msg.flush;
     throw new Exception("TODO");
 }
 
@@ -596,6 +596,7 @@ void Init()
 
 static this()
 {
-    IO.WriteText(IO.Msg, "SOAG-Evaluatorgenerator 1.06 dk 14.03.98\n");
-    IO.Update(IO.Msg);
+    import log : info;
+
+    info!"SOAG-Evaluatorgenerator 1.06 dk 14.03.98";
 }

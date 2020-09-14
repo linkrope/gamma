@@ -1,14 +1,14 @@
 module soag.eSOAGPartition;
 
-import runtime;
 import EAG = eEAG;
-import SOAG = soag.eSOAG;
-import Sets = eSets;
-import ALists = soag.eALists;
 import IO = eIO;
-import Protocol = soag.eSOAGProtocol;
+import Sets = eSets;
+import runtime;
+import ALists = soag.eALists;
 import ASets = soag.eASets;
 import BSets = soag.eBSets;
+import SOAG = soag.eSOAG;
+import Protocol = soag.eSOAGProtocol;
 import std.stdio;
 
 const unor = -1;
@@ -203,19 +203,19 @@ void AddTDPTrans(int R, int AO1, int AO2)
             {
                 if (Phase == computeDPandIDP)
                 {
-                    IO.WriteText(Protocol.Out, "...a cyclic affix dependence was found!\n");
+                    Protocol.Out.write("...a cyclic affix dependence was found!\n");
                     Protocol.WriteRule(R);
-                    IO.WriteLn(Protocol.Out);
+                    Protocol.Out.writeln;
                     Protocol.WriteAffOcc(AO3);
-                    IO.WriteLn(Protocol.Out);
-                    IO.WriteString(Protocol.Out, "Preorder  of ");
+                    Protocol.Out.writeln;
+                    Protocol.Out.write("Preorder  of ");
                     Protocol.WriteAffOcc(AO1);
-                    IO.WriteLn(Protocol.Out);
-                    IO.WriteString(Protocol.Out, "Postorder of ");
+                    Protocol.Out.writeln;
+                    Protocol.Out.write("Postorder of ");
                     Protocol.WriteAffOcc(AO2);
-                    IO.WriteLn(Protocol.Out);
-                    IO.WriteLn(Protocol.Out);
-                    IO.Update(Protocol.Out);
+                    Protocol.Out.writeln;
+                    Protocol.Out.writeln;
+                    Protocol.Out.flush;
                     SOAG.Error(SOAG.cyclicTDP, "eSOAGVSGen.AddTDPTrans");
                 }
                 else if (Phase == dynTopSort)
@@ -514,7 +514,7 @@ void Orient(int a, int b, int X, ref BSets.BSet New)
     }
     if (CyclicTDP)
     {
-        IO.WriteText(IO.Msg, "\tGarmmar is not SOAG\n");
+        IO.Msg.write("\tGarmmar is not SOAG\n");
         SOAG.Error(SOAG.cyclicTDP, "eSOAGVSGen.Orient");
     }
     for (i = firstChangeBuf; i <= NextChangeBuf - 1; ++i)
@@ -538,16 +538,16 @@ void WriteDS(int XmaxAff)
 {
     for (size_t i = 0; i <= XmaxAff; ++i)
     {
-        IO.WriteText(IO.Msg, "Zeile ");
-        IO.WriteInt(IO.Msg, i);
+        IO.Msg.write("Zeile ");
+        IO.Msg.write(i);
         for (size_t j = 0; j <= XmaxAff; ++j)
         {
-            IO.WriteInt(IO.Msg, DS[i][j]);
-            IO.WriteString(IO.Msg, " ");
+            IO.Msg.write(DS[i][j]);
+            IO.Msg.write(" ");
         }
-        IO.WriteLn(IO.Msg);
+        IO.Msg.writeln;
     }
-    IO.Update(IO.Msg);
+    IO.Msg.flush;
 }
 
 /**
@@ -746,10 +746,10 @@ void Compute()
     DynTopSort;
     if (OEAG)
     {
-        IO.WriteText(IO.Msg, "\n\tGrammar is SOEAG\n");
+        IO.Msg.write("\n\tGrammar is SOEAG\n");
     }
     else
     {
-        IO.WriteText(IO.Msg, "\n\tGrammar is SOEAG (backtracked)\n");
+        IO.Msg.write("\n\tGrammar is SOEAG (backtracked)\n");
     }
 }

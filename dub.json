@@ -12,6 +12,12 @@
             "targetType": "executable"
         },
         {
+            "name": "unittest",
+			"dependencies": {
+				"silly": "~>1.0.2"
+			}
+        },
+        {
             "name": "example",
             "sourcePaths": ["test"],
             "importPaths": ["test"],

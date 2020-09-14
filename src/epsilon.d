@@ -1,17 +1,17 @@
 module epsilon;
 
+import io : TextIn;
 import runtime;
 import std.stdio;
-import io : TextIn;
 
 void main(string[] args)
 {
     import core.stdc.stdlib : exit, EXIT_FAILURE, EXIT_SUCCESS;
+    import IO = eIO;
     import std.exception : ErrnoException;
     import std.getopt : defaultGetoptPrinter, getopt, GetoptResult;
     import std.range : dropOne, empty, front;
     import std.stdio : stderr, writefln, writeln;
-    import IO = eIO;
 
     bool c, dR, m, o, p, r;
     bool space;
@@ -62,6 +62,12 @@ void main(string[] args)
     IO.option['w'] = write;
     IO.longOption['d']['R'] = dR;
 
+    if (verbose)
+    {
+        import log : Level, levels;
+
+        levels |= Level.trace;
+    }
     if (args.dropOne.empty)
         compile(TextIn("stdin", stdin), sweep, soag);
 
@@ -75,11 +81,14 @@ void main(string[] args)
         stderr.writefln!"error: %s"(exception.msg);
         exit(EXIT_FAILURE);
     }
+    catch (Exception exception)
+    {
+        exit(EXIT_FAILURE);
+    }
 }
 
 void compile(TextIn textIn, bool sweep, bool soag)
 {
-    import std.range : empty;
     import Analyser = eAnalyser;
     import EAG = eEAG;
     import ELL1Gen = eELL1Gen;
@@ -89,10 +98,16 @@ void compile(TextIn textIn, bool sweep, bool soag)
     import Scanner = eScanner;
     import Sets = eSets;
     import SLEAGGen = eSLEAGGen;
-    import SOAGGen = soag.eSOAGGen;
     import SSweep = eSSweep;
+    import SOAGGen = soag.eSOAGGen;
+    import std.exception : enforce;
+    import std.range : empty;
 
     Analyser.Analyse(textIn);
+
+    enforce(Analyser.ErrorCounter == 0,
+            "analyser errors");
+
     Analyser.Warnings;
     Predicates.Check;
     if (IO.IsOption('v'))
@@ -145,8 +160,8 @@ void compile(TextIn textIn, bool sweep, bool soag)
 void build(string[] files)
 {
     import core.stdc.stdlib : exit;
-    import std.string : join;
     import std.process : spawnProcess, wait;
+    import std.string : join;
 
     const args = "dmd" ~ files ~ "-g"
         ~ "include/runtime.d" ~ "src/eIO.d" ~ "src/eSets.d" ~ "src/io.d" ~ "src/soag/eLIStacks.d";

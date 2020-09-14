@@ -1,11 +1,11 @@
 module soag.eSOAGProtocol;
 
-import runtime;
-import SOAG = soag.eSOAG;
 import EAG = eEAG;
 import IO = eIO;
 import Scanner = eScanner;
 import Sets = eSets;
+import runtime;
+import SOAG = soag.eSOAG;
 
 const standardLevel = 1;
 const outRuleData = 2;
@@ -16,19 +16,18 @@ IO.TextOut Out;
 
 void WriteAffixVariables(int i)
 {
-    int MA;
     if (i < 0)
     {
         if (EAG.Var[-i].Num < 0)
         {
-            IO.WriteString(Out, "#");
+            Out.write("#");
         }
-        EAG.WriteVar(Out, -i);
-        IO.WriteInt(Out, EAG.Var[-i].Num);
+        Out.write(EAG.VarRepr(-i));
+        Out.write(EAG.Var[-i].Num);
     }
     else
     {
-        for (MA = 1; MA <= EAG.MAlt[EAG.NodeBuf[i]].Arity; ++MA)
+        for (int MA = 1; MA <= EAG.MAlt[EAG.NodeBuf[i]].Arity; ++MA)
         {
             WriteAffixVariables(EAG.NodeBuf[i + MA]);
         }
@@ -37,29 +36,28 @@ void WriteAffixVariables(int i)
 
 void WriteAffix(int i)
 {
-    int a;
-    int m;
     if (i < 0)
     {
         if (EAG.Var[-i].Num < 0)
         {
-            IO.WriteString(Out, "#");
+            Out.write("#");
         }
-        EAG.WriteVar(Out, -i);
-        IO.WriteString(Out, "(");
-        IO.WriteInt(Out, EAG.Var[-i].Num);
-        IO.WriteString(Out, ") ");
+        Out.write(EAG.VarRepr(-i));
+        Out.write("(");
+        Out.write(EAG.Var[-i].Num);
+        Out.write(") ");
     }
     else
     {
-        a = 0;
-        m = EAG.MAlt[EAG.NodeBuf[i]].Right;
+        int a = 0;
+        int m = EAG.MAlt[EAG.NodeBuf[i]].Right;
+
         while (EAG.MembBuf[m] != EAG.nil)
         {
             if (EAG.MembBuf[m] < 0)
             {
-                Scanner.WriteRepr(Out, EAG.MTerm[-EAG.MembBuf[m]].Id);
-                IO.WriteString(Out, " ");
+                Out.write(Scanner.repr(EAG.MTerm[-EAG.MembBuf[m]].Id));
+                Out.write(" ");
             }
             else
             {
@@ -77,18 +75,18 @@ void WriteAffOcc(int a)
     p = SOAG.AffOcc[a].ParamBufInd;
     if (EAG.ParamBuf[p].isDef)
     {
-        IO.WriteString(Out, "-");
+        Out.write("-");
     }
     else
     {
-        IO.WriteString(Out, "+");
+        Out.write("+");
     }
     if (EAG.ParamBuf[p].Affixform < 0)
     {
-        EAG.WriteVar(Out, -EAG.ParamBuf[p].Affixform);
-        IO.WriteString(Out, "(");
-        IO.WriteInt(Out, EAG.Var[-EAG.ParamBuf[p].Affixform].Num);
-        IO.WriteString(Out, ") ");
+        Out.write(EAG.VarRepr(-EAG.ParamBuf[p].Affixform));
+        Out.write("(");
+        Out.write(EAG.Var[-EAG.ParamBuf[p].Affixform].Num);
+        Out.write(") ");
     }
     else
     {
@@ -96,105 +94,104 @@ void WriteAffOcc(int a)
     }
     if (EAG.ParamBuf[p + 1].Affixform != EAG.nil)
     {
-        IO.WriteString(Out, ", ");
+        Out.write(", ");
     }
 }
 
 void WriteSymOcc(int s)
 {
-    int i;
-    EAG.WriteHNont(Out, SOAG.SymOcc[s].SymInd);
-    IO.WriteString(Out, "< ");
-    for (i = SOAG.SymOcc[s].AffOcc.Beg; i <= SOAG.SymOcc[s].AffOcc.End; ++i)
+    Out.write(EAG.HNontRepr(SOAG.SymOcc[s].SymInd));
+    Out.write("< ");
+    for (int i = SOAG.SymOcc[s].AffOcc.Beg; i <= SOAG.SymOcc[s].AffOcc.End; ++i)
     {
         WriteAffOcc(i);
     }
-    IO.WriteString(Out, " >");
-    IO.Update(Out);
+    Out.write(" >");
+    Out.flush;
 }
 
 void WriteAffOccData(int s)
 {
-    IO.WriteString(Out, "AffOcc[");
-    IO.WriteInt(Out, s);
-    IO.WriteText(Out, "]: ");
+    Out.write("AffOcc[");
+    Out.write(s);
+    Out.write("]: ");
     WriteAffOcc(s);
-    IO.WriteLn(Out);
-    IO.WriteString(Out, "  Variables: ");
+    Out.writeln;
+    Out.write("  Variables: ");
     WriteAffixVariables(EAG.ParamBuf[SOAG.AffOcc[s].ParamBufInd].Affixform);
-    IO.WriteLn(Out);
-    IO.WriteString(Out, "         ParamBufInd: ");
-    IO.WriteInt(Out, SOAG.AffOcc[s].ParamBufInd);
-    IO.WriteLn(Out);
-    IO.WriteString(Out, "           SymOccInd: ");
-    IO.WriteInt(Out, SOAG.AffOcc[s].SymOccInd);
-    IO.WriteLn(Out);
-    IO.WriteString(Out, "    AffOccNum.InRule: ");
-    IO.WriteInt(Out, SOAG.AffOcc[s].AffOccNum.InRule);
-    IO.WriteLn(Out);
-    IO.WriteString(Out, "     AffOccNum.InSym: ");
-    IO.WriteInt(Out, SOAG.AffOcc[s].AffOccNum.InSym);
-    IO.WriteLn(Out);
+    Out.writeln;
+    Out.write("         ParamBufInd: ");
+    Out.write(SOAG.AffOcc[s].ParamBufInd);
+    Out.writeln;
+    Out.write("           SymOccInd: ");
+    Out.write(SOAG.AffOcc[s].SymOccInd);
+    Out.writeln;
+    Out.write("    AffOccNum.InRule: ");
+    Out.write(SOAG.AffOcc[s].AffOccNum.InRule);
+    Out.writeln;
+    Out.write("     AffOccNum.InSym: ");
+    Out.write(SOAG.AffOcc[s].AffOccNum.InSym);
+    Out.writeln;
 }
 
 void WriteSymOccData(int s)
 {
-    IO.WriteString(Out, "SymOcc[");
-    IO.WriteInt(Out, s);
-    IO.WriteText(Out, "]: ");
+    Out.write("SymOcc[");
+    Out.write(s);
+    Out.write("]: ");
     WriteSymOcc(s);
-    IO.WriteLn(Out);
-    IO.WriteString(Out, "         SymInd: ");
-    IO.WriteInt(Out, SOAG.SymOcc[s].SymInd);
-    IO.WriteLn(Out);
-    IO.WriteString(Out, "        RuleInd: ");
-    IO.WriteInt(Out, SOAG.SymOcc[s].RuleInd);
-    IO.WriteLn(Out);
-    IO.WriteString(Out, "           Next: ");
-    IO.WriteInt(Out, SOAG.SymOcc[s].Next);
-    IO.WriteLn(Out);
-    IO.WriteString(Out, "     AffOcc.Beg: ");
-    IO.WriteInt(Out, SOAG.SymOcc[s].AffOcc.Beg);
-    IO.WriteLn(Out);
-    IO.WriteString(Out, "           .End: ");
-    IO.WriteInt(Out, SOAG.SymOcc[s].AffOcc.End);
-    IO.WriteLn(Out);
+    Out.writeln;
+    Out.write("         SymInd: ");
+    Out.write(SOAG.SymOcc[s].SymInd);
+    Out.writeln;
+    Out.write("        RuleInd: ");
+    Out.write(SOAG.SymOcc[s].RuleInd);
+    Out.writeln;
+    Out.write("           Next: ");
+    Out.write(SOAG.SymOcc[s].Next);
+    Out.writeln;
+    Out.write("     AffOcc.Beg: ");
+    Out.write(SOAG.SymOcc[s].AffOcc.Beg);
+    Out.writeln;
+    Out.write("           .End: ");
+    Out.write(SOAG.SymOcc[s].AffOcc.End);
+    Out.writeln;
 }
 
 void WriteRuleData(int r)
 {
-    IO.WriteString(Out, "Rule[");
-    IO.WriteInt(Out, r);
-    IO.WriteText(Out, "]:\n");
-    IO.WriteString(Out, "     SymOcc.Beg: ");
-    IO.WriteInt(Out, SOAG.Rule[r].SymOcc.Beg);
-    IO.WriteLn(Out);
-    IO.WriteString(Out, "           .End: ");
-    IO.WriteInt(Out, SOAG.Rule[r].SymOcc.End);
-    IO.WriteLn(Out);
-    IO.WriteString(Out, "     AffOcc.Beg: ");
-    IO.WriteInt(Out, SOAG.Rule[r].AffOcc.Beg);
-    IO.WriteLn(Out);
-    IO.WriteString(Out, "           .End: ");
-    IO.WriteInt(Out, SOAG.Rule[r].AffOcc.End);
-    IO.WriteLn(Out);
+    Out.write("Rule[");
+    Out.write(r);
+    Out.write("]:\n");
+    Out.write("     SymOcc.Beg: ");
+    Out.write(SOAG.Rule[r].SymOcc.Beg);
+    Out.writeln;
+    Out.write("           .End: ");
+    Out.write(SOAG.Rule[r].SymOcc.End);
+    Out.writeln;
+    Out.write("     AffOcc.Beg: ");
+    Out.write(SOAG.Rule[r].AffOcc.Beg);
+    Out.writeln;
+    Out.write("           .End: ");
+    Out.write(SOAG.Rule[r].AffOcc.End);
+    Out.writeln;
 }
 
 void WriteRule(int r)
 {
     int i;
-    IO.WriteString(Out, "Rule ");
-    IO.WriteInt(Out, r);
-    IO.WriteString(Out, " : ");
+    Out.write("Rule ");
+    Out.write(r);
+    Out.write(" : ");
     for (i = SOAG.Rule[r].SymOcc.Beg; i <= SOAG.Rule[r].SymOcc.End; ++i)
     {
         WriteSymOcc(i);
         if (i == SOAG.Rule[r].SymOcc.Beg)
         {
-            IO.WriteString(Out, " : ");
+            Out.write(" : ");
         }
     }
-    IO.WriteText(Out, ".\n");
+    Out.write(".\n");
     if (Level >= outRuleData)
     {
         WriteRuleData(r);
@@ -218,11 +215,11 @@ void WriteRule(int r)
 void WriteRules()
 {
     int i;
-    IO.Update(Out);
+    Out.flush;
     for (i = SOAG.firstRule; i <= SOAG.NextRule - 1; ++i)
     {
         WriteRule(i);
-        IO.Update(Out);
+        Out.flush;
     }
 }
 
@@ -250,7 +247,7 @@ void WriteSymOccs()
     for (i = SOAG.firstSymOcc; i <= SOAG.NextSymOcc - 1; ++i)
     {
         WriteSymOccData(i);
-        IO.Update(Out);
+        Out.flush;
     }
 }
 
@@ -260,7 +257,7 @@ void WriteAffOccs()
     for (i = SOAG.firstAffOcc; i <= SOAG.NextAffOcc - 1; ++i)
     {
         WriteAffOccData(i);
-        IO.Update(Out);
+        Out.flush;
     }
 }
 
@@ -272,37 +269,37 @@ void WriteTDP(int r)
     {
         for (i = SOAG.Rule[r].AffOcc.Beg; i <= SOAG.Rule[r].AffOcc.End; ++i)
         {
-            IO.WriteInt(Out, i - SOAG.Rule[r].AffOcc.Beg);
-            IO.WriteString(Out, " | ");
+            Out.write(i - SOAG.Rule[r].AffOcc.Beg);
+            Out.write(" | ");
             if (EAG.ParamBuf[SOAG.AffOcc[i].ParamBufInd].isDef)
             {
-                IO.WriteString(Out, "DEF ");
+                Out.write("DEF ");
             }
             else
             {
-                IO.WriteString(Out, "APPL");
+                Out.write("APPL");
             }
-            IO.WriteString(Out, " | ");
-            EAG.WriteHNont(Out, SOAG.SymOcc[SOAG.AffOcc[i].SymOccInd].SymInd);
-            IO.WriteString(Out, " | {");
+            Out.write(" | ");
+            Out.write(EAG.HNontRepr(SOAG.SymOcc[SOAG.AffOcc[i].SymOccInd].SymInd));
+            Out.write(" | {");
             for (j = SOAG.Rule[r].AffOcc.Beg; j <= SOAG.Rule[r].AffOcc.End; ++j)
             {
                 if (Sets.In(SOAG.Rule[r].TDP[SOAG.AffOcc[i].AffOccNum.InRule],
                         SOAG.AffOcc[j].AffOccNum.InRule))
                 {
-                    IO.WriteInt(Out, SOAG.AffOcc[j].AffOccNum.InRule);
-                    IO.WriteString(Out, " ");
+                    Out.write(SOAG.AffOcc[j].AffOccNum.InRule);
+                    Out.write(" ");
                 }
             }
-            IO.WriteText(Out, "}\n");
+            Out.write("}\n");
         }
     }
     else
     {
-        IO.WriteInt(Out, r);
-        IO.WriteText(Out, " is not an evaluator rule\n");
+        Out.write(r);
+        Out.write(" is not an evaluator rule\n");
     }
-    IO.Update(Out);
+    Out.flush;
 }
 
 void WriteTDPs()
@@ -321,8 +318,8 @@ void WriteVSRule(int R)
     SOAG.Instruction I;
     if (SOAG.Rule[R].VS.Beg > SOAG.Rule[R].VS.End)
     {
-        IO.WriteString(Out, "keine Visit-Sequenzen; Regel: ");
-        IO.WriteInt(Out, R);
+        Out.write("keine Visit-Sequenzen; Regel: ");
+        Out.write(R);
     }
     else
     {
@@ -332,28 +329,28 @@ void WriteVSRule(int R)
 
             if (cast(SOAG.Visit) I !is null)
             {
-                IO.WriteString(Out, "Visit;   SymOcc: ");
-                IO.WriteInt(Out, (cast(SOAG.Visit) I).SymOcc);
-                IO.WriteString(Out, " VisitNo: ");
-                IO.WriteInt(Out, (cast(SOAG.Visit) I).VisitNo);
+                Out.write("Visit;   SymOcc: ");
+                Out.write((cast(SOAG.Visit) I).SymOcc);
+                Out.write(" VisitNo: ");
+                Out.write((cast(SOAG.Visit) I).VisitNo);
             }
             else if (cast(SOAG.Leave) I !is null)
             {
-                IO.WriteString(Out, "Leave; SymOcc: ");
-                IO.WriteString(Out, " VisitNo: ");
-                IO.WriteInt(Out, (cast(SOAG.Leave) I).VisitNo);
+                Out.write("Leave; SymOcc: ");
+                Out.write(" VisitNo: ");
+                Out.write((cast(SOAG.Leave) I).VisitNo);
             }
             else if (cast(SOAG.Call) I !is null)
             {
-                IO.WriteString(Out, "Call; SymOcc: ");
-                IO.WriteInt(Out, (cast(SOAG.Call) I).SymOcc);
+                Out.write("Call; SymOcc: ");
+                Out.write((cast(SOAG.Call) I).SymOcc);
             }
             else
             {
-                IO.WriteString(Out, "NOP;");
+                Out.write("NOP;");
             }
-            IO.WriteLn(Out);
-            IO.Update(Out);
+            Out.writeln;
+            Out.flush;
         }
     }
 }
@@ -364,8 +361,8 @@ void WriteVS()
     for (r = SOAG.firstRule; r <= SOAG.NextRule - 1; ++r)
     {
         WriteVSRule(r);
-        IO.WriteLn(Out);
-        IO.Update(Out);
+        Out.writeln;
+        Out.flush;
     }
 }
 
@@ -386,9 +383,9 @@ void CheckVS()
                 {
                     if (SOAG.isEqual(SOAG.VS[i], SOAG.VS[j]))
                     {
-                        IO.WriteText(Out, "Doppelter VS-Eintrag:\nRegel: ");
-                        IO.WriteInt(Out, r);
-                        IO.WriteLn(Out);
+                        Out.write("Doppelter VS-Eintrag:\nRegel: ");
+                        Out.write(r);
+                        Out.writeln;
                         WriteVSRule(r);
                     }
                 }
@@ -397,8 +394,8 @@ void CheckVS()
     }
     if (!found)
     {
-        IO.WriteText(Out, "kein Doppelter VS-Eintrag gefunden.\n");
-        IO.Update(Out);
+        Out.write("kein Doppelter VS-Eintrag gefunden.\n");
+        Out.flush;
     }
 }
 
@@ -407,46 +404,46 @@ void WriteAffPos(int SymInd)
     int i;
     for (i = SOAG.Sym[SymInd].AffPos.Beg; i <= SOAG.Sym[SymInd].AffPos.End; ++i)
     {
-        IO.WriteString(Out, "  AffixPos");
-        IO.WriteInt(Out, i);
-        IO.WriteLn(Out);
-        IO.WriteString(Out, "    PartNum: ");
-        IO.WriteInt(Out, SOAG.PartNum[i]);
+        Out.write("  AffixPos");
+        Out.write(i);
+        Out.writeln;
+        Out.write("    PartNum: ");
+        Out.write(SOAG.PartNum[i]);
         if (SOAG.StorageName != null)
         {
-            IO.WriteString(Out, "    StorageType: ");
+            Out.write("    StorageType: ");
             if (SOAG.StorageName[i] < 0)
             {
-                IO.WriteString(Out, "GlobalVar");
-                IO.WriteInt(Out, -SOAG.StorageName[i]);
+                Out.write("GlobalVar");
+                Out.write(-SOAG.StorageName[i]);
             }
             else if (SOAG.StorageName[i] > 0)
             {
-                IO.WriteString(Out, "Stack");
-                IO.WriteInt(Out, SOAG.StorageName[i]);
+                Out.write("Stack");
+                Out.write(SOAG.StorageName[i]);
             }
             else
             {
-                IO.WriteString(Out, "normal");
+                Out.write("normal");
             }
         }
-        IO.WriteLn(Out);
-        IO.Update(Out);
+        Out.writeln;
+        Out.flush;
     }
 }
 
 void WriteSym(int S)
 {
-    IO.WriteText(Out, "Symbol ");
-    EAG.WriteHNont(Out, SOAG.SymOcc[SOAG.Sym[S].FirstOcc].SymInd);
-    IO.WriteText(Out, ": \nFirstOcc: ");
-    IO.WriteInt(Out, SOAG.Sym[S].FirstOcc);
-    IO.WriteLn(Out);
+    Out.write("Symbol ");
+    Out.write(EAG.HNontRepr(SOAG.SymOcc[SOAG.Sym[S].FirstOcc].SymInd));
+    Out.write(": \nFirstOcc: ");
+    Out.write(SOAG.Sym[S].FirstOcc);
+    Out.writeln;
     WriteAffPos(S);
-    IO.WriteString(Out, "MaxPart: ");
-    IO.WriteInt(Out, SOAG.Sym[S].MaxPart);
-    IO.WriteLn(Out);
-    IO.Update(Out);
+    Out.write("MaxPart: ");
+    Out.write(SOAG.Sym[S].MaxPart);
+    Out.writeln;
+    Out.flush;
 }
 
 void WriteSyms()

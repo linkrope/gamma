@@ -1,16 +1,16 @@
 module eScanner;
 
-import runtime;
-import IO = eIO;
 import io : Position, TextIn;
+import log;
+import runtime;
 import std.conv : to;
-import std.stdio;
 
 const nil = 0;
 const firstChar = 0;
 const firstIdent = 1;
 const errorIdent = firstIdent;
 const eot = 0;
+const eol = '\n';
 const str = '"';
 const num = '0';
 const ide = 'A';
@@ -32,16 +32,11 @@ int NextIdent;
 int[97] HashTable;
 TextIn In;
 int ErrorCounter;
-bool verbose;
 
-void Error(string String)
+void Error(string message)
 {
-    writeln;
-    writeln(IO.Msg, Pos);
-    IO.WriteText(IO.Msg, "  ");
-    IO.WriteText(IO.Msg, String);
-    IO.Update(IO.Msg);
     ++ErrorCounter;
+    error!"%s\n%s"(message, Pos);
 }
 
 void Expand()
@@ -102,56 +97,15 @@ void Init(TextIn Input)
     ErrorCounter = 0;
 }
 
-public string toString(int Id)
+public string repr(int Id)
 {
-    import std.string : fromStringz;
+    const begin = Ident[Id].Repr;
+    const end = Ident[Id + 1].Repr;
+    const c = CharBuf[begin];
 
-    char[] Name = new char[256];
-
-    GetRepr(Id, Name);
-    return fromStringz(Name.ptr).idup;
-}
-
-void GetRepr(int Id, ref char[] Name)
-{
-    int k;
-    int m;
-    int n;
-    char c;
-    k = Ident[Id].Repr;
-    c = CharBuf[k];
-    n = Ident[Id + 1].Repr - k;
-    if (Name.length < n + 1 || Name.length < n + 2 && (c == str || c == '\''))
-    {
-        throw new Exception("internal error: symbol too long");
-    }
-    for (m = 0; m <= n - 1; ++m)
-    {
-        Name[m] = CharBuf[k + m];
-    }
     if (c == str || c == '\'')
-    {
-        Name[n] = c;
-        ++n;
-    }
-    Name[n] = 0;
-}
-
-void WriteRepr(IO.TextOut Out, int Id)
-{
-    int k;
-    int m;
-    char c;
-    k = Ident[Id].Repr;
-    c = CharBuf[k];
-    for (m = k; m <= Ident[Id + 1].Repr - 1; ++m)
-    {
-        IO.Write(Out, CharBuf[m]);
-    }
-    if (c == str || c == '\'')
-    {
-        IO.Write(Out, c);
-    }
+        return (CharBuf[begin .. end] ~ c).to!string;
+    return CharBuf[begin .. end].to!string;
 }
 
 void Get(ref char Tok)
@@ -192,7 +146,7 @@ void Get(ref char Tok)
                 {
                     In.popFront;
                 }
-                while (In.front != IO.eol && In.front != eot);
+                while (In.front != eol && In.front != eot);
             }
             if (c == eot)
             {
@@ -274,7 +228,7 @@ void Get(ref char Tok)
             ++NextChar;
             In.popFront;
             c = In.front;
-            if (c == IO.eol || c == eot)
+            if (c == eol || c == eot)
             {
                 Error("string terminator not in this line");
                 NextChar = OldNextChar;
@@ -288,7 +242,7 @@ void Get(ref char Tok)
                 Val = errorIdent;
                 do
                     In.popFront;
-                while (In.front != Terminator && In.front != IO.eol && In.front != eot);
+                while (In.front != Terminator && In.front != eol && In.front != eot);
                 if (In.front == Terminator)
                     In.popFront;
                 return;
@@ -312,7 +266,7 @@ void Get(ref char Tok)
         }
         if (NextChar == CharBuf.length)
             Expand;
-        CharBuf[NextChar] = IO.eol;
+        CharBuf[NextChar] = eol;
         LookUp(OldNextChar);
     }
 
@@ -335,7 +289,7 @@ void Get(ref char Tok)
         {
             Expand;
         }
-        CharBuf[NextChar] = IO.eol;
+        CharBuf[NextChar] = eol;
         LookUp(OldNextChar);
     }
 
@@ -378,7 +332,7 @@ void Get(ref char Tok)
             {
                 In.popFront;
             }
-            while (In.front != IO.eol && In.front != eot);
+            while (In.front != eol && In.front != eot);
         }
         else if (In.front == '(')
         {
@@ -424,27 +378,21 @@ void Get(ref char Tok)
         Tok = In.front.to!char;
         In.popFront;
     }
-    if (IO.IsOption('v'))
-        trace(Tok);
+    trace!"%s\n%s"(toString(Tok, Val), Pos);
 }
 
-void trace(char tok)
+public string toString(char tok, int val)
 {
-    import std.stdio : write, writef, writeln;
+    import std.format : format;
 
-    write(Pos, ' ');
     if (tok == ide || tok == str)
-    {
-        write((tok == ide) ? "ide" : "str");
-        writef!"[%s] = "(Val);
-        WriteRepr(IO.Msg, Val);
-        IO.Update(IO.Msg);
-        writeln;
-    }
+        return format!"%s = %s"((tok == ide) ? "ide" : "str", val.repr);
     else if (tok == num)
-        writeln("num = ", Val);
+        return format!"num = %s"(val);
+    else if (tok == eot)
+        return "EOT";
     else
-        writeln(tok);
+        return format!"'%s'"(tok);
 }
 
 static this()

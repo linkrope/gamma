@@ -1,10 +1,10 @@
 module eEmitGen;
 
-import runtime;
-import Sets = eSets;
+import EAG = eEAG;
 import IO = eIO;
 import Scanner = eScanner;
-import EAG = eEAG;
+import Sets = eSets;
+import runtime;
 
 const CaseLabels = 127;
 Sets.OpenSet Type3;
@@ -62,16 +62,16 @@ void GenEmitProc(IO.TextOut Mod)
 
         void GenProcName(int N, Sets.OpenSet Type)
         {
-            IO.WriteString(Mod, "Emit");
-            IO.WriteInt(Mod, N);
-            IO.WriteString(Mod, "Type");
+            Mod.write("Emit");
+            Mod.write(N);
+            Mod.write("Type");
             if (Type == Type2)
             {
-                IO.Write(Mod, '2');
+                Mod.write('2');
             }
             else
             {
-                IO.Write(Mod, '3');
+                Mod.write('3');
             }
         }
 
@@ -82,45 +82,46 @@ void GenEmitProc(IO.TextOut Mod)
             int M;
             int arity;
             int ANum;
+
             void WhiteSpace()
             {
                 if (EmitSpace)
                 {
-                    IO.WriteString(Mod, "IO.Write(Out, ' '); ");
+                    Mod.write("Out.write(' '); ");
                 }
                 else
                 {
-                    IO.WriteString(Mod, "IO.WriteLn(Out); ");
+                    Mod.write("Out.writeln; ");
                 }
             }
 
             A = EAG.MNont[N].MRule;
             ANum = 1;
-            IO.WriteText(Mod, "switch (MOD(Heap[Ptr], arityConst))\n");
-            IO.WriteText(Mod, "{\n");
+            Mod.write("switch (MOD(Heap[Ptr], arityConst))\n");
+            Mod.write("{\n");
             while (A != EAG.nil)
             {
                 if (ANum > CaseLabels)
                 {
-                    IO.WriteString(IO.Msg, "internal error: Too many meta alts in ");
-                    Scanner.WriteRepr(IO.Msg, EAG.MTerm[N].Id);
-                    IO.WriteLn(IO.Msg);
-                    IO.Update(IO.Msg);
+                    IO.Msg.write("internal error: Too many meta alts in ");
+                    IO.Msg.write(Scanner.repr(EAG.MTerm[N].Id));
+                    IO.Msg.writeln;
+                    IO.Msg.flush;
                     assert(0);
                 }
                 F = EAG.MAlt[A].Right;
                 arity = 0;
-                IO.WriteText(Mod, "case ");
-                IO.WriteInt(Mod, ANum);
-                IO.WriteText(Mod, ":\n");
+                Mod.write("case ");
+                Mod.write(ANum);
+                Mod.write(":\n");
                 while (EAG.MembBuf[F] != EAG.nil)
                 {
                     M = EAG.MembBuf[F];
                     if (M < 0)
                     {
-                        IO.WriteText(Mod, "IO.WriteText(Out, ");
-                        Scanner.WriteRepr(Mod, EAG.MTerm[-M].Id);
-                        IO.WriteText(Mod, "); ");
+                        Mod.write("Out.write(");
+                        Mod.write(Scanner.repr(EAG.MTerm[-M].Id));
+                        Mod.write("); ");
                         if (MNonts == Type2)
                         {
                             WhiteSpace;
@@ -137,48 +138,48 @@ void GenEmitProc(IO.TextOut Mod)
                             GenProcName(M, Type2);
                         }
                         ++arity;
-                        IO.WriteText(Mod, "(Heap[Ptr + ");
-                        IO.WriteInt(Mod, arity);
-                        IO.WriteString(Mod, "]); ");
+                        Mod.write("(Heap[Ptr + ");
+                        Mod.write(arity);
+                        Mod.write("]); ");
                         if (EAG.MNont[M].IsToken && MNonts == Type2)
                         {
                             WhiteSpace;
                         }
                     }
                     ++F;
-                    IO.WriteLn(Mod);
+                    Mod.writeln;
                 }
-                IO.WriteText(Mod, "break;\n");
+                Mod.write("break;\n");
                 A = EAG.MAlt[A].Next;
                 ++ANum;
             }
-            IO.WriteText(Mod, "default:\n");
-            IO.WriteText(Mod, "IO.WriteInt(Out, Heap[Ptr]);\n");
-            IO.WriteText(Mod, "}\n");
+            Mod.write("default:\n");
+            Mod.write("Out.write(Heap[Ptr]);\n");
+            Mod.write("}\n");
         }
 
         for (N = EAG.firstMNont; N <= EAG.NextMNont - 1; ++N)
         {
             if (Sets.In(MNonts, N))
             {
-                IO.WriteText(Mod, "// ");
-                IO.WriteText(Mod, "PROCEDURE ^ ");
+                Mod.write("// ");
+                Mod.write("PROCEDURE ^ ");
                 GenProcName(N, MNonts);
-                IO.WriteText(Mod, "(Ptr: HeapType);\n");
+                Mod.write("(Ptr: HeapType);\n");
             }
         }
-        IO.WriteLn(Mod);
+        Mod.writeln;
         for (N = EAG.firstMNont; N <= EAG.NextMNont - 1; ++N)
         {
             if (Sets.In(MNonts, N))
             {
-                IO.WriteText(Mod, "void ");
+                Mod.write("void ");
                 GenProcName(N, MNonts);
-                IO.WriteText(Mod, "(HeapType Ptr)\n");
-                IO.WriteText(Mod, "{\n");
-                IO.WriteText(Mod, "OutputSize += DIV(MOD(Heap[Ptr], refConst), arityConst) + 1;\n");
+                Mod.write("(HeapType Ptr)\n");
+                Mod.write("{\n");
+                Mod.write("OutputSize += DIV(MOD(Heap[Ptr], refConst), arityConst) + 1;\n");
                 GenAlts(N);
-                IO.WriteText(Mod, "}\n\n");
+                Mod.write("}\n\n");
             }
         }
     }
@@ -204,41 +205,41 @@ void GenEmitProc(IO.TextOut Mod)
 
 void GenShowHeap(IO.TextOut Mod)
 {
-    IO.WriteText(Mod, "if (IO.IsOption('i'))\n");
-    IO.WriteText(Mod, "{\n");
-    IO.WriteText(Mod, "IO.WriteText(IO.Msg, \"    tree of \"); ");
-    IO.WriteText(Mod, "IO.WriteInt(IO.Msg, OutputSize); \n");
-    IO.WriteString(Mod, "IO.WriteText(IO.Msg, \" uses \"); IO.WriteInt(IO.Msg, CountHeap());");
-    IO.WriteText(Mod, "IO.WriteText(IO.Msg, \" of \"); \n");
-    IO.WriteString(Mod,"IO.WriteInt(IO.Msg, NextHeap);  IO.WriteText(IO.Msg, \" allocated, with \"); ");
-    IO.WriteText(Mod, "IO.WriteInt(IO.Msg, predefined + 1);\n");
-    IO.WriteText(Mod, "IO.WriteText(IO.Msg, \" predefined\\n\"); IO.Update(IO.Msg);\n");
-    IO.WriteText(Mod, "}\n");
+    Mod.write("if (IO.IsOption('i'))\n");
+    Mod.write("{\n");
+    Mod.write("IO.Msg.write(\"    tree of \"); ");
+    Mod.write("IO.Msg.write(OutputSize); \n");
+    Mod.write("IO.Msg.write(\" uses \"); IO.Msg.write(CountHeap());");
+    Mod.write("IO.Msg.write(\" of \"); \n");
+    Mod.write("IO.Msg.write(NextHeap);  IO.Msg.write(\" allocated, with \"); ");
+    Mod.write("IO.Msg.write(predefined + 1);\n");
+    Mod.write("IO.Msg.write(\" predefined\\n\"); IO.Msg.flush;\n");
+    Mod.write("}\n");
 }
 
 void GenEmitCall(IO.TextOut Mod)
 {
-    IO.WriteText(Mod, "if (");
+    Mod.write("if (");
     if (IO.IsOption('w'))
     {
-        IO.WriteText(Mod, "!");
+        Mod.write("!");
     }
-    IO.WriteText(Mod, "IO.IsOption('w'))\n");
-    IO.WriteText(Mod, "IO.CreateOut(Out, \"");
-    IO.WriteString(Mod, EAG.BaseName);
-    IO.WriteText(Mod, ".Out\");\n");
-    IO.WriteText(Mod, "else\n");
-    IO.WriteText(Mod, "Out = IO.Msg;\n");
-    IO.WriteString(Mod, "Emit");
-    IO.WriteInt(Mod, StartMNont);
-    IO.WriteString(Mod, "Type");
+    Mod.write("IO.IsOption('w'))\n");
+    Mod.write("Out = new IO.TextOut(\"");
+    Mod.write(EAG.BaseName);
+    Mod.write(".Out\");\n");
+    Mod.write("else\n");
+    Mod.write("Out = IO.Msg;\n");
+    Mod.write("Emit");
+    Mod.write(StartMNont);
+    Mod.write("Type");
     if (Sets.In(Type2, StartMNont))
     {
-        IO.Write(Mod, '2');
+        Mod.write('2');
     }
     else
     {
-        IO.Write(Mod, '3');
+        Mod.write('3');
     }
-    IO.WriteText(Mod, "(V1); IO.WriteLn(Out); IO.Update(Out);\n");
+    Mod.write("(V1); Out.writeln; Out.flush;\n");
 }

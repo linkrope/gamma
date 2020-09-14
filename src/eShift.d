@@ -1,10 +1,9 @@
 module eShift;
 
-import runtime;
-import Sets = eSets;
-import IO = eIO;
 import EAG = eEAG;
+import Sets = eSets;
 import io : UndefPos;
+import runtime;
 
 const nil = EAG.nil;
 

@@ -1,3 +1,7 @@
+## eIO.d
+
+- get rid of (as much as possible of) eIO.d
+
 ## Output Directory
 
 - introduce an output directory to be able to run tests in parallel
@@ -5,10 +9,6 @@
 ## epsilon.eag
 
 - specify the lowering for EBNF and various abbreviations as an EAG
-
-## eIO.d
-
-- get rid of (as much as possible of) eIO.d
 
 ## Expand
 

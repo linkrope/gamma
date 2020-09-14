@@ -1,8 +1,8 @@
 module $;
 
-import runtime;
 import IO = eIO;
 import io : Position;
+import runtime;
 import std.stdio;
 
 const hyperArityConst = $;
@@ -34,10 +34,10 @@ void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter,
     $(Adr, V1);
     if (ErrorCounter > 0)
     {
-        IO.WriteText(IO.Msg, "  ");
-        IO.WriteInt(IO.Msg, ErrorCounter);
-        IO.WriteText(IO.Msg, " errors detected\n");
-        IO.Update(IO.Msg);
+        IO.Msg.write("  ");
+        IO.Msg.write(ErrorCounter);
+        IO.Msg.write(" errors detected\n");
+        IO.Msg.flush;
     }
     else
     {

@@ -168,19 +168,19 @@ $ void SetErr()
 void Error(string Msg)
 {
     SetErr;
-    IO.WriteText(IO.Msg, Msg);
-    IO.WriteLn(IO.Msg);
-    IO.Update(IO.Msg);
+    IO.Msg.write(Msg);
+    IO.Msg.writeln;
+    IO.Msg.flush;
 }
 
 void PredError(string Msg)
 {
     SetErr;
-    IO.WriteText(IO.Msg, "predicate ");
-    IO.WriteText(IO.Msg, Msg);
-    IO.WriteText(IO.Msg, " failed");
-    IO.WriteLn(IO.Msg);
-    IO.Update(IO.Msg);
+    IO.Msg.write("predicate ");
+    IO.Msg.write(Msg);
+    IO.Msg.write(" failed");
+    IO.Msg.writeln;
+    IO.Msg.flush;
 }
 
 void AnalyseError(ref HeapType V, string Msg)
@@ -188,11 +188,11 @@ void AnalyseError(ref HeapType V, string Msg)
     if (V != errVal)
     {
         SetErr;
-        IO.WriteText(IO.Msg, "analysis in '");
-        IO.WriteText(IO.Msg, Msg);
-        IO.WriteText(IO.Msg, "' failed");
-        IO.WriteLn(IO.Msg);
-        IO.Update(IO.Msg);
+        IO.Msg.write("analysis in '");
+        IO.Msg.write(Msg);
+        IO.Msg.write("' failed");
+        IO.Msg.writeln;
+        IO.Msg.flush;
         $
         Heap[errVal] += refConst;
         FreeHeap(V);
@@ -254,12 +254,12 @@ bool EvalInitSucceeds()
 
     void LoadError(string Msg)
     {
-        IO.WriteText(IO.Msg, "  loading the evaluator table ");
-        IO.WriteString(IO.Msg, name);
-        IO.WriteText(IO.Msg, " failed\n\t");
-        IO.WriteText(IO.Msg, Msg);
-        IO.WriteLn(IO.Msg);
-        IO.Update(IO.Msg);
+        IO.Msg.write("  loading the evaluator table ");
+        IO.Msg.write(name);
+        IO.Msg.write(" failed\n\t");
+        IO.Msg.write(Msg);
+        IO.Msg.writeln;
+        IO.Msg.flush;
     }
 
     IO.OpenFile(Tab, name, OpenError);

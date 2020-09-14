@@ -1,9 +1,9 @@
 module $;
 
-import runtime;
 import IO = eIO;
-import Stacks = soag.eLIStacks;
 import io : Position;
+import runtime;
+import Stacks = soag.eLIStacks;
 import std.stdio;
 
 const nil = -1;
@@ -105,10 +105,10 @@ void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter, TreeT
     V1 = AffPos[$];
     if (ErrorCounter > 0)
     {
-        IO.WriteText(IO.Msg, "  ");
-        IO.WriteInt(IO.Msg, ErrorCounter);
-        IO.WriteText(IO.Msg, " errors detected\n");
-        IO.Update(IO.Msg);
+        IO.Msg.write("  ");
+        IO.Msg.write(ErrorCounter);
+        IO.Msg.write(" errors detected\n");
+        IO.Msg.flush;
     }
     else
     {
@@ -117,15 +117,15 @@ void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter, TreeT
     $
     if (IO.IsOption('i'))
     {
-        IO.WriteText(IO.Msg, "\tsemantic tree of ");
-        IO.WriteInt(IO.Msg, AffixVarCount);
-        IO.WriteText(IO.Msg, " affixes uses ");
-        IO.WriteInt(IO.Msg, NextVar);
-        IO.WriteText(IO.Msg, " affix variables, with\n\t\t");
-        IO.WriteInt(IO.Msg, $);
-        IO.WriteText(IO.Msg, " stacks and\n\t\t");
-        IO.WriteInt(IO.Msg, $);
-        IO.WriteText(IO.Msg, " global variables\n");
+        IO.Msg.write("\tsemantic tree of ");
+        IO.Msg.write(AffixVarCount);
+        IO.Msg.write(" affixes uses ");
+        IO.Msg.write(NextVar);
+        IO.Msg.write(" affix variables, with\n\t\t");
+        IO.Msg.write($);
+        IO.Msg.write(" stacks and\n\t\t");
+        IO.Msg.write($);
+        IO.Msg.write(" global variables\n");
     }
     Tree = null;
     PosTree = null;

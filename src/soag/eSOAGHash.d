@@ -1,8 +1,8 @@
 module soag.eSOAGHash;
 
+import IO = eIO;
 import runtime;
 import SOAG = soag.eSOAG;
-import IO = eIO;
 
 const empty = 0;
 
@@ -21,10 +21,10 @@ int V711;
 
 void Wr(char[] S, int I)
 {
-    IO.WriteString(IO.Msg, S);
-    IO.WriteInt(IO.Msg, I);
-    IO.WriteLn(IO.Msg);
-    IO.Update(IO.Msg);
+    IO.Msg.write(S);
+    IO.Msg.write(I);
+    IO.Msg.writeln;
+    IO.Msg.flush;
 }
 
 /**

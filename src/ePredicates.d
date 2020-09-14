@@ -1,17 +1,17 @@
 module ePredicates;
 
-import runtime;
-import Sets = eSets;
-import IO = eIO;
 import EAG = eEAG;
+import IO = eIO;
+import Sets = eSets;
+import runtime;
 import std.stdio;
 
 void List()
 {
     int N;
-    IO.WriteString(IO.Msg, "Predicates in     ");
-    IO.WriteString(IO.Msg, EAG.BaseName);
-    IO.WriteText(IO.Msg, ": ");
+    IO.Msg.write("Predicates in     ");
+    IO.Msg.write(EAG.BaseName);
+    IO.Msg.write(": ");
     if (EAG.Performed(Sets.SET(EAG.analysed, EAG.predicates)))
     {
         for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
@@ -20,13 +20,13 @@ void List()
             {
                 writeln;
                 writeln(EAG.HNont[N].Def.Sub.Pos);
-                IO.WriteString(IO.Msg, " :  ");
-                EAG.WriteHNont(IO.Msg, N);
+                IO.Msg.write(" :  ");
+                IO.Msg.write(EAG.HNontRepr(N));
             }
         }
     }
-    IO.WriteLn(IO.Msg);
-    IO.Update(IO.Msg);
+    IO.Msg.writeln;
+    IO.Msg.flush;
 }
 
 void Check()
@@ -120,9 +120,9 @@ void Check()
         }
     }
 
-    IO.WriteString(IO.Msg, "Predicates in     ");
-    IO.WriteString(IO.Msg, EAG.BaseName);
-    IO.Update(IO.Msg);
+    IO.Msg.write("Predicates in     ");
+    IO.Msg.write(EAG.BaseName);
+    IO.Msg.flush;
     if (EAG.Performed(Sets.SET(EAG.analysed)))
     {
         Sets.EXCL(EAG.History, EAG.predicates);
@@ -149,15 +149,15 @@ void Check()
         }
         if (NOPreds > 0)
         {
-            IO.WriteString(IO.Msg, ":  ");
-            IO.WriteInt(IO.Msg, NOPreds);
-            IO.WriteString(IO.Msg, "      ePredicates.List ");
+            IO.Msg.write(":  ");
+            IO.Msg.write(NOPreds);
+            IO.Msg.write("      ePredicates.List ");
         }
         else
         {
-            IO.WriteString(IO.Msg, ":  none. ");
+            IO.Msg.write(":  none. ");
         }
     }
-    IO.WriteLn(IO.Msg);
-    IO.Update(IO.Msg);
+    IO.Msg.writeln;
+    IO.Msg.flush;
 }

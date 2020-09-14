@@ -1,13 +1,13 @@
 module soag.eSOAGOptimizer;
 
-import runtime;
 import EAG = eEAG;
-import SOAG = soag.eSOAG;
-import SOAGVisitSeq = soag.eSOAGVisitSeq;
-import ALists = soag.eALists;
-import Sets = eSets;
-import Protocol = soag.eSOAGProtocol;
 import IO = eIO;
+import Sets = eSets;
+import runtime;
+import ALists = soag.eALists;
+import SOAG = soag.eSOAG;
+import Protocol = soag.eSOAGProtocol;
+import SOAGVisitSeq = soag.eSOAGVisitSeq;
 
 const firstGlobalVar = 1;
 const firstStackVar = 1;
@@ -45,16 +45,16 @@ void IncludeVDS(int S, int VN1, int VN2)
 
 void WriteVDS()
 {
-    IO.WriteText(IO.Msg, "Inhalt VDS:\n");
+    IO.Msg.write("Inhalt VDS:\n");
     for (size_t i = ALists.firstIndex; i <= VDS.Last; i += 3)
     {
-        EAG.WriteHNont(IO.Msg, VDS.Elem[i]);
-        IO.WriteText(IO.Msg, ", ");
-        IO.WriteInt(IO.Msg, VDS.Elem[i + 1]);
-        IO.WriteText(IO.Msg, ", ");
-        IO.WriteInt(IO.Msg, VDS.Elem[i + 2]);
-        IO.WriteLn(IO.Msg);
-        IO.Update(IO.Msg);
+        IO.Msg.write(EAG.HNontRepr(VDS.Elem[i]));
+        IO.Msg.write(", ");
+        IO.Msg.write(VDS.Elem[i + 1]);
+        IO.Msg.write(", ");
+        IO.Msg.write(VDS.Elem[i + 2]);
+        IO.Msg.writeln;
+        IO.Msg.flush;
     }
 }
 
@@ -83,14 +83,14 @@ void IncludeVS(int S, int VN)
 
 void WriteVS()
 {
-    IO.WriteText(IO.Msg, "Inhalt VS:\n");
+    IO.Msg.write("Inhalt VS:\n");
     for (size_t i = ALists.firstIndex; i <= VS.Last; i += 2)
     {
-        EAG.WriteHNont(IO.Msg, VS.Elem[i]);
-        IO.WriteText(IO.Msg, ", ");
-        IO.WriteInt(IO.Msg, VS.Elem[i + 1]);
-        IO.WriteLn(IO.Msg);
-        IO.Update(IO.Msg);
+        IO.Msg.write(EAG.HNontRepr(VS.Elem[i]));
+        IO.Msg.write(", ");
+        IO.Msg.write(VS.Elem[i + 1]);
+        IO.Msg.writeln;
+        IO.Msg.flush;
     }
 }
 

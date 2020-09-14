@@ -1,39 +1,30 @@
 module eAnalyser;
 
-import runtime;
 import EAG = eEAG;
 import Earley = eEarley;
-import IO = eIO;
 import Scanner = eScanner;
 import Sets = eSets;
-import std.stdio;
 import io : Position, TextIn;
+import log;
+import runtime;
 
 const nil = EAG.nil;
 char Tok;
 int ErrorCounter;
 bool NameNotified;
 
-void Str(string s)
-{
-    IO.WriteText(IO.Msg, s);
-}
-
-void Str(char[] s)
-{
-    IO.WriteText(IO.Msg, s);
-}
-
 void Error(Position Pos, string ErrMsg)
 {
     import std.exception : enforce;
 
     ++ErrorCounter;
-    enforce(ErrorCounter <= 25, "Too many errors!");
-    writeln;
-    writeln(Pos);
-    writeln(ErrMsg);
+
+    enforce(ErrorCounter <= 25,
+            "Too many errors!");
+
+    error!"%s\n%s"(ErrMsg, Pos);
 }
+
 /**
  * Specification:
  *   (MetaRule | HyperRule) {MetaRule | HyperRule} .
@@ -126,21 +117,10 @@ void Specification()
 
     void SetBaseName()
     {
-        char[] Name = new char[256];
-        int i;
         EAG.StartSym = EAG.firstHNont;
-        if (EAG.NextHNont > EAG.firstHNont)
-        {
-            Scanner.GetRepr(EAG.HNont[EAG.StartSym].Id, Name);
-            i = 0;
-            while (Name[i] != 0 && i < EAG.BaseNameLen - 1)
-            {
-                EAG.BaseName[i] = Name[i];
-                ++i;
-            }
-            EAG.BaseName[i] = 0;
-        }
+        EAG.BaseName = Scanner.repr(EAG.HNont[EAG.StartSym].Id);
     }
+
     /**
      * HyperRule:
      *   ident [FormalParams] ":" HyperExpr "." .
@@ -551,8 +531,7 @@ void Specification()
         {
             NameNotified = true;
             SetBaseName;
-            Str(EAG.BaseName);
-            IO.Update(IO.Msg);
+            info!"Analysing %s"(EAG.BaseName);
         }
         EAG.HNont[HNont].IsToken = EAG.HNont[HNont].IsToken || IsToken;
         Params(Actual, Formal);
@@ -782,7 +761,7 @@ void CheckSemantics()
     if (EAG.firstHNont == EAG.NextHNont)
     {
         ++ErrorCounter;
-        Str("\n  EAG needs at least one hyperrule ");
+        error!"EAG needs at least one hyper-rule";
     }
     for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
     {
@@ -791,9 +770,7 @@ void CheckSemantics()
             if (EAG.HNont[Sym].Id >= 0)
             {
                 ++ErrorCounter;
-                Str("\n  Hypernonterminal ");
-                Scanner.WriteRepr(IO.Msg, EAG.HNont[Sym].Id);
-                Str(" undefined");
+                error!"hyper-nonterminal %s undefined"(Scanner.repr(EAG.HNont[Sym].Id));
             }
         }
         else
@@ -807,9 +784,7 @@ void CheckSemantics()
         if (EAG.MNont[Sym].MRule == nil)
         {
             ++ErrorCounter;
-            Str("\n  Metanonterminal ");
-            Scanner.WriteRepr(IO.Msg, EAG.MNont[Sym].Id);
-            Str(" undefined");
+            error!"meta-nonterminal %s undefined"(Scanner.repr(EAG.MNont[Sym].Id));
         }
     }
     if (ErrorCounter == 0)
@@ -826,12 +801,9 @@ void CheckSemantics()
             }
             if (!EAG.Var[n].Def)
             {
-                ++ErrorCounter;
-                writeln;
-                writeln(EAG.Var[n].Pos);
-                Str("\tVariable '");
-                EAG.WriteVar(IO.Msg, n);
-                Str("' never on defining position!");
+                import std.format : format;
+
+                Error(EAG.Var[n].Pos, format!"variable %s never on defining position"(EAG.VarRepr(n)));
             }
         }
         if (EAG.DomBuf[EAG.HNont[EAG.StartSym].Sig] == EAG.nil
@@ -839,14 +811,13 @@ void CheckSemantics()
                 || EAG.DomBuf[EAG.HNont[EAG.StartSym].Sig + 1] != EAG.nil)
         {
             ++ErrorCounter;
-            Str("\n  Startsymbol '");
-            Scanner.WriteRepr(IO.Msg, EAG.HNont[EAG.StartSym].Id);
-            Str("' has to have exactly one synthesized attribute!");
+            error!"start symbol %s must have exactly one synthesized attribute"(
+                    Scanner.repr(EAG.HNont[EAG.StartSym].Id));
         }
         if (EAG.firstMNont == EAG.NextMNont)
         {
             ++ErrorCounter;
-            Str("\n  EAG needs at least one metarule ");
+            error!"EAG needs at least one meta-rule";
         }
     }
 }
@@ -870,12 +841,13 @@ void ComputeEAGSets()
     Sets.OpenSet Prod;
     long Warnings;
     bool TermFound;
+
     void ComputeReach(int Sym)
     {
-        EAG.Alt A;
+        EAG.Alt A = EAG.HNont[Sym].Def.Sub;
         EAG.Factor F;
+
         Sets.Incl(EAG.Reach, Sym);
-        A = EAG.HNont[Sym].Def.Sub;
         do
         {
             F = A.Sub;
@@ -1023,18 +995,11 @@ void ComputeEAGSets()
         }
     }
     if (Warnings > 0)
-    {
-        Str("\n  ");
-        IO.WriteInt(IO.Msg, Warnings);
-        Str(" warnings occurred   eAnalyser.Warnings");
-    }
+        warn!"%s warnings"(Warnings);
 }
 
 void Analyse(TextIn textIn)
 {
-    Str("Analysing ...      ");
-    IO.Update(IO.Msg);
-
     Scanner.Init(textIn);
     EAG.Init;
     Earley.Init;
@@ -1053,69 +1018,49 @@ void Analyse(TextIn textIn)
     if (ErrorCounter == 0)
     {
         Sets.INCL(EAG.History, EAG.analysed);
-        Str("   ok ");
+        info!"OK";
     }
     else
     {
         Sets.EXCL(EAG.History, EAG.analysed);
-        Str("\nerrors occurred");
         if (NameNotified)
-        {
-            Str(" in ");
-            Str(EAG.BaseName);
-        }
+            error!"errors in %s"(EAG.BaseName);
+        else
+            error!"errors";
     }
-    IO.WriteLn(IO.Msg);
-    IO.Update(IO.Msg);
 }
 
 void Warnings()
 {
-    int Sym;
-    Sets.OpenSet Unreach;
-    Sets.OpenSet Unprod;
-    bool NoWarnings;
-    Str("Analyser");
-    IO.Update(IO.Msg);
     if (EAG.Performed(Sets.SET(EAG.analysed)))
     {
+        Sets.OpenSet Unreach;
+        Sets.OpenSet Unprod;
+
         Sets.New(Unreach, EAG.NextHNont);
         Sets.New(Unprod, EAG.NextHNont);
         Sets.Difference(Unreach, EAG.All, EAG.Reach);
         Sets.Difference(Unprod, EAG.All, EAG.Prod);
-        NoWarnings = Sets.IsEmpty(Unreach) && Sets.IsEmpty(Unprod);
+
+        const NoWarnings = Sets.IsEmpty(Unreach) && Sets.IsEmpty(Unprod);
+
         if (NoWarnings)
         {
-            Str(": no");
+            info!"Analyser: no warnings on %s's hyper-nonterminals"(EAG.BaseName);
+            return;
         }
-        Str(" warnings on ");
-        Str(EAG.BaseName);
-        Str("'s hypernonterminals");
-        if (!NoWarnings)
+        warn!"Analyser warnings on %s's hyper-nonterminals:"(EAG.BaseName);
+        for (int Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
         {
-            IO.Write(IO.Msg, ':');
-            for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
+            if (Sets.In(Unreach, Sym) && EAG.HNont[Sym].Id >= 0)
+                warn!"%s unreachable"(EAG.HNontRepr(Sym));
+            if (Sets.In(Unprod, Sym))
             {
-                if (Sets.In(Unreach, Sym) && EAG.HNont[Sym].Id >= 0)
-                {
-                    Str("\n  '");
-                    EAG.WriteHNont(IO.Msg, Sym);
-                    Str("' unreachable");
-                }
-                if (Sets.In(Unprod, Sym))
-                {
-                    Str("\n  ");
-                    if (EAG.HNont[Sym].Id < 0)
-                    {
-                        Str(" in ");
-                    }
-                    IO.Write(IO.Msg, '\'');
-                    EAG.WriteNamedHNont(IO.Msg, Sym);
-                    Str("' cannot be derived");
-                }
+                if (EAG.HNont[Sym].Id < 0)
+                    warn!"anonymous nonterminal in %s unproductive"(EAG.NamedHNontRepr(Sym));
+                else
+                    warn!"%s unproductive"(EAG.HNontRepr(Sym));
             }
         }
     }
-    IO.WriteLn(IO.Msg);
-    IO.Update(IO.Msg);
 }

@@ -1,10 +1,9 @@
 module eEAG;
 
-import runtime;
-import Sets = eSets;
-import IO = eIO;
 import Scanner = eScanner;
+import Sets = eSets;
 import io : Position;
+import runtime;
 
 const nil = 0;
 const empty = 0;
@@ -267,14 +266,13 @@ int NextHTerm;
 OpenHNont HNont;
 int NextHNont;
 int NextAnonym;
-const BaseNameLen = 18;
 Sets.OpenSet All;
 Sets.OpenSet Prod;
 Sets.OpenSet Reach;
 Sets.OpenSet Null;
 Sets.OpenSet Pred;
 int StartSym;
-char[BaseNameLen] BaseName;
+string BaseName;
 
 void Expand()
 {
@@ -775,55 +773,44 @@ void NewAlt(ref Alt A, int Sym, ParamsDesc Formal, ParamsDesc Actual, Factor Sub
     }
 }
 
-void WriteHTerm(ref IO.TextOut Out, int Term)
+public string HTermRepr(int Term)
 {
-    Scanner.WriteRepr(Out, HTerm[Term].Id);
+    return Scanner.repr(HTerm[Term].Id);
 }
 
-public string HNontToString(int Nont)
+public string HNontRepr(int Nont)
 {
     import std.format : format;
 
     if (HNont[Nont].Id < 0)
         return format!"A%s"(-HNont[Nont].Id);
-    return Scanner.toString(HNont[Nont].Id);
+    return Scanner.repr(HNont[Nont].Id);
 }
 
-void WriteHNont(ref IO.TextOut Out, int Nont)
+public string VarRepr(int V)
 {
-    if (HNont[Nont].Id < 0)
-    {
-        IO.Write(Out, 'A');
-        IO.WriteInt(Out, -HNont[Nont].Id);
-    }
-    else
-    {
-        Scanner.WriteRepr(Out, HNont[Nont].Id);
-    }
-}
-
-void WriteVar(ref IO.TextOut Out, int V)
-{
+    import std.conv : to;
     import std.math : abs;
 
+    string result;
+
     if (Var[V].Num < 0)
-    {
-        IO.Write(Out, '#');
-    }
-    Scanner.WriteRepr(Out, MNont[Var[V].Sym].Id);
+        result ~= '#';
+    result ~= Scanner.repr(MNont[Var[V].Sym].Id);
     if (abs(Var[V].Num) > 1)
-    {
-        IO.WriteInt(Out, abs(Var[V].Num) - 2);
-    }
+        result ~= (abs(Var[V].Num) - 2).to!string;
+    return result;
 }
 
-void WriteNamedHNont(ref IO.TextOut Out, int Nont)
+public string NamedHNontRepr(int Nont)
 {
-    Scanner.WriteRepr(Out, HNont[Nont].NamedId);
+    return Scanner.repr(HNont[Nont].NamedId);
 }
 
 bool Performed(uint Needed)
 {
+    import log : error;
+
     Needed = Needed & ~History;
     if (Needed == Sets.SET)
     {
@@ -833,29 +820,28 @@ bool Performed(uint Needed)
     {
         if (Sets.IN(Needed, analysed))
         {
-            IO.WriteText(IO.Msg, "\n\tanalyse a specification first");
+            error!"analyse a specification first";
         }
         if (Sets.IN(Needed, predicates))
         {
-            IO.WriteText(IO.Msg, "\n\tcheck for predicates first");
+            error!"check for predicates first";
         }
         if (Sets.IN(Needed, parsable))
         {
-            IO.WriteText(IO.Msg, "\n\ttest for ELL1 attribute first");
+            error!"test for ELL1 attribute first";
         }
         if (Sets.IN(Needed, isSLEAG))
         {
-            IO.WriteText(IO.Msg, "\n\ttest for SLEAG attribute first");
+            error!"test for SLEAG attribute first";
         }
         if (Sets.IN(Needed, isSSweep))
         {
-            IO.WriteText(IO.Msg, "\n\ttest for single sweep attribute first");
+            error!"test for single sweep attribute first";
         }
         if (Sets.IN(Needed, hasEvaluator))
         {
-            IO.WriteText(IO.Msg, "\n\tgenerate an evaluator first");
+            error!"generate an evaluator first";
         }
-        IO.Update(IO.Msg);
         return false;
     }
 }
@@ -917,8 +903,9 @@ void Init()
 
 static this()
 {
+    import log : info;
+
     History = Sets.SET;
     BaseName = "nothing";
-    IO.WriteText(IO.Msg, "Epsilon 1.02   JoDe/SteWe  22.11.96\n");
-    IO.Update(IO.Msg);
+    info!"Epsilon 1.02   JoDe/SteWe  22.11.96";
 }

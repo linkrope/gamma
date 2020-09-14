@@ -1,11 +1,12 @@
 module eScanGen;
 
-import runtime;
+import EAG = eEAG;
 import IO = eIO;
 import Scanner = eScanner;
 import Sets = eSets;
-import EAG = eEAG;
 import io : TextIn;
+import log;
+import runtime;
 
 const firstUserTok = 3;
 const lenOfPredefinedToken = 8;
@@ -19,13 +20,12 @@ void Generate()
     int Term;
     int MaxTokLen;
     int Len;
-    char[] Str = new char[400];
-    char[] Name = new char[EAG.BaseNameLen + 10];
+    string name;
     bool Error;
     bool CompileError;
     bool ShowMod;
 
-    void TestToken(ref char[] s, ref int Len)
+    void TestToken(const char* s, ref int Len)
     {
         int i;
 
@@ -34,15 +34,15 @@ void Generate()
             int i = 0;
 
             Error = true;
-            IO.WriteText(IO.Msg, "\n  error in token: ");
+            IO.Msg.write("\n  error in token: ");
             while (s[i] != 0)
             {
-                IO.Write(IO.Msg, s[i]);
+                IO.Msg.write(s[i]);
                 ++i;
             }
-            IO.WriteString(IO.Msg, " - ");
-            IO.WriteText(IO.Msg, Msg);
-            IO.Update(IO.Msg);
+            IO.Msg.write(" - ");
+            IO.Msg.write(Msg);
+            IO.Msg.flush;
         }
 
         Len = 0;
@@ -100,80 +100,57 @@ void Generate()
             enforce(c != 0,
                     "error: unexpected end of eScanGen.fix.d");
 
-            IO.Write(Mod, c);
+            Mod.write(c);
             Fix.popFront;
             c = Fix.front.to!char;
         }
         Fix.popFront;
     }
 
-    void Append(ref char[] Dest, char[] Src, string Suf)
-    {
-        int i;
-        int j;
-        i = 0;
-        j = 0;
-
-        while (Src[i] != 0 && i + 1 < Dest.length)
-        {
-            Dest[i] = Src[i];
-            ++i;
-        }
-        while (j < Suf.length && i + 1 < Dest.length)
-        {
-            Dest[i] = Suf[j];
-            ++i;
-            ++j;
-        }
-        Dest[i] = 0;
-    }
-
     ShowMod = IO.IsOption('m');
-    IO.WriteString(IO.Msg, "ScanGen writing ");
-    IO.WriteString(IO.Msg, EAG.BaseName);
-    IO.WriteString(IO.Msg, "   ");
-    IO.Update(IO.Msg);
+    info!"ScanGen writing %s"(EAG.BaseName);
     if (EAG.Performed(Sets.SET(EAG.analysed)))
     {
         Error = false;
         MaxTokLen = lenOfPredefinedToken;
         for (Term = EAG.firstHTerm; Term <= EAG.NextHTerm - 1; ++Term)
         {
-            Scanner.GetRepr(EAG.HTerm[Term].Id, Str);
+            import std.string : toStringz;
+
+            const Str = Scanner.repr(EAG.HTerm[Term].Id).toStringz;
+
             TestToken(Str, Len);
             if (Len > MaxTokLen)
-            {
                 MaxTokLen = Len;
-            }
         }
         if (!Error)
         {
             Fix = TextIn("fix/eScanGen.fix.d");
-            Append(Name, EAG.BaseName, "Scan");
-            IO.CreateModOut(Mod, Name);
+            name = EAG.BaseName ~ "Scan";
+            Mod = new IO.TextOut(name ~ ".d");
             InclFix('$');
-            IO.WriteString(Mod, Name);
+            Mod.write(name);
             InclFix('$');
-            IO.WriteInt(Mod, MaxTokLen + 1);
+            Mod.write(MaxTokLen + 1);
             InclFix('$');
-            IO.WriteInt(Mod, EAG.NextHTerm - EAG.firstHTerm + firstUserTok);
+            Mod.write(EAG.NextHTerm - EAG.firstHTerm + firstUserTok);
             InclFix('$');
             for (Term = EAG.firstHTerm; Term <= EAG.NextHTerm - 1; ++Term)
             {
-                IO.WriteText(Mod, "    Enter(");
-                IO.WriteInt(Mod, Term - EAG.firstHTerm + firstUserTok);
-                IO.WriteText(Mod, ", ");
-                Scanner.WriteRepr(Mod, EAG.HTerm[Term].Id);
-                IO.WriteText(Mod, ");\n");
+                Mod.write("    Enter(");
+                Mod.write(Term - EAG.firstHTerm + firstUserTok);
+                Mod.write(", ");
+                Mod.write(Scanner.repr(EAG.HTerm[Term].Id));
+                Mod.write(");\n");
             }
             InclFix('$');
-            IO.WriteString(Mod, Name);
+            Mod.write(name);
             InclFix('$');
-            IO.Update(Mod);
+            Mod.flush;
             if (ShowMod)
             {
                 IO.Show(Mod);
-                IO.WriteLn(IO.Msg);
+                IO.Msg.writeln;
             }
             else
             {
@@ -187,14 +164,14 @@ void Generate()
         }
         else
         {
-            IO.WriteLn(IO.Msg);
+            IO.Msg.writeln;
         }
     }
     else
     {
-        IO.WriteLn(IO.Msg);
+        IO.Msg.writeln;
     }
-    IO.Update(IO.Msg);
+    IO.Msg.flush;
 }
 
 static this()

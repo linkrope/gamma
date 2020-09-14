@@ -1,10 +1,12 @@
 module $;
-import runtime;
+
 import IO = eIO;
 import io : Position, TextIn;
+import runtime;
 import std.stdio;
 
-const EOT = 0;
+const eot = 0;
+const eol = '\n';
 const firstChBuf = 0;
 const chBufLen = 512;
 char[chBufLen] ChBuf;
@@ -16,7 +18,6 @@ const nil = 0;
 const firstNode = 1;
 const maxTokLen = $;
 const maxTok = $;
-const eot = 0;
 const undef = 1;
 const whitespace = 2;
 const comment = int.min;
@@ -185,7 +186,7 @@ void Enter(int Tok, string Name)
 
 void WriteRepr(ref IO.TextOut Out, int Tok)
 {
-    IO.WriteString(Out, NameTab[Tok]);
+    Out.write(NameTab[Tok]);
 }
 
 void Symbol(ref int Tok)
@@ -263,17 +264,17 @@ void Comment()
     {
         writeln;
         writeln(Pos);
-        IO.WriteString(IO.Msg, "  ");
-        IO.WriteString(IO.Msg, Txt);
-        IO.WriteLn(IO.Msg);
-        IO.Update(IO.Msg);
+        IO.Msg.write("  ");
+        IO.Msg.write(Txt);
+        IO.Msg.writeln;
+        IO.Msg.flush;
     }
 
     int Level = 1;
 
     while (true)
     {
-        if (Ch == EOT)
+        if (Ch == eot)
         {
             Error("Comment not closed");
             break;
@@ -312,13 +313,13 @@ void Get2(ref int Tok)
     switch (Mode)
     {
     case string_:
-        if (Ch == EOT)
+        if (Ch == eot)
         {
             Tok = eot;
         }
         else
         {
-            if (Ch == StringCh || Ch == IO.eol)
+            if (Ch == StringCh || Ch == eol)
             {
                 Mode = none;
             }
@@ -346,7 +347,7 @@ void Get2(ref int Tok)
             GetCh;
         }
         GetPos;
-        if (Ch == EOT)
+        if (Ch == eot)
         {
             Tok = eot;
         }
@@ -378,13 +379,13 @@ void Get3(ref int Tok)
     switch (Mode)
     {
     case string_:
-        if (Ch == EOT)
+        if (Ch == eot)
         {
             Tok = eot;
         }
         else
         {
-            if (Ch == StringCh || Ch == IO.eol)
+            if (Ch == StringCh || Ch == eol)
             {
                 Mode = none;
             }
@@ -408,7 +409,7 @@ void Get3(ref int Tok)
         break;
     default:
         GetPos;
-        if (Ch == EOT)
+        if (Ch == eot)
         {
             Tok = eot;
         }
@@ -488,7 +489,7 @@ void BuildTree()
             IsWhitespace[i] = false;
         }
     }
-    IsWhitespace[EOT] = false;
+    IsWhitespace[eot] = false;
     Node = new NodeRecord[255];
     NextNode = '~' + 1;
     for (int i = firstNode; i <= NextNode; ++i)
@@ -502,7 +503,7 @@ void BuildTree()
     COPY("endTok", NameTab[0]);
     COPY("undefTok", NameTab[1]);
     COPY("sepTok", NameTab[2]);
-    Enter(whitespace, IO.eol.to!string);
+    Enter(whitespace, eol.to!string);
     Enter(comment, "(*");
 $
 }

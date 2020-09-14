@@ -1,13 +1,12 @@
 module soag.eSOAGVisitSeq;
 
-import runtime;
 import EAG = eEAG;
+import Sets = eSets;
+import runtime;
 import SOAG = soag.eSOAG;
 import HashTab = soag.eSOAGHash;
-import Sets = eSets;
-import Stacks = soag.eStacks;
-import IO = eIO;
 import Protocol = soag.eSOAGProtocol;
+import Stacks = soag.eStacks;
 
 const noVisit = -1;
 SOAG.OpenInteger InDeg;

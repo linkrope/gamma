@@ -1,17 +1,17 @@
 module soag.eSOAGGen;
 
-import runtime;
 import EAG = eEAG;
-import SOAG = soag.eSOAG;
+import EmitGen = eEmitGen;
 import IO = eIO;
 import Sets = eSets;
-import SOAGPartition = soag.eSOAGPartition;
-import SOAGVisitSeq = soag.eSOAGVisitSeq;
 import SLEAGGen = eSLEAGGen;
-import EmitGen = eEmitGen;
-import SOAGOptimizer = soag.eSOAGOptimizer;
-import Protocol = soag.eSOAGProtocol;
 import io : TextIn;
+import runtime;
+import SOAG = soag.eSOAG;
+import SOAGOptimizer = soag.eSOAGOptimizer;
+import SOAGPartition = soag.eSOAGPartition;
+import Protocol = soag.eSOAGProtocol;
+import SOAGVisitSeq = soag.eSOAGVisitSeq;
 
 const cTab = 1;
 const firstAffixOffset = 0;
@@ -171,11 +171,11 @@ void WrAffixAppls(int R)
     }
     for (V = Scope.Beg; V <= Scope.End - 1; ++V)
     {
-        EAG.WriteVar(IO.Msg, V);
-        IO.WriteText(IO.Msg, ": ");
-        IO.WriteInt(IO.Msg, AffixAppls[V]);
-        IO.WriteLn(IO.Msg);
-        IO.Update(IO.Msg);
+        IO.Msg.write(EAG.VarRepr(V));
+        IO.Msg.write(": ");
+        IO.Msg.write(AffixAppls[V]);
+        IO.Msg.writeln;
+        IO.Msg.flush;
     }
 }
 
@@ -384,37 +384,37 @@ void Ind()
 {
     for (size_t i = 1; i <= Indent; ++i)
     {
-        IO.WriteText(Out, "    ");
+        Out.write("    ");
     }
 }
 
 void WrS(T)(T String)
 {
-    IO.WriteText(Out, String);
+    Out.write(String);
 }
 
 void WrI(int Int)
 {
-    IO.WriteInt(Out, Int);
+    Out.write(Int);
 }
 
 void WrSI(string String, int Int)
 {
-    IO.WriteText(Out, String);
-    IO.WriteInt(Out, Int);
+    Out.write(String);
+    Out.write(Int);
 }
 
 void WrIS(int Int, string String)
 {
-    IO.WriteInt(Out, Int);
-    IO.WriteText(Out, String);
+    Out.write(Int);
+    Out.write(String);
 }
 
 void WrSIS(string String1, int Int, string String2)
 {
-    IO.WriteText(Out, String1);
-    IO.WriteInt(Out, Int);
-    IO.WriteText(Out, String2);
+    Out.write(String1);
+    Out.write(Int);
+    Out.write(String2);
 }
 
 void GenHeapInc(int n)
@@ -658,7 +658,7 @@ void GenSynPred(int SymOccInd, int VisitNo)
                 V = -Node1;
                 if (!EAG.Var[V].Def)
                 {
-                    SOAG.Error(SOAG.abnormalyError, "eSOAGGen.GenSynTraverse: Affix nicht definiert.");
+                    SOAG.Error(SOAG.abnormalError, "eSOAGGen.GenSynTraverse: Affix nicht definiert.");
                 }
                 else
                 {
@@ -720,7 +720,7 @@ void GenSynPred(int SymOccInd, int VisitNo)
                 V = -Node1;
                 if (!EAG.Var[V].Def)
                 {
-                    SOAG.Error(SOAG.abnormalyError, "eSOAGGen.GenSynTraverse: Affix nicht definiert.");
+                    SOAG.Error(SOAG.abnormalError, "eSOAGGen.GenSynTraverse: Affix nicht definiert.");
                 }
                 else
                 {
@@ -785,7 +785,7 @@ void GenSynPred(int SymOccInd, int VisitNo)
                 V = -Node;
                 if (!EAG.Var[V].Def)
                 {
-                    SOAG.Error(SOAG.abnormalyError, "eSOAGGen.GenSynTraverse: Affix nicht definiert.");
+                    SOAG.Error(SOAG.abnormalError, "eSOAGGen.GenSynTraverse: Affix nicht definiert.");
                 }
                 else if (!IsPred)
                 {
@@ -866,19 +866,20 @@ void GenAnalPred(int SymOccInd, int VisitNo)
     int SN;
     bool IsPred;
     bool PosNeeded;
+
     void GenEqualErrMsg(int Var)
     {
         WrS("\"'");
-        EAG.WriteVar(Out, Var);
+        WrS(EAG.VarRepr(Var));
         WrS("' failed in '");
-        EAG.WriteNamedHNont(Out, SOAG.SymOcc[SymOccInd].SymInd);
+        WrS(EAG.NamedHNontRepr(SOAG.SymOcc[SymOccInd].SymInd));
         WrS("'\"");
     }
 
     void GenAnalErrMsg()
     {
         WrS("\"");
-        EAG.WriteNamedHNont(Out, SOAG.SymOcc[SymOccInd].SymInd);
+        WrS(EAG.NamedHNontRepr(SOAG.SymOcc[SymOccInd].SymInd));
         WrS("\"");
     }
 
@@ -1197,7 +1198,7 @@ void GenPredCall(int SO)
     S = SOAG.SymOcc[SO].SymInd;
     Ind;
     WrSIS("Check", S, "(\"");
-    EAG.WriteNamedHNont(Out, S);
+    WrS(EAG.NamedHNontRepr(S));
     WrS("\", ");
     for (AP = SOAG.SymOcc[SO].AffOcc.Beg; AP <= SOAG.SymOcc[SO].AffOcc.End; ++AP)
     {
@@ -1604,7 +1605,7 @@ void GenConstDeclarations()
     {
         WrSIS("const S", S, " = ");
         WrIS(SOAG.Sym[S].AffPos.Beg, "; // ");
-        EAG.WriteHNont(Out, S);
+        WrS(EAG.HNontRepr(S));
         WrS("\n");
     }
 }
@@ -1650,7 +1651,7 @@ void GenStackInit()
 void GenerateModule()
 {
     int R;
-    char[] Name = new char[EAG.BaseNameLen + 10];
+    string name;
     TextIn Fix;
     int StartRule;
 
@@ -1666,39 +1667,19 @@ void GenerateModule()
             enforce(c != 0,
                     "error: unexpected end of eSOAG.fix.d");
 
-            IO.Write(Out, c);
+            Out.write(c);
             Fix.popFront;
             c = Fix.front.to!char;
         }
         Fix.popFront;
     }
 
-    void Append(ref char[] Dest, char[] Src, string Suf)
-    {
-        int i;
-        int j;
-        i = 0;
-        j = 0;
-        while (Src[i] != 0 && i + 1 < Dest.length)
-        {
-            Dest[i] = Src[i];
-            ++i;
-        }
-        while (j < Suf.length && i + 1 < Dest.length)
-        {
-            Dest[i] = Suf[j];
-            ++i;
-            ++j;
-        }
-        Dest[i] = 0;
-    }
-
     Fix = TextIn("fix/eSOAG.fix.d");
-    Append(Name, EAG.BaseName, "Eval");
-    IO.CreateModOut(Out, Name);
+    name = EAG.BaseName ~ "Eval";
+    Out = new IO.TextOut(name ~ ".d");
     SLEAGGen.InitGen(Out, SLEAGGen.sSweepPass);
     InclFix('$');
-    WrS(Name);
+    WrS(name);
     InclFix('$');
     WrI(HyperArity());
     InclFix('$');
@@ -1763,7 +1744,7 @@ void GenerateModule()
     WrS(EAG.BaseName);
     WrS("Eval");
     InclFix('$');
-    IO.Update(Out);
+    Out.flush;
     if (ShowMod)
     {
         IO.Show(Out);
@@ -1795,18 +1776,18 @@ void Generate()
     {
         SOAGOptimizer.Optimize;
     }
-    IO.WriteText(IO.Msg, "SOAG writing ");
-    IO.WriteString(IO.Msg, EAG.BaseName);
-    IO.WriteText(IO.Msg, "   ");
+    IO.Msg.write("SOAG writing ");
+    IO.Msg.write(EAG.BaseName);
+    IO.Msg.write("   ");
     if (Optimize)
     {
-        IO.WriteText(IO.Msg, "+o ");
+        IO.Msg.write("+o ");
     }
     else
     {
-        IO.WriteText(IO.Msg, "-o ");
+        IO.Msg.write("-o ");
     }
-    IO.Update(IO.Msg);
+    IO.Msg.flush;
     if (EAG.Performed(Sets.SET(EAG.analysed, EAG.predicates)))
     {
         Init;

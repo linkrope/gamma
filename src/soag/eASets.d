@@ -1,7 +1,6 @@
 module soag.eASets;
 
 import runtime;
-import IO = eIO;
 import ALists = soag.eALists;
 
 const firstIndex = ALists.firstIndex;

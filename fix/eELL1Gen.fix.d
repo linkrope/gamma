@@ -1,12 +1,11 @@
 module $;
 
-import runtime;
-import std.stdio;
 import IO = eIO;
 import Sets = eSets;
-import S = $;
 import io : Position, TextIn;
+import runtime;
 import std.stdio;
+import S = $;
 
 const nToks = $;
 const tokSetLen = $;
@@ -56,7 +55,7 @@ void ParserExpand()
     }
 }
 
-void ReadParserTab(string Name)
+void ReadParserTab(string name)
 {
     const magicNumber = 827_092_037;
     const tabTimeStamp = $;
@@ -67,16 +66,16 @@ void ReadParserTab(string Name)
 
     void LoadError(string Msg)
     {
-        IO.WriteText(IO.Msg, "  loading the parser table ");
-        IO.WriteString(IO.Msg, Name);
-        IO.WriteText(IO.Msg, " failed\n");
-        IO.WriteText(IO.Msg, "  ");
-        IO.WriteText(IO.Msg, Msg);
-        IO.WriteLn(IO.Msg);
-        IO.Update(IO.Msg);
+        IO.Msg.write("  loading the parser table ");
+        IO.Msg.write(name);
+        IO.Msg.write(" failed\n");
+        IO.Msg.write("  ");
+        IO.Msg.write(Msg);
+        IO.Msg.writeln;
+        IO.Msg.flush;
     }
 
-    IO.OpenFile(Tab, Name, OpenError);
+    IO.OpenFile(Tab, name, OpenError);
     if (OpenError)
     {
         LoadError("it could not be opened");
@@ -144,7 +143,7 @@ void WriteTokSet(TokSet Toks)
         if (Sets.IN(Toks[DIV(Tok1, M)], MOD(Tok1, M)))
         {
             S.WriteRepr(IO.Msg, Tok1);
-            IO.WriteText(IO.Msg, " ");
+            IO.Msg.write(" ");
         }
     }
 }
@@ -153,20 +152,20 @@ void ErrorMessageTok(Position Pos, int Tok1)
 {
     writeln;
     writeln(Pos);
-    IO.WriteText(IO.Msg, "  syntax error, expected: ");
+    IO.Msg.write("  syntax error, expected: ");
     S.WriteRepr(IO.Msg, Tok1);
-    IO.WriteLn(IO.Msg);
-    IO.Update(IO.Msg);
+    IO.Msg.writeln;
+    IO.Msg.flush;
 }
 
 void ErrorMessageTokSet(Position Pos, ref TokSet Toks)
 {
     writeln;
     writeln(Pos);
-    IO.WriteText(IO.Msg, "  syntax error, expected: ");
+    IO.Msg.write("  syntax error, expected: ");
     WriteTokSet(Toks);
-    IO.WriteLn(IO.Msg);
-    IO.Update(IO.Msg);
+    IO.Msg.writeln;
+    IO.Msg.flush;
 }
 
 void RestartMessage(Position Pos)
@@ -175,8 +174,8 @@ void RestartMessage(Position Pos)
     {
         writeln;
         writeln(Pos);
-        IO.WriteText(IO.Msg, "      restart point\n");
-        IO.Update(IO.Msg);
+        IO.Msg.write("      restart point\n");
+        IO.Msg.flush;
     }
 }
 
@@ -186,10 +185,10 @@ void RepairMessage(Position Pos, int Tok1)
     {
         writeln;
         writeln(Pos);
-        IO.WriteText(IO.Msg, "      symbol inserted: ");
+        IO.Msg.write("      symbol inserted: ");
         S.WriteRepr(IO.Msg, Tok1);
-        IO.WriteLn(IO.Msg);
-        IO.Update(IO.Msg);
+        IO.Msg.writeln;
+        IO.Msg.flush;
     }
 }
 
@@ -306,8 +305,8 @@ void Compile(TextIn textIn)
 
     if (ParserTabIsLoaded && EvalInitSucceeds()$)
     {
-        IO.WriteText(IO.Msg, "$ compiler: compiling...\n");
-        IO.Update(IO.Msg);
+        IO.Msg.write("$ compiler: compiling...\n");
+        IO.Msg.flush;
         ParserInit;
         S.Init(textIn);
         S.Get(Tok);
@@ -316,15 +315,15 @@ void Compile(TextIn textIn)
     }
     else if (!ParserTabIsLoaded)
     {
-        IO.WriteText(IO.Msg, "parser table is not loaded\n");
-        IO.Update(IO.Msg);
+        IO.Msg.write("parser table is not loaded\n");
+        IO.Msg.flush;
     }
 }
 
 static this()
 {
-    IO.WriteText(IO.Msg, "$ compiler (generated with Epsilon)\n");
-    IO.Update(IO.Msg);
+    IO.Msg.write("$ compiler (generated with Epsilon)\n");
+    IO.Msg.flush;
     RecStack = new int[500];
     ParserTabIsLoaded = false;
     ReadParserTab("$");
