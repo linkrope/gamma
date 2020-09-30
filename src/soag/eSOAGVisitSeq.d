@@ -27,12 +27,15 @@ void ComputeVisitNo()
     int PartNum;
     for (S = SOAG.firstSym; S <= SOAG.NextSym - 1; ++S)
     {
-        MaxPart = DIV(SOAG.Sym[S].MaxPart + 1, 2).to!int;
-        SOAG.Sym[S].MaxPart = MaxPart;
-        for (AP = SOAG.Sym[S].AffPos.Beg; AP <= SOAG.Sym[S].AffPos.End; ++AP)
+        if (Sets.In(EAG.All, S))
         {
-            PartNum = DIV(SOAG.PartNum[AP] + 1, 2).to!int;
-            SOAG.PartNum[AP] = MaxPart - PartNum + 1;
+            MaxPart = DIV(SOAG.Sym[S].MaxPart + 1, 2).to!int;
+            SOAG.Sym[S].MaxPart = MaxPart;
+            for (AP = SOAG.Sym[S].AffPos.Beg; AP <= SOAG.Sym[S].AffPos.End; ++AP)
+            {
+                PartNum = DIV(SOAG.PartNum[AP] + 1, 2).to!int;
+                SOAG.PartNum[AP] = MaxPart - PartNum + 1;
+            }
         }
     }
 }

@@ -435,12 +435,12 @@ void WriteAffPos(int SymInd)
 void WriteSym(int S)
 {
     Out.write("Symbol ");
-    Out.write(EAG.HNontRepr(SOAG.SymOcc[SOAG.Sym[S].FirstOcc].SymInd));
-    Out.write(": \nFirstOcc: ");
+    Out.write(EAG.HNontRepr(S));
+    Out.write(": \n  FirstOcc: ");
     Out.write(SOAG.Sym[S].FirstOcc);
     Out.writeln;
     WriteAffPos(S);
-    Out.write("MaxPart: ");
+    Out.write("  MaxPart: ");
     Out.write(SOAG.Sym[S].MaxPart);
     Out.writeln;
     Out.flush;

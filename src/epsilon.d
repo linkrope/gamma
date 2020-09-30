@@ -146,6 +146,7 @@ void compile(TextIn textIn, bool sweep, bool soag)
             import SOAGProtocol = soag.eSOAGProtocol;
 
             SOAGProtocol.WriteRulesL4;
+            SOAGProtocol.WriteSyms;
         }
         ELL1Gen.GenerateParser;
         success = true;

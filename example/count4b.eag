@@ -1,0 +1,26 @@
+! Same as count4.eag but w/o EBNF operators
+
+N = "i" N | .
+
+Z* = Z "0" | Z "1" | Z "2" | Z "3" | Z "4" | Z "5" | Z "6" | Z "7" | Z "8" | Z "9" |  .
+
+Sb: <+Z: Z> A<N, N, Z>.
+
+! This is the original rule from count4.eag
+!A: { <+ "i" N: N, - "i" N1: N, + Z2: Z> 'a' INC<Z1, Z2> <N, N1, Z1> } <+ : N, - : N, + "0": Z>.
+
+A<+ "i" N: N, - "i" N1: N, + Z2: Z>: 'a' INC<Z1, Z2> A<N, N1, Z1>.
+A<+ : N, - : N, + "0": Z>:.
+
+INC:
+<- Z "0": Z, + Z "1": Z> |
+<- Z "1": Z, + Z "2": Z> |
+<- Z "2": Z, + Z "3": Z> |
+<- Z "3": Z, + Z "4": Z> |
+<- Z "4": Z, + Z "5": Z> |
+<- Z "5": Z, + Z "6": Z> |
+<- Z "6": Z, + Z "7": Z> |
+<- Z "7": Z, + Z "8": Z> |
+<- Z "8": Z, + Z "9": Z> |
+<- Z "9": Z, + Z1 "0": Z> INC<Z, Z1> |
+<- : Z, + "1": Z>.

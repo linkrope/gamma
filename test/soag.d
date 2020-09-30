@@ -38,9 +38,7 @@ unittest
     run("./epsilon --soag --space example/w-w.eag")
         .shouldMatch("Grammar is SOEAG");
     run("echo a b a b c a b a b | ./S")
-        .shouldMatch("^a b a b $")
-        .assertThrown!AssertError;
-    writeln("    FAILED");
+        .shouldMatch("^a b a b $");
 }
 
 @("compile w-w-soag.eag as SOAG and run compiler")
@@ -94,9 +92,7 @@ unittest
     run("./epsilon example/count4.eag")
         .shouldMatch("Grammar is SOEAG");
     run("echo a a a | ./S")
-        .shouldMatch("^3$")
-        .assertThrown!AssertError;
-    writeln("    FAILED");
+        .shouldMatch("^3$");
 }
 
 @("compile count5.eag as SOAG and run compiler")

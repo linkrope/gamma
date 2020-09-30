@@ -561,25 +561,28 @@ void Optimize()
     StackVar = firstStackVar - 1;
     for (S = SOAG.firstSym; S < SOAG.NextSym; ++S)
     {
-        for (AP = SOAG.Sym[S].AffPos.Beg; AP <= SOAG.Sym[S].AffPos.End; ++AP)
+        if (Sets.In(EAG.All, S))
         {
-            A = AP - SOAG.Sym[S].AffPos.Beg;
-            if (!Sets.In(EAG.Pred, S) || SOAG.IsSynthesized(S, A))
+            for (AP = SOAG.Sym[S].AffPos.Beg; AP <= SOAG.Sym[S].AffPos.End; ++AP)
             {
-                disjoint = true;
-                admissible = true;
-                InitVDSandVS(S, A);
-                CompleteInitVDS;
-                CheckStorageType(S, A);
-                if (disjoint)
+                A = AP - SOAG.Sym[S].AffPos.Beg;
+                if (!Sets.In(EAG.Pred, S) || SOAG.IsSynthesized(S, A))
                 {
-                    ++GlobalVar;
-                    SOAG.StorageName[AP] = -GlobalVar;
-                }
-                else if (admissible)
-                {
-                    ++StackVar;
-                    SOAG.StorageName[AP] = StackVar;
+                    disjoint = true;
+                    admissible = true;
+                    InitVDSandVS(S, A);
+                    CompleteInitVDS;
+                    CheckStorageType(S, A);
+                    if (disjoint)
+                    {
+                        ++GlobalVar;
+                        SOAG.StorageName[AP] = -GlobalVar;
+                    }
+                    else if (admissible)
+                    {
+                        ++StackVar;
+                        SOAG.StorageName[AP] = StackVar;
+                    }
                 }
             }
         }
