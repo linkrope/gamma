@@ -266,6 +266,9 @@ int NextHTerm;
 OpenHNont HNont;
 int NextHNont;
 int NextAnonym;
+
+// for technical reasons there can be gaps in the HNont array,
+// so the set All defines the valid entries
 Sets.OpenSet All;
 Sets.OpenSet Prod;
 Sets.OpenSet Reach;

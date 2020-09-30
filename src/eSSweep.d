@@ -65,7 +65,6 @@ void GenerateMod(bool CreateMod)
     IO.TextOut Mod;
     TextIn Fix;
     string name;
-    bool CompileError;
     EAG.Rule SavedNontDef;
     int SavedNextHFactor;
     int SavedNextHAlt;
@@ -644,12 +643,8 @@ void GenerateMod(bool CreateMod)
             }
             else
             {
-                IO.Compile(Mod, CompileError);
+                IO.Compile(Mod);
                 Compiled = true;
-                if (CompileError)
-                {
-                    IO.Show(Mod);
-                }
             }
         }
         EvalGen.FinitGen;

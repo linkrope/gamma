@@ -100,11 +100,20 @@ unittest
 {
     run("./epsilon --soag example/count5.eag")
         .shouldMatch("Grammar is SOEAG");
+    run("echo a a a | ./S")
+        .shouldMatch("^3$");
+}
+
+@("compile count6.eag as SOAG and run compiler")
+unittest
+{
+    run("./epsilon --soag example/count6.eag")
+        .shouldMatch("Grammar is SOEAG");
     run("echo a a a b b b | ./S")
         .shouldMatch("^3$");
 }
 
-@("compile ecl-appl.eag as SOAG and run compiler")
+@("compile decl-appl.eag as SOAG and run compiler")
 unittest
 {
     run("./epsilon --soag --space example/decl-appl.eag")

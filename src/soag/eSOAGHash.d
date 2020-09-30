@@ -1,10 +1,7 @@
 module soag.eSOAGHash;
 
-import IO = eIO;
 import runtime;
 import SOAG = soag.eSOAG;
-
-const empty = 0;
 
 class HashEntry
 {
@@ -18,14 +15,6 @@ int MaxHashTabIndex;
 int MaxTry;
 int V4711;
 int V711;
-
-void Wr(char[] S, int I)
-{
-    IO.Msg.write(S);
-    IO.Msg.write(I);
-    IO.Msg.writeln;
-    IO.Msg.flush;
-}
 
 /**
  * SEM: leert die Hash-Tabelle

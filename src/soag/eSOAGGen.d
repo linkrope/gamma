@@ -29,7 +29,6 @@ SOAG.OpenInteger FirstRule;
 SOAG.OpenInteger AffixAppls;
 IO.TextOut Out;
 int Indent;
-bool Error;
 bool ShowMod;
 bool Close;
 
@@ -1751,11 +1750,7 @@ void GenerateModule()
     }
     else
     {
-        IO.Compile(Out, Error);
-        if (Error)
-        {
-            IO.Show(Out);
-        }
+        IO.Compile(Out);
     }
     SLEAGGen.FinitGen;
     IO.CloseOut(Out);
@@ -1792,10 +1787,7 @@ void Generate()
     {
         Init;
         GenerateModule;
-        if (!Error)
-        {
-            Sets.INCL(EAG.History, EAG.isSSweep);
-            Sets.INCL(EAG.History, EAG.hasEvaluator);
-        }
+        Sets.INCL(EAG.History, EAG.isSSweep);
+        Sets.INCL(EAG.History, EAG.hasEvaluator);
     }
 }

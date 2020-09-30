@@ -56,10 +56,10 @@ unittest
         .shouldMatch("^Number 1 3 $");
 }
 
-@("compile count5.eag as SLEAG and run compiler")
+@("compile count6.eag as SLEAG and run compiler")
 unittest
 {
-    run("./epsilon example/count5.eag")
+    run("./epsilon example/count6.eag")
         .shouldMatch("SLEAG testing   S   ok");
     run("echo a a a b b b | ./S")
         .shouldMatch("^3$");

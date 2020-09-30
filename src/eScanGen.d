@@ -22,28 +22,21 @@ void Generate()
     int Len;
     string name;
     bool Error;
-    bool CompileError;
     bool ShowMod;
 
-    void TestToken(const char* s, ref int Len)
+    void TestToken(string Str, ref int Len)
     {
+        import std.string : toStringz;
+
         int i;
 
         void Err(string Msg)
         {
-            int i = 0;
-
             Error = true;
-            IO.Msg.write("\n  error in token: ");
-            while (s[i] != 0)
-            {
-                IO.Msg.write(s[i]);
-                ++i;
-            }
-            IO.Msg.write(" - ");
-            IO.Msg.write(Msg);
-            IO.Msg.flush;
+            error!"token %s - %s"(Str, Msg);
         }
+
+        const s = Str.toStringz;
 
         Len = 0;
         if (s[0] != '\'' && s[0] != '"' || s[1] == 0 || s[1] == s[0])
@@ -115,9 +108,7 @@ void Generate()
         MaxTokLen = lenOfPredefinedToken;
         for (Term = EAG.firstHTerm; Term <= EAG.NextHTerm - 1; ++Term)
         {
-            import std.string : toStringz;
-
-            const Str = Scanner.repr(EAG.HTerm[Term].Id).toStringz;
+            const Str = Scanner.repr(EAG.HTerm[Term].Id);
 
             TestToken(Str, Len);
             if (Len > MaxTokLen)
@@ -154,24 +145,11 @@ void Generate()
             }
             else
             {
-                IO.Compile(Mod, CompileError);
-                if (CompileError)
-                {
-                    IO.Show(Mod);
-                }
+                IO.Compile(Mod);
             }
             IO.CloseOut(Mod);
         }
-        else
-        {
-            IO.Msg.writeln;
-        }
     }
-    else
-    {
-        IO.Msg.writeln;
-    }
-    IO.Msg.flush;
 }
 
 static this()

@@ -164,8 +164,8 @@ void build(string[] files)
     import std.process : spawnProcess, wait;
     import std.string : join;
 
-    const args = "dmd" ~ files ~ "-g"
-        ~ "include/runtime.d" ~ "src/eIO.d" ~ "src/eSets.d" ~ "src/io.d" ~ "src/soag/eLIStacks.d";
+    const args = "dmd" ~ files ~ "-g" ~ "include/runtime.d"
+        ~ "src/eIO.d" ~ "src/eSets.d" ~ "src/io.d" ~ "src/log.d" ~ "src/soag/eLIStacks.d";
 
     writefln!"%s"(args.join(' '));
 

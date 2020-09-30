@@ -1,5 +1,6 @@
 module eIO;
 
+import log;
 import runtime;
 import std.stdio;
 
@@ -77,9 +78,9 @@ void Show(TextOut Out)
     write(readText!(char[])(Out.name));
 }
 
-void Compile(TextOut Out, ref bool Error)
+void Compile(TextOut Out)
 {
-    writeln;
+    info!"compile %s"(Out.name);
     files = Out.name ~ files;
 }
 

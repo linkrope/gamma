@@ -1,3 +1,13 @@
+## eSets.d
+
+- replace `OpenSet` with `BitArray` from `std.bitmanip`
+- use `foreach (N; EAG.All)` instead of
+
+```d
+for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
+    if (Sets.In(EAG.All, N))
+```
+
 ## eIO.d
 
 - get rid of (as much as possible of) eIO.d
@@ -36,9 +46,13 @@
 
 ## Code Generation
 
-- no ident (use dfmt)
+- no indent (use dfmt)
 - create intermediate language nodes
 
 ## History Set
 
 - remove history state, tailored for Oberon's command execution
+
+## UTF-8
+
+- generated scanner should support UTF-8

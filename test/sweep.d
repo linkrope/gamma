@@ -56,10 +56,10 @@ unittest
         .shouldMatch("^Number 1 3 $");
 }
 
-@("compile count5.eag as Single-Sweep and run compiler")
+@("compile count6.eag as Single-Sweep and run compiler")
 unittest
 {
-    run("./epsilon --sweep example/count5.eag")
+    run("./epsilon --sweep example/count6.eag")
         .shouldMatch("SSweep testing S   ok");
     run("echo a a a b b b | ./S")
         .shouldMatch("^3$");

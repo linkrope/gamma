@@ -1071,7 +1071,6 @@ void GenerateMod(bool ParsePass)
     int Tok;
     Sets.OpenSet AllToks;
     string name;
-    bool CompileError;
     long TabTimeStamp;
 
     void TraverseNont(int N, bool FirstNontCall, Sets.OpenSet Poss)
@@ -1705,12 +1704,8 @@ void GenerateMod(bool ParsePass)
     }
     else
     {
-        IO.Compile(Mod, CompileError);
+        IO.Compile(Mod);
         Compiled = true;
-        if (CompileError)
-        {
-            IO.Show(Mod);
-        }
     }
     IO.CloseOut(Mod);
     EvalGen.FinitGen;
