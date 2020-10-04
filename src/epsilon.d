@@ -96,7 +96,7 @@ void compile(TextIn textIn, bool sweep, bool soag)
     import Predicates = ePredicates;
     import ScanGen = eScanGen;
     import Scanner = eScanner;
-    import Sets = eSets;
+    import Sets = set;
     import SLEAGGen = eSLEAGGen;
     import SSweep = eSSweep;
     import SOAGGen = soag.eSOAGGen;
@@ -165,7 +165,7 @@ void build(string[] files)
     import std.string : join;
 
     const args = "dmd" ~ files ~ "-g" ~ "include/runtime.d"
-        ~ "src/eIO.d" ~ "src/eSets.d" ~ "src/io.d" ~ "src/log.d" ~ "src/soag/eLIStacks.d";
+        ~ "src/eIO.d" ~ "src/io.d" ~ "src/log.d" ~ "src/set.d" ~ "src/soag/eLIStacks.d";
 
     writefln!"%s"(args.join(' '));
 

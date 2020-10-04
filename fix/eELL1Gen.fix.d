@@ -1,9 +1,9 @@
 module $;
 
 import IO = eIO;
-import Sets = eSets;
 import io : Position, TextIn;
 import runtime;
+import Sets = set;
 import std.stdio;
 import S = $;
 

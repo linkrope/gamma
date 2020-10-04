@@ -3,10 +3,10 @@ module eSSweep;
 import EAG = eEAG;
 import EmitGen = eEmitGen;
 import IO = eIO;
-import Sets = eSets;
 import EvalGen = eSLEAGGen;
 import io : TextIn, UndefPos;
 import runtime;
+import Sets = set;
 import std.stdio;
 
 const nil = 0;

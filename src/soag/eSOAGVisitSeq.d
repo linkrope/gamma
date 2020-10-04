@@ -1,8 +1,8 @@
 module soag.eSOAGVisitSeq;
 
 import EAG = eEAG;
-import Sets = eSets;
 import runtime;
+import Sets = set;
 import SOAG = soag.eSOAG;
 import HashTab = soag.eSOAGHash;
 import Protocol = soag.eSOAGProtocol;

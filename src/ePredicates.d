@@ -2,8 +2,8 @@ module ePredicates;
 
 import EAG = eEAG;
 import IO = eIO;
-import Sets = eSets;
 import runtime;
+import Sets = set;
 import std.stdio;
 
 void List()

@@ -3,8 +3,8 @@ module eEmitGen;
 import EAG = eEAG;
 import IO = eIO;
 import Scanner = eScanner;
-import Sets = eSets;
 import runtime;
+import Sets = set;
 
 const CaseLabels = 127;
 Sets.OpenSet Type3;

@@ -1,9 +1,9 @@
 module eEAG;
 
 import Scanner = eScanner;
-import Sets = eSets;
 import io : Position;
 import runtime;
+import Sets = set;
 
 const nil = 0;
 const empty = 0;
@@ -890,9 +890,9 @@ void Init()
 
     NextHAlt = firstHAlt;
     NextHFactor = firstHFactor;
-    Null = null;
-    Prod = null;
-    Pred = null;
+    Null.length = 0;
+    Prod.length = 0;
+    Pred.length = 0;
     NOAlt = 0;
     NOTerm = 0;
     NONont = 0;

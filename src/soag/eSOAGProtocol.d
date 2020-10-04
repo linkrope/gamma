@@ -3,7 +3,7 @@ module soag.eSOAGProtocol;
 import EAG = eEAG;
 import IO = eIO;
 import Scanner = eScanner;
-import Sets = eSets;
+import Sets = set;
 import runtime;
 import SOAG = soag.eSOAG;
 

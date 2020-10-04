@@ -1,7 +1,7 @@
 module soag.eBSets;
 
-import Sets = eSets;
 import runtime;
+import Sets = set;
 import ALists = soag.eALists;
 
 const firstIndex = ALists.firstIndex;

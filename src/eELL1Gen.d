@@ -3,12 +3,12 @@ module eELL1Gen;
 import EAG = eEAG;
 import EmitGen = eEmitGen;
 import IO = eIO;
-import Sets = eSets;
 import Shift = eShift;
 import EvalGen = eSLEAGGen;
 import io : Position, TextIn;
 import log;
 import runtime;
+import Sets = set;
 import std.stdio;
 
 const nil = 0;
@@ -329,8 +329,7 @@ void WriteTok(IO.TextOut Out, int Tok)
 
 void WriteTokSet(IO.TextOut Out, Sets.OpenSet Toks)
 {
-    int Tok;
-    for (Tok = 0; Tok <= nToks - 1; ++Tok)
+    for (int Tok = 0; Tok <= nToks - 1; ++Tok)
     {
         if (Sets.In(Toks, Tok))
         {
@@ -801,14 +800,14 @@ void ComputeDefaultAlts()
     int Top;
     int[] StackPos;
     Sets.OpenSet DefNonts;
+
     void TestDeg(int AInd)
     {
-        int N;
-        int i;
         if (Alt[AInd].Deg == 0)
         {
-            N = Alt[AInd].Nont;
-            i = StackPos[N];
+            const N = Alt[AInd].Nont;
+            const i = StackPos[N];
+
             if (i == int.max)
             {
                 Stack[Top].Nont = N;
@@ -922,10 +921,11 @@ void ComputeSets()
 {
     int N;
     Sets.OpenSet Start;
+
     void NewGenSet(Sets.OpenSet Toks, ref int GenSetIndex)
     {
-        int i;
-        i = firstGenSet;
+        int i = firstGenSet;
+
         while (i < NextGenSet && !Sets.Equal(GenSet[i], Toks))
         {
             ++i;
@@ -945,8 +945,8 @@ void ComputeSets()
 
     void NewGenSetT(Sets.OpenSet Toks, ref int GenSetTIndex)
     {
-        int i;
-        i = firstGenSetT;
+        int i = firstGenSetT;
+
         while (i < NextGenSetT && !Sets.Equal(GenSetT[i], Toks))
         {
             ++i;
@@ -970,6 +970,7 @@ void ComputeSets()
         EAG.Factor F;
         Sets.OpenSet S;
         bool RealAlt;
+
         Sets.New(S, nToks);
         A = EAG.HNont[N].Def.Sub;
         RealAlt = A.Next !is null;
@@ -1088,8 +1089,8 @@ void GenerateMod(bool ParsePass)
             void TraverseFactors(EAG.Factor F, bool FirstNontCall, Sets.OpenSet Poss)
             {
                 Sets.OpenSet Poss1;
-                bool TwoCalls;
-                TwoCalls = false;
+                bool TwoCalls = false;
+
                 Sets.New(Poss1, nToks);
                 Sets.Assign(Poss1, Poss);
                 while (F !is null)
@@ -1350,8 +1351,8 @@ void GenerateMod(bool ParsePass)
 
         void TestOneToken(Sets.OpenSet Toks, ref bool ExactOneToken, ref int TheOneToken)
         {
-            int Tok;
-            Tok = 0;
+            int Tok = 0;
+
             ExactOneToken = false;
             while (Tok < nToks)
             {

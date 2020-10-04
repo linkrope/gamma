@@ -3,8 +3,8 @@ module soag.eSOAG;
 import EAG = eEAG;
 import IO = eIO;
 import Predicates = ePredicates;
-import Sets = eSets;
 import runtime;
+import Sets = set;
 
 const firstSym = EAG.firstHNont;
 const firstRule = 0;

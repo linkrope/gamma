@@ -2,8 +2,8 @@ module soag.eSOAGPartition;
 
 import EAG = eEAG;
 import IO = eIO;
-import Sets = eSets;
 import runtime;
+import Sets = set;
 import ALists = soag.eALists;
 import ASets = soag.eASets;
 import BSets = soag.eBSets;

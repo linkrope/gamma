@@ -2,9 +2,9 @@ module eSLEAGGen;
 
 import EAG = eEAG;
 import IO = eIO;
-import Sets = eSets;
 import io : Position, TextIn;
 import runtime;
+import Sets = set;
 import std.stdio;
 
 const parsePass = 0;
@@ -68,8 +68,8 @@ void PrepareFinit()
 {
     VarCnt = null;
     VarAppls = null;
-    RepVar = null;
-    PreparedHNonts = null;
+    RepVar.length = 0;
+    PreparedHNonts.length = 0;
 }
 
 void Prepare(int N)
@@ -1418,7 +1418,7 @@ void FinitGen()
 {
     if (!Testing)
         PrepareFinit;
-    EmptySet = null;
+    EmptySet.length = 0;
     NodeIdent = null;
     AffixSpace = null;
     AffixPlace = null;

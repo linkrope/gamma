@@ -1,9 +1,9 @@
 module eShift;
 
 import EAG = eEAG;
-import Sets = eSets;
 import io : UndefPos;
 import runtime;
+import Sets = set;
 
 const nil = EAG.nil;
 

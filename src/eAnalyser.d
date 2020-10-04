@@ -3,10 +3,10 @@ module eAnalyser;
 import EAG = eEAG;
 import Earley = eEarley;
 import Scanner = eScanner;
-import Sets = eSets;
 import io : Position, TextIn;
 import log;
 import runtime;
+import Sets = set;
 
 const nil = EAG.nil;
 char Tok;

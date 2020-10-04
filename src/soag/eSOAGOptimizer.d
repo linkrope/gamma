@@ -2,7 +2,7 @@ module soag.eSOAGOptimizer;
 
 import EAG = eEAG;
 import IO = eIO;
-import Sets = eSets;
+import Sets = set;
 import runtime;
 import ALists = soag.eALists;
 import SOAG = soag.eSOAG;

@@ -3,10 +3,10 @@ module eScanGen;
 import EAG = eEAG;
 import IO = eIO;
 import Scanner = eScanner;
-import Sets = eSets;
 import io : TextIn;
 import log;
 import runtime;
+import Sets = set;
 
 const firstUserTok = 3;
 const lenOfPredefinedToken = 8;
