@@ -16,7 +16,7 @@ const endTok = 0;
 const undefTok = 1;
 const sepTok = 2;
 const firstUserTok = 3;
-const nElemsPerSET = 31 + 1;
+enum nElemsPerSET = size_t.sizeof * 8;
 const firstEdge = 1;
 const firstGenSet = 1;
 const firstGenSetT = 1;
@@ -1510,15 +1510,15 @@ void GenerateMod(bool ParsePass)
     {
         const magicNumber = 827_092_037;
         IO.File Tab;
-        int m;
-        uint s;
+        size_t m;
+        size_t s;
 
         IO.CreateFile(Tab, name);
         IO.PutLInt(Tab, magicNumber);
         IO.PutLInt(Tab, TabTimeStamp);
-        IO.PutLInt(Tab, 31);
+        IO.PutLInt(Tab, nElemsPerSET);
         IO.PutSet(Tab, Sets.SET(0, 2, 3, 6, 9, 13, 18, 19, 20, 24, 25, 27, 28, 31));
-        for (int i = firstGenSetT; i < NextGenSetT; i = i + nElemsPerSET)
+        for (size_t i = firstGenSetT; i < NextGenSetT; i += nElemsPerSET)
         {
             if (nElemsPerSET <= NextGenSetT - i)
             {

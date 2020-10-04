@@ -11,16 +11,16 @@ const nToks = $;
 const tokSetLen = $;
 const nSetT = $;
 const nSet = $;
-const M = 31 + 1;
+enum M = size_t.sizeof * 8;
 const endTok = 0;
 const sepTok = 2;
 const firstRecStack = 1;
 alias OpenRecStack = int[];
-alias TokSet = uint[tokSetLen];
+alias TokSet = size_t[tokSetLen];
 int Tok;
 OpenRecStack RecStack;
 int RecTop;
-uint[nToks][nSetT + 1] SetT;
+size_t[nToks][nSetT + 1] SetT;
 TokSet[nSet + 1] Set;
 long ErrorCounter;
 bool IsRepairMode;
@@ -62,7 +62,7 @@ void ReadParserTab(string name)
     IO.File Tab;
     bool OpenError;
     long l;
-    uint s;
+    size_t s;
 
     void LoadError(string Msg)
     {
@@ -94,7 +94,7 @@ void ReadParserTab(string name)
         return;
     }
     IO.GetLInt(Tab, l);
-    if (l != 31)
+    if (l != M)
     {
         LoadError("incompatible MAX(SET) in table");
         return;

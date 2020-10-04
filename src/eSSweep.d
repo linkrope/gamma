@@ -655,7 +655,6 @@ void GenerateMod(bool CreateMod)
 
 void Test()
 {
-    uint SaveHistory;
     IO.Msg.write("SSweep testing ");
     IO.Msg.write(EAG.BaseName);
     IO.Msg.write("   ");
@@ -664,7 +663,9 @@ void Test()
     {
         Sets.EXCL(EAG.History, EAG.isSSweep);
         Init;
-        SaveHistory = EAG.History;
+
+        size_t SaveHistory = EAG.History;
+
         EAG.History = Sets.SET;
         GenerateMod(false);
         EAG.History = SaveHistory;
@@ -681,7 +682,6 @@ void Test()
 
 void Generate()
 {
-    uint SaveHistory;
     IO.Msg.write("SSweep writing ");
     IO.Msg.write(EAG.BaseName);
     IO.Msg.write("   ");
@@ -691,7 +691,9 @@ void Generate()
     {
         Sets.EXCL(EAG.History, EAG.isSSweep);
         Init;
-        SaveHistory = EAG.History;
+
+        size_t SaveHistory = EAG.History;
+
         EAG.History = Sets.SET;
         GenerateMod(true);
         EAG.History = SaveHistory;

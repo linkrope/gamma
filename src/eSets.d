@@ -2,12 +2,12 @@ module eSets;
 
 import runtime;
 
-const M = 31 + 1;
-alias OpenSet = uint[];
+enum M = size_t.sizeof * 8;
+alias OpenSet = size_t[];
 
 void New(ref OpenSet s0, int MaxElem)
 {
-    s0 = new uint[DIV(MaxElem, M) + 1];
+    s0 = new size_t[DIV(MaxElem, M) + 1];
     for (int n = 0; n <= DIV(MaxElem, M); ++n)
     {
         s0[n] = SET;
@@ -19,7 +19,7 @@ unittest
 {
     OpenSet set;
 
-    New(set, 32);
+    New(set, 64);
 
     assert(set == [0, 0]);
 }
@@ -53,7 +53,7 @@ unittest
 {
     OpenSet set = [1, 0];
 
-    Incl(set, 32);
+    Incl(set, 64);
 
     assert(set == [1, 1]);
 }
@@ -68,7 +68,7 @@ unittest
 {
     OpenSet set = [1, 1];
 
-    Excl(set, 32);
+    Excl(set, 64);
 
     assert(set == [1, 0]);
 }
@@ -106,7 +106,7 @@ unittest
 
     Complement(set, [0, 0]);
 
-    assert(set == [0xffffffff, 0xffffffff]);
+    assert(set == [0xffffffffffffffff, 0xffffffffffffffff]);
 }
 
 void Union(ref OpenSet s0, OpenSet s1, OpenSet s2)
@@ -181,7 +181,7 @@ bool In(OpenSet s1, int n)
 @("check if element is included in set")
 unittest
 {
-    assert(In([1, 1], 32));
+    assert(In([1, 1], 64));
     assert(!In([1, 1], 1));
 }
 
@@ -266,41 +266,41 @@ size_t nSetsUsed(OpenSet s1)
     return s1.length;
 }
 
-@("get number of 32-bit sets used to store set")
+@("get number of 64-bit sets used to store set")
 unittest
 {
     assert(nSetsUsed([1234, 5678]) == 2);
 }
 
-uint ConvertToSET(OpenSet s1, int Index)
+size_t ConvertToSET(OpenSet s1, int Index)
 {
     return s1[Index];
 }
 
-@("get 32-bit set at given index")
+@("get 64-bit set at given index")
 unittest
 {
     assert(ConvertToSET([1234, 5678], 1) == 5678);
 }
 
-uint SET(size_t[] elements...)
+size_t SET(size_t[] elements...)
 {
     import std.algorithm : map, reduce;
 
-    return reduce!"a | b"(0, elements.map!(element => 1 << element));
+    return reduce!"a | b"(0uL, elements.map!(element => 1uL << element));
 }
 
-bool IN(uint set, size_t x)
+bool IN(size_t set, size_t x)
 {
     return (set & SET(x)) != 0;
 }
 
-void INCL(ref uint set, size_t x)
+void INCL(ref size_t set, size_t x)
 {
     set |= SET(x);
 }
 
-void EXCL(ref uint set, size_t x)
+void EXCL(ref size_t set, size_t x)
 {
     set &= ~SET(x);
 }

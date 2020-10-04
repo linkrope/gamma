@@ -13,7 +13,7 @@ const parsable = 2;
 const isSLEAG = 3;
 const isSSweep = 4;
 const hasEvaluator = 5;
-uint History;
+size_t History;
 const firstParam = 0;
 const firstHAlt = 0;
 const firstHFactor = 0;
@@ -810,7 +810,7 @@ public string NamedHNontRepr(int Nont)
     return Scanner.repr(HNont[Nont].NamedId);
 }
 
-bool Performed(uint Needed)
+bool Performed(size_t Needed)
 {
     import log : error;
 

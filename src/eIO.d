@@ -105,7 +105,7 @@ void GetLInt(File F, ref long i)
     F.readf!"long %s\n"(i);
 }
 
-void GetSet(File F, ref uint s)
+void GetSet(File F, ref size_t s)
 {
     F.readf!"set %s\n"(s);
 }
@@ -115,7 +115,7 @@ void PutLInt(File F, long i)
     F.writefln!"long %s"(i);
 }
 
-void PutSet(File F, uint s)
+void PutSet(File F, size_t s)
 {
     F.writefln!"set %s"(s);
 }
