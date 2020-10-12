@@ -6,12 +6,12 @@ import IO = eIO;
 import SLEAGGen = eSLEAGGen;
 import io : TextIn;
 import runtime;
-import Sets = set;
 import SOAG = soag.eSOAG;
 import SOAGOptimizer = soag.eSOAGOptimizer;
 import SOAGPartition = soag.eSOAGPartition;
 import Protocol = soag.eSOAGProtocol;
 import SOAGVisitSeq = soag.eSOAGVisitSeq;
+import std.bitmanip : BitArray;
 
 const cTab = 1;
 const firstAffixOffset = 0;
@@ -168,7 +168,7 @@ void WrAffixAppls(int R)
             Scope = (cast(EAG.Rep) EAGRule).Scope;
         }
     }
-    for (V = Scope.Beg; V <= Scope.End - 1; ++V)
+    for (V = Scope.Beg; V < Scope.End; ++V)
     {
         IO.Msg.write(EAG.VarRepr(V));
         IO.Msg.write(": ");
@@ -210,7 +210,7 @@ void ComputeAffixOffset(int R)
         }
     }
     Offset = firstAffixOffset;
-    for (A = Scope.Beg; A <= Scope.End - 1; ++A)
+    for (A = Scope.Beg; A < Scope.End; ++A)
     {
         if (AffixAppls[A] > 0)
         {
@@ -277,19 +277,17 @@ int GetAffixCount(int R)
  */
 int HyperArity()
 {
-    int N;
+    const Nonts = EAG.All - EAG.Pred;
+    int Max = 0;
     int i;
-    int Max;
-    EAG.Alt A;
-    Sets.OpenSet Nonts;
-    Sets.New(Nonts, EAG.NextHNont);
-    Sets.Difference(Nonts, EAG.All, EAG.Pred);
-    Max = 0;
-    for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
+
+    // TODO: foreach (N; Nonts)
+    for (int N = EAG.firstHNont; N < EAG.NextHNont; ++N)
     {
-        if (Sets.In(Nonts, N))
+        if (Nonts[N])
         {
-            A = EAG.HNont[N].Def.Sub;
+            EAG.Alt A = EAG.HNont[N].Def.Sub;
+
             i = 0;
             do
             {
@@ -298,20 +296,14 @@ int HyperArity()
             }
             while (A !is null);
             if (cast(EAG.Opt) EAG.HNont[N].Def !is null || cast(EAG.Rep) EAG.HNont[N].Def !is null)
-            {
                 ++i;
-            }
             if (i > Max)
-            {
                 Max = i;
-            }
         }
     }
     i = 1;
     while (i <= Max)
-    {
         i = i * 2;
-    }
     return i;
 }
 
@@ -1567,7 +1559,6 @@ void GenVisitRule(int R)
  */
 void GenVisit()
 {
-    int R;
     Indent = 0;
     WrS("void Visit(long Symbol, int VisitNo)\n");
     WrS("{\n");
@@ -1577,7 +1568,7 @@ void GenVisit()
     Ind;
     WrS("{\n");
     Indent += cTab;
-    for (R = SOAG.firstRule; R <= SOAG.NextRule - 1; ++R)
+    for (int R = SOAG.firstRule; R < SOAG.NextRule; ++R)
     {
         if (SOAG.IsEvaluatorRule(R))
         {
@@ -1599,8 +1590,7 @@ void GenVisit()
  */
 void GenConstDeclarations()
 {
-    int S;
-    for (S = SOAG.firstSym; S <= SOAG.NextSym - 1; ++S)
+    for (int S = SOAG.firstSym; S < SOAG.NextSym; ++S)
     {
         WrSIS("const S", S, " = ");
         WrIS(SOAG.Sym[S].AffPos.Beg, "; // ");
@@ -1614,17 +1604,12 @@ void GenConstDeclarations()
  */
 void GenStackDeclarations()
 {
-    int V;
     if (SOAGOptimizer.GlobalVar > 0 || SOAGOptimizer.StackVar > 0)
     {
-        for (V = SOAGOptimizer.firstGlobalVar; V <= SOAGOptimizer.GlobalVar; ++V)
-        {
+        for (int V = SOAGOptimizer.firstGlobalVar; V <= SOAGOptimizer.GlobalVar; ++V)
             WrSIS("HeapType GV", V, ";\n");
-        }
-        for (V = SOAGOptimizer.firstStackVar; V <= SOAGOptimizer.StackVar; ++V)
-        {
+        for (int V = SOAGOptimizer.firstStackVar; V <= SOAGOptimizer.StackVar; ++V)
             WrSIS("Stacks.Stack Stack", V, ";\n");
-        }
         WrS("\n");
     }
 }
@@ -1634,13 +1619,10 @@ void GenStackDeclarations()
  */
 void GenStackInit()
 {
-    int S;
     if (SOAGOptimizer.StackVar > 0)
     {
-        for (S = SOAGOptimizer.firstStackVar; S <= SOAGOptimizer.StackVar; ++S)
-        {
+        for (int S = SOAGOptimizer.firstStackVar; S <= SOAGOptimizer.StackVar; ++S)
             WrSIS("Stacks.New(Stack", S, ", 8);\n");
-        }
     }
 }
 
@@ -1691,7 +1673,7 @@ void GenerateModule()
     SLEAGGen.GenDeclarations;
     InclFix('$');
     SLEAGGen.GenPredProcs;
-    for (R = SOAG.firstRule; R <= SOAG.NextRule - 1; ++R)
+    for (R = SOAG.firstRule; R < SOAG.NextRule; ++R)
     {
         if (SOAG.IsEvaluatorRule(R))
         {
@@ -1706,15 +1688,11 @@ void GenerateModule()
     WrI(SOAG.NextPartNum);
     InclFix('$');
     if (Optimize)
-    {
         GenStackInit;
-    }
     StartRule = FirstRule[SOAG.SymOcc[SOAG.Sym[EAG.StartSym].FirstOcc].RuleInd];
     InclFix('$');
     if (StartRule - 1 != 0)
-    {
         WrIS(StartRule - 1, " + ");
-    }
     InclFix('$');
     WrSI("S", EAG.StartSym);
     InclFix('$');
@@ -1723,35 +1701,23 @@ void GenerateModule()
     EmitGen.GenShowHeap(Out);
     InclFix('$');
     if (Optimize)
-    {
         WrI(SOAGOptimizer.StackVar);
-    }
     else
-    {
         WrI(0);
-    }
     InclFix('$');
     if (Optimize)
-    {
         WrI(SOAGOptimizer.GlobalVar);
-    }
     else
-    {
         WrI(0);
-    }
     InclFix('$');
     WrS(EAG.BaseName);
     WrS("Eval");
     InclFix('$');
     Out.flush;
     if (ShowMod)
-    {
         IO.Show(Out);
-    }
     else
-    {
         IO.Compile(Out);
-    }
     SLEAGGen.FinitGen;
     IO.CloseOut(Out);
 }
@@ -1768,26 +1734,20 @@ void Generate()
     SOAGPartition.Compute;
     SOAGVisitSeq.Generate;
     if (Optimize)
-    {
         SOAGOptimizer.Optimize;
-    }
     IO.Msg.write("SOAG writing ");
     IO.Msg.write(EAG.BaseName);
     IO.Msg.write("   ");
     if (Optimize)
-    {
         IO.Msg.write("+o ");
-    }
     else
-    {
         IO.Msg.write("-o ");
-    }
     IO.Msg.flush;
-    if (EAG.Performed(Sets.SET(EAG.analysed, EAG.predicates)))
+    if (EAG.Performed(EAG.analysed | EAG.predicates))
     {
         Init;
         GenerateModule;
-        Sets.INCL(EAG.History, EAG.isSSweep);
-        Sets.INCL(EAG.History, EAG.hasEvaluator);
+        EAG.History |= EAG.isSSweep;
+        EAG.History |= EAG.hasEvaluator;
     }
 }

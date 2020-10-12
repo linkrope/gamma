@@ -49,10 +49,8 @@ void ExpandSemTree()
 {
     OpenSemTree SemTree1 = new SemTreeEntry[2 * SemTree.length];
 
-    for (IndexType i = 0; i <= SemTree.length - 1; ++i)
-    {
+    for (IndexType i = 0; i < SemTree.length; ++i)
         SemTree1[i] = SemTree[i];
-    }
     SemTree = SemTree1;
 }
 
@@ -60,10 +58,8 @@ void ExpandVar()
 {
     OpenVar Var1 = new HeapType[2 * Var.length];
 
-    for (IndexType i = 0; i <= Var.length - 1; ++i)
-    {
+    for (IndexType i = 0; i < Var.length; ++i)
         Var1[i] = Var[i];
-    }
     Var = Var1;
 }
 

@@ -1,11 +1,10 @@
-## eSets.d
+## BitArray
 
-- replace `OpenSet` with `BitArray` from `std.bitmanip`
 - use `foreach (N; EAG.All)` instead of
 
 ```d
-for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
-    if (Sets.In(EAG.All, N))
+for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
+    if (EAG.All[N])
 ```
 
 ## eIO.d

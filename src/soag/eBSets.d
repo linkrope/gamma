@@ -1,15 +1,15 @@
 module soag.eBSets;
 
 import runtime;
-import Sets = set;
 import ALists = soag.eALists;
+import std.bitmanip : BitArray;
 
 const firstIndex = ALists.firstIndex;
 
 struct BSetDesc
 {
     int Max;
-    Sets.OpenSet BitVektor;
+    BitArray BitVektor;
     ALists.AList List;
 }
 
@@ -25,7 +25,8 @@ void New(ref BSet S, int MaxElem)
 {
     S = BSet();
     ALists.New(S.List, 16);
-    Sets.New(S.BitVektor, MaxElem);
+    S.BitVektor = BitArray();
+    S.BitVektor.length = MaxElem + 1;
     S.Max = MaxElem;
 }
 
@@ -38,7 +39,7 @@ void New(ref BSet S, int MaxElem)
 void Reset(ref BSet S)
 {
     ALists.Reset(S.List);
-    Sets.Empty(S.BitVektor);
+    S.BitVektor[] = false;
 }
 
 /**
@@ -51,9 +52,9 @@ void Insert(ref BSet S, int Elem)
 {
     if (Elem <= S.Max)
     {
-        if (!Sets.In(S.BitVektor, Elem))
+        if (!S.BitVektor[Elem])
         {
-            Sets.Incl(S.BitVektor, Elem);
+            S.BitVektor[Elem] = true;
             ALists.Append(S.List, Elem);
         }
     }
@@ -71,14 +72,14 @@ void Insert(ref BSet S, int Elem)
  */
 void Delete(ref BSet S, int Elem)
 {
-    int i;
-
     if (Elem <= S.Max)
     {
-        if (Sets.In(S.BitVektor, Elem))
+        if (S.BitVektor[Elem])
         {
-            Sets.Excl(S.BitVektor, Elem);
-            i = ALists.IndexOf(S.List, Elem);
+            S.BitVektor[Elem] = false;
+
+            const i = ALists.IndexOf(S.List, Elem);
+
             ALists.Delete(S.List, i);
         }
     }
@@ -96,5 +97,5 @@ void Delete(ref BSet S, int Elem)
  */
 bool In(BSet S, int Elem)
 {
-    return Sets.In(S.BitVektor, Elem);
+    return S.BitVektor[Elem];
 }

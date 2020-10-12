@@ -26,10 +26,8 @@ $ void EvalExpand()
 {
     OpenHeap Heap1 = new HeapType[2 * Heap.length];
 
-    for (size_t i = 0; i <= Heap.length - 1; ++i)
-    {
+    for (size_t i = 0; i < Heap.length; ++i)
         Heap1[i] = Heap[i];
-    }
     Heap = Heap1;
 }
 
@@ -43,7 +41,7 @@ $ void EvalExpand()
     OpenHeap Heap1 = new HeapType[2 * Heap.length];
     OpenPos PosHeap1 = new Position[2 * Heap.length];
 
-    for (size_t i = 0; i <= Heap.length - 1; ++i)
+    for (size_t i = 0; i < Heap.length; ++i)
     {
         Heap1[i] = Heap[i];
         PosHeap1[i] = PosHeap[i];
@@ -65,18 +63,14 @@ void PushPos()
     {
         OpenPos PosStack1 = new Position[PosStack.length * 2];
 
-        for (size_t i = 0; i <= PosStack.length - 1; ++i)
-        {
+        for (size_t i = 0; i < PosStack.length; ++i)
             PosStack1[i] = PosStack[i];
-        }
         PosStack = PosStack1;
     }
 
     ++PosTop;
     if (PosTop == PosStack.length)
-    {
         PosExpand;
-    }
     PosStack[PosTop] = S.Pos;
 }
 
@@ -141,7 +135,7 @@ long CountHeap()
     long HeapCells = NextHeap;
     HeapType Node;
 
-    for (size_t i = 0; i <= maxArity - 1; ++i)
+    for (size_t i = 0; i < maxArity; ++i)
     {
         Node = FreeList[i];
         while (Node != 0)
@@ -287,13 +281,9 @@ bool EvalInitSucceeds()
         return false;
     }
     if (Heap is null)
-    {
         Heap = new HeapType[initialHeapSize];
-    }
     while (predefined >= Heap.length)
-    {
         EvalExpand;
-    }
     for (size_t i = 0; i <= predefined; ++i)
     {
         IO.GetLInt(Tab, l);
@@ -306,19 +296,15 @@ bool EvalInitSucceeds()
         return false;
     }
     IO.CloseFile(Tab);
-    for (size_t i = 0; i <= maxArity - 1; ++i)
-    {
+    for (size_t i = 0; i < maxArity; ++i)
         FreeList[i] = 0;
-    }
     NextHeap = predefined + 1;
     OutputSize = 0;
     $
     PosTop = -1;
     PosStack = new Position[128];
     if (PosHeap is null)
-    {
         PosHeap = new Position[Heap.length];
-    }
     $
     return true;
 }

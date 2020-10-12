@@ -21,12 +21,9 @@ int V711;
  */
 void Reset()
 {
-    int i;
     MaxTry = 0;
-    for (i = 0; i <= MaxHashTabIndex - 1; ++i)
-    {
+    for (int i = 0; i < MaxHashTabIndex; ++i)
         HashTab[i] = null;
-    }
 }
 
 /**
@@ -46,9 +43,7 @@ in (MaxAffInRule > 0)
     Exp = log2(MaxAffInRule).to!int + 1;
     MaxHashTabIndex = 2;
     for (i = 2; i <= Exp; ++i)
-    {
         MaxHashTabIndex = MaxHashTabIndex * 2;
-    }
     HashTab = new HashEntry[MaxHashTabIndex];
     Reset;
 }

@@ -6,7 +6,6 @@ import Scanner = eScanner;
 import io : TextIn;
 import log;
 import runtime;
-import Sets = set;
 
 const firstUserTok = 3;
 const lenOfPredefinedToken = 8;
@@ -102,11 +101,11 @@ void Generate()
 
     ShowMod = IO.IsOption('m');
     info!"ScanGen writing %s"(EAG.BaseName);
-    if (EAG.Performed(Sets.SET(EAG.analysed)))
+    if (EAG.Performed(EAG.analysed))
     {
         Error = false;
         MaxTokLen = lenOfPredefinedToken;
-        for (Term = EAG.firstHTerm; Term <= EAG.NextHTerm - 1; ++Term)
+        for (Term = EAG.firstHTerm; Term < EAG.NextHTerm; ++Term)
         {
             const Str = Scanner.repr(EAG.HTerm[Term].Id);
 
@@ -126,7 +125,7 @@ void Generate()
             InclFix('$');
             Mod.write(EAG.NextHTerm - EAG.firstHTerm + firstUserTok);
             InclFix('$');
-            for (Term = EAG.firstHTerm; Term <= EAG.NextHTerm - 1; ++Term)
+            for (Term = EAG.firstHTerm; Term < EAG.NextHTerm; ++Term)
             {
                 Mod.write("    Enter(");
                 Mod.write(Term - EAG.firstHTerm + firstUserTok);

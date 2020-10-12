@@ -124,10 +124,8 @@ void Enter(int Tok, string Name)
                 if (Node.length < DIV(int.max, 2))
                 {
                     Node1 = new NodeRecord[2 * Node.length + 1];
-                    for (i = firstNode; i <= Node.length - 1; ++i)
-                    {
+                    for (i = firstNode; i < Node.length; ++i)
                         Node1[i] = Node[i];
-                    }
                     Node = Node1;
                 }
                 else
@@ -459,35 +457,23 @@ void BuildTree()
 {
     import std.conv : to;
 
-    for (int i = 0; i <= IsIdent.length - 1; ++i)
+    for (int i = 0; i < IsIdent.length; ++i)
     {
         if ('A' <= i && i <= 'Z')
-        {
             IsIdent[i] = true;
-        }
         else if ('a' <= i  && i <= 'z')
-        {
             IsIdent[i] = true;
-        }
         else if ('0' <= i  && i <= '9')
-        {
             IsIdent[i] = true;
-        }
         else
-        {
             IsIdent[i] = false;
-        }
     }
-    for (int i = 0; i <= IsWhitespace.length - 1; ++i)
+    for (int i = 0; i < IsWhitespace.length; ++i)
     {
         if (i <= ' ' || '~' < i)
-        {
             IsWhitespace[i] = true;
-        }
         else
-        {
             IsWhitespace[i] = false;
-        }
     }
     IsWhitespace[eot] = false;
     Node = new NodeRecord[255];

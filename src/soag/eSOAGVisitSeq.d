@@ -2,7 +2,6 @@ module soag.eSOAGVisitSeq;
 
 import EAG = eEAG;
 import runtime;
-import Sets = set;
 import SOAG = soag.eSOAG;
 import HashTab = soag.eSOAGHash;
 import Protocol = soag.eSOAGProtocol;
@@ -21,13 +20,15 @@ Stacks.Stack ZeroInDeg;
 void ComputeVisitNo()
 {
     import std.conv : to;
-    int S;
+
     int AP;
     int MaxPart;
     int PartNum;
-    for (S = SOAG.firstSym; S <= SOAG.NextSym - 1; ++S)
+
+    // TODO: foreach (S; EAG.All)
+    for (int S = SOAG.firstSym; S < SOAG.NextSym; ++S)
     {
-        if (Sets.In(EAG.All, S))
+        if (EAG.All[S])
         {
             MaxPart = DIV(SOAG.Sym[S].MaxPart + 1, 2).to!int;
             SOAG.Sym[S].MaxPart = MaxPart;
@@ -47,8 +48,8 @@ void ComputeVisitNo()
  */
 int GetVisitNo(int AP)
 {
-    int S;
-    S = SOAG.SymOcc[SOAG.AffOcc[AP].SymOccInd].SymInd;
+    const S = SOAG.SymOcc[SOAG.AffOcc[AP].SymOccInd].SymInd;
+
     return SOAG.PartNum[SOAG.Sym[S].AffPos.Beg + SOAG.AffOcc[AP].AffOccNum.InSym];
 }
 
@@ -74,23 +75,17 @@ int GetNextVisit(int V, int R, int SO, int VN)
         if (cast(SOAG.Visit) SOAG.VS[V] !is null)
         {
             if ((cast(SOAG.Visit) SOAG.VS[V]).SymOcc == SO && (cast(SOAG.Visit) SOAG.VS[V]).VisitNo == VN)
-            {
                 return V;
-            }
         }
         else if (cast(SOAG.Call) SOAG.VS[V] !is null)
         {
             if ((cast(SOAG.Call) SOAG.VS[V]).SymOcc == SO)
-            {
                 return V;
-            }
         }
         else if (cast(SOAG.Leave) SOAG.VS[V] !is null)
         {
             if ((cast(SOAG.Leave) SOAG.VS[V]).VisitNo == VN && SOAG.Rule[R].SymOcc.Beg == SO)
-            {
                 return V;
-            }
         }
         ++V;
     }
@@ -207,6 +202,7 @@ void TopSort(int R)
     int BO;
     int BN;
     SOAG.Instruction Instr;
+
     Stacks.Reset(ZeroInDeg);
     for (BO = SOAG.Rule[R].AffOcc.End; BO >= SOAG.Rule[R].AffOcc.Beg; --BO)
     {
@@ -215,15 +211,11 @@ void TopSort(int R)
         for (AO = SOAG.Rule[R].AffOcc.Beg; AO <= SOAG.Rule[R].AffOcc.End; ++AO)
         {
             AN = SOAG.AffOcc[AO].AffOccNum.InRule;
-            if (Sets.In(SOAG.Rule[R].TDP[AN], BN))
-            {
+            if (SOAG.Rule[R].TDP[AN][BN])
                 ++InDeg[BN];
-            }
         }
         if (InDeg[BN] == 0)
-        {
             Stacks.Push(ZeroInDeg, BO);
-        }
     }
     while (!Stacks.IsEmpty(ZeroInDeg))
     {
@@ -238,13 +230,11 @@ void TopSort(int R)
         for (BO = SOAG.Rule[R].AffOcc.End; BO >= SOAG.Rule[R].AffOcc.Beg; --BO)
         {
             BN = SOAG.AffOcc[BO].AffOccNum.InRule;
-            if (Sets.In(SOAG.Rule[R].TDP[AN], BN))
+            if (SOAG.Rule[R].TDP[AN][BN])
             {
                 --InDeg[BN];
                 if (InDeg[BN] == 0)
-                {
                     Stacks.Push(ZeroInDeg, BO);
-                }
             }
         }
     }
@@ -255,7 +245,6 @@ void TopSort(int R)
  */
 void Generate()
 {
-    int R;
     int SO;
     int MaxTry = 0;
     SOAG.Instruction Instr;
@@ -265,7 +254,7 @@ void Generate()
     HashTab.Init(SOAG.MaxAffNumInRule + 1);
     Stacks.New(ZeroInDeg, 32);
     InDeg = new int[SOAG.MaxAffNumInRule + 1];
-    for (R = SOAG.firstRule; R <= SOAG.NextRule - 1; ++R)
+    for (int R = SOAG.firstRule; R < SOAG.NextRule; ++R)
     {
         SOAG.Rule[R].VS.Beg = SOAG.NextVS;
         if (SOAG.IsEvaluatorRule(R))
@@ -273,22 +262,16 @@ void Generate()
             HashTab.Reset;
             TopSort(R);
             if (MaxTry < HashTab.MaxTry)
-            {
                 MaxTry = HashTab.MaxTry;
-            }
             for (SO = SOAG.Rule[R].SymOcc.Beg + 1; SO <= SOAG.Rule[R].SymOcc.End; ++SO)
             {
                 Instr = CompleteTraversal(SO);
                 if (!HashTab.IsIn(Instr))
-                {
                     SOAG.AppVS(Instr);
-                }
             }
             Instr = CompleteTraversal(SOAG.Rule[R].SymOcc.Beg);
             if (!HashTab.IsIn(Instr))
-            {
                 SOAG.AppVS(Instr);
-            }
         }
         SOAG.Rule[R].VS.End = SOAG.NextVS - 1;
     }

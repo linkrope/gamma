@@ -4,7 +4,7 @@ import EAG = eEAG;
 import IO = eIO;
 import Predicates = ePredicates;
 import runtime;
-import Sets = set;
+import std.bitmanip : BitArray;
 
 const firstSym = EAG.firstHNont;
 const firstRule = 0;
@@ -37,7 +37,7 @@ struct SymDesc
     }
 }
 
-alias OpenTDP = Sets.OpenSet[];
+alias OpenTDP = BitArray[];
 
 class RuleDesc
 {
@@ -441,7 +441,7 @@ bool IsOrientable(int S, int AffOccNum1, int AffOccNum2)
  */
 bool IsEvaluatorRule(int R)
 {
-    return !Sets.In(EAG.Pred, SymOcc[Rule[R].SymOcc.Beg].SymInd);
+    return !EAG.Pred[SymOcc[Rule[R].SymOcc.Beg].SymInd];
 }
 
 /**
@@ -452,7 +452,7 @@ bool IsEvaluatorRule(int R)
  */
 bool IsPredNont(int SO)
 {
-    return Sets.In(EAG.Pred, SymOcc[SO].SymInd);
+    return EAG.Pred[SymOcc[SO].SymInd];
 }
 
 /**
@@ -464,30 +464,18 @@ bool IsPredNont(int SO)
 bool isEqual(Instruction I1, Instruction I2)
 {
     if (I1 is null && I2 is null)
-    {
         return true;
-    }
     else if (I1 is null || I2 is null)
-    {
         return false;
-    }
     else if (cast(Visit) I1 !is null && cast(Visit) I2 !is null)
-    {
         return (cast(Visit) I1).SymOcc == (cast(Visit) I2).SymOcc
             && (cast(Visit) I1).VisitNo == (cast(Visit) I2).VisitNo;
-    }
     else if (cast(Leave) I1 !is null && cast(Leave) I2 !is null)
-    {
         return (cast(Leave) I1).VisitNo == (cast(Leave) I2).VisitNo;
-    }
     else if (cast(Call) I1 !is null && cast(Call) I2 !is null)
-    {
         return (cast(Call) I1).SymOcc == (cast(Call) I2).SymOcc;
-    }
     else
-    {
         return false;
-    }
 }
 
 /**
@@ -499,6 +487,7 @@ void Init()
     int i;
     int a;
     int Max;
+
     Sym = new SymDesc[EAG.NextHNont];
     Rule = new RuleBase[128];
     SymOcc = new SymOccDesc[256];
@@ -516,13 +505,12 @@ void Init()
     NextStorageName = nil;
     NextAffixApplCnt = EAG.NextVar;
     Predicates.Check;
-    for (i = EAG.firstHNont; i <= EAG.NextHNont - 1; ++i)
-    {
+    for (i = EAG.firstHNont; i < EAG.NextHNont; ++i)
         Sym[i].FirstOcc = nil;
-    }
-    for (i = EAG.firstHNont; i <= EAG.NextHNont - 1; ++i)
+    // TODO: foreach (i; EAG.All)
+    for (i = EAG.firstHNont; i < EAG.NextHNont; ++i)
     {
-        if (Sets.In(EAG.All, i))
+        if (EAG.All[i])
         {
             if (cast(EAG.Rep) EAG.HNont[i].Def !is null)
             {
@@ -549,7 +537,7 @@ void Init()
         }
     }
     MaxAffNumInRule = 0;
-    for (i = firstRule; i <= NextRule - 1; ++i)
+    for (i = firstRule; i < NextRule; ++i)
     {
         Max = Rule[i].AffOcc.End - Rule[i].AffOcc.Beg;
         if (Max > MaxAffNumInRule)
@@ -558,20 +546,23 @@ void Init()
         }
         if (IsEvaluatorRule(i) && Max >= 0)
         {
-            Rule[i].TDP = new Sets.OpenSet[Max + 1];
-            Rule[i].DP = new Sets.OpenSet[Max + 1];
+            Rule[i].TDP = new BitArray[Max + 1];
+            Rule[i].DP = new BitArray[Max + 1];
             for (a = firstAffOccNum; a <= Max; ++a)
             {
-                Sets.New(Rule[i].TDP[a], Max + 1);
-                Sets.New(Rule[i].DP[a], Max + 1);
+                Rule[i].TDP[a] = BitArray();
+                Rule[i].TDP[a].length = Max + 1 + 1;
+                Rule[i].DP[a] = BitArray();
+                Rule[i].DP[a].length = Max + 1 + 1;
             }
         }
     }
     MaxAffNumInSym = 0;
     NextPartNum = firstPartNum;
-    for (i = EAG.firstHNont; i <= EAG.NextHNont - 1; ++i)
+    // TODO: foreach (i; EAG.All)
+    for (i = EAG.firstHNont; i < EAG.NextHNont; ++i)
     {
-        if (Sets.In(EAG.All, i))
+        if (EAG.All[i])
         {
             Max = SymOcc[Sym[i].FirstOcc].AffOcc.End - SymOcc[Sym[i].FirstOcc].AffOcc.Beg;
             Sym[i].AffPos.Beg = NextPartNum;
@@ -587,7 +578,7 @@ void Init()
     }
     PartNum = new int[NextPartNum];
     MaxPart = 0;
-    for (i = EAG.firstVar; i <= EAG.NextVar - 1; ++i)
+    for (i = EAG.firstVar; i < EAG.NextVar; ++i)
     {
         DefAffOcc[i] = -1;
         AffixApplCnt[i] = 0;

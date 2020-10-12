@@ -2,7 +2,6 @@ module soag.eSOAGOptimizer;
 
 import EAG = eEAG;
 import IO = eIO;
-import Sets = set;
 import runtime;
 import ALists = soag.eALists;
 import SOAG = soag.eSOAG;
@@ -229,13 +228,11 @@ void InitVDSandVS(int S, int A)
             {
                 AN1 = SOAG.AffOcc[AP1].AffOccNum.InRule;
                 AN = SOAG.AffOcc[AP].AffOccNum.InRule;
-                if (Sets.In(SOAG.Rule[R].DP[AN], AN1))
+                if (SOAG.Rule[R].DP[AN][AN1])
                 {
                     PN1 = GetPlanNo(R, AP1);
                     if (PN < PN1)
-                    {
                         IncludeVDS(RS, PN, PN1);
-                    }
                 }
             }
         }
@@ -330,20 +327,15 @@ void CheckStorageType(int S, int A)
                 AN3 = SOAG.AffOcc[AP3].AffOccNum.InRule;
                 PN3 = GetEVSPosforAffOcc(R, AP3);
                 if (PN1 < PN3 && PN3 < PN2)
-                {
                     disjoint = false;
-                }
-                for (AP4 = SOAG.Rule[R].AffOcc.Beg; AP4 <= SOAG.Rule[R].AffOcc.End;
-                        ++AP4)
+                for (AP4 = SOAG.Rule[R].AffOcc.Beg; AP4 <= SOAG.Rule[R].AffOcc.End; ++AP4)
                 {
                     AN4 = SOAG.AffOcc[AP4].AffOccNum.InRule;
-                    if (Sets.In(SOAG.Rule[R].DP[AN3], AN4))
+                    if (SOAG.Rule[R].DP[AN3][AN4])
                     {
                         PN4 = GetEVSPosforAffOcc(R, AP4);
                         if (PN1 < PN3 && PN3 < PN2 && PN2 <= PN4)
-                        {
                             admissible = false;
-                        }
                     }
                 }
             }
@@ -372,9 +364,7 @@ void CheckStorageType(int S, int A)
                 {
                     PN = GetEVSPosforVisit(R, SO1, VN);
                     if (PN1 < PN && PN < PN2)
-                    {
                         disjoint = false;
-                    }
                 }
                 SO1 = SOAG.SymOcc[SO1].Next;
             }
@@ -406,9 +396,7 @@ void CheckStorageType(int S, int A)
                     PN3 = GetEVSPosforVisit(R, SO1, VN3);
                     PN4 = GetEVSPosforVisit(R, SO1, VN4);
                     if (PN1 < PN3 && PN3 < PN2 && PN2 < PN4 || PN3 < PN1 && PN1 < PN4 && PN4 < PN2)
-                    {
                         admissible = false;
-                    }
                 }
                 SO1 = SOAG.SymOcc[SO1].Next;
             }
@@ -431,9 +419,7 @@ void CheckStorageType(int S, int A)
                 AP1 = SOAG.SymOcc[SO2].AffOcc.Beg + A;
                 PN3 = GetEVSPosforAffOcc(R, AP1);
                 if (PN1 < PN3 && PN3 < PN2)
-                {
                     disjoint = false;
-                }
             }
         }
     }
@@ -459,9 +445,7 @@ void CheckStorageType(int S, int A)
                 {
                     PN3 = GetEVSPosforVisit(R, SO2, VN3);
                     if (PN1 < PN3 && PN3 < PN2)
-                    {
                         disjoint = false;
-                    }
                 }
                 SO2 = SOAG.SymOcc[SO2].Next;
             }
@@ -493,9 +477,7 @@ void CheckStorageType(int S, int A)
                     PN3 = GetEVSPosforVisit(R, SO2, VN3);
                     PN4 = GetEVSPosforVisit(R, SO2, VN4);
                     if (PN1 < PN3 && PN3 < PN2 && PN2 < PN4)
-                    {
                         admissible = false;
-                    }
                 }
                 SO2 = SOAG.SymOcc[SO2].Next;
             }
@@ -514,7 +496,7 @@ void CheckStorageType(int S, int A)
             for (AP2 = SOAG.Rule[R].AffOcc.Beg; AP2 <= SOAG.Rule[R].AffOcc.End; ++AP2)
             {
                 AN2 = SOAG.AffOcc[AP2].AffOccNum.InRule;
-                if (Sets.In(SOAG.Rule[R].DP[AN1], AN2))
+                if (SOAG.Rule[R].DP[AN1][AN2])
                 {
                     PN2 = GetEVSPosforAffOcc(R, AP2);
                     CheckT2P1andT1P1(S, A, R, PN1, PN2);
@@ -559,14 +541,15 @@ void Optimize()
     Init;
     GlobalVar = firstGlobalVar - 1;
     StackVar = firstStackVar - 1;
+    // TODO: foreach (A; EAG.All)
     for (S = SOAG.firstSym; S < SOAG.NextSym; ++S)
     {
-        if (Sets.In(EAG.All, S))
+        if (EAG.All[S])
         {
             for (AP = SOAG.Sym[S].AffPos.Beg; AP <= SOAG.Sym[S].AffPos.End; ++AP)
             {
                 A = AP - SOAG.Sym[S].AffPos.Beg;
-                if (!Sets.In(EAG.Pred, S) || SOAG.IsSynthesized(S, A))
+                if (!EAG.Pred[S] || SOAG.IsSynthesized(S, A))
                 {
                     disjoint = true;
                     admissible = true;

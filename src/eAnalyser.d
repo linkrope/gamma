@@ -6,7 +6,7 @@ import Scanner = eScanner;
 import io : Position, TextIn;
 import log;
 import runtime;
-import Sets = set;
+import std.bitmanip : BitArray;
 
 const nil = EAG.nil;
 char Tok;
@@ -757,13 +757,14 @@ void CheckSemantics()
         }
     }
 
-    Sets.New(EAG.All, EAG.NextHNont);
+    EAG.All = BitArray();
+    EAG.All.length = EAG.NextHNont + 1;
     if (EAG.firstHNont == EAG.NextHNont)
     {
         ++ErrorCounter;
         error!"EAG needs at least one hyper-rule";
     }
-    for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
+    for (Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
     {
         if (EAG.HNont[Sym].Def is null)
         {
@@ -775,11 +776,11 @@ void CheckSemantics()
         }
         else
         {
-            Sets.Incl(EAG.All, Sym);
+            EAG.All[Sym] = true;
             Shrink;
         }
     }
-    for (Sym = EAG.firstMNont; Sym <= EAG.NextMNont - 1; ++Sym)
+    for (Sym = EAG.firstMNont; Sym < EAG.NextMNont; ++Sym)
     {
         if (EAG.MNont[Sym].MRule == nil)
         {
@@ -789,11 +790,9 @@ void CheckSemantics()
     }
     if (ErrorCounter == 0)
     {
-        for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
-        {
+        for (Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
             Traverse(Sym);
-        }
-        for (n = EAG.firstVar; n <= EAG.NextVar - 1; ++n)
+        for (n = EAG.firstVar; n < EAG.NextVar; ++n)
         {
             if (EAG.Var[n].Num < 0 && EAG.Var[n].Neg == EAG.nil)
             {
@@ -838,7 +837,7 @@ void ComputeEAGSets()
     int Sym;
     EAG.Alt A;
     EAG.Factor F;
-    Sets.OpenSet Prod;
+    BitArray Prod;
     long Warnings;
     bool TermFound;
 
@@ -847,13 +846,13 @@ void ComputeEAGSets()
         EAG.Alt A = EAG.HNont[Sym].Def.Sub;
         EAG.Factor F;
 
-        Sets.Incl(EAG.Reach, Sym);
+        EAG.Reach[Sym] = true;
         do
         {
             F = A.Sub;
             while (F !is null)
             {
-                if (cast(EAG.Nont) F !is null && !Sets.In(EAG.Reach, (cast(EAG.Nont) F).Sym))
+                if (cast(EAG.Nont) F !is null && !EAG.Reach[(cast(EAG.Nont) F).Sym])
                 {
                     ComputeReach((cast(EAG.Nont) F).Sym);
                 }
@@ -876,9 +875,9 @@ void ComputeEAGSets()
     {
         if (Deg[A.Ind] == 0)
         {
-            if (!Sets.In(Prod, A.Up))
+            if (!Prod[A.Up])
             {
-                Sets.Incl(Prod, A.Up);
+                Prod[A.Up] = true;
                 Stack[Top] = A.Up;
                 ++Top;
             }
@@ -904,33 +903,31 @@ void ComputeEAGSets()
     }
 
     Warnings = 0;
-    Sets.New(EAG.Reach, EAG.NextHNont);
+    EAG.Reach = BitArray();
+    EAG.Reach.length = EAG.NextHNont + 1;
+
     ComputeReach(EAG.StartSym);
-    for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
-    {
-        if (EAG.HNont[Sym].Def !is null && !Sets.In(EAG.Reach, Sym) && EAG.HNont[Sym].Id >= 0)
-        {
+    for (Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
+        if (EAG.HNont[Sym].Def !is null && !EAG.Reach[Sym] && EAG.HNont[Sym].Id >= 0)
             ++Warnings;
-        }
-    }
     Deg = new int[EAG.NextHAlt];
     Stack = new int[EAG.NextHNont];
     Top = 0;
     Edge = new EdgeRecord[EAG.NextHNont + EAG.NONont + 1];
     NextEdge = EAG.NextHNont;
-    for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
-    {
+    for (Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
         Edge[Sym].Next = nil;
-    }
-    Sets.New(EAG.Null, EAG.NextHNont);
-    Sets.New(Prod, EAG.NextHNont);
-    for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
+    EAG.Null = BitArray();
+    EAG.Null.length = EAG.NextHNont + 1;
+    Prod = BitArray();
+    Prod.length = EAG.NextHNont + 1;
+    for (Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
     {
         if (EAG.HNont[Sym].Def !is null)
         {
             if (cast(EAG.Opt) EAG.HNont[Sym].Def !is null || cast(EAG.Rep) EAG.HNont[Sym].Def !is null)
             {
-                Sets.Incl(Prod, Sym);
+                Prod[Sym] = true;
                 Stack[Top] = Sym;
                 ++Top;
             }
@@ -967,8 +964,8 @@ void ComputeEAGSets()
         }
     }
     Prune;
-    Sets.Assign(EAG.Null, Prod);
-    for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
+    EAG.Null = Prod.dup;
+    for (Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
     {
         if (EAG.HNont[Sym].Def !is null)
         {
@@ -987,12 +984,11 @@ void ComputeEAGSets()
     }
     Prune;
     EAG.Prod = Prod;
-    for (Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
+    // TODO: foreach (Sym; EAG.All)
+    for (Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
     {
-        if (Sets.In(EAG.All, Sym) && !Sets.In(EAG.Prod, Sym))
-        {
+        if (EAG.All[Sym] && !EAG.Prod[Sym])
             ++Warnings;
-        }
     }
     if (Warnings > 0)
         warn!"%s warnings"(Warnings);
@@ -1017,12 +1013,12 @@ void Analyse(TextIn textIn)
     }
     if (ErrorCounter == 0)
     {
-        Sets.INCL(EAG.History, EAG.analysed);
+        EAG.History |= EAG.analysed;
         info!"OK";
     }
     else
     {
-        Sets.EXCL(EAG.History, EAG.analysed);
+        EAG.History &= ~EAG.analysed;
         if (NameNotified)
             error!"errors in %s"(EAG.BaseName);
         else
@@ -1032,17 +1028,11 @@ void Analyse(TextIn textIn)
 
 void Warnings()
 {
-    if (EAG.Performed(Sets.SET(EAG.analysed)))
+    if (EAG.Performed(EAG.analysed))
     {
-        Sets.OpenSet Unreach;
-        Sets.OpenSet Unprod;
-
-        Sets.New(Unreach, EAG.NextHNont);
-        Sets.New(Unprod, EAG.NextHNont);
-        Sets.Difference(Unreach, EAG.All, EAG.Reach);
-        Sets.Difference(Unprod, EAG.All, EAG.Prod);
-
-        const NoWarnings = Sets.IsEmpty(Unreach) && Sets.IsEmpty(Unprod);
+        const Unreach = EAG.All - EAG.Reach;
+        const Unprod = EAG.All - EAG.Prod;
+        const NoWarnings = Unreach.bitsSet.empty && Unprod.bitsSet.empty;
 
         if (NoWarnings)
         {
@@ -1050,11 +1040,11 @@ void Warnings()
             return;
         }
         warn!"Analyser warnings on %s's hyper-nonterminals:"(EAG.BaseName);
-        for (int Sym = EAG.firstHNont; Sym <= EAG.NextHNont - 1; ++Sym)
+        for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
         {
-            if (Sets.In(Unreach, Sym) && EAG.HNont[Sym].Id >= 0)
+            if (Unreach[Sym] && EAG.HNont[Sym].Id >= 0)
                 warn!"%s unreachable"(EAG.HNontRepr(Sym));
-            if (Sets.In(Unprod, Sym))
+            if (Unprod[Sym])
             {
                 if (EAG.HNont[Sym].Id < 0)
                     warn!"anonymous nonterminal in %s unproductive"(EAG.NamedHNontRepr(Sym));

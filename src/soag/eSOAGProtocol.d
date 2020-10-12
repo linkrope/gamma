@@ -3,7 +3,6 @@ module soag.eSOAGProtocol;
 import EAG = eEAG;
 import IO = eIO;
 import Scanner = eScanner;
-import Sets = set;
 import runtime;
 import SOAG = soag.eSOAG;
 
@@ -214,9 +213,8 @@ void WriteRule(int r)
 
 void WriteRules()
 {
-    int i;
     Out.flush;
-    for (i = SOAG.firstRule; i <= SOAG.NextRule - 1; ++i)
+    for (int i = SOAG.firstRule; i < SOAG.NextRule; ++i)
     {
         WriteRule(i);
         Out.flush;
@@ -243,8 +241,7 @@ void WriteRulesL4()
 
 void WriteSymOccs()
 {
-    int i;
-    for (i = SOAG.firstSymOcc; i <= SOAG.NextSymOcc - 1; ++i)
+    for (int i = SOAG.firstSymOcc; i < SOAG.NextSymOcc; ++i)
     {
         WriteSymOccData(i);
         Out.flush;
@@ -253,8 +250,7 @@ void WriteSymOccs()
 
 void WriteAffOccs()
 {
-    int i;
-    for (i = SOAG.firstAffOcc; i <= SOAG.NextAffOcc - 1; ++i)
+    for (int i = SOAG.firstAffOcc; i < SOAG.NextAffOcc; ++i)
     {
         WriteAffOccData(i);
         Out.flush;
@@ -263,29 +259,22 @@ void WriteAffOccs()
 
 void WriteTDP(int r)
 {
-    int i;
-    int j;
     if (SOAG.IsEvaluatorRule(r))
     {
-        for (i = SOAG.Rule[r].AffOcc.Beg; i <= SOAG.Rule[r].AffOcc.End; ++i)
+        for (int i = SOAG.Rule[r].AffOcc.Beg; i <= SOAG.Rule[r].AffOcc.End; ++i)
         {
             Out.write(i - SOAG.Rule[r].AffOcc.Beg);
             Out.write(" | ");
             if (EAG.ParamBuf[SOAG.AffOcc[i].ParamBufInd].isDef)
-            {
                 Out.write("DEF ");
-            }
             else
-            {
                 Out.write("APPL");
-            }
             Out.write(" | ");
             Out.write(EAG.HNontRepr(SOAG.SymOcc[SOAG.AffOcc[i].SymOccInd].SymInd));
             Out.write(" | {");
-            for (j = SOAG.Rule[r].AffOcc.Beg; j <= SOAG.Rule[r].AffOcc.End; ++j)
+            for (int j = SOAG.Rule[r].AffOcc.Beg; j <= SOAG.Rule[r].AffOcc.End; ++j)
             {
-                if (Sets.In(SOAG.Rule[r].TDP[SOAG.AffOcc[i].AffOccNum.InRule],
-                        SOAG.AffOcc[j].AffOccNum.InRule))
+                if (SOAG.Rule[r].TDP[SOAG.AffOcc[i].AffOccNum.InRule][SOAG.AffOcc[j].AffOccNum.InRule])
                 {
                     Out.write(SOAG.AffOcc[j].AffOccNum.InRule);
                     Out.write(" ");
@@ -304,8 +293,7 @@ void WriteTDP(int r)
 
 void WriteTDPs()
 {
-    int i;
-    for (i = SOAG.firstRule; i <= SOAG.NextRule - 1; ++i)
+    for (int i = SOAG.firstRule; i < SOAG.NextRule; ++i)
     {
         WriteRule(i);
         WriteTDP(i);
@@ -314,8 +302,8 @@ void WriteTDPs()
 
 void WriteVSRule(int R)
 {
-    int i;
     SOAG.Instruction I;
+
     if (SOAG.Rule[R].VS.Beg > SOAG.Rule[R].VS.End)
     {
         Out.write("keine Visit-Sequenzen; Regel: ");
@@ -323,7 +311,7 @@ void WriteVSRule(int R)
     }
     else
     {
-        for (i = SOAG.Rule[R].VS.Beg; i <= SOAG.Rule[R].VS.End; ++i)
+        for (int i = SOAG.Rule[R].VS.Beg; i <= SOAG.Rule[R].VS.End; ++i)
         {
             I = SOAG.VS[i];
 
@@ -357,8 +345,7 @@ void WriteVSRule(int R)
 
 void WriteVS()
 {
-    int r;
-    for (r = SOAG.firstRule; r <= SOAG.NextRule - 1; ++r)
+    for (int r = SOAG.firstRule; r < SOAG.NextRule; ++r)
     {
         WriteVSRule(r);
         Out.writeln;
@@ -368,21 +355,19 @@ void WriteVS()
 
 void CheckVS()
 {
-    int i;
-    int j;
-    int r;
-    bool found;
-    found = false;
-    for (r = SOAG.firstRule; r <= SOAG.NextRule - 1; ++r)
+    bool found = false;
+
+    for (int r = SOAG.firstRule; r < SOAG.NextRule; ++r)
     {
-        for (i = SOAG.Rule[r].VS.Beg; i <= SOAG.Rule[r].VS.End; ++i)
+        for (int i = SOAG.Rule[r].VS.Beg; i <= SOAG.Rule[r].VS.End; ++i)
         {
-            for (j = SOAG.Rule[r].VS.Beg; j <= SOAG.Rule[r].VS.End; ++j)
+            for (int j = SOAG.Rule[r].VS.Beg; j <= SOAG.Rule[r].VS.End; ++j)
             {
                 if (i != j)
                 {
                     if (SOAG.isEqual(SOAG.VS[i], SOAG.VS[j]))
                     {
+                        found = true;
                         Out.write("Doppelter VS-Eintrag:\nRegel: ");
                         Out.write(r);
                         Out.writeln;
@@ -401,8 +386,7 @@ void CheckVS()
 
 void WriteAffPos(int SymInd)
 {
-    int i;
-    for (i = SOAG.Sym[SymInd].AffPos.Beg; i <= SOAG.Sym[SymInd].AffPos.End; ++i)
+    for (int i = SOAG.Sym[SymInd].AffPos.Beg; i <= SOAG.Sym[SymInd].AffPos.End; ++i)
     {
         Out.write("  AffixPos");
         Out.write(i);
@@ -448,11 +432,8 @@ void WriteSym(int S)
 
 void WriteSyms()
 {
-    int i;
-    for (i = SOAG.firstSym; i <= SOAG.NextSym - 1; ++i)
-    {
+    for (int i = SOAG.firstSym; i < SOAG.NextSym; ++i)
         WriteSym(i);
-    }
 }
 
 static this()

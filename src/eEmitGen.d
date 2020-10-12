@@ -4,11 +4,11 @@ import EAG = eEAG;
 import IO = eIO;
 import Scanner = eScanner;
 import runtime;
-import Sets = set;
+import std.bitmanip : BitArray;
 
 const CaseLabels = 127;
-Sets.OpenSet Type3;
-Sets.OpenSet Type2;
+BitArray Type3;
+BitArray Type2;
 int StartMNont;
 
 void GenEmitProc(IO.TextOut Mod)
@@ -24,9 +24,7 @@ void GenEmitProc(IO.TextOut Mod)
         int M;
 
         if (EAG.MNont[Nont].IsToken)
-        {
-            Sets.Incl(Type3, Nont);
-        }
+            Type3[Nont] = true;
         A = EAG.MNont[Nont].MRule;
         while (A != EAG.nil)
         {
@@ -36,17 +34,15 @@ void GenEmitProc(IO.TextOut Mod)
                 M = EAG.MembBuf[F];
                 if (M > 0)
                 {
-                    if (Sets.In(Type3, Nont) && !Sets.In(Type3, M))
+                    if (Type3[Nont] && !Type3[M])
                     {
-                        Sets.Incl(Type3, M);
+                        Type3[M] = true;
                         CalcSets(M);
                     }
-                    if (Sets.In(Type2, Nont) && !Sets.In(Type2, M))
+                    if (Type2[Nont] && !Type2[M])
                     {
                         if (!EAG.MNont[M].IsToken)
-                        {
-                            Sets.Incl(Type2, M);
-                        }
+                            Type2[M] = true;
                         CalcSets(M);
                     }
                 }
@@ -56,11 +52,11 @@ void GenEmitProc(IO.TextOut Mod)
         }
     }
 
-    void GenEmitProcs(Sets.OpenSet MNonts)
+    void GenEmitProcs(BitArray MNonts)
     {
         int N;
 
-        void GenProcName(int N, Sets.OpenSet Type)
+        void GenProcName(int N, BitArray Type)
         {
             Mod.write("Emit");
             Mod.write(N);
@@ -158,9 +154,10 @@ void GenEmitProc(IO.TextOut Mod)
             Mod.write("}\n");
         }
 
-        for (N = EAG.firstMNont; N <= EAG.NextMNont - 1; ++N)
+        // TODO: foreach (N; MNonts)
+        for (N = EAG.firstMNont; N < EAG.NextMNont; ++N)
         {
-            if (Sets.In(MNonts, N))
+            if (MNonts[N])
             {
                 Mod.write("// ");
                 Mod.write("PROCEDURE ^ ");
@@ -169,9 +166,10 @@ void GenEmitProc(IO.TextOut Mod)
             }
         }
         Mod.writeln;
-        for (N = EAG.firstMNont; N <= EAG.NextMNont - 1; ++N)
+        // TODO: foreach (N; MNonts)
+        for (N = EAG.firstMNont; N < EAG.NextMNont; ++N)
         {
-            if (Sets.In(MNonts, N))
+            if (MNonts[N])
             {
                 Mod.write("void ");
                 GenProcName(N, MNonts);
@@ -186,21 +184,17 @@ void GenEmitProc(IO.TextOut Mod)
 
     EmitSpace = IO.IsOption('s');
     StartMNont = EAG.DomBuf[EAG.HNont[EAG.StartSym].Sig];
-    Sets.New(Type3, EAG.NextMNont);
-    Sets.New(Type2, EAG.NextMNont);
+    Type3 = BitArray();
+    Type3.length = EAG.NextMNont + 1;
+    Type2 = BitArray();
+    Type2.length = EAG.NextMNont + 1;
     if (!EAG.MNont[StartMNont].IsToken)
-    {
-        Sets.Incl(Type2, StartMNont);
-    }
+        Type2[StartMNont] = true;
     CalcSets(StartMNont);
-    if (!Sets.IsEmpty(Type3))
-    {
+    if (!Type3.bitsSet.empty)
         GenEmitProcs(Type3);
-    }
-    if (!Sets.IsEmpty(Type2))
-    {
+    if (!Type2.bitsSet.empty)
         GenEmitProcs(Type2);
-    }
 }
 
 void GenShowHeap(IO.TextOut Mod)
@@ -221,9 +215,7 @@ void GenEmitCall(IO.TextOut Mod)
 {
     Mod.write("if (");
     if (IO.IsOption('w'))
-    {
         Mod.write("!");
-    }
     Mod.write("IO.IsOption('w'))\n");
     Mod.write("Out = new IO.TextOut(\"");
     Mod.write(EAG.BaseName);
@@ -233,13 +225,9 @@ void GenEmitCall(IO.TextOut Mod)
     Mod.write("Emit");
     Mod.write(StartMNont);
     Mod.write("Type");
-    if (Sets.In(Type2, StartMNont))
-    {
+    if (Type2[StartMNont])
         Mod.write('2');
-    }
     else
-    {
         Mod.write('3');
-    }
     Mod.write("(V1); Out.writeln; Out.flush;\n");
 }

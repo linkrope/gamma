@@ -3,7 +3,6 @@ module $;
 import IO = eIO;
 import io : Position, TextIn;
 import runtime;
-import Sets = set;
 import std.stdio;
 import S = $;
 
@@ -100,7 +99,7 @@ void ReadParserTab(string name)
         return;
     }
     IO.GetSet(Tab, s);
-    if (s != Sets.SET(0, 2, 3, 6, 9, 13, 18, 19, 20, 24, 25, 27, 28, 31))
+    if (s != 0b10110010_01000100_00111000_11011001)
     {
         LoadError("incompatible SET format in table");
         return;
@@ -138,9 +137,9 @@ void ParserInit()
 
 void WriteTokSet(TokSet Toks)
 {
-    for (int Tok1 = 0; Tok1 <= nToks - 1; ++Tok1)
+    for (int Tok1 = 0; Tok1 < nToks; ++Tok1)
     {
-        if (Sets.IN(Toks[DIV(Tok1, M)], MOD(Tok1, M)))
+        if (Toks[DIV(Tok1, M)] & 1uL << MOD(Tok1, M))
         {
             S.WriteRepr(IO.Msg, Tok1);
             IO.Msg.write(" ");
@@ -196,17 +195,13 @@ void SkipTokens(int Recover)
 {
     TokSet GlobalRecoverySet = Set[Recover];
 
-    for (size_t i = firstRecStack; i <= RecTop - 1; ++i)
+    for (size_t i = firstRecStack; i < RecTop; ++i)
     {
-        for (size_t j = 0; j <= tokSetLen - 1; ++j)
-        {
+        for (size_t j = 0; j < tokSetLen; ++j)
             GlobalRecoverySet[j] = GlobalRecoverySet[j] + Set[RecStack[i]][j];
-        }
     }
-    while (!Sets.IN(GlobalRecoverySet[DIV(Tok, M)], MOD(Tok, M)))
-    {
+    while (!(GlobalRecoverySet[DIV(Tok, M)] & 1uL << MOD(Tok, M)))
         S.Get(Tok);
-    }
     RestartMessage(S.Pos);
     IsRepairMode = true;
 }

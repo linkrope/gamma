@@ -3,7 +3,7 @@ module eShift;
 import EAG = eEAG;
 import io : UndefPos;
 import runtime;
-import Sets = set;
+import std.bitmanip : BitArray;
 
 const nil = EAG.nil;
 
@@ -16,13 +16,10 @@ void Shift()
     int Rhs;
     int Num;
     int Var;
-    Sets.OpenSet GenNonts;
-    Sets.OpenSet Del;
+    BitArray GenNonts = EAG.All - EAG.Pred;
+    BitArray Del;
 
-    Sets.New(GenNonts, EAG.NextHNont);
-    Sets.Difference(GenNonts, EAG.All, EAG.Pred);
-    Sets.New(Del, EAG.NextHNont);
-    Sets.Empty(Del);
+    Del.length = EAG.NextHNont + 1;
     EAG.NextMAlt = EAG.firstMAlt;
     EAG.NextMemb = EAG.firstMemb;
     EAG.NextVar = EAG.firstVar;
@@ -33,7 +30,7 @@ void Shift()
     {
         EAG.Expand;
     }
-    for (HT = EAG.firstHTerm; HT <= EAG.NextHTerm - 1; ++HT)
+    for (HT = EAG.firstHTerm; HT < EAG.NextHTerm; ++HT)
     {
         EAG.MTerm[HT - EAG.firstHTerm + EAG.firstMTerm].Id = EAG.HTerm[HT].Id;
     }
@@ -42,9 +39,10 @@ void Shift()
     {
         EAG.Expand;
     }
-    for (HN = EAG.firstHNont; HN <= EAG.NextHNont - 1; ++HN)
+    // TODO: foreach (HN; GenNonts)
+    for (HN = EAG.firstHNont; HN < EAG.NextHNont; ++HN)
     {
-        if (Sets.In(GenNonts, HN))
+        if (GenNonts[HN])
         {
             EAG.MNont[HN - EAG.firstHNont + EAG.firstMNont].Id = EAG.HNont[HN].NamedId;
             EAG.MNont[HN - EAG.firstHNont + EAG.firstMNont].MRule = nil;
@@ -74,7 +72,7 @@ void Shift()
                     {
                         EAG.AppMemb(-((cast(EAG.Term) HF).Sym - EAG.firstHTerm + EAG.firstMTerm));
                     }
-                    else if (Sets.In(GenNonts, (cast(EAG.Nont) HF).Sym))
+                    else if (GenNonts[(cast(EAG.Nont) HF).Sym])
                     {
                         EAG.AppMemb((cast(EAG.Nont) HF).Sym - EAG.firstHNont + EAG.firstMNont);
                         Var = EAG.FindVar((cast(EAG.Nont) HF)
@@ -82,9 +80,7 @@ void Shift()
                         EAG.NodeBuf[EAG.NextNode] = -Var;
                         ++EAG.NextNode;
                         if (EAG.NextNode >= EAG.NodeBuf.length)
-                        {
                             EAG.Expand;
-                        }
                         (cast(EAG.Nont) HF).Actual.Pos = UndefPos;
                         (cast(EAG.Nont) HF).Actual.Params = EAG.NextParam;
                         EAG.AppParam(-Var, UndefPos);
@@ -95,21 +91,13 @@ void Shift()
                     else
                     {
                         if (HF.Next !is null)
-                        {
                             HF.Next.Prev = HF.Prev;
-                        }
                         if (HF.Prev !is null)
-                        {
                             HF.Prev.Next = HF.Next;
-                        }
                         if (HF == HA.Sub)
-                        {
                             HA.Sub = HF.Next;
-                        }
                         if (HF == HA.Last)
-                        {
                             HA.Last = HF.Prev;
-                        }
                     }
                     HF = HF.Next;
                 }
@@ -120,9 +108,7 @@ void Shift()
                     EAG.NodeBuf[EAG.NextNode] = -Var;
                     ++EAG.NextNode;
                     if (EAG.NextNode >= EAG.NodeBuf.length)
-                    {
                         EAG.Expand;
-                    }
                     HA.Actual.Pos = UndefPos;
                     HA.Actual.Params = EAG.NextParam;
                     EAG.AppParam(-Var, UndefPos);
@@ -157,9 +143,7 @@ void Shift()
                 EAG.NodeBuf[EAG.NextNode] = EAG.NextMAlt;
                 ++EAG.NextNode;
                 if (EAG.NextNode >= EAG.NodeBuf.length)
-                {
                     EAG.Expand;
-                }
                 Rhs = EAG.NextMemb;
                 EAG.AppMemb(nil);
                 EAG.AppMemb(EAG.NewMAlt(HN - EAG.firstHNont + EAG.firstMNont, Rhs));
@@ -168,25 +152,26 @@ void Shift()
         else
         {
             EAG.HNont[HN].Def = null;
-            Sets.Incl(Del, HN);
+            Del[HN] = true;
             EAG.MNont[HN - EAG.firstHNont + EAG.firstMNont].Id = nil;
             EAG.MNont[HN - EAG.firstHNont + EAG.firstMNont].MRule = nil;
             EAG.MNont[HN - EAG.firstHNont + EAG.firstMNont].IsToken = false;
         }
     }
     EAG.NextDom = EAG.firstDom;
-    for (HN = EAG.firstHNont; HN <= EAG.NextHNont - 1; ++HN)
+    // TODO: foreach (HN; GenNonts)
+    for (HN = EAG.firstHNont; HN < EAG.NextHNont; ++HN)
     {
-        if (Sets.In(GenNonts, HN))
+        if (GenNonts[HN])
         {
             EAG.HNont[HN].Sig = EAG.NextDom;
             EAG.AppDom('+', HN - EAG.firstHNont + EAG.firstMNont);
             EAG.AppDom('+', nil);
         }
     }
-    Sets.Difference(EAG.All, EAG.All, Del);
-    Sets.Difference(EAG.Pred, EAG.Pred, Del);
-    Sets.Difference(EAG.Prod, EAG.Prod, Del);
-    Sets.Difference(EAG.Reach, EAG.Reach, Del);
-    Sets.Difference(EAG.Null, EAG.Null, Del);
+    EAG.All -= Del;
+    EAG.Pred -= Del;
+    EAG.Prod -= Del;
+    EAG.Reach -= Del;
+    EAG.Null -= Del;
 }

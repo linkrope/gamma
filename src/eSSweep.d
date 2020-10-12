@@ -6,14 +6,14 @@ import IO = eIO;
 import EvalGen = eSLEAGGen;
 import io : TextIn, UndefPos;
 import runtime;
-import Sets = set;
+import std.bitmanip : BitArray;
 import std.stdio;
 
 const nil = 0;
 const indexOfFirstAlt = 1;
 int[] FactorOffset;
-Sets.OpenSet GenNonts;
-Sets.OpenSet GenFactors;
+BitArray GenNonts;
+BitArray GenFactors;
 bool Error;
 bool ShowMod;
 bool Compiled;
@@ -21,10 +21,8 @@ bool Compiled;
 void Init()
 {
     FactorOffset = new int[EAG.NextHFactor + EAG.NextHAlt + 1];
-    Sets.New(GenFactors, EAG.NextHNont);
-    Sets.Intersection(GenFactors, EAG.Prod, EAG.Reach);
-    Sets.New(GenNonts, EAG.NextHNont);
-    Sets.Difference(GenNonts, GenFactors, EAG.Pred);
+    GenFactors = EAG.Prod & EAG.Reach;
+    GenNonts = GenFactors - EAG.Pred;
     Error = false;
     ShowMod = IO.IsOption('m');
 }
@@ -74,7 +72,7 @@ void GenerateMod(bool CreateMod)
     int NextEdge;
     int[] Stack;
     int NextStack;
-    Sets.OpenSet DefVars;
+    BitArray DefVars;
 
     void Expand()
     {
@@ -113,20 +111,17 @@ void GenerateMod(bool CreateMod)
 
     int HyperArity()
     {
-        int N;
+        const Nonts = EAG.All - EAG.Pred;
+        int Max = 0;
         int i;
-        int Max;
-        EAG.Alt A;
-        Sets.OpenSet Nonts;
 
-        Sets.New(Nonts, EAG.NextHNont);
-        Sets.Difference(Nonts, EAG.All, EAG.Pred);
-        Max = 0;
-        for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
+        // TODO: foreach (N; Nonts)
+        for (int N = EAG.firstHNont; N < EAG.NextHNont; ++N)
         {
-            if (Sets.In(Nonts, N))
+            if (Nonts[N])
             {
-                A = EAG.HNont[N].Def.Sub;
+                EAG.Alt A = EAG.HNont[N].Def.Sub;
+
                 i = 0;
                 do
                 {
@@ -135,20 +130,14 @@ void GenerateMod(bool CreateMod)
                 }
                 while (A !is null);
                 if (cast(EAG.Opt) EAG.HNont[N].Def !is null || cast(EAG.Rep) EAG.HNont[N].Def !is null)
-                {
                     ++i;
-                }
                 if (i > Max)
-                {
                     Max = i;
-                }
             }
         }
         i = 1;
         while (i <= Max)
-        {
             i = i * 2;
-        }
         return i;
     }
 
@@ -185,7 +174,7 @@ void GenerateMod(bool CreateMod)
             F2 = null;
             while (F !is null)
             {
-                if (cast(EAG.Nont) F !is null && Sets.In(GenFactors, (cast(EAG.Nont) F).Sym))
+                if (cast(EAG.Nont) F !is null && GenFactors[(cast(EAG.Nont) F).Sym])
                 {
                     F1 = new EAG.Nont;
                     EAG.assign(F1, cast(EAG.Nont) F);
@@ -296,12 +285,10 @@ void GenerateMod(bool CreateMod)
                     {
                     case def:
                         if (Def)
-                        {
-                            Sets.Incl(DefVars, -Node);
-                        }
+                            DefVars[-Node] = true;
                         break;
                     case right:
-                        if (!Sets.In(DefVars, -Node))
+                        if (!DefVars[-Node])
                         {
                             if (Def)
                             {
@@ -315,7 +302,7 @@ void GenerateMod(bool CreateMod)
                         }
                         break;
                     case appl:
-                        if (!Def && !Sets.In(DefVars, -Node))
+                        if (!Def && !DefVars[-Node])
                         {
                             writeln;
                             writeln(EAG.ParamBuf[P].Pos);
@@ -333,9 +320,7 @@ void GenerateMod(bool CreateMod)
                 else
                 {
                     for (n = 1; n <= EAG.MAlt[EAG.NodeBuf[Node]].Arity; ++n)
-                    {
                         Tree(EAG.NodeBuf[Node + n]);
-                    }
                 }
             }
 
@@ -352,8 +337,9 @@ void GenerateMod(bool CreateMod)
             int i;
             int MinPrio;
             int MinIndex;
+
             MinPrio = int.max;
-            for (i = firstStack; i <= NextStack - 1; ++i)
+            for (i = firstStack; i < NextStack; ++i)
             {
                 if (Factor[Stack[i]].Prio < MinPrio)
                 {
@@ -369,7 +355,7 @@ void GenerateMod(bool CreateMod)
         A = EAG.HNont[N].Def.Sub;
         do
         {
-            Sets.Empty(DefVars);
+            DefVars[] = false;
             NextEdge = firstEdge;
             NextStack = firstStack;
             TravParams(def, A.Formal.Params, null);
@@ -383,7 +369,7 @@ void GenerateMod(bool CreateMod)
                 Factor[F.Ind].Prio = Prio;
                 ++Prio;
                 Factor[F.Ind].F = F;
-                if (!Sets.In(EAG.Pred, (cast(EAG.Nont) F).Sym))
+                if (!EAG.Pred[(cast(EAG.Nont) F).Sym])
                 {
                     FactorOffset[F.Ind] = Offset;
                     ++Offset;
@@ -407,20 +393,16 @@ void GenerateMod(bool CreateMod)
                 F.Next = null;
                 A.Last = F;
                 if (F1 !is null)
-                {
                     F1.Next = F;
-                }
                 else
-                {
                     A.Sub = F;
-                }
                 F1 = F;
                 ++Index;
                 VE = Factor[F.Ind].Vars;
                 while (VE != nil)
                 {
                     V = Edge[VE].Dest;
-                    if (!Sets.In(DefVars, V))
+                    if (!DefVars[V])
                     {
                         NE = Var[V].Factors;
                         while (NE != nil)
@@ -433,7 +415,7 @@ void GenerateMod(bool CreateMod)
                             }
                             NE = Edge[NE].Next;
                         }
-                        Sets.Incl(DefVars, V);
+                        DefVars[V] = true;
                     }
                     VE = Edge[VE].Next;
                 }
@@ -495,7 +477,7 @@ void GenerateMod(bool CreateMod)
             F = A.Sub;
             while (F !is null)
             {
-                if (!Sets.In(EAG.Pred, (cast(EAG.Nont) F).Sym))
+                if (!EAG.Pred[(cast(EAG.Nont) F).Sym])
                 {
                     EvalGen.GenSynPred(N, (cast(EAG.Nont) F).Actual.Params);
                     Mod.write("P");
@@ -525,18 +507,12 @@ void GenerateMod(bool CreateMod)
                     EvalGen.GenSynPred(N, (cast(EAG.Nont) F).Actual.Params);
                     Mod.write("Pos = PosTree[Adr + ");
                     F1 = F.Prev;
-                    while (F1 !is null && Sets.In(EAG.Pred, (cast(EAG.Nont) F1).Sym))
-                    {
+                    while (F1 !is null && EAG.Pred[(cast(EAG.Nont) F1).Sym])
                         F1 = F1.Prev;
-                    }
                     if (F1 is null)
-                    {
                         Mod.write(0L);
-                    }
                     else
-                    {
                         Mod.write(FactorOffset[F1.Ind]);
-                    }
                     Mod.write("];\n");
                     EvalGen.GenPredCall((cast(EAG.Nont) F).Sym, (cast(EAG.Nont) F).Actual.Params);
                     EvalGen.GenAnalPred(N, (cast(EAG.Nont) F).Actual.Params);
@@ -570,9 +546,10 @@ void GenerateMod(bool CreateMod)
             Mod.write(HyperArity());
             InclFix('$');
             EvalGen.GenDeclarations;
-            for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
+            // TODO: foreach (N; GenNonts)
+            for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
             {
-                if (Sets.In(GenNonts, N))
+                if (GenNonts[N])
                 {
                     Mod.write("// ");
                     Mod.write("PROCEDURE^ P");
@@ -598,14 +575,14 @@ void GenerateMod(bool CreateMod)
     Var = new VarRecord[EAG.NextVar + 1];
     Edge = new EdgeRecord[127];
     Stack = new int[EAG.NextHFactor + 1];
-    Sets.New(DefVars, EAG.NextVar);
-    for (V = EAG.firstVar; V <= EAG.NextVar - 1; ++V)
-    {
+    DefVars = BitArray();
+    DefVars.length = EAG.NextVar + 1;
+    for (V = EAG.firstVar; V < EAG.NextVar; ++V)
         Var[V].Factors = nil;
-    }
-    for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
+    // TODO: foreach (N; GenNonts)
+    for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
     {
-        if (Sets.In(GenNonts, N))
+        if (GenNonts[N])
         {
             SaveAndPatchNont(N);
             ComputePermutation(N);
@@ -613,9 +590,7 @@ void GenerateMod(bool CreateMod)
             {
                 Error = !EvalGen.IsLEAG(N, true);
                 if (!Error && CreateMod)
-                {
                     GenerateNont(N);
-                }
             }
             RestoreNont(N);
         }
@@ -659,20 +634,20 @@ void Test()
     IO.Msg.write(EAG.BaseName);
     IO.Msg.write("   ");
     IO.Msg.flush;
-    if (EAG.Performed(Sets.SET(EAG.analysed, EAG.predicates)))
+    if (EAG.Performed(EAG.analysed | EAG.predicates))
     {
-        Sets.EXCL(EAG.History, EAG.isSSweep);
+        EAG.History &= ~EAG.isSSweep;
         Init;
 
-        size_t SaveHistory = EAG.History;
+        const SaveHistory = EAG.History;
 
-        EAG.History = Sets.SET;
+        EAG.History = 0;
         GenerateMod(false);
         EAG.History = SaveHistory;
         if (!Error)
         {
             IO.Msg.write("ok");
-            Sets.INCL(EAG.History, EAG.isSSweep);
+            EAG.History |= EAG.isSSweep;
         }
         Finit;
     }
@@ -687,20 +662,20 @@ void Generate()
     IO.Msg.write("   ");
     IO.Msg.flush;
     Compiled = false;
-    if (EAG.Performed(Sets.SET(EAG.analysed, EAG.predicates)))
+    if (EAG.Performed(EAG.analysed | EAG.predicates))
     {
-        Sets.EXCL(EAG.History, EAG.isSSweep);
+        EAG.History &= ~EAG.isSSweep;
         Init;
 
-        size_t SaveHistory = EAG.History;
+        const SaveHistory = EAG.History;
 
-        EAG.History = Sets.SET;
+        EAG.History = 0;
         GenerateMod(true);
         EAG.History = SaveHistory;
         if (!Error)
         {
-            Sets.INCL(EAG.History, EAG.isSSweep);
-            Sets.INCL(EAG.History, EAG.hasEvaluator);
+            EAG.History |= EAG.isSSweep;
+            EAG.History |= EAG.hasEvaluator;
         }
         Finit;
     }

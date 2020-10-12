@@ -3,20 +3,24 @@ module eEAG;
 import Scanner = eScanner;
 import io : Position;
 import runtime;
-import Sets = set;
+import std.bitmanip;
 
 const nil = 0;
 const empty = 0;
-const analysed = 0;
-const predicates = 1;
-const parsable = 2;
-const isSLEAG = 3;
-const isSSweep = 4;
-const hasEvaluator = 5;
 size_t History;
 const firstParam = 0;
 const firstHAlt = 0;
 const firstHFactor = 0;
+
+enum
+{
+    analysed = 1 << 0,
+    predicates = 1 << 1,
+    parsable = 1 << 2,
+    isSLEAG = 1 << 3,
+    isSSweep = 1 << 4,
+    hasEvaluator = 1 << 5,
+}
 
 struct ParamsDesc
 {
@@ -269,11 +273,11 @@ int NextAnonym;
 
 // for technical reasons there can be gaps in the HNont array,
 // so the set All defines the valid entries
-Sets.OpenSet All;
-Sets.OpenSet Prod;
-Sets.OpenSet Reach;
-Sets.OpenSet Null;
-Sets.OpenSet Pred;
+BitArray All;
+BitArray Prod;
+BitArray Reach;
+BitArray Null;
+BitArray Pred;
 int StartSym;
 string BaseName;
 
@@ -815,33 +819,33 @@ bool Performed(size_t Needed)
     import log : error;
 
     Needed = Needed & ~History;
-    if (Needed == Sets.SET)
+    if (Needed == 0)
     {
         return true;
     }
     else
     {
-        if (Sets.IN(Needed, analysed))
+        if (Needed & analysed)
         {
             error!"analyse a specification first";
         }
-        if (Sets.IN(Needed, predicates))
+        if (Needed & predicates)
         {
             error!"check for predicates first";
         }
-        if (Sets.IN(Needed, parsable))
+        if (Needed & parsable)
         {
             error!"test for ELL1 attribute first";
         }
-        if (Sets.IN(Needed, isSLEAG))
+        if (Needed & isSLEAG)
         {
             error!"test for SLEAG attribute first";
         }
-        if (Sets.IN(Needed, isSSweep))
+        if (Needed & isSSweep)
         {
             error!"test for single sweep attribute first";
         }
-        if (Sets.IN(Needed, hasEvaluator))
+        if (Needed & hasEvaluator)
         {
             error!"generate an evaluator first";
         }
@@ -899,7 +903,7 @@ void Init()
     NOGrp = 0;
     NOOpt = 0;
     NORep = 0;
-    History = Sets.SET;
+    History = 0;
     BaseName = "nothing";
     MaxMArity = 0;
 }
@@ -908,7 +912,7 @@ static this()
 {
     import log : info;
 
-    History = Sets.SET;
+    History = 0;
     BaseName = "nothing";
     info!"Epsilon 1.02   JoDe/SteWe  22.11.96";
 }

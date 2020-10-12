@@ -3,7 +3,6 @@ module soag.eSOAGPartition;
 import EAG = eEAG;
 import IO = eIO;
 import runtime;
-import Sets = set;
 import ALists = soag.eALists;
 import ASets = soag.eASets;
 import BSets = soag.eBSets;
@@ -58,13 +57,9 @@ void Expand()
     long NewLen(long ArrayLen)
     {
         if (ArrayLen < DIV(int.max, 2))
-        {
             return 2 * ArrayLen + 1;
-        }
         else
-        {
             assert(0);
-        }
     }
 
     if (NextVarBuf >= VarBuf.length)
@@ -72,9 +67,7 @@ void Expand()
         OpenVarBuf VarBuf1 = new VarBufDesc[NewLen(VarBuf.length)];
 
         for (size_t i = firstVarBuf; i < VarBuf.length; ++i)
-        {
             VarBuf1[i] = VarBuf[i];
-        }
         VarBuf = VarBuf1;
     }
     if (NextChangeBuf >= ChangeBuf.length)
@@ -82,9 +75,7 @@ void Expand()
         OpenChangeBuf ChangeBuf1 = new ChangeBufDesc[NewLen(ChangeBuf.length)];
 
         for (size_t i = firstChangeBuf; i < ChangeBuf.length; ++i)
-        {
             ChangeBuf1[i] = ChangeBuf[i];
-        }
         ChangeBuf = ChangeBuf1;
     }
 }
@@ -103,8 +94,7 @@ void Push(ref ALists.AList Stack, int S, int A1, int A2)
  */
 bool EdgeInTDP(int R, int A1, int A2)
 {
-    return Sets.In(SOAG.Rule[R].TDP[SOAG.AffOcc[A1].AffOccNum.InRule],
-            SOAG.AffOcc[A2].AffOccNum.InRule);
+    return SOAG.Rule[R].TDP[SOAG.AffOcc[A1].AffOccNum.InRule][SOAG.AffOcc[A2].AffOccNum.InRule];
 }
 
 /**
@@ -119,9 +109,7 @@ void AddTDPChange(int R, int AO1, int AO2)
     ChangeBuf[NextChangeBuf].AffOccInd2 = AO2;
     ++NextChangeBuf;
     if (NextChangeBuf >= ChangeBuf.length)
-    {
         Expand;
-    }
 }
 
 /**
@@ -131,12 +119,10 @@ void AddTDPChange(int R, int AO1, int AO2)
  */
 void ResetTDPChanges(int End)
 {
-    int i;
-    for (i = firstChangeBuf; i <= End; ++i)
+    for (int i = firstChangeBuf; i <= End; ++i)
     {
-        Sets.Excl(
-                SOAG.Rule[ChangeBuf[i].RuleInd].TDP[SOAG.AffOcc[ChangeBuf[i].AffOccInd1].AffOccNum.InRule],
-                SOAG.AffOcc[ChangeBuf[i].AffOccInd2].AffOccNum.InRule);
+        SOAG.Rule[ChangeBuf[i].RuleInd].TDP[SOAG.AffOcc[ChangeBuf[i].AffOccInd1].AffOccNum.InRule]
+            [SOAG.AffOcc[ChangeBuf[i].AffOccInd2].AffOccNum.InRule] = false;
     }
 }
 
@@ -167,24 +153,20 @@ void AddTDPTrans(int R, int AO1, int AO2)
         for (AO4 = SOAG.Rule[R].AffOcc.Beg; AO4 <= SOAG.Rule[R].AffOcc.End; ++AO4)
         {
             AN4 = SOAG.AffOcc[AO4].AffOccNum.InRule;
-            if ((AN4 == AN2 || Sets.In(SOAG.Rule[R].TDP[AN2], AN4))
-                    && !Sets.In(SOAG.Rule[R].TDP[AN1], AN4))
-            {
+            if ((AN4 == AN2 || SOAG.Rule[R].TDP[AN2][AN4]) && !SOAG.Rule[R].TDP[AN1][AN4])
                 ALists.Append(NUV, AO4);
-            }
         }
         for (AO3 = SOAG.Rule[R].AffOcc.Beg; AO3 <= SOAG.Rule[R].AffOcc.End; ++AO3)
         {
             AN3 = SOAG.AffOcc[AO3].AffOccNum.InRule;
-            if ((AN3 == AN1 || Sets.In(SOAG.Rule[R].TDP[AN3], AN1))
-                    && !Sets.In(SOAG.Rule[R].TDP[AN3], AN2))
+            if ((AN3 == AN1 || SOAG.Rule[R].TDP[AN3][AN1]) && !SOAG.Rule[R].TDP[AN3][AN2])
             {
                 for (size_t i = ALists.firstIndex; i <= NUV.Last; ++i)
                 {
                     AO4 = NUV.Elem[i];
                     if (!EdgeInTDP(R, AO3, AO4))
                     {
-                        Sets.Incl(SOAG.Rule[R].TDP[AN3], SOAG.AffOcc[AO4].AffOccNum.InRule);
+                        SOAG.Rule[R].TDP[AN3][SOAG.AffOcc[AO4].AffOccNum.InRule] = true;
                         if (SOAG.AffOcc[AO3].SymOccInd == SOAG.AffOcc[AO4].SymOccInd
                                 && !SOAG.IsPredNont(SOAG.AffOcc[AO3].SymOccInd))
                         {
@@ -193,13 +175,11 @@ void AddTDPTrans(int R, int AO1, int AO2)
                                     SOAG.AffOcc[AO4].AffOccNum.InSym);
                         }
                         if (Phase == dynTopSort)
-                        {
                             AddTDPChange(R, AO3, AO4);
-                        }
                     }
                 }
             }
-            if (Sets.In(SOAG.Rule[R].TDP[AN3], AN3))
+            if (SOAG.Rule[R].TDP[AN3][AN3])
             {
                 if (Phase == computeDPandIDP)
                 {
@@ -240,18 +220,12 @@ void SetAffOccforVars(int AO, int Affixform, bool isDef)
     if (Affixform < 0)
     {
         if (NextVarBuf + 1 >= VarBuf.length)
-        {
             Expand;
-        }
         VarBuf[NextVarBuf].AffOcc = AO;
         if (isDef)
-        {
             VarBuf[NextVarBuf].Sym = -EAG.Var[-Affixform].Sym;
-        }
         else
-        {
             VarBuf[NextVarBuf].Sym = EAG.Var[-Affixform].Sym;
-        }
         VarBuf[NextVarBuf].Num = EAG.Var[-Affixform].Num;
         VarBuf[NextVarBuf].VarInd = -Affixform;
         ++NextVarBuf;
@@ -259,9 +233,7 @@ void SetAffOccforVars(int AO, int Affixform, bool isDef)
     else if (EAG.MAlt[EAG.NodeBuf[Affixform]].Arity > 0)
     {
         for (MA = 1; MA <= EAG.MAlt[EAG.NodeBuf[Affixform]].Arity; ++MA)
-        {
             SetAffOccforVars(AO, EAG.NodeBuf[Affixform + MA], isDef);
-        }
     }
 }
 
@@ -279,6 +251,7 @@ void ComputeDefAffOcc(int R)
     int V;
     int i;
     bool Found;
+
     if (cast(SOAG.OrdRule) SOAG.Rule[R] !is null)
     {
         Scope = (cast(SOAG.OrdRule) SOAG.Rule[R]).Alt.Scope;
@@ -287,15 +260,11 @@ void ComputeDefAffOcc(int R)
     {
         EAGRule = (cast(SOAG.EmptyRule) SOAG.Rule[R]).Rule;
         if (cast(EAG.Opt) EAGRule !is null)
-        {
             Scope = (cast(EAG.Opt) EAGRule).Scope;
-        }
         else if (cast(EAG.Rep) EAGRule !is null)
-        {
             Scope = (cast(EAG.Rep) EAGRule).Scope;
-        }
     }
-    for (V = Scope.Beg; V <= Scope.End - 1; ++V)
+    for (V = Scope.Beg; V < Scope.End; ++V)
     {
         i = firstVarBuf - 1;
         do
@@ -339,15 +308,11 @@ void ComputeAffixApplCnt(int R)
     {
         EAGRule = (cast(SOAG.EmptyRule) SOAG.Rule[R]).Rule;
         if (cast(EAG.Opt) EAGRule !is null)
-        {
             Scope = (cast(EAG.Opt) EAGRule).Scope;
-        }
         else if (cast(EAG.Rep) EAGRule !is null)
-        {
             Scope = (cast(EAG.Rep) EAGRule).Scope;
-        }
     }
-    for (A = Scope.Beg; A <= Scope.End - 1; ++A)
+    for (A = Scope.Beg; A < Scope.End; ++A)
     {
         i = firstVarBuf;
         while (i < NextVarBuf)
@@ -358,7 +323,7 @@ void ComputeAffixApplCnt(int R)
             {
                 AN = VarBuf[i].AffOcc - SOAG.Rule[R].AffOcc.Beg;
                 DAN = SOAG.DefAffOcc[A] - SOAG.Rule[R].AffOcc.Beg;
-                Sets.Incl(SOAG.Rule[R].DP[DAN], AN);
+                SOAG.Rule[R].DP[DAN][AN] = true;
                 ++SOAG.AffixApplCnt[A];
             }
             else if (EAG.Var[A].Sym == VarBuf[i].Sym && EAG.Var[A].Num == VarBuf[i].Num)
@@ -388,7 +353,7 @@ void ComputeDP()
     Phase = computeDPandIDP;
     ALists.New(MarkedEdges, 256);
     ALists.New(NUV, 56);
-    for (R = SOAG.firstRule; R <= SOAG.NextRule - 1; ++R)
+    for (R = SOAG.firstRule; R < SOAG.NextRule; ++R)
     {
         if (SOAG.IsEvaluatorRule(R))
         {
@@ -403,15 +368,15 @@ void ComputeDP()
                 }
                 if (SOAG.IsPredNont(SO))
                 {
-                    for (i = FirstSOVar; i <= NextVarBuf - 1; ++i)
+                    for (i = FirstSOVar; i < NextVarBuf; ++i)
                     {
-                        for (j = FirstSOVar; j <= NextVarBuf - 1; ++j)
+                        for (j = FirstSOVar; j < NextVarBuf; ++j)
                         {
                             if (VarBuf[j].Sym < 0 && VarBuf[i].Sym > 0)
                             {
                                 AddTDPTrans(R, VarBuf[i].AffOcc, VarBuf[j].AffOcc);
-                                Sets.Incl(SOAG.Rule[R].DP[SOAG.AffOcc[VarBuf[i].AffOcc].AffOccNum.InRule],
-                                        SOAG.AffOcc[VarBuf[j].AffOcc].AffOccNum.InRule);
+                                SOAG.Rule[R].DP[SOAG.AffOcc[VarBuf[i].AffOcc].AffOccNum.InRule]
+                                    [SOAG.AffOcc[VarBuf[j].AffOcc].AffOccNum.InRule] = true;
                             }
                         }
                     }
@@ -421,14 +386,13 @@ void ComputeDP()
             ComputeAffixApplCnt(R);
             if (SOAG.Rule[R].AffOcc.End >= SOAG.Rule[R].AffOcc.Beg)
             {
-                for (i = firstVarBuf; i <= NextVarBuf - 1; ++i)
+                for (i = firstVarBuf; i < NextVarBuf; ++i)
                 {
                     if (VarBuf[i].Sym > 0)
                     {
                         AddTDPTrans(R, SOAG.DefAffOcc[VarBuf[i].VarInd], VarBuf[i].AffOcc);
-                        Sets.Incl(
-                                SOAG.Rule[R].DP[SOAG.AffOcc[SOAG.DefAffOcc[VarBuf[i].VarInd]].AffOccNum.InRule],
-                                SOAG.AffOcc[VarBuf[i].AffOcc].AffOccNum.InRule);
+                        SOAG.Rule[R].DP[SOAG.AffOcc[SOAG.DefAffOcc[VarBuf[i].VarInd]].AffOccNum.InRule]
+                            [SOAG.AffOcc[VarBuf[i].AffOcc].AffOccNum.InRule] = true;
                     }
                 }
                 NextVarBuf = firstVarBuf;
@@ -517,7 +481,7 @@ void Orient(int a, int b, int X, ref BSets.BSet New)
         IO.Msg.write("\tGarmmar is not SOAG\n");
         SOAG.Error(SOAG.cyclicTDP, "eSOAGVSGen.Orient");
     }
-    for (i = firstChangeBuf; i <= NextChangeBuf - 1; ++i)
+    for (i = firstChangeBuf; i < NextChangeBuf; ++i)
     {
         AO1 = ChangeBuf[i].AffOccInd1;
         AO2 = ChangeBuf[i].AffOccInd2;
@@ -527,9 +491,7 @@ void Orient(int a, int b, int X, ref BSets.BSet New)
             a1 = SOAG.AffOcc[AO1].AffOccNum.InSym;
             b1 = SOAG.AffOcc[AO2].AffOccNum.InSym;
             if (SOAG.IsOrientable(X, a1, b1))
-            {
                 BSets.Insert(New, a1 * Seperator + b1);
-            }
         }
     }
 }
@@ -576,12 +538,8 @@ void DynTopSortSym(int X)
 
     XmaxAff = SOAG.SymOcc[SOAG.Sym[X].FirstOcc].AffOcc.End - SOAG.SymOcc[SOAG.Sym[X].FirstOcc].AffOcc.Beg;
     for (a = 0; a <= XmaxAff; ++a)
-    {
         for (b = 0; b <= XmaxAff; ++b)
-        {
             DS[a][b] = nil;
-        }
-    }
     SO = SOAG.Sym[X].FirstOcc;
     while (SO != SOAG.nil)
     {
@@ -594,9 +552,7 @@ void DynTopSortSym(int X)
                     a = SOAG.AffOcc[AO1].AffOccNum.InSym;
                     b = SOAG.AffOcc[AO2].AffOccNum.InSym;
                     if (SOAG.IsOrientable(X, a, b))
-                    {
                         DS[a][b] = element;
-                    }
                 }
             }
         }
@@ -625,22 +581,16 @@ void DynTopSortSym(int X)
         if (Deg[a] == 0)
         {
             if (SOAG.IsSynthesized(X, a))
-            {
                 ASets.Insert(Cur, a);
-            }
             else if (SOAG.IsInherited(X, a))
-            {
                 ASets.Insert(Leave, a);
-            }
         }
     }
     do
     {
         ALists.Reset(LastCur);
         for (a = ASets.firstIndex; a <= Cur.List.Last; ++a)
-        {
             ALists.Append(LastCur, Cur.List.Elem[a]);
-        }
         for (b = 0; b <= XmaxAff; ++b)
         {
             for (a1 = ALists.firstIndex; a1 <= LastCur.Last; ++a1)
@@ -656,17 +606,11 @@ void DynTopSortSym(int X)
                         DS[c][d] = element;
                         ++Deg[c];
                         if (DS[d][c] == unor)
-                        {
                             DS[d][c] = nil;
-                        }
                         if (ASets.In(Cur, c))
-                        {
                             ASets.Delete(Cur, c);
-                        }
                         else if (Deg[c] == 1)
-                        {
                             ASets.Delete(Leave, c);
-                        }
                     }
                 }
             }
@@ -681,9 +625,7 @@ void DynTopSortSym(int X)
                 {
                     --Deg[b];
                     if (Deg[b] == 0)
-                    {
                         ASets.Insert(Leave, b);
-                    }
                 }
             }
         }
@@ -694,13 +636,9 @@ void DynTopSortSym(int X)
     }
     while (!ASets.IsEmpty(Cur));
     if (SOAG.Sym[X].MaxPart < Part)
-    {
         SOAG.Sym[X].MaxPart = Part;
-    }
     if (SOAG.MaxPart < Part)
-    {
         SOAG.MaxPart = Part;
-    }
 }
 
 /**
@@ -708,8 +646,6 @@ void DynTopSortSym(int X)
  */
 void DynTopSort()
 {
-    int S;
-
     ASets.New(Cur, SOAG.MaxAffNumInSym + 1);
     ASets.New(Leave, SOAG.MaxAffNumInSym + 1);
     Deg = new int[SOAG.MaxAffNumInSym + 1];
@@ -719,12 +655,10 @@ void DynTopSort()
     BSets.New(New, (SOAG.MaxAffNumInSym + 1) * (SOAG.MaxAffNumInSym + 1));
     Seperator = SOAG.MaxAffNumInSym + 1;
     ALists.New(LastCur, 16);
-    for (S = EAG.firstHNont; S <= EAG.NextHNont - 1; ++S)
+    for (int S = EAG.firstHNont; S < EAG.NextHNont; ++S)
     {
-        if (!Sets.In(EAG.Pred, S) && Sets.In(EAG.All, S))
-        {
+        if (!EAG.Pred[S] && EAG.All[S])
             DynTopSortSym(S);
-        }
     }
 }
 
@@ -745,11 +679,7 @@ void Compute()
     Phase = dynTopSort;
     DynTopSort;
     if (OEAG)
-    {
         IO.Msg.write("\n\tGrammar is SOEAG\n");
-    }
     else
-    {
         IO.Msg.write("\n\tGrammar is SOEAG (backtracked)\n");
-    }
 }

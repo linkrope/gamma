@@ -3,7 +3,7 @@ module ePredicates;
 import EAG = eEAG;
 import IO = eIO;
 import runtime;
-import Sets = set;
+import std.bitmanip : BitArray;
 import std.stdio;
 
 void List()
@@ -12,11 +12,12 @@ void List()
     IO.Msg.write("Predicates in     ");
     IO.Msg.write(EAG.BaseName);
     IO.Msg.write(": ");
-    if (EAG.Performed(Sets.SET(EAG.analysed, EAG.predicates)))
+    if (EAG.Performed(EAG.analysed | EAG.predicates))
     {
-        for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
+        // TODO: foreach (N; EAG.Pred)
+        for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
         {
-            if (Sets.In(EAG.Pred, N))
+            if (EAG.Pred[N])
             {
                 writeln;
                 writeln(EAG.HNont[N].Def.Sub.Pos);
@@ -42,8 +43,8 @@ void Check()
     int NextEdge;
     int[] Stack;
     int Top;
-    Sets.OpenSet CoPred;
-    Sets.OpenSet Pred;
+    BitArray CoPred;
+    BitArray Pred;
     int NOPreds;
     int N;
 
@@ -57,9 +58,9 @@ void Check()
 
     void PutCoPred(int N)
     {
-        if (!Sets.In(CoPred, N))
+        if (!CoPred[N])
         {
-            Sets.Incl(CoPred, N);
+            CoPred[N] = true;
             Stack[Top] = N;
             ++Top;
         }
@@ -70,18 +71,16 @@ void Check()
         EAG.Alt A;
         EAG.Factor F;
         int N;
-        for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
-        {
+
+        for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
             HNont[N] = -1;
-        }
-        for (N = EAG.firstHNont; N <= EAG.NextHNont - 1; ++N)
+        // TODO: foreach (N; EAG.All)
+        for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
         {
-            if (Sets.In(EAG.All, N))
+            if (EAG.All[N])
             {
-                if (!Sets.In(EAG.Null, N))
-                {
+                if (!EAG.Null[N])
                     PutCoPred(N);
-                }
                 A = EAG.HNont[N].Def.Sub;
                 do
                 {
@@ -89,13 +88,9 @@ void Check()
                     while (F !is null)
                     {
                         if (cast(EAG.Term) F !is null)
-                        {
                             PutCoPred(N);
-                        }
                         else
-                        {
                             NewEdge((cast(EAG.Nont) F).Sym, N);
-                        }
                         F = F.Next;
                     }
                     A = A.Next;
@@ -123,29 +118,28 @@ void Check()
     IO.Msg.write("Predicates in     ");
     IO.Msg.write(EAG.BaseName);
     IO.Msg.flush;
-    if (EAG.Performed(Sets.SET(EAG.analysed)))
+    if (EAG.Performed(EAG.analysed))
     {
-        Sets.EXCL(EAG.History, EAG.predicates);
+        EAG.History &= ~EAG.predicates;
         HNont = new int[EAG.NextHNont];
         Edge = new  EdgeRecord[EAG.NONont + 1];
         NextEdge = 0;
         Stack = new int[EAG.NextHNont];
         Top = 0;
-        Sets.New(CoPred, EAG.NextHNont);
-        Sets.New(Pred, EAG.NextHNont);
+        CoPred = BitArray();
+        CoPred.length = EAG.NextHNont + 1;
         BuiltEdge;
         ClearStack;
-        Sets.Difference(Pred, EAG.Prod, CoPred);
-        Sets.Excl(Pred, EAG.StartSym);
+        Pred = EAG.Prod - CoPred;
+        Pred[EAG.StartSym] = false;
         EAG.Pred = Pred;
-        Sets.INCL(EAG.History, EAG.predicates);
+        EAG.History |= EAG.predicates;
         NOPreds = 0;
+        // TODO: foreach (N; Pred)
         for (N = EAG.firstHNont; N <= EAG.NextHNont; ++N)
         {
-            if (Sets.In(Pred, N))
-            {
+            if (Pred[N])
                 ++NOPreds;
-            }
         }
         if (NOPreds > 0)
         {

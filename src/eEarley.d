@@ -307,10 +307,8 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def)
             EAG.MAlt[EAG.NextMAlt].Right = EAG.NextMemb;
             NextItem = firstItem;
             CurList = NextItem;
-            for (i = EAG.firstMNont; i <= EAG.NextMNont - 1; ++i)
-            {
+            for (i = EAG.firstMNont; i < EAG.NextMNont; ++i)
                 Predicted[i] = false;
-            }
             AddItem(EAG.NextMemb, CurList, nil, nil);
             Closure;
         }
@@ -323,17 +321,11 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def)
             EAG.NodeBuf[EAG.NextNode] = A;
             Tree = EAG.NextNode;
             if (int.max - EAG.MAlt[A].Arity - 1 >= EAG.NextNode)
-            {
                 EAG.NextNode += EAG.MAlt[A].Arity + 1;
-            }
             else
-            {
                 assert(0);
-            }
             while (EAG.NextNode >= EAG.NodeBuf.length)
-            {
                 EAG.Expand;
-            }
             SubTree = EAG.NextNode - 1;
             do
             {
@@ -349,7 +341,7 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def)
                 }
                 I = ItemBuf[I].Left;
             }
-            while (!(I == nil));
+            while (I != nil);
         }
 
         CurSym = Affixform - 1;
@@ -360,13 +352,9 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def)
             ++NextItem;
             CurList = NextItem;
             if (NextItem >= ItemBuf.length)
-            {
                 Expand;
-            }
-            for (i = EAG.firstMNont; i <= EAG.NextMNont - 1; ++i)
-            {
+            for (i = EAG.firstMNont; i < EAG.NextMNont; ++i)
                 Predicted[i] = false;
-            }
             ++CurSym;
             Scanner;
             if (CurList == NextItem)
