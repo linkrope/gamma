@@ -123,7 +123,7 @@ void Specification()
 
     /**
      * HyperRule:
-     *   ident [FormalParams] ":" HyperExpr "." .
+     *   ident [FormalParams] ":" HyperExpr ".".
      */
     void HyperRule(int Id, bool IsToken)
     {

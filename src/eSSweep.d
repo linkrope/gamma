@@ -4,10 +4,12 @@ import EAG = eEAG;
 import EmitGen = eEmitGen;
 import IO = eIO;
 import EvalGen = eSLEAGGen;
+import epsilon.settings;
 import io : TextIn, UndefPos;
 import runtime;
 import std.bitmanip : BitArray;
 import std.stdio;
+import std.typecons;
 
 const nil = 0;
 const indexOfFirstAlt = 1;
@@ -15,7 +17,6 @@ int[] FactorOffset;
 BitArray GenNonts;
 BitArray GenFactors;
 bool Error;
-bool ShowMod;
 bool Compiled;
 
 void Init()
@@ -24,7 +25,6 @@ void Init()
     GenFactors = EAG.Prod & EAG.Reach;
     GenNonts = GenFactors - EAG.Pred;
     Error = false;
-    ShowMod = IO.IsOption('m');
 }
 
 void Finit()
@@ -32,7 +32,7 @@ void Finit()
     FactorOffset = null;
 }
 
-void GenerateMod(bool CreateMod)
+void GenerateMod(Flag!"createMod" createMod, Settings settings)
 {
     const firstEdge = 1;
     const firstStack = 0;
@@ -532,14 +532,14 @@ void GenerateMod(bool CreateMod)
 
     EvalGen.InitTest;
     Error = Error || !EvalGen.PredsOK();
-    if (CreateMod)
+    if (createMod)
     {
         Fix = TextIn("fix/eSSweep.fix.d");
         name = EAG.BaseName ~ "Eval";
         Mod = new IO.TextOut(name ~ ".d");
         if (!Error)
         {
-            EvalGen.InitGen(Mod, EvalGen.sSweepPass);
+            EvalGen.InitGen(Mod, EvalGen.sSweepPass, settings);
             InclFix('$');
             Mod.write(name);
             InclFix('$');
@@ -589,22 +589,22 @@ void GenerateMod(bool CreateMod)
             if (!Error)
             {
                 Error = !EvalGen.IsLEAG(N, true);
-                if (!Error && CreateMod)
+                if (!Error && createMod)
                     GenerateNont(N);
             }
             RestoreNont(N);
         }
     }
-    if (CreateMod)
+    if (createMod)
     {
         if (!Error)
         {
-            EmitGen.GenEmitProc(Mod);
+            EmitGen.GenEmitProc(Mod, settings);
             InclFix('$');
             Mod.write("P");
             Mod.write(EAG.StartSym);
             InclFix('$');
-            EmitGen.GenEmitCall(Mod);
+            EmitGen.GenEmitCall(Mod, settings);
             InclFix('$');
             EmitGen.GenShowHeap(Mod);
             InclFix('$');
@@ -612,7 +612,7 @@ void GenerateMod(bool CreateMod)
             Mod.write("Eval");
             InclFix('$');
             Mod.flush;
-            if (ShowMod)
+            if (settings.showMod)
             {
                 IO.Show(Mod);
             }
@@ -628,7 +628,7 @@ void GenerateMod(bool CreateMod)
     EvalGen.FinitTest;
 }
 
-void Test()
+void Test(Settings settings)
 {
     IO.Msg.write("SSweep testing ");
     IO.Msg.write(EAG.BaseName);
@@ -642,7 +642,7 @@ void Test()
         const SaveHistory = EAG.History;
 
         EAG.History = 0;
-        GenerateMod(false);
+        GenerateMod(No.createMod, settings);
         EAG.History = SaveHistory;
         if (!Error)
         {
@@ -655,7 +655,7 @@ void Test()
     IO.Msg.flush;
 }
 
-void Generate()
+void Generate(Settings settings)
 {
     IO.Msg.write("SSweep writing ");
     IO.Msg.write(EAG.BaseName);
@@ -670,7 +670,7 @@ void Generate()
         const SaveHistory = EAG.History;
 
         EAG.History = 0;
-        GenerateMod(true);
+        GenerateMod(Yes.createMod, settings);
         EAG.History = SaveHistory;
         if (!Error)
         {
@@ -680,8 +680,6 @@ void Generate()
         Finit;
     }
     if (!Compiled)
-    {
         IO.Msg.writeln;
-    }
     IO.Msg.flush;
 }

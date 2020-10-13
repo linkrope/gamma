@@ -4,6 +4,7 @@ import EAG = eEAG;
 import EmitGen = eEmitGen;
 import IO = eIO;
 import SLEAGGen = eSLEAGGen;
+import epsilon.settings;
 import io : TextIn;
 import runtime;
 import SOAG = soag.eSOAG;
@@ -29,7 +30,6 @@ SOAG.OpenInteger FirstRule;
 SOAG.OpenInteger AffixAppls;
 IO.TextOut Out;
 int Indent;
-bool ShowMod;
 bool Close;
 
 /**
@@ -1629,7 +1629,7 @@ void GenStackInit()
 /**
  * SEM: Generierung des Compiler-Moduls
  */
-void GenerateModule()
+void GenerateModule(Settings settings)
 {
     int R;
     string name;
@@ -1658,7 +1658,7 @@ void GenerateModule()
     Fix = TextIn("fix/eSOAG.fix.d");
     name = EAG.BaseName ~ "Eval";
     Out = new IO.TextOut(name ~ ".d");
-    SLEAGGen.InitGen(Out, SLEAGGen.sSweepPass);
+    SLEAGGen.InitGen(Out, SLEAGGen.sSweepPass, settings);
     InclFix('$');
     WrS(name);
     InclFix('$');
@@ -1683,7 +1683,7 @@ void GenerateModule()
         }
     }
     GenVisit;
-    EmitGen.GenEmitProc(Out);
+    EmitGen.GenEmitProc(Out, settings);
     InclFix('$');
     WrI(SOAG.NextPartNum);
     InclFix('$');
@@ -1696,7 +1696,7 @@ void GenerateModule()
     InclFix('$');
     WrSI("S", EAG.StartSym);
     InclFix('$');
-    EmitGen.GenEmitCall(Out);
+    EmitGen.GenEmitCall(Out, settings);
     InclFix('$');
     EmitGen.GenShowHeap(Out);
     InclFix('$');
@@ -1714,7 +1714,7 @@ void GenerateModule()
     WrS("Eval");
     InclFix('$');
     Out.flush;
-    if (ShowMod)
+    if (settings.showMod)
         IO.Show(Out);
     else
         IO.Compile(Out);
@@ -1725,12 +1725,11 @@ void GenerateModule()
 /**
  * SEM: Steuerung der Generierung
  */
-void Generate()
+void Generate(Settings settings)
 {
-    UseConst = !IO.IsOption('c');
-    UseRefCnt = !IO.IsOption('r');
-    ShowMod = IO.IsOption('m');
-    Optimize = !IO.IsOption('o');
+    UseConst = !settings.c;
+    UseRefCnt = !settings.r;
+    Optimize = !settings.o;
     SOAGPartition.Compute;
     SOAGVisitSeq.Generate;
     if (Optimize)
@@ -1746,7 +1745,7 @@ void Generate()
     if (EAG.Performed(EAG.analysed | EAG.predicates))
     {
         Init;
-        GenerateModule;
+        GenerateModule(settings);
         EAG.History |= EAG.isSSweep;
         EAG.History |= EAG.hasEvaluator;
     }

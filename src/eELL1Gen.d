@@ -5,11 +5,14 @@ import EmitGen = eEmitGen;
 import IO = eIO;
 import Shift = eShift;
 import EvalGen = eSLEAGGen;
+import epsilon.settings;
 import io : Position, TextIn;
 import log;
 import runtime;
 import std.bitmanip : BitArray;
+import std.format;
 import std.stdio;
+import std.typecons;
 
 const nil = 0;
 const endTok = 0;
@@ -78,7 +81,6 @@ BitArray ConflictNonts;
 int nToks;
 bool Error;
 bool Warning;
-bool ShowMod;
 bool Compiled;
 bool UseReg;
 
@@ -208,7 +210,7 @@ void ComputeRegNonts()
     }
 }
 
-void Init()
+void Init(Settings settings)
 {
     int i;
 
@@ -261,8 +263,7 @@ void Init()
     GenNonts -= EAG.Pred;
     Error = false;
     Warning = false;
-    ShowMod = IO.IsOption('m');
-    UseReg = !IO.IsOption('p');
+    UseReg = !settings.p;
     RegNonts = BitArray();
     RegNonts.length = EAG.NextHNont + 1;
     ConflictNonts = BitArray();
@@ -965,7 +966,7 @@ void ComputeSets()
     }
 }
 
-void GenerateMod(bool ParsePass)
+void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
 {
     IO.TextOut Mod;
     TextIn Fix;
@@ -974,6 +975,7 @@ void GenerateMod(bool ParsePass)
     BitArray AllToks;
     string name;
     long TabTimeStamp;
+    size_t loopCount;
 
     void TraverseNont(int N, bool FirstNontCall, BitArray Poss)
     {
@@ -1120,10 +1122,12 @@ void GenerateMod(bool ParsePass)
                     Toks = Nont[N].First | Nont[N].Follow;
 
                 const LoopNeeded = !(Poss <= Toks);
+                const label = format!"loop%s"(loopCount);
 
                 if (LoopNeeded)
                 {
-                    Mod.write("loop: while (1)\n");
+                    ++loopCount;
+                    Mod.write(format!"%s: while (1)\n"(label));
                     Mod.write("{\n");
                 }
                 Mod.write("switch (Tok)\n");
@@ -1164,7 +1168,7 @@ void GenerateMod(bool ParsePass)
                     else
                         EvalGen.GenSynPred(N, A.Formal.Params);
                     if (LoopNeeded)
-                        Mod.write("break loop;\n");
+                        Mod.write(format!"break %s;\n"(label));
                     else
                         Mod.write("break;\n");
                     A = A.Next;
@@ -1184,7 +1188,7 @@ void GenerateMod(bool ParsePass)
                         EvalGen.GenRepAlt(N, A);
                     else
                         EvalGen.GenSynPred(N, A.Formal.Params);
-                    Mod.write("break loop;\n");
+                    Mod.write(format!"break %s;\n"(label));
                     Mod.write("}\n");
                     Mod.write("ErrorRecovery(");
                     Mod.write(Nont[N].AltExp - firstGenSet);
@@ -1417,16 +1421,16 @@ void GenerateMod(bool ParsePass)
     AllToks.length = nToks + 1;
     Fix = TextIn("fix/eELL1Gen.fix.d");
     Mod = new IO.TextOut(EAG.BaseName ~ ".d");
-    if (ParsePass)
-        EvalGen.InitGen(Mod, EvalGen.parsePass);
+    if (parsePass)
+        EvalGen.InitGen(Mod, EvalGen.parsePass, settings);
     else
-        EvalGen.InitGen(Mod, EvalGen.onePass);
+        EvalGen.InitGen(Mod, EvalGen.onePass, settings);
     InclFix('$');
     Mod.write(EAG.BaseName);
     InclFix('$');
     name = EAG.BaseName ~ "Scan";
     Mod.write(name);
-    if (ParsePass)
+    if (parsePass)
     {
         Mod.write(", Eval = ");
         Mod.write(EAG.BaseName);
@@ -1475,6 +1479,7 @@ void GenerateMod(bool ParsePass)
         {
             if (!Nont[N].Anonym)
             {
+                loopCount = 0;
                 EvalGen.ComputeVarNames(N, true);
                 Mod.write("void P");
                 Mod.write(N);
@@ -1489,10 +1494,10 @@ void GenerateMod(bool ParsePass)
             }
         }
     }
-    if (!ParsePass)
-        EmitGen.GenEmitProc(Mod);
+    if (!parsePass)
+        EmitGen.GenEmitProc(Mod, settings);
     InclFix('$');
-    if (ParsePass)
+    if (parsePass)
         Mod.write("& Eval.EvalInitSucceeds()");
     InclFix('$');
     Mod.write(EAG.BaseName);
@@ -1500,10 +1505,10 @@ void GenerateMod(bool ParsePass)
     Mod.write("P");
     Mod.write(EAG.StartSym);
     InclFix('$');
-    if (ParsePass)
+    if (parsePass)
     {
-        Mod.write("Eval.TraverseSyntaxTree(Heap, PosHeap, ErrorCounter, V1, arityConst);\n");
-        Mod.write("if (IO.IsOption('i'))\n");
+        Mod.write("Eval.TraverseSyntaxTree(Heap, PosHeap, ErrorCounter, V1, arityConst, info, write);\n");
+        Mod.write("if (info)\n");
         Mod.write("{\n");
         Mod.write("IO.Msg.write(\"\\tsyntax tree uses twice \");\n");
         Mod.write("IO.Msg.write(NextHeap); IO.Msg.writeln; IO.Msg.flush;\n");
@@ -1518,7 +1523,7 @@ void GenerateMod(bool ParsePass)
         Mod.write("}\n");
         Mod.write("else\n");
         Mod.write("{\n");
-        EmitGen.GenEmitCall(Mod);
+        EmitGen.GenEmitCall(Mod, settings);
         Mod.write("}\n");
         EmitGen.GenShowHeap(Mod);
     }
@@ -1533,7 +1538,7 @@ void GenerateMod(bool ParsePass)
     name = EAG.BaseName ~ ".Tab";
     WriteTab(name);
     Mod.flush;
-    if (ShowMod)
+    if (settings.showMod)
     {
         IO.Show(Mod);
     }
@@ -1546,7 +1551,7 @@ void GenerateMod(bool ParsePass)
     EvalGen.FinitGen;
 }
 
-void Test()
+void Test(Settings settings)
 {
     IO.Msg.write("ELL(1) testing    ");
     IO.Msg.write(EAG.BaseName);
@@ -1554,7 +1559,7 @@ void Test()
     if (EAG.Performed(EAG.analysed | EAG.predicates))
     {
         EAG.History &= ~EAG.parsable;
-        Init;
+        Init(settings);
         if (GrammarOk())
         {
             ComputeDir;
@@ -1570,7 +1575,7 @@ void Test()
     IO.Msg.flush;
 }
 
-void Generate()
+void Generate(Settings settings)
 {
     IO.Msg.write("ELL(1) writing   ");
     IO.Msg.write(EAG.BaseName);
@@ -1580,7 +1585,7 @@ void Generate()
     if (EAG.Performed(EAG.analysed | EAG.predicates | EAG.isSLEAG))
     {
         EAG.History &= ~EAG.parsable;
-        Init;
+        Init(settings);
         if (GrammarOk())
         {
             ComputeDir;
@@ -1588,7 +1593,7 @@ void Generate()
             {
                 ComputeDefaultAlts;
                 ComputeSets;
-                GenerateMod(false);
+                GenerateMod(No.parsePass, settings);
                 EAG.History |= EAG.parsable;
             }
         }
@@ -1601,7 +1606,7 @@ void Generate()
     IO.Msg.flush;
 }
 
-void GenerateParser()
+void GenerateParser(Settings settings)
 {
     IO.Msg.write("ELL(1) writing parser of ");
     IO.Msg.write(EAG.BaseName);
@@ -1611,7 +1616,7 @@ void GenerateParser()
     if (EAG.Performed(EAG.analysed | EAG.predicates | EAG.hasEvaluator))
     {
         EAG.History &=  ~EAG.parsable;
-        Init;
+        Init(settings);
         if (GrammarOk())
         {
             EAG.History = 0;
@@ -1621,7 +1626,7 @@ void GenerateParser()
             {
                 ComputeDefaultAlts;
                 ComputeSets;
-                GenerateMod(true);
+                GenerateMod(Yes.parsePass, settings);
             }
         }
         Finit;

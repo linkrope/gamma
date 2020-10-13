@@ -127,12 +127,12 @@ void ReadParserTab(string name)
     ParserTabIsLoaded = true;
 }
 
-void ParserInit()
+void ParserInit(bool verbose)
 {
     RecTop = firstRecStack;
     ErrorCounter = 0;
     IsRepairMode = false;
-    LongErrorMsgs = IO.IsOption('v');
+    LongErrorMsgs = verbose;
 }
 
 void WriteTokSet(TokSet Toks)
@@ -274,17 +274,13 @@ void main(string[] args)
         exit(EXIT_SUCCESS);
     }
 
-    IO.option['i'] = info;
-    IO.option['v'] = verbose;
-    IO.option['w'] = write;
-
     if (args.dropOne.empty)
-        Compile(TextIn("stdin", stdin));
+        Compile(TextIn("stdin", stdin), info, verbose, write);
 
     try
     {
         foreach (arg; args.dropOne)
-            Compile(TextIn(arg));
+            Compile(TextIn(arg), info, verbose, write);
     }
     catch (ErrnoException exception)
     {
@@ -294,7 +290,7 @@ void main(string[] args)
 
 }
 
-void Compile(TextIn textIn)
+void Compile(TextIn textIn, bool info, bool verbose, bool write)
 {
     HeapType V1;
 
@@ -302,7 +298,7 @@ void Compile(TextIn textIn)
     {
         IO.Msg.write("$ compiler: compiling...\n");
         IO.Msg.flush;
-        ParserInit;
+        ParserInit(verbose);
         S.Init(textIn);
         S.Get(Tok);
         $(V1);

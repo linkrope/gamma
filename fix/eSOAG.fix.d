@@ -78,7 +78,8 @@ void Init()
     $
 }
 
-void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter, TreeType Adr, int HyperArity)
+void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter, TreeType Adr, int HyperArity,
+        bool info, bool write)
 {
     IndexType StartSymbol;
     HeapType V1;
@@ -111,7 +112,7 @@ void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter, TreeT
         $
     }
     $
-    if (IO.IsOption('i'))
+    if (info)
     {
         IO.Msg.write("\tsemantic tree of ");
         IO.Msg.write(AffixVarCount);

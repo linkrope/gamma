@@ -127,16 +127,6 @@ long TimeStamp()
     return MonoTime.currTime.ticks;
 }
 
-bool IsOption(char c1)
-{
-    return option.get(c1, false);
-}
-
-bool IsLongOption(char c1, char c2)
-{
-    return longOption.get(c1, null).get(c2, false);
-}
-
 static this()
 {
     Msg = new TextOut(stdout);

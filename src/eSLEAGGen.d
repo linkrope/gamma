@@ -2,6 +2,7 @@ module eSLEAGGen;
 
 import EAG = eEAG;
 import IO = eIO;
+import epsilon.settings;
 import io : Position, TextIn;
 import runtime;
 import std.bitmanip : BitArray;
@@ -1213,7 +1214,7 @@ void ComputeVarNames(int N, bool Embed)
     HNontDef[N] = true;
 }
 
-void InitGen(IO.TextOut MOut, int Treatment)
+void InitGen(IO.TextOut MOut, int Treatment, Settings settings)
 {
     void SetFlags(int Treatment)
     {
@@ -1242,42 +1243,30 @@ void InitGen(IO.TextOut MOut, int Treatment)
     Mod = MOut;
     SavePos = false;
     TraversePass = false;
-    UseConst = !IO.IsOption('c');
-    UseRefCnt = !IO.IsOption('r');
-    DebugRC = IO.IsLongOption('d', 'R');
+    UseConst = !settings.c;
+    UseRefCnt = !settings.r;
+    DebugRC = settings.dR;
     SetFlags(Treatment);
     if (UseRefCnt)
-    {
         IO.Msg.write('+');
-    }
     else
-    {
         IO.Msg.write('-');
-    }
     IO.Msg.write("rc ");
     if (UseConst)
-    {
         IO.Msg.write('+');
-    }
     else
-    {
         IO.Msg.write('-');
-    }
     IO.Msg.write("ct ");
     IO.Msg.flush;
     if (!Testing)
-    {
         PrepareInit;
-    }
     ComputeNodeIdent;
     ComputeConstDat;
     if (DebugRC)
         RC = new IO.TextOut("Debug.RefCnt");
     AffixName = new int[EAG.NextParam];
     for (size_t i = EAG.firstParam; i < EAG.NextParam; ++i)
-    {
         AffixName[i] = -1;
-    }
     NodeName = new int[EAG.NextNode];
     VarName = new int[EAG.NextVar];
     VarDeps = new int[EAG.NextVar];
@@ -1302,9 +1291,7 @@ void InitGen(IO.TextOut MOut, int Treatment)
     HNontDef.length = EAG.NextHNont + 1;
     RepAppls = new bool[EAG.NextHNont];
     for (size_t i = EAG.firstHNont; i < EAG.NextHNont; ++i)
-    {
         RepAppls[i] = true;
-    }
     EmptySet = BitArray();
     EmptySet.length = EAG.NextVar + 1;
     Generating = true;
@@ -1348,13 +1335,9 @@ void GenHeap(int Var, int Offset)
 {
     Mod.write("Heap[");
     if (Var <= 0)
-    {
         Mod.write("NextHeap");
-    }
     else
-    {
         GenVar(Var);
-    }
     if (Offset > 0)
     {
         Mod.write(" + ");
@@ -1372,13 +1355,9 @@ void GenIncRefCnt(int Var, int n)
 {
     Mod.write("Heap[");
     if (Var < 0)
-    {
         Mod.write(-Var);
-    }
     else
-    {
         GenVar(Var);
-    }
     Mod.write("] += ");
     if (n != 1)
     {

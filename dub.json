@@ -5,7 +5,7 @@
     "copyright": "Copyright © 2020, Mario Kröplin",
     "sourcePaths": ["include", "src"],
     "importPaths": ["include", "src"],
-    "mainSourceFile": "src/epsilon.d",
+    "mainSourceFile": "src/epsilon/main.d",
     "configurations": [
         {
             "name": "epsilon",

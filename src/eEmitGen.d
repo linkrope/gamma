@@ -3,6 +3,7 @@ module eEmitGen;
 import EAG = eEAG;
 import IO = eIO;
 import Scanner = eScanner;
+import epsilon.settings;
 import runtime;
 import std.bitmanip : BitArray;
 
@@ -11,10 +12,8 @@ BitArray Type3;
 BitArray Type2;
 int StartMNont;
 
-void GenEmitProc(IO.TextOut Mod)
+void GenEmitProc(IO.TextOut Mod, Settings settings)
 {
-    bool EmitSpace;
-
     void CalcSets(int Nont)
     in (EAG.firstMNont <= Nont)
     in (Nont < EAG.NextMNont)
@@ -81,14 +80,10 @@ void GenEmitProc(IO.TextOut Mod)
 
             void WhiteSpace()
             {
-                if (EmitSpace)
-                {
+                if (settings.space)
                     Mod.write("Out.write(' '); ");
-                }
                 else
-                {
                     Mod.write("Out.writeln; ");
-                }
             }
 
             A = EAG.MNont[N].MRule;
@@ -182,7 +177,6 @@ void GenEmitProc(IO.TextOut Mod)
         }
     }
 
-    EmitSpace = IO.IsOption('s');
     StartMNont = EAG.DomBuf[EAG.HNont[EAG.StartSym].Sig];
     Type3 = BitArray();
     Type3.length = EAG.NextMNont + 1;
@@ -199,7 +193,7 @@ void GenEmitProc(IO.TextOut Mod)
 
 void GenShowHeap(IO.TextOut Mod)
 {
-    Mod.write("if (IO.IsOption('i'))\n");
+    Mod.write("if (info)\n");
     Mod.write("{\n");
     Mod.write("IO.Msg.write(\"    tree of \"); ");
     Mod.write("IO.Msg.write(OutputSize); \n");
@@ -211,12 +205,12 @@ void GenShowHeap(IO.TextOut Mod)
     Mod.write("}\n");
 }
 
-void GenEmitCall(IO.TextOut Mod)
+void GenEmitCall(IO.TextOut Mod, Settings settings)
 {
     Mod.write("if (");
-    if (IO.IsOption('w'))
+    if (settings.write)
         Mod.write("!");
-    Mod.write("IO.IsOption('w'))\n");
+    Mod.write("write)\n");
     Mod.write("Out = new IO.TextOut(\"");
     Mod.write(EAG.BaseName);
     Mod.write(".Out\");\n");

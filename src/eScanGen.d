@@ -3,6 +3,7 @@ module eScanGen;
 import EAG = eEAG;
 import IO = eIO;
 import Scanner = eScanner;
+import epsilon.settings;
 import io : TextIn;
 import log;
 import runtime;
@@ -12,7 +13,7 @@ const lenOfPredefinedToken = 8;
 bool[256] IsIdent;
 bool[256] IsSymbol;
 
-void Generate()
+void Generate(Settings settings)
 {
     TextIn Fix;
     IO.TextOut Mod;
@@ -21,7 +22,6 @@ void Generate()
     int Len;
     string name;
     bool Error;
-    bool ShowMod;
 
     void TestToken(string Str, ref int Len)
     {
@@ -99,7 +99,6 @@ void Generate()
         Fix.popFront;
     }
 
-    ShowMod = IO.IsOption('m');
     info!"ScanGen writing %s"(EAG.BaseName);
     if (EAG.Performed(EAG.analysed))
     {
@@ -137,7 +136,7 @@ void Generate()
             Mod.write(name);
             InclFix('$');
             Mod.flush;
-            if (ShowMod)
+            if (settings.showMod)
             {
                 IO.Show(Mod);
                 IO.Msg.writeln;

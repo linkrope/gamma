@@ -19,8 +19,8 @@ IO.TextOut Out;
 
 $
 
-void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter,
-        TreeType Adr, int HyperArity)
+void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter, TreeType Adr, int HyperArity,
+        bool info, bool write)
 {
     HeapType V1;
 
