@@ -1263,7 +1263,7 @@ void InitGen(IO.TextOut MOut, int Treatment, Settings settings)
     ComputeNodeIdent;
     ComputeConstDat;
     if (DebugRC)
-        RC = new IO.TextOut("Debug.RefCnt");
+        RC = new IO.TextOut(settings.path("Debug.RefCnt"));
     AffixName = new int[EAG.NextParam];
     for (size_t i = EAG.firstParam; i < EAG.NextParam; ++i)
         AffixName[i] = -1;
@@ -1401,7 +1401,7 @@ void GenHeapInc(int n)
     }
 }
 
-void GenDeclarations()
+void GenDeclarations(Settings settings)
 {
     TextIn Fix;
     string name;
@@ -1478,7 +1478,7 @@ void GenDeclarations()
             }
         }
 
-        IO.CreateFile(Tab, name);
+        IO.CreateFile(Tab, settings.path(name));
         IO.PutLInt(Tab, magic);
         IO.PutLInt(Tab, TabTimeStamp);
         IO.PutLInt(Tab, FirstHeap - 1);

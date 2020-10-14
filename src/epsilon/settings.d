@@ -34,4 +34,16 @@ struct Settings
 
     /// compile SOAG evaluator
     bool soag;
+
+    string outputDirectory;
+
+    string path(string fileName)
+    {
+        import std.path : buildPath;
+        import std.range : empty;
+
+        if (outputDirectory.empty)
+            return fileName;
+        return buildPath(outputDirectory, fileName);
+    }
 }

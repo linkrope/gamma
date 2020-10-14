@@ -1366,7 +1366,7 @@ void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
         IO.File Tab;
         size_t m;
 
-        IO.CreateFile(Tab, name);
+        IO.CreateFile(Tab, settings.path(name));
         IO.PutLInt(Tab, magicNumber);
         IO.PutLInt(Tab, TabTimeStamp);
         IO.PutLInt(Tab, nElemsPerSET);
@@ -1420,7 +1420,7 @@ void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     AllToks = BitArray();
     AllToks.length = nToks + 1;
     Fix = TextIn("fix/eELL1Gen.fix.d");
-    Mod = new IO.TextOut(EAG.BaseName ~ ".d");
+    Mod = new IO.TextOut(settings.path(EAG.BaseName ~ ".d"));
     if (parsePass)
         EvalGen.InitGen(Mod, EvalGen.parsePass, settings);
     else
@@ -1445,7 +1445,7 @@ void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     InclFix('$');
     Mod.write(NextGenSet - firstGenSet);
     InclFix('$');
-    EvalGen.GenDeclarations;
+    EvalGen.GenDeclarations(settings);
     // TODO: foreach (N; GenNonts)
     for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
     {

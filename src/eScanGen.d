@@ -116,7 +116,7 @@ void Generate(Settings settings)
         {
             Fix = TextIn("fix/eScanGen.fix.d");
             name = EAG.BaseName ~ "Scan";
-            Mod = new IO.TextOut(name ~ ".d");
+            Mod = new IO.TextOut(settings.path(name ~ ".d"));
             InclFix('$');
             Mod.write(name);
             InclFix('$');

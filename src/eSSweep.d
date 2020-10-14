@@ -536,7 +536,7 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
     {
         Fix = TextIn("fix/eSSweep.fix.d");
         name = EAG.BaseName ~ "Eval";
-        Mod = new IO.TextOut(name ~ ".d");
+        Mod = new IO.TextOut(settings.path(name ~ ".d"));
         if (!Error)
         {
             EvalGen.InitGen(Mod, EvalGen.sSweepPass, settings);
@@ -545,7 +545,7 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
             InclFix('$');
             Mod.write(HyperArity());
             InclFix('$');
-            EvalGen.GenDeclarations;
+            EvalGen.GenDeclarations(settings);
             // TODO: foreach (N; GenNonts)
             for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
             {

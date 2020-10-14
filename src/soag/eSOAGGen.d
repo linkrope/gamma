@@ -1657,7 +1657,7 @@ void GenerateModule(Settings settings)
 
     Fix = TextIn("fix/eSOAG.fix.d");
     name = EAG.BaseName ~ "Eval";
-    Out = new IO.TextOut(name ~ ".d");
+    Out = new IO.TextOut(settings.path(name ~ ".d"));
     SLEAGGen.InitGen(Out, SLEAGGen.sSweepPass, settings);
     InclFix('$');
     WrS(name);
@@ -1670,7 +1670,7 @@ void GenerateModule(Settings settings)
     {
         GenStackDeclarations;
     }
-    SLEAGGen.GenDeclarations;
+    SLEAGGen.GenDeclarations(settings);
     InclFix('$');
     SLEAGGen.GenPredProcs;
     for (R = SOAG.firstRule; R < SOAG.NextRule; ++R)

@@ -32,6 +32,7 @@ void main(string[] args)
                     "write|w", "Write compilation output as default.", &write,
                     "sweep", "Compile single-sweep evaluator.", &sweep,
                     "soag", "Compile SOAG evaluator.", &soag,
+                    "output-directory", "Write compiled compiler to directory.", &outputDirectory,
             );
         }
     }
@@ -55,6 +56,12 @@ void main(string[] args)
         import log : Level, levels;
 
         levels |= Level.trace;
+    }
+    if (!settings.outputDirectory.empty)
+    {
+        import std.file : mkdirRecurse;
+
+        mkdirRecurse(settings.outputDirectory);
     }
     if (args.dropOne.empty)
         compile(TextIn("stdin", stdin), settings);
@@ -140,20 +147,28 @@ void compile(TextIn textIn, Settings settings)
     }
     if (success)
     {
-        build(IO.files);
+        build(IO.files, settings.outputDirectory);
         IO.files = null;
     }
 }
 
-void build(string[] files)
+void build(string[] files, string outputDirectory)
 {
     import core.stdc.stdlib : exit;
+    import std.format : format;
+    import std.path : stripExtension;
     import std.process : spawnProcess, wait;
+    import std.range : empty, front;
     import std.string : join;
 
-    const args = "dmd" ~ files ~ "-g" ~ "include/runtime.d"
+    auto args = "dmd" ~ files ~ "-g" ~ "include/runtime.d"
         ~ "src/eIO.d" ~ "src/io.d" ~ "src/log.d" ~ "src/soag/eLIStacks.d";
 
+    if (!outputDirectory.empty)
+    {
+        args ~= format!"-od=%s"(outputDirectory);
+        args ~= format!"-of=%s"(files.front.stripExtension);
+    }
     writefln!"%s"(args.join(' '));
 
     auto pid = spawnProcess(args);
