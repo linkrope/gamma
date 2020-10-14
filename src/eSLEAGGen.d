@@ -2505,77 +2505,66 @@ void GenPredProcs()
 {
     int N;
 
-    void GenForward(int N)
+    void GenPredCover(int N)
+    in (EAG.Pred[N])
     {
-        void GenPredCover(int N)
-        in (EAG.Pred[N])
-        {
-            int Dom;
-            int i;
+        int Dom;
+        int i;
 
-            Mod.write("void Check");
-            Mod.write(N);
-            Mod.write("(string ErrMsg");
-            GenFormalParams(N, false);
-            Mod.write(")\n");
-            Mod.write("{\n");
-            Mod.write("if (!Pred");
-            Mod.write(N);
-            Mod.write("(");
-            Dom = EAG.HNont[N].Sig;
-            i = 1;
-            if (EAG.DomBuf[Dom] != EAG.nil)
+        Mod.write("void Check");
+        Mod.write(N);
+        Mod.write("(string ErrMsg");
+        GenFormalParams(N, false);
+        Mod.write(")\n");
+        Mod.write("{\n");
+        Mod.write("if (!Pred");
+        Mod.write(N);
+        Mod.write("(");
+        Dom = EAG.HNont[N].Sig;
+        i = 1;
+        if (EAG.DomBuf[Dom] != EAG.nil)
+        {
+            while (true)
             {
-                while (true)
+                GenVar(i);
+                ++Dom;
+                ++i;
+                if (EAG.DomBuf[Dom] == EAG.nil)
+                    break;
+                Mod.write(", ");
+            }
+        }
+        Mod.write("))\n");
+        Mod.write("{\n");
+        Dom = EAG.HNont[N].Sig;
+        i = 1;
+        while (EAG.DomBuf[Dom] > 0)
+            ++Dom;
+        if (EAG.DomBuf[Dom] != EAG.nil)
+        {
+            Mod.write("if (");
+            while (true)
+            {
+                GenVar(i);
+                Mod.write(" != errVal ");
+                do
                 {
-                    GenVar(i);
                     ++Dom;
                     ++i;
-                    if (EAG.DomBuf[Dom] == EAG.nil)
-                        break;
-                    Mod.write(", ");
                 }
+                while (!(EAG.DomBuf[Dom] <= 0));
+                if (EAG.DomBuf[Dom] == EAG.nil)
+                    break;
+                Mod.write(" && ");
             }
-            Mod.write("))\n");
-            Mod.write("{\n");
-            Dom = EAG.HNont[N].Sig;
-            i = 1;
-            while (EAG.DomBuf[Dom] > 0)
-                ++Dom;
-            if (EAG.DomBuf[Dom] != EAG.nil)
-            {
-                Mod.write("if (");
-                while (true)
-                {
-                    GenVar(i);
-                    Mod.write(" != errVal ");
-                    do
-                    {
-                        ++Dom;
-                        ++i;
-                    }
-                    while (!(EAG.DomBuf[Dom] <= 0));
-                    if (EAG.DomBuf[Dom] == EAG.nil)
-                        break;
-                    Mod.write(" && ");
-                }
-                Mod.write(") PredError(ErrMsg);\n");
-            }
-            else
-            {
-                Mod.write("Error(ErrMsg);\n");
-            }
-            Mod.write("}\n");
-            Mod.write("}\n\n");
+            Mod.write(") PredError(ErrMsg);\n");
         }
-        Mod.write("// ");
-        Mod.write("PROCEDURE^ Pred");
-        Mod.write(N);
-        GenFormalParams(N, true);
-        Mod.write("; (* ");
-        Mod.write(EAG.HNontRepr(N));
-        Mod.write(" *) \n\n");
-        GenPredCover(N);
+        else
+        {
+            Mod.write("Error(ErrMsg);\n");
+        }
+        Mod.write("}\n");
+        Mod.write("}\n\n");
     }
 
     void GenPredicateCode(int N)
@@ -2733,7 +2722,7 @@ void GenPredProcs()
     for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
     {
         if (EAG.Pred[N])
-            GenForward(N);
+            GenPredCover(N);
     }
     // TODO: foreach (N; EAG.Pred)
     for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)

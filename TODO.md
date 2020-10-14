@@ -19,10 +19,6 @@ for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
 
 - use ~ instead of Expand
 
-## Forward Declarations
-
-- remove code generation of commented out forward declarations
-
 ## Code Generation
 
 - create abstract syntax tree instead of writing code fragments

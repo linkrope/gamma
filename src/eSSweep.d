@@ -546,27 +546,6 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
             Mod.write(HyperArity());
             InclFix('$');
             EvalGen.GenDeclarations(settings);
-            // TODO: foreach (N; GenNonts)
-            for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
-            {
-                if (GenNonts[N])
-                {
-                    Mod.write("// ");
-                    Mod.write("PROCEDURE^ P");
-                    Mod.write(N);
-                    Mod.write("(Adr : TreeType");
-                    EvalGen.GenFormalParams(N, false);
-                    Mod.write(");");
-                    Mod.write("   (* ");
-                    Mod.write(EAG.HNontRepr(N));
-                    if (EAG.HNont[N].Id < 0)
-                    {
-                        Mod.write(" in ");
-                        Mod.write(EAG.NamedHNontRepr(N));
-                    }
-                    Mod.write(" *)\n");
-                }
-            }
             EvalGen.GenPredProcs;
             Mod.writeln;
         }

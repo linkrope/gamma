@@ -154,18 +154,6 @@ void GenEmitProc(IO.TextOut Mod, Settings settings)
         {
             if (MNonts[N])
             {
-                Mod.write("// ");
-                Mod.write("PROCEDURE ^ ");
-                GenProcName(N, MNonts);
-                Mod.write("(Ptr: HeapType);\n");
-            }
-        }
-        Mod.writeln;
-        // TODO: foreach (N; MNonts)
-        for (N = EAG.firstMNont; N < EAG.NextMNont; ++N)
-        {
-            if (MNonts[N])
-            {
                 Mod.write("void ");
                 GenProcName(N, MNonts);
                 Mod.write("(HeapType Ptr)\n");

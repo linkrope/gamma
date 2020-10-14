@@ -1446,24 +1446,6 @@ void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     Mod.write(NextGenSet - firstGenSet);
     InclFix('$');
     EvalGen.GenDeclarations(settings);
-    // TODO: foreach (N; GenNonts)
-    for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
-    {
-        if (GenNonts[N])
-        {
-            if (!Nont[N].Anonym)
-            {
-                Mod.write("// ");
-                Mod.write("PROCEDURE^ P");
-                Mod.write(N);
-                EvalGen.GenFormalParams(N, true);
-                Mod.write(";");
-                Mod.write("   (* ");
-                Mod.write(EAG.HNontRepr(N));
-                Mod.write(" *)\n");
-            }
-        }
-    }
     EvalGen.GenPredProcs;
     InclFix('$');
     TabTimeStamp = IO.TimeStamp();
