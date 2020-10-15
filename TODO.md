@@ -1,12 +1,3 @@
-## BitArray
-
-- use `foreach (N; EAG.All)` instead of
-
-```d
-for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
-    if (EAG.All[N])
-```
-
 ## eIO.d
 
 - get rid of (as much as possible of) eIO.d

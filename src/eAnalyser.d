@@ -984,12 +984,7 @@ void ComputeEAGSets()
     }
     Prune;
     EAG.Prod = Prod;
-    // TODO: foreach (Sym; EAG.All)
-    for (Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
-    {
-        if (EAG.All[Sym] && !EAG.Prod[Sym])
-            ++Warnings;
-    }
+    Warnings += (EAG.All & ~EAG.Prod).count;
     if (Warnings > 0)
         warn!"%s warnings"(Warnings);
 }

@@ -200,7 +200,7 @@ void Init()
 * OUT: -
 * SEM: Initialisierung der Mengen VDS und VS für eine Affixposition (analog Step 1 Theorie)
 */
-void InitVDSandVS(int S, int A)
+void InitVDSandVS(size_t S, int A)
 {
     int SO;
     int AP;
@@ -291,7 +291,7 @@ void CompleteInitVDS()
  * SEM: Test, ob Affixposition als Stack oder als globale Variable abgespeichert werden kann -
  *      nach Theorem 1 und 3 der Theorie
  */
-void CheckStorageType(int S, int A)
+void CheckStorageType(size_t S, int A)
 {
     int R;
     int SO;
@@ -309,7 +309,7 @@ void CheckStorageType(int S, int A)
     /**
      * IN: Symbol, Affixpos.Nr., aktuelle Regel, zwei Positionen der EVS
      */
-    void CheckT2P1andT1P1(int S, int A, int R, int PN1, int PN2)
+    void CheckT2P1andT1P1(size_t S, int A, int R, int PN1, int PN2)
     {
         int AP3;
         int AN3;
@@ -406,7 +406,7 @@ void CheckStorageType(int S, int A)
     /**
      * IN: Affixpos.Nr., aktuelle Regel, zwei Position in der EVS
      */
-    void CheckT2P3(int S, int A, int R, int PN1, int PN2)
+    void CheckT2P3(size_t S, int A, int R, int PN1, int PN2)
     {
         int SO2;
         int AP1;
@@ -534,38 +534,31 @@ void CheckStorageType(int S, int A)
 
 void Optimize()
 {
-    int S;
-    int AP;
-    int A;
-
     Init;
     GlobalVar = firstGlobalVar - 1;
     StackVar = firstStackVar - 1;
-    // TODO: foreach (A; EAG.All)
-    for (S = SOAG.firstSym; S < SOAG.NextSym; ++S)
+    foreach (S; EAG.All.bitsSet)
     {
-        if (EAG.All[S])
+        for (int AP = SOAG.Sym[S].AffPos.Beg; AP <= SOAG.Sym[S].AffPos.End; ++AP)
         {
-            for (AP = SOAG.Sym[S].AffPos.Beg; AP <= SOAG.Sym[S].AffPos.End; ++AP)
+            const A = AP - SOAG.Sym[S].AffPos.Beg;
+
+            if (!EAG.Pred[S] || SOAG.IsSynthesized(S, A))
             {
-                A = AP - SOAG.Sym[S].AffPos.Beg;
-                if (!EAG.Pred[S] || SOAG.IsSynthesized(S, A))
+                disjoint = true;
+                admissible = true;
+                InitVDSandVS(S, A);
+                CompleteInitVDS;
+                CheckStorageType(S, A);
+                if (disjoint)
                 {
-                    disjoint = true;
-                    admissible = true;
-                    InitVDSandVS(S, A);
-                    CompleteInitVDS;
-                    CheckStorageType(S, A);
-                    if (disjoint)
-                    {
-                        ++GlobalVar;
-                        SOAG.StorageName[AP] = -GlobalVar;
-                    }
-                    else if (admissible)
-                    {
-                        ++StackVar;
-                        SOAG.StorageName[AP] = StackVar;
-                    }
+                    ++GlobalVar;
+                    SOAG.StorageName[AP] = -GlobalVar;
+                }
+                else if (admissible)
+                {
+                    ++StackVar;
+                    SOAG.StorageName[AP] = StackVar;
                 }
             }
         }

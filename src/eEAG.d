@@ -286,13 +286,9 @@ void Expand()
     long NewLen(long ArrayLen)
     {
         if (ArrayLen < DIV(int.max, 2))
-        {
             return 2 * ArrayLen + 1;
-        }
         else
-        {
             assert(0);
-        }
     }
 
     if (NextParam >= ParamBuf.length)
@@ -300,9 +296,7 @@ void Expand()
         OpenParamBuf ParamBuf1 = new ParamRecord[NewLen(ParamBuf.length)];
 
         for (size_t i = firstParam; i < ParamBuf.length; ++i)
-        {
             ParamBuf1[i] = ParamBuf[i];
-        }
         ParamBuf = ParamBuf1;
     }
     if (NextMTerm >= MTerm.length)
@@ -310,9 +304,7 @@ void Expand()
         OpenMTerm MTerm1 = new MTermRecord[NewLen(MTerm.length)];
 
         for (size_t i = firstMTerm; i < MTerm.length; ++i)
-        {
             MTerm1[i] = MTerm[i];
-        }
         MTerm = MTerm1;
     }
     if (NextMNont >= MNont.length)
@@ -320,9 +312,7 @@ void Expand()
         OpenMNont MNont1 = new MNontRecord[NewLen(MNont.length)];
 
         for (size_t i = firstMNont; i < MNont.length; ++i)
-        {
             MNont1[i] = MNont[i];
-        }
         MNont = MNont1;
     }
     if (NextHTerm >= HTerm.length)
@@ -330,9 +320,7 @@ void Expand()
         OpenHTerm HTerm1 = new HTermRecord[NewLen(HTerm.length)];
 
         for (size_t i = firstHTerm; i < HTerm.length; ++i)
-        {
             HTerm1[i] = HTerm[i];
-        }
         HTerm = HTerm1;
     }
     if (NextHNont >= HNont.length)
@@ -340,9 +328,7 @@ void Expand()
         OpenHNont HNont1 = new HNontRecord[NewLen(HNont.length)];
 
         for (size_t i = firstHNont; i < HNont.length; ++i)
-        {
             HNont1[i] = HNont[i];
-        }
         HNont = HNont1;
     }
     if (NextDom >= DomBuf.length)
@@ -350,9 +336,7 @@ void Expand()
         OpenDomBuf DomBuf1 = new int[NewLen(DomBuf.length)];
 
         for (size_t i = firstDom; i < DomBuf.length; ++i)
-        {
             DomBuf1[i] = DomBuf[i];
-        }
         DomBuf = DomBuf1;
     }
     if (NextMAlt >= MAlt.length)
@@ -360,9 +344,7 @@ void Expand()
         OpenMAlt MAlt1 = new MAltRecord[NewLen(MAlt.length)];
 
         for (size_t i = firstMAlt; i < MAlt.length; ++i)
-        {
             MAlt1[i] = MAlt[i];
-        }
         MAlt = MAlt1;
     }
     if (NextMemb >= MembBuf.length)
@@ -370,9 +352,7 @@ void Expand()
         OpenMembBuf MembBuf1 = new int[NewLen(MembBuf.length)];
 
         for (size_t i = firstMemb; i < MembBuf.length; ++i)
-        {
             MembBuf1[i] = MembBuf[i];
-        }
         MembBuf = MembBuf1;
     }
     if (NextNode >= NodeBuf.length)
@@ -380,9 +360,7 @@ void Expand()
         OpenNodeBuf NodeBuf1 = new int[NewLen(NodeBuf.length)];
 
         for (size_t i = firstNode; i < NodeBuf.length; ++i)
-        {
             NodeBuf1[i] = NodeBuf[i];
-        }
         NodeBuf = NodeBuf1;
     }
     if (NextVar >= Var.length)
@@ -390,9 +368,7 @@ void Expand()
         OpenVar Var1 = new VarRecord[NewLen(Var.length)];
 
         for (size_t i = firstVar; i < Var.length; ++i)
-        {
             Var1[i] = Var[i];
-        }
         Var = Var1;
     }
 }
@@ -403,9 +379,7 @@ void AppParam(int Affixform, Position Pos)
     ParamBuf[NextParam].Pos = Pos;
     ++NextParam;
     if (NextParam >= ParamBuf.length)
-    {
         Expand;
-    }
 }
 
 int FindMTerm(int Id)
@@ -414,16 +388,12 @@ int FindMTerm(int Id)
     Sym = firstMTerm;
     MTerm[NextMTerm].Id = Id;
     while (Id != MTerm[Sym].Id)
-    {
         ++Sym;
-    }
     if (Sym == NextMTerm)
     {
         ++NextMTerm;
         if (NextMTerm >= MTerm.length)
-        {
             Expand;
-        }
     }
     return Sym;
 }
@@ -434,9 +404,7 @@ int FindMNont(int Id)
     Sym = firstMNont;
     MNont[NextMNont].Id = Id;
     while (Id != MNont[Sym].Id)
-    {
         ++Sym;
-    }
     if (Sym == NextMNont)
     {
         MNont[NextMNont].MRule = nil;
@@ -444,9 +412,7 @@ int FindMNont(int Id)
         MNont[NextMNont].IsToken = false;
         ++NextMNont;
         if (NextMNont >= MNont.length)
-        {
             Expand;
-        }
     }
     return Sym;
 }
@@ -457,16 +423,12 @@ int FindHTerm(int Id)
     Sym = firstHTerm;
     HTerm[NextHTerm].Id = Id;
     while (Id != HTerm[Sym].Id)
-    {
         ++Sym;
-    }
     if (Sym == NextHTerm)
     {
         ++NextHTerm;
         if (NextHTerm >= HTerm.length)
-        {
             Expand;
-        }
     }
     return Sym;
 }
@@ -477,9 +439,7 @@ int FindHNont(int Id)
     Sym = firstHNont;
     HNont[NextHNont].Id = Id;
     while (Id != HNont[Sym].Id)
-    {
         ++Sym;
-    }
     if (Sym == NextHNont)
     {
         HNont[NextHNont].NamedId = Id;
@@ -488,9 +448,7 @@ int FindHNont(int Id)
         HNont[NextHNont].IsToken = false;
         ++NextHNont;
         if (NextHNont >= HNont.length)
-        {
             Expand;
-        }
     }
     return Sym;
 }
@@ -505,24 +463,18 @@ int NewAnonymNont(int Id)
     --NextAnonym;
     ++NextHNont;
     if (NextHNont >= HNont.length)
-    {
         Expand;
-    }
     return NextHNont - 1;
 }
 
 void AppDom(char Dir, int Dom)
 {
     if (Dir == '-')
-    {
         Dom = -Dom;
-    }
     DomBuf[NextDom] = Dom;
     ++NextDom;
     if (NextDom >= DomBuf.length)
-    {
         Expand;
-    }
 }
 
 bool WellMatched(int Sig1, int Sig2)
@@ -550,9 +502,7 @@ bool SigOK(int Sym)
         DomBuf[NextDom] = nil;
         ++NextDom;
         if (NextDom >= DomBuf.length)
-        {
             Expand;
-        }
         CurSig = NextDom;
         return true;
     }
@@ -568,15 +518,12 @@ int NewMAlt(int Sym, int Right)
 {
     int Arity;
     int i;
+
     MAlt[NextMAlt].Next = nil;
     if (MNont[Sym].MRule == nil)
-    {
         MNont[Sym].MRule = NextMAlt;
-    }
     else
-    {
         MAlt[MNont[Sym].Last].Next = NextMAlt;
-    }
     MNont[Sym].Last = NextMAlt;
     MAlt[NextMAlt].Left = Sym;
     MAlt[NextMAlt].Right = Right;
@@ -585,21 +532,15 @@ int NewMAlt(int Sym, int Right)
     while (MembBuf[i] != 0)
     {
         if (MembBuf[i] > 0)
-        {
             ++Arity;
-        }
         ++i;
     }
     MAlt[NextMAlt].Arity = Arity;
     if (Arity > MaxMArity)
-    {
         MaxMArity = Arity;
-    }
     ++NextMAlt;
     if (NextMAlt >= MAlt.length)
-    {
         Expand;
-    }
     return NextMAlt - 1;
 }
 
@@ -608,29 +549,23 @@ void AppMemb(int Val)
     MembBuf[NextMemb] = Val;
     ++NextMemb;
     if (NextMemb >= MembBuf.length)
-    {
         Expand;
-    }
 }
 
 int FindVar(int Sym, int Num, Position Pos, bool Def)
 {
-    int V;
-    V = Scope;
+    int V = Scope;
+
     Var[NextVar].Sym = Sym;
     Var[NextVar].Num = Num;
     while (Var[V].Sym != Sym || Var[V].Num != Num)
-    {
         ++V;
-    }
     if (V == NextVar)
     {
         V = Scope;
         Var[NextVar].Num = -Num;
         while (Var[V].Sym != Sym || Var[V].Num != -Num)
-        {
             ++V;
-        }
         if (V != NextVar)
         {
             Var[V].Neg = NextVar;
@@ -646,9 +581,7 @@ int FindVar(int Sym, int Num, Position Pos, bool Def)
         Var[NextVar].Def = Def;
         ++NextVar;
         if (NextVar >= Var.length)
-        {
             Expand;
-        }
     }
     else
     {
@@ -719,9 +652,7 @@ void NewGrp(int Sym, Alt Sub)
         Alt A = (cast(Grp) HNont[Sym].Def).Sub;
 
         while (A.Next !is null)
-        {
             A = A.Next;
-        }
         A.Next = Sub;
     }
 }
@@ -785,7 +716,7 @@ public string HTermRepr(int Term)
     return Scanner.repr(HTerm[Term].Id);
 }
 
-public string HNontRepr(int Nont)
+public string HNontRepr(size_t Nont)
 {
     import std.format : format;
 
@@ -809,7 +740,7 @@ public string VarRepr(int V)
     return result;
 }
 
-public string NamedHNontRepr(int Nont)
+public string NamedHNontRepr(size_t Nont)
 {
     return Scanner.repr(HNont[Nont].NamedId);
 }
@@ -826,29 +757,17 @@ bool Performed(size_t Needed)
     else
     {
         if (Needed & analysed)
-        {
             error!"analyse a specification first";
-        }
         if (Needed & predicates)
-        {
             error!"check for predicates first";
-        }
         if (Needed & parsable)
-        {
             error!"test for ELL1 attribute first";
-        }
         if (Needed & isSLEAG)
-        {
             error!"test for SLEAG attribute first";
-        }
         if (Needed & isSSweep)
-        {
             error!"test for single sweep attribute first";
-        }
         if (Needed & hasEvaluator)
-        {
             error!"generate an evaluator first";
-        }
         return false;
     }
 }

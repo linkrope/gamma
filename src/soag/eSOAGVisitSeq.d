@@ -25,18 +25,14 @@ void ComputeVisitNo()
     int MaxPart;
     int PartNum;
 
-    // TODO: foreach (S; EAG.All)
-    for (int S = SOAG.firstSym; S < SOAG.NextSym; ++S)
+    foreach (S; EAG.All.bitsSet)
     {
-        if (EAG.All[S])
+        MaxPart = DIV(SOAG.Sym[S].MaxPart + 1, 2).to!int;
+        SOAG.Sym[S].MaxPart = MaxPart;
+        for (AP = SOAG.Sym[S].AffPos.Beg; AP <= SOAG.Sym[S].AffPos.End; ++AP)
         {
-            MaxPart = DIV(SOAG.Sym[S].MaxPart + 1, 2).to!int;
-            SOAG.Sym[S].MaxPart = MaxPart;
-            for (AP = SOAG.Sym[S].AffPos.Beg; AP <= SOAG.Sym[S].AffPos.End; ++AP)
-            {
-                PartNum = DIV(SOAG.PartNum[AP] + 1, 2).to!int;
-                SOAG.PartNum[AP] = MaxPart - PartNum + 1;
-            }
+            PartNum = DIV(SOAG.PartNum[AP] + 1, 2).to!int;
+            SOAG.PartNum[AP] = MaxPart - PartNum + 1;
         }
     }
 }

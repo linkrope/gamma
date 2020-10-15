@@ -4,12 +4,12 @@ import EAG = eEAG;
 import io : UndefPos;
 import runtime;
 import std.bitmanip : BitArray;
+import std.conv : to;
 
 const nil = EAG.nil;
 
 void Shift()
 {
-    int HN;
     int HT;
     EAG.Alt HA;
     EAG.Factor HF;
@@ -27,20 +27,13 @@ void Shift()
     EAG.NextParam = EAG.firstParam;
     EAG.NextMTerm = EAG.NextHTerm - EAG.firstHTerm + EAG.firstMTerm;
     while (EAG.NextMTerm >= EAG.MTerm.length)
-    {
         EAG.Expand;
-    }
     for (HT = EAG.firstHTerm; HT < EAG.NextHTerm; ++HT)
-    {
         EAG.MTerm[HT - EAG.firstHTerm + EAG.firstMTerm].Id = EAG.HTerm[HT].Id;
-    }
     EAG.NextMNont = EAG.NextHNont - EAG.firstHNont + EAG.firstMNont;
     while (EAG.NextMNont >= EAG.MNont.length)
-    {
         EAG.Expand;
-    }
-    // TODO: foreach (HN; GenNonts)
-    for (HN = EAG.firstHNont; HN < EAG.NextHNont; ++HN)
+    for (int HN = EAG.firstHNont; HN < EAG.NextHNont; ++HN)
     {
         if (GenNonts[HN])
         {
@@ -60,9 +53,7 @@ void Shift()
                 EAG.NodeBuf[EAG.NextNode] = EAG.NextMAlt;
                 ++EAG.NextNode;
                 if (EAG.NextNode >= EAG.NodeBuf.length)
-                {
                     EAG.Expand;
-                }
                 Rhs = EAG.NextMemb;
                 HF = HA.Sub;
                 Num = 2;
@@ -159,15 +150,11 @@ void Shift()
         }
     }
     EAG.NextDom = EAG.firstDom;
-    // TODO: foreach (HN; GenNonts)
-    for (HN = EAG.firstHNont; HN < EAG.NextHNont; ++HN)
+    foreach (HN; GenNonts.bitsSet)
     {
-        if (GenNonts[HN])
-        {
-            EAG.HNont[HN].Sig = EAG.NextDom;
-            EAG.AppDom('+', HN - EAG.firstHNont + EAG.firstMNont);
-            EAG.AppDom('+', nil);
-        }
+        EAG.HNont[HN].Sig = EAG.NextDom;
+        EAG.AppDom('+', HN.to!int - EAG.firstHNont + EAG.firstMNont);
+        EAG.AppDom('+', nil);
     }
     EAG.All -= Del;
     EAG.Pred -= Del;

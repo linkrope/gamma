@@ -53,24 +53,18 @@ void GenEmitProc(IO.TextOut Mod, Settings settings)
 
     void GenEmitProcs(BitArray MNonts)
     {
-        int N;
-
-        void GenProcName(int N, BitArray Type)
+        void GenProcName(size_t N, BitArray Type)
         {
             Mod.write("Emit");
             Mod.write(N);
             Mod.write("Type");
             if (Type == Type2)
-            {
                 Mod.write('2');
-            }
             else
-            {
                 Mod.write('3');
-            }
         }
 
-        void GenAlts(int N)
+        void GenAlts(size_t N)
         {
             int A;
             int F;
@@ -114,28 +108,20 @@ void GenEmitProc(IO.TextOut Mod, Settings settings)
                         Mod.write(Scanner.repr(EAG.MTerm[-M].Id));
                         Mod.write("); ");
                         if (MNonts == Type2)
-                        {
                             WhiteSpace;
-                        }
                     }
                     else
                     {
                         if (MNonts == Type3 || EAG.MNont[M].IsToken)
-                        {
                             GenProcName(M, Type3);
-                        }
                         else
-                        {
                             GenProcName(M, Type2);
-                        }
                         ++arity;
                         Mod.write("(Heap[Ptr + ");
                         Mod.write(arity);
                         Mod.write("]); ");
                         if (EAG.MNont[M].IsToken && MNonts == Type2)
-                        {
                             WhiteSpace;
-                        }
                     }
                     ++F;
                     Mod.writeln;
@@ -149,19 +135,15 @@ void GenEmitProc(IO.TextOut Mod, Settings settings)
             Mod.write("}\n");
         }
 
-        // TODO: foreach (N; MNonts)
-        for (N = EAG.firstMNont; N < EAG.NextMNont; ++N)
+        foreach (N; MNonts.bitsSet)
         {
-            if (MNonts[N])
-            {
-                Mod.write("void ");
-                GenProcName(N, MNonts);
-                Mod.write("(HeapType Ptr)\n");
-                Mod.write("{\n");
-                Mod.write("OutputSize += DIV(MOD(Heap[Ptr], refConst), arityConst) + 1;\n");
-                GenAlts(N);
-                Mod.write("}\n\n");
-            }
+            Mod.write("void ");
+            GenProcName(N, MNonts);
+            Mod.write("(HeapType Ptr)\n");
+            Mod.write("{\n");
+            Mod.write("OutputSize += DIV(MOD(Heap[Ptr], refConst), arityConst) + 1;\n");
+            GenAlts(N);
+            Mod.write("}\n\n");
         }
     }
 

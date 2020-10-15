@@ -160,13 +160,9 @@ void WrAffixAppls(int R)
     {
         EAGRule = (cast(SOAG.EmptyRule) SOAG.Rule[R]).Rule;
         if (cast(EAG.Opt) EAGRule !is null)
-        {
             Scope = (cast(EAG.Opt) EAGRule).Scope;
-        }
         else if (cast(EAG.Rep) EAGRule !is null)
-        {
             Scope = (cast(EAG.Rep) EAGRule).Scope;
-        }
     }
     for (V = Scope.Beg; V < Scope.End; ++V)
     {
@@ -201,13 +197,9 @@ void ComputeAffixOffset(int R)
     {
         EAGRule = (cast(SOAG.EmptyRule) SOAG.Rule[R]).Rule;
         if (cast(EAG.Opt) EAGRule !is null)
-        {
             Scope = (cast(EAG.Opt) EAGRule).Scope;
-        }
         else if (cast(EAG.Rep) EAGRule !is null)
-        {
             Scope = (cast(EAG.Rep) EAGRule).Scope;
-        }
     }
     Offset = firstAffixOffset;
     for (A = Scope.Beg; A < Scope.End; ++A)
@@ -257,13 +249,9 @@ int GetAffixCount(int R)
     {
         EAGRule = (cast(SOAG.EmptyRule) SOAG.Rule[R]).Rule;
         if (cast(EAG.Opt) EAGRule !is null)
-        {
             Scope = (cast(EAG.Opt) EAGRule).Scope;
-        }
         else if (cast(EAG.Rep) EAGRule !is null)
-        {
             Scope = (cast(EAG.Rep) EAGRule).Scope;
-        }
     }
     return Scope.End - Scope.Beg;
 }
@@ -281,25 +269,21 @@ int HyperArity()
     int Max = 0;
     int i;
 
-    // TODO: foreach (N; Nonts)
-    for (int N = EAG.firstHNont; N < EAG.NextHNont; ++N)
+    foreach (N; Nonts.bitsSet)
     {
-        if (Nonts[N])
-        {
-            EAG.Alt A = EAG.HNont[N].Def.Sub;
+        EAG.Alt A = EAG.HNont[N].Def.Sub;
 
-            i = 0;
-            do
-            {
-                ++i;
-                A = A.Next;
-            }
-            while (A !is null);
-            if (cast(EAG.Opt) EAG.HNont[N].Def !is null || cast(EAG.Rep) EAG.HNont[N].Def !is null)
-                ++i;
-            if (i > Max)
-                Max = i;
+        i = 0;
+        do
+        {
+            ++i;
+            A = A.Next;
         }
+        while (A !is null);
+        if (cast(EAG.Opt) EAG.HNont[N].Def !is null || cast(EAG.Rep) EAG.HNont[N].Def !is null)
+            ++i;
+        if (i > Max)
+            Max = i;
     }
     i = 1;
     while (i <= Max)
@@ -413,13 +397,9 @@ void GenHeapInc(int n)
     if (n != 0)
     {
         if (n == 1)
-        {
             WrS("++NextHeap; \n");
-        }
         else
-        {
             WrSIS("NextHeap += ", n, ";\n");
-        }
     }
 }
 
@@ -432,30 +412,20 @@ void GenHeap(int Var, int Offset)
 {
     WrS("Heap[");
     if (Var > 0)
-    {
         GenVar(Var);
-    }
     else
-    {
         WrS("NextHeap");
-    }
     if (Offset > 0)
-    {
         WrSI(" + ", Offset);
-    }
     else if (Offset < 0)
-    {
         WrSI(" - ", -Offset);
-    }
     WrS("]");
 }
 
 void GenOverflowGuard(int n)
 {
     if (n > 0)
-    {
         WrSIS("if (NextHeap >= Heap.length - ", n, ") EvalExpand;\n");
-    }
 }
 
 /**
@@ -483,13 +453,9 @@ in (AffixOffset[V] != notApplied)
     {
         AP = GetCorrespondedAffPos(SOAG.DefAffOcc[V]);
         if (SOAG.StorageName[AP] > 0)
-        {
             WrSIS("Stacks.Top(Stack", SOAG.StorageName[AP], ") ");
-        }
         else
-        {
             WrSI("GV", -SOAG.StorageName[AP]);
-        }
     }
     else
     {
@@ -532,13 +498,9 @@ in (AffixOffset[V] != notApplied)
 void GenClose()
 {
     if (Close)
-    {
         WrS("); ");
-    }
     else
-    {
         WrS("; ");
-    }
 }
 
 /**
@@ -551,13 +513,9 @@ void GenIncRefCnt(int Var)
 {
     WrS("Heap[");
     if (Var < 0)
-    {
         GenVar(-Var);
-    }
     else
-    {
         GenAffix(Var);
-    }
     WrS("] += refConst;\n");
 }
 
@@ -660,13 +618,9 @@ void GenSynPred(int SymOccInd, int VisitNo)
                     WrS(";\n");
                     --AffixAppls[V];
                     if (UseRefCnt)
-                    {
                         GenFreeAffix(V);
-                    }
                     if (Optimize)
-                    {
                         GenPopAffix(V);
-                    }
                 }
             }
             else
@@ -722,17 +676,11 @@ void GenSynPred(int SymOccInd, int VisitNo)
                     WrS("; ");
                     --AffixAppls[V];
                     if (AffixAppls[V] > 0)
-                    {
                         GenIncRefCnt(V);
-                    }
                     else
-                    {
                         WrS("// komplementäre Referenzzählerbehandlung\n");
-                    }
                     if (Optimize)
-                    {
                         GenPopAffix(V);
-                    }
                 }
             }
             else
@@ -787,17 +735,11 @@ void GenSynPred(int SymOccInd, int VisitNo)
                     WrS("; ");
                     --AffixAppls[V];
                     if (UseRefCnt && AffixAppls[V] > 0)
-                    {
                         GenIncRefCnt(V);
-                    }
                     else
-                    {
                         WrS("// komplementäre Referenzzählerbehandlung\n");
-                    }
                     if (Optimize)
-                    {
                         GenPopAffix(V);
-                    }
                     WrS("\n");
                 }
             }
@@ -809,9 +751,7 @@ void GenSynPred(int SymOccInd, int VisitNo)
                     GenAffPos(S, AN);
                     WrSI(" = ", SLEAGGen.AffixPlace[P]);
                     if (UseRefCnt)
-                    {
                         WrSIS("; Heap[", SLEAGGen.AffixPlace[P], "] += refConst");
-                    }
                     WrS(";\n");
                 }
                 else if (UseRefCnt)
@@ -903,13 +843,9 @@ void GenAnalPred(int SymOccInd, int VisitNo)
         GenAffix(V2);
         WrS(", ");
         if (EAG.Var[V1].Num < 0)
-        {
             GenEqualErrMsg(V1);
-        }
         else
-        {
             GenEqualErrMsg(V2);
-        }
         WrS(");\n");
     }
 
@@ -949,9 +885,7 @@ void GenAnalPred(int SymOccInd, int VisitNo)
         {
             GenHeap(NodeName[Node], 0);
             if (UseRefCnt)
-            {
                 WrS(".MOD(refConst)");
-            }
             WrSI(" != ", SLEAGGen.NodeIdent[Alt]);
         }
         WrS(") AnalyseError(");
@@ -971,13 +905,9 @@ void GenAnalPred(int SymOccInd, int VisitNo)
                     GenEqualPred(V, Node, n);
                     --AffixAppls[V];
                     if (UseRefCnt)
-                    {
                         GenFreeAffix(V);
-                    }
                     if (Optimize)
-                    {
                         GenPopAffix(V);
-                    }
                 }
                 else
                 {
@@ -996,13 +926,9 @@ void GenAnalPred(int SymOccInd, int VisitNo)
                             --AffixAppls[EAG.Var[V].Neg];
                             --AffixAppls[V];
                             if (UseRefCnt && AffixAppls[V] > 0)
-                            {
                                 GenIncRefCnt(V);
-                            }
                             if (UseRefCnt)
-                            {
                                 GenFreeAffix(EAG.Var[V].Neg);
-                            }
                             if (Optimize)
                             {
                                 GenPopAffix(EAG.Var[V].Neg);
@@ -1056,13 +982,9 @@ void GenAnalPred(int SymOccInd, int VisitNo)
                     WrS(");\n");
                     --AffixAppls[V];
                     if (UseRefCnt)
-                    {
                         GenFreeAffix(V);
-                    }
                     if (Optimize)
-                    {
                         GenPopAffix(V);
-                    }
                     if (UseRefCnt)
                     {
                         Ind;
@@ -1083,9 +1005,7 @@ void GenAnalPred(int SymOccInd, int VisitNo)
                             GenAffPos(S, AN);
                             GenClose;
                             if (UseRefCnt)
-                            {
                                 WrS("// komplementäre Referenzzählerbehandlung");
-                            }
                             WrS("\n");
                         }
                     }
@@ -1204,13 +1124,9 @@ void GenPredCall(int SO)
                 {
                     AP1 = GetCorrespondedAffPos(SOAG.DefAffOcc[V]);
                     if (SOAG.StorageName[AP1] > 0)
-                    {
                         GenAffPos(S, AN);
-                    }
                     else
-                    {
                         WrSI("GV", -SOAG.StorageName[AP1]);
-                    }
                 }
                 else if (AffixOffset[V] == notApplied)
                 {
@@ -1229,22 +1145,14 @@ void GenPredCall(int SO)
         else
         {
             if (Node > 0)
-            {
                 GenAffPos(S, AN);
-            }
             else
-            {
                 GenAffix(V);
-            }
         }
         if (AP != SOAG.SymOcc[SO].AffOcc.End)
-        {
             WrS(", ");
-        }
         else
-        {
             WrS(");\n");
-        }
     }
     for (AP = SOAG.SymOcc[SO].AffOcc.Beg; AP <= SOAG.SymOcc[SO].AffOcc.End; ++AP)
     {
@@ -1277,13 +1185,9 @@ void GenPredCall(int SO)
             {
                 --AffixAppls[V];
                 if (UseRefCnt)
-                {
                     GenFreeAffix(V);
-                }
                 if (Optimize)
-                {
                     GenPopAffix(V);
-                }
             }
         }
     }
@@ -1324,17 +1228,11 @@ void GenPredPos(int R, int i, ref bool PosNeeded)
     {
         --i;
         while (cast(SOAG.Visit) SOAG.VS[i] is null && cast(SOAG.Leave) SOAG.VS[i] is null && i > SOAG.Rule[R].VS.Beg)
-        {
             --i;
-        }
         if (cast(SOAG.Visit) SOAG.VS[i] !is null)
-        {
             k = SubTreeOffset[(cast(SOAG.Visit) SOAG.VS[i]).SymOcc];
-        }
         else
-        {
             k = SOAG.Rule[R].SymOcc.Beg;
-        }
         Ind;
         WrSIS("Pos = SemTree[TreeAdr + ", k, "].Pos;\n");
         PosNeeded = false;
@@ -1371,12 +1269,8 @@ void GenVisitRule(int R)
     Indent += cTab;
     NontCnt = 1;
     for (SO = SOAG.Rule[R].SymOcc.Beg + 1; SO <= SOAG.Rule[R].SymOcc.End; ++SO)
-    {
         if (!SOAG.IsPredNont(SO))
-        {
             ++NontCnt;
-        }
-    }
     SO = SOAG.Rule[R].SymOcc.Beg;
     Ind;
     WrS("if (VisitNo == syntacticPart)\n");
@@ -1667,9 +1561,7 @@ void GenerateModule(Settings settings)
     GenConstDeclarations;
     InclFix('$');
     if (Optimize)
-    {
         GenStackDeclarations;
-    }
     SLEAGGen.GenDeclarations(settings);
     InclFix('$');
     SLEAGGen.GenPredProcs;

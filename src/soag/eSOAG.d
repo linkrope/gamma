@@ -212,13 +212,9 @@ void Expand()
     long NewLen(long ArrayLen)
     {
         if (ArrayLen < DIV(int.max, 2))
-        {
             return 2 * ArrayLen + 1;
-        }
         else
-        {
             assert(0);
-        }
     }
 
     if (NextAffOcc >= AffOcc.length)
@@ -226,9 +222,7 @@ void Expand()
         OpenAffOcc AffOcc1 = new AffOccDesc[NewLen(AffOcc.length)];
 
         for (size_t i = firstAffOcc; i < AffOcc.length; ++i)
-        {
             AffOcc1[i] = AffOcc[i];
-        }
         AffOcc = AffOcc1;
     }
     if (NextSymOcc >= SymOcc.length)
@@ -236,9 +230,7 @@ void Expand()
         OpenSymOcc SymOcc1 = new SymOccDesc[NewLen(SymOcc.length)];
 
         for (size_t i = firstSymOcc; i < SymOcc.length; ++i)
-        {
             SymOcc1[i] = SymOcc[i];
-        }
         SymOcc = SymOcc1;
     }
     if (NextRule >= Rule.length)
@@ -246,9 +238,7 @@ void Expand()
         OpenRule Rule1 = new RuleBase[NewLen(Rule.length)];
 
         for (size_t i = firstRule; i < Rule.length; ++i)
-        {
             Rule1[i] = Rule[i];
-        }
         Rule = Rule1;
     }
     if (NextVS >= VS.length)
@@ -256,9 +246,7 @@ void Expand()
         OpenVS VS1 = new Instruction[NewLen(VS.length)];
 
         for (size_t i = firstVS; i < VS.length; ++i)
-        {
             VS1[i] = VS[i];
-        }
         VS = VS1;
     }
 }
@@ -275,9 +263,7 @@ void AppAffOcc(int Params)
             AffOcc[NextAffOcc].AffOccNum.InSym = NextAffOcc - SymOcc[NextSymOcc].AffOcc.Beg;
             ++NextAffOcc;
             if (NextAffOcc >= AffOcc.length)
-            {
                 Expand;
-            }
             ++Params;
         }
     }
@@ -299,17 +285,17 @@ void AppSymOccs(EAG.Factor Factor)
             Sym[(cast(EAG.Nont) Factor).Sym].FirstOcc = NextSymOcc;
             ++NextSymOcc;
             if (NextSymOcc >= SymOcc.length)
-            {
                 Expand;
-            }
         }
         Factor = Factor.Next;
     }
 }
 
-void AppLeftSymOcc(int leftSym, int Params)
+void AppLeftSymOcc(size_t leftSym, int Params)
 {
-    SymOcc[NextSymOcc].SymInd = leftSym;
+    import std.conv : to;
+
+    SymOcc[NextSymOcc].SymInd = leftSym.to!int;
     SymOcc[NextSymOcc].RuleInd = NextRule;
     SymOcc[NextSymOcc].Nont = null;
     SymOcc[NextSymOcc].AffOcc.Beg = NextAffOcc;
@@ -319,12 +305,10 @@ void AppLeftSymOcc(int leftSym, int Params)
     Sym[leftSym].FirstOcc = NextSymOcc;
     ++NextSymOcc;
     if (NextSymOcc >= SymOcc.length)
-    {
         Expand;
-    }
 }
 
-void AppEmptyRule(int leftSym, EAG.Rule EAGRule)
+void AppEmptyRule(size_t leftSym, EAG.Rule EAGRule)
 {
     EmptyRule A = new EmptyRule;
 
@@ -333,20 +317,14 @@ void AppEmptyRule(int leftSym, EAG.Rule EAGRule)
     A.SymOcc.Beg = NextSymOcc;
     A.AffOcc.Beg = NextAffOcc;
     if (cast(EAG.Opt) EAGRule !is null)
-    {
         AppLeftSymOcc(leftSym, (cast(EAG.Opt) EAGRule).Formal.Params);
-    }
     else if (cast(EAG.Rep) EAGRule !is null)
-    {
         AppLeftSymOcc(leftSym, (cast(EAG.Rep) EAGRule).Formal.Params);
-    }
     A.SymOcc.End = NextSymOcc - 1;
     A.AffOcc.End = NextAffOcc - 1;
     ++NextRule;
     if (NextRule >= Rule.length)
-    {
         Expand;
-    }
 }
 
 void AppRule(EAG.Alt EAGAlt)
@@ -363,9 +341,7 @@ void AppRule(EAG.Alt EAGAlt)
     A.AffOcc.End = NextAffOcc - 1;
     ++NextRule;
     if (NextRule >= Rule.length)
-    {
         Expand;
-    }
 }
 
 void AppRepRule(EAG.Alt EAGAlt)
@@ -383,9 +359,7 @@ void AppRepRule(EAG.Alt EAGAlt)
     A.AffOcc.End = NextAffOcc - 1;
     ++NextRule;
     if (NextRule >= Rule.length)
-    {
         Expand;
-    }
 }
 /**
  * IN:  Instruktion
@@ -397,9 +371,7 @@ void AppVS(ref Instruction I)
     VS[NextVS] = I;
     ++NextVS;
     if (NextVS >= VS.length)
-    {
         Expand;
-    }
 }
 
 /**
@@ -417,7 +389,7 @@ bool IsInherited(int S, int AffOccNum)
  * OUT: boolscher Wert
  * SEM: Test, ob Affixposition synthesized ist
  */
-bool IsSynthesized(int S, int AffOccNum)
+bool IsSynthesized(size_t S, int AffOccNum)
 {
     return EAG.DomBuf[EAG.HNont[S].Sig + AffOccNum] > 0;
 }
@@ -439,7 +411,7 @@ bool IsOrientable(int S, int AffOccNum1, int AffOccNum2)
  * SEM: Test, ob eine Evaluatorregel vorliegt
  * PRECOND: Predicates.Check muss vorher ausgewertet sein
  */
-bool IsEvaluatorRule(int R)
+bool IsEvaluatorRule(size_t R)
 {
     return !EAG.Pred[SymOcc[Rule[R].SymOcc.Beg].SymInd];
 }
@@ -484,7 +456,6 @@ bool isEqual(Instruction I1, Instruction I2)
 void Init()
 {
     EAG.Alt A;
-    int i;
     int a;
     int Max;
 
@@ -505,45 +476,39 @@ void Init()
     NextStorageName = nil;
     NextAffixApplCnt = EAG.NextVar;
     Predicates.Check;
-    for (i = EAG.firstHNont; i < EAG.NextHNont; ++i)
+    for (size_t i = EAG.firstHNont; i < EAG.NextHNont; ++i)
         Sym[i].FirstOcc = nil;
-    // TODO: foreach (i; EAG.All)
-    for (i = EAG.firstHNont; i < EAG.NextHNont; ++i)
+    foreach (i; EAG.All.bitsSet)
     {
-        if (EAG.All[i])
+        if (cast(EAG.Rep) EAG.HNont[i].Def !is null)
         {
-            if (cast(EAG.Rep) EAG.HNont[i].Def !is null)
+            A = EAG.HNont[i].Def.Sub;
+            while (A !is null)
             {
-                A = EAG.HNont[i].Def.Sub;
-                while (A !is null)
-                {
-                    AppRepRule(A);
-                    A = A.Next;
-                }
+                AppRepRule(A);
+                A = A.Next;
             }
-            else
+        }
+        else
+        {
+            A = EAG.HNont[i].Def.Sub;
+            while (A !is null)
             {
-                A = EAG.HNont[i].Def.Sub;
-                while (A !is null)
-                {
-                    AppRule(A);
-                    A = A.Next;
-                }
+                AppRule(A);
+                A = A.Next;
             }
-            if (cast(EAG.Rep) EAG.HNont[i].Def !is null || cast(EAG.Opt) EAG.HNont[i].Def !is null)
-            {
-                AppEmptyRule(i, EAG.HNont[i].Def);
-            }
+        }
+        if (cast(EAG.Rep) EAG.HNont[i].Def !is null || cast(EAG.Opt) EAG.HNont[i].Def !is null)
+        {
+            AppEmptyRule(i, EAG.HNont[i].Def);
         }
     }
     MaxAffNumInRule = 0;
-    for (i = firstRule; i < NextRule; ++i)
+    for (size_t i = firstRule; i < NextRule; ++i)
     {
         Max = Rule[i].AffOcc.End - Rule[i].AffOcc.Beg;
         if (Max > MaxAffNumInRule)
-        {
             MaxAffNumInRule = Max;
-        }
         if (IsEvaluatorRule(i) && Max >= 0)
         {
             Rule[i].TDP = new BitArray[Max + 1];
@@ -559,26 +524,20 @@ void Init()
     }
     MaxAffNumInSym = 0;
     NextPartNum = firstPartNum;
-    // TODO: foreach (i; EAG.All)
-    for (i = EAG.firstHNont; i < EAG.NextHNont; ++i)
+    foreach (i; EAG.All.bitsSet)
     {
-        if (EAG.All[i])
-        {
-            Max = SymOcc[Sym[i].FirstOcc].AffOcc.End - SymOcc[Sym[i].FirstOcc].AffOcc.Beg;
-            Sym[i].AffPos.Beg = NextPartNum;
-            NextPartNum = NextPartNum + Max;
-            Sym[i].AffPos.End = NextPartNum;
-            ++NextPartNum;
-            if (Max > MaxAffNumInSym)
-            {
-                MaxAffNumInSym = Max;
-            }
-            Sym[i].MaxPart = 0;
-        }
+        Max = SymOcc[Sym[i].FirstOcc].AffOcc.End - SymOcc[Sym[i].FirstOcc].AffOcc.Beg;
+        Sym[i].AffPos.Beg = NextPartNum;
+        NextPartNum = NextPartNum + Max;
+        Sym[i].AffPos.End = NextPartNum;
+        ++NextPartNum;
+        if (Max > MaxAffNumInSym)
+            MaxAffNumInSym = Max;
+        Sym[i].MaxPart = 0;
     }
     PartNum = new int[NextPartNum];
     MaxPart = 0;
-    for (i = EAG.firstVar; i < EAG.NextVar; ++i)
+    for (size_t i = EAG.firstVar; i < EAG.NextVar; ++i)
     {
         DefAffOcc[i] = -1;
         AffixApplCnt[i] = 0;

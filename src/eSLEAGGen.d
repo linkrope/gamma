@@ -7,6 +7,7 @@ import io : Position, TextIn;
 import runtime;
 import std.bitmanip : BitArray;
 import std.stdio;
+import std.typecons;
 
 const parsePass = 0;
 const onePass = 1;
@@ -72,7 +73,7 @@ void PrepareFinit()
     PreparedHNonts.length = 0;
 }
 
-void Prepare(int N)
+void Prepare(size_t N)
 {
     EAG.Rule Node;
     EAG.Alt A;
@@ -170,7 +171,7 @@ void Prepare(int N)
     }
 }
 
-bool TestHNont(int N, bool EmitErr, bool SLEAG)
+bool TestHNont(size_t N, bool EmitErr, bool SLEAG)
 {
     EAG.Rule Node;
     EAG.Alt A;
@@ -327,7 +328,7 @@ bool IsSLEAG(int N, bool EmitErr)
     return TestHNont(N, EmitErr, true);
 }
 
-bool IsLEAG(int N, bool EmitErr)
+bool IsLEAG(size_t N, bool EmitErr)
 {
     return TestHNont(N, EmitErr, false);
 }
@@ -350,10 +351,8 @@ bool PredsOK()
 {
     bool OK = true;
 
-    // TODO: foreach (N; EAG.Pred)
-    for (int N = EAG.firstHNont; N < EAG.NextHNont; ++N)
-        if (EAG.Pred[N])
-            OK = OK && IsLEAG(N, true);
+    foreach (N; EAG.Pred.bitsSet)
+        OK = OK && IsLEAG(N, true);
     return OK;
 }
 
@@ -371,19 +370,15 @@ void Test()
         InitTest;
         isSLEAG = true;
         isLEAG = true;
-        // TODO: foreach (N; EAG.Prod)
-        for (int N = EAG.firstHNont; N < EAG.NextHNont; ++N)
+        foreach (N; EAG.Prod.bitsSet)
         {
-            if (EAG.Prod[N])
+            if (isSLEAG && EAG.HNont[N].Id >= 0)
             {
-                if (isSLEAG && EAG.HNont[N].Id >= 0)
+                if (!TestHNont(N, true, true))
                 {
-                    if (!TestHNont(N, true, true))
-                    {
-                        isSLEAG = false;
-                        if (!TestHNont(N, false, false))
-                            isLEAG = false;
-                    }
+                    isSLEAG = false;
+                    if (!TestHNont(N, false, false))
+                        isLEAG = false;
                 }
             }
         }
@@ -454,10 +449,9 @@ void ComputeNodeIdent()
 void ComputeConstDat()
 {
     int A;
-    int i;
     int ConstPtr;
 
-    void Traverse(int N, ref int ConstPtr)
+    void Traverse(size_t N, ref int ConstPtr)
     {
         EAG.Rule Node;
         EAG.Alt A;
@@ -545,7 +539,7 @@ void ComputeConstDat()
 
     AffixSpace = new int[EAG.NextParam];
     AffixPlace = new int[EAG.NextParam];
-    for (i = EAG.firstParam; i < EAG.NextParam; ++i)
+    for (size_t i = EAG.firstParam; i < EAG.NextParam; ++i)
     {
         AffixSpace[i] = 0;
         AffixPlace[i] = -1;
@@ -565,15 +559,13 @@ void ComputeConstDat()
             Leaf[A] = -1;
         }
     }
-    // TODO: foreach (i; EAG.Prod)
-    for (i = EAG.firstHNont; i < EAG.NextHNont; ++i)
-        if (EAG.Prod[i])
-            Traverse(i, ConstPtr);
+    foreach (i; EAG.Prod.bitsSet)
+        Traverse(i, ConstPtr);
     if (UseConst)
         FirstHeap = ConstPtr;
 }
 
-void ComputeVarNames(int N, bool Embed)
+void ComputeVarNames(size_t N, Flag!"embed" embed)
 {
     OpenInt FreeVar;
     OpenInt RefCnt;
@@ -658,7 +650,7 @@ void ComputeVarNames(int N, bool Embed)
         }
     }
 
-    void Traverse(int N)
+    void Traverse(size_t N)
     {
         EAG.Rule Node;
         EAG.Alt A;
@@ -866,7 +858,7 @@ void ComputeVarNames(int N, bool Embed)
             }
         }
 
-        void GetFormalParamNames(int N, int P)
+        void GetFormalParamNames(size_t N, int P)
         {
             bool Repetition = !EAG.Pred[N] && cast(EAG.Rep) EAG.HNont[N].Def !is null;
             int Dom = EAG.HNont[N].Sig;
@@ -895,7 +887,7 @@ void ComputeVarNames(int N, bool Embed)
             }
         }
 
-        void GetActualParamNames(int N, int P)
+        void GetActualParamNames(size_t N, int P)
         {
             int FindVarName(int P, int VarName)
             {
@@ -1100,7 +1092,7 @@ void ComputeVarNames(int N, bool Embed)
                 {
                     GetActualParamNames((cast(EAG.Nont) F).Sym, (cast(EAG.Nont) F).Actual.Params);
                     CheckApplPos((cast(EAG.Nont) F).Actual.Params, false);
-                    if (Embed
+                    if (embed
                             && EAG.Prod[(cast(EAG.Nont) F).Sym]
                             && !EAG.Pred[(cast(EAG.Nont) F).Sym]
                             && EAG.HNont[(cast(EAG.Nont) F).Sym].Id < 0)
@@ -1179,16 +1171,15 @@ void ComputeVarNames(int N, bool Embed)
         }
     }
 
-    void Bla(int N)
+    void Bla(size_t N) // TODO: fix name
     {
-        EAG.Alt A;
-        int P;
         if (cast(EAG.Rep) EAG.HNont[N].Def !is null)
         {
-            A = EAG.HNont[N].Def.Sub;
+            EAG.Alt A = EAG.HNont[N].Def.Sub;
+
             do
             {
-                P = A.Actual.Params;
+                int P = A.Actual.Params;
                 while (EAG.ParamBuf[P].Affixform != EAG.nil)
                 {
                     if (EAG.ParamBuf[P].isDef)
@@ -1599,7 +1590,7 @@ bool PosNeeded(int P)
     return false;
 }
 
-void GenAnalPred(int Sym, int P)
+void GenAnalPred(size_t Sym, int P)
 {
     int Node;
     int Tree;
@@ -1619,20 +1610,20 @@ void GenAnalPred(int Sym, int P)
             Mod.write(" != ");
     }
 
-    void GenEqualErrMsg(int Sym, int Var)
+    void GenEqualErrMsg(size_t Sym, int Var)
     {
-        Mod.write("\"'");
+        Mod.write(`"'`);
         Mod.write(EAG.VarRepr(Var));
         Mod.write("' failed in '");
         Mod.write(EAG.NamedHNontRepr(Sym));
-        Mod.write("'\"");
+        Mod.write(`'"`);
     }
 
-    void GenAnalErrMsg(int Sym)
+    void GenAnalErrMsg(size_t Sym)
     {
-        Mod.write("\"");
+        Mod.write(`"`);
         Mod.write(EAG.NamedHNontRepr(Sym));
-        Mod.write("\"");
+        Mod.write(`"`);
     }
 
     void GenEqualPred(int VarName1, int Var2, bool Eq)
@@ -2049,7 +2040,7 @@ void GetAffixSpace(int P)
     GenOverflowGuard(Heap);
 }
 
-void GenSynPred(int Sym, int P)
+void GenSynPred(size_t Sym, int P)
 {
     int Next;
     int Tree;
@@ -2428,16 +2419,16 @@ void GenRepEnd(int Sym)
         GenHeapInc(Next);
 }
 
-void GenFormalParams(int N, bool ParNeeded)
+void GenFormalParams(size_t N, Flag!"parNeeded" parNeeded)
 {
     int Dom = EAG.HNont[N].Sig;
     int i = 1;
 
-    if (ParNeeded)
+    if (parNeeded)
         Mod.write("(");
     if (EAG.DomBuf[Dom] != EAG.nil)
     {
-        if (!ParNeeded)
+        if (!parNeeded)
             Mod.write(", ");
         while (true)
         {
@@ -2452,7 +2443,7 @@ void GenFormalParams(int N, bool ParNeeded)
             Mod.write(", ");
         }
     }
-    if (ParNeeded)
+    if (parNeeded)
     {
         Mod.write(")");
         if (EAG.Pred[N])
@@ -2463,7 +2454,7 @@ void GenFormalParams(int N, bool ParNeeded)
     HNontFVars[N] = i;
 }
 
-void GenVarDecl(int N)
+void GenVarDecl(size_t N)
 {
     if (HNontVars[N] - HNontFVars[N] >= 0)
     {
@@ -2503,9 +2494,7 @@ void GenActualParams(int P, bool ParNeeded)
 
 void GenPredProcs()
 {
-    int N;
-
-    void GenPredCover(int N)
+    void GenPredCover(size_t N)
     in (EAG.Pred[N])
     {
         int Dom;
@@ -2514,7 +2503,7 @@ void GenPredProcs()
         Mod.write("void Check");
         Mod.write(N);
         Mod.write("(string ErrMsg");
-        GenFormalParams(N, false);
+        GenFormalParams(N, No.parNeeded);
         Mod.write(")\n");
         Mod.write("{\n");
         Mod.write("if (!Pred");
@@ -2567,7 +2556,7 @@ void GenPredProcs()
         Mod.write("}\n\n");
     }
 
-    void GenPredicateCode(int N)
+    void GenPredicateCode(size_t N)
     {
         EAG.Rule Node;
         EAG.Alt A;
@@ -2718,30 +2707,22 @@ void GenPredProcs()
         Mod.write("}\n");
     }
 
-    // TODO: foreach (N; EAG.Pred)
-    for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
+    foreach (N; EAG.Pred.bitsSet)
+        GenPredCover(N);
+    foreach (N; EAG.Pred.bitsSet)
     {
-        if (EAG.Pred[N])
-            GenPredCover(N);
-    }
-    // TODO: foreach (N; EAG.Pred)
-    for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
-    {
-        if (EAG.Pred[N])
-        {
-            ComputeVarNames(N, false);
-            Mod.write("bool Pred");
-            Mod.write(N);
-            GenFormalParams(N, true);
-            Mod.write(" // ");
-            Mod.write(EAG.HNontRepr(N));
-            Mod.write("\n");
-            Mod.write("{\n");
-            GenVarDecl(N);
-            GenPredicateCode(N);
-            Mod.write("return !Failed;\n");
-            Mod.write("}\n\n");
-        }
+        ComputeVarNames(N, No.embed);
+        Mod.write("bool Pred");
+        Mod.write(N);
+        GenFormalParams(N, Yes.parNeeded);
+        Mod.write(" // ");
+        Mod.write(EAG.HNontRepr(N));
+        Mod.write("\n");
+        Mod.write("{\n");
+        GenVarDecl(N);
+        GenPredicateCode(N);
+        Mod.write("return !Failed;\n");
+        Mod.write("}\n\n");
     }
 }
 
@@ -2750,12 +2731,12 @@ in (EAG.Pred[N])
 {
     Mod.write("Check");
     Mod.write(N);
-    Mod.write("(\"");
+    Mod.write(`("`);
     if (EAG.HNont[N].Id < 0)
         Mod.write("in ");
     Mod.write("'");
     Mod.write(EAG.NamedHNontRepr(N));
-    Mod.write("'\"");
+    Mod.write(`'"`);
     GenActualParams(ActualParams, false);
     Mod.write(");\n");
 }

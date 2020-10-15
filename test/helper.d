@@ -9,7 +9,10 @@ Sandbox sandbox()
 
     __gshared size_t count = 0;
 
-    return Sandbox(buildPath("tmp", format!"%s"(count++)));
+    synchronized
+    {
+        return Sandbox(buildPath("tmp", format!"%s"(count++)));
+    }
 }
 
 private struct Sandbox

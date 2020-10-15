@@ -58,7 +58,6 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
         int Factors;
     }
 
-    int N;
     int V;
     IO.TextOut Mod;
     TextIn Fix;
@@ -115,25 +114,21 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
         int Max = 0;
         int i;
 
-        // TODO: foreach (N; Nonts)
-        for (int N = EAG.firstHNont; N < EAG.NextHNont; ++N)
+        foreach (N; Nonts.bitsSet)
         {
-            if (Nonts[N])
-            {
-                EAG.Alt A = EAG.HNont[N].Def.Sub;
+            EAG.Alt A = EAG.HNont[N].Def.Sub;
 
-                i = 0;
-                do
-                {
-                    ++i;
-                    A = A.Next;
-                }
-                while (A !is null);
-                if (cast(EAG.Opt) EAG.HNont[N].Def !is null || cast(EAG.Rep) EAG.HNont[N].Def !is null)
-                    ++i;
-                if (i > Max)
-                    Max = i;
+            i = 0;
+            do
+            {
+                ++i;
+                A = A.Next;
             }
+            while (A !is null);
+            if (cast(EAG.Opt) EAG.HNont[N].Def !is null || cast(EAG.Rep) EAG.HNont[N].Def !is null)
+                ++i;
+            if (i > Max)
+                Max = i;
         }
         i = 1;
         while (i <= Max)
@@ -141,8 +136,10 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
         return i;
     }
 
-    void SaveAndPatchNont(int N)
+    void SaveAndPatchNont(size_t N)
     {
+        import std.conv : to;
+
         EAG.Alt A;
         EAG.Alt A1;
         EAG.Alt A2;
@@ -201,7 +198,7 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
                 if (F1.Prev !is null)
                     F1.Prev.Next = F1;
                 F1.Next = null;
-                F1.Sym = N;
+                F1.Sym = N.to!int;
                 F1.Pos = A1.Actual.Pos;
                 F1.Actual = A1.Actual;
                 A1.Actual.Pos = UndefPos;
@@ -215,7 +212,7 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
             A1 = new EAG.Alt;
             A1.Ind = EAG.NextHAlt;
             ++EAG.NextHAlt;
-            A1.Up = N;
+            A1.Up = N.to!int;
             A1.Next = null;
             A1.Sub = null;
             A1.Last = null;
@@ -238,14 +235,14 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
         EAG.HNont[N].Def = Def;
     }
 
-    void RestoreNont(int N)
+    void RestoreNont(size_t N)
     {
         EAG.HNont[N].Def = SavedNontDef;
         EAG.NextHFactor = SavedNextHFactor;
         EAG.NextHAlt = SavedNextHAlt;
     }
 
-    void ComputePermutation(int N)
+    void ComputePermutation(size_t N)
     {
         const def = 0;
         const right = 1;
@@ -437,17 +434,17 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
         while (A !is null);
     }
 
-    void GenerateNont(int N)
+    void GenerateNont(size_t N)
     {
         EAG.Alt A;
         EAG.Factor F;
         EAG.Factor F1;
         int AltIndex;
-        EvalGen.ComputeVarNames(N, false);
+        EvalGen.ComputeVarNames(N, No.embed);
         Mod.write("void P");
         Mod.write(N);
         Mod.write("(TreeType Adr");
-        EvalGen.GenFormalParams(N, false);
+        EvalGen.GenFormalParams(N, No.parNeeded);
         Mod.write(")");
         Mod.write(" // ");
         Mod.write(EAG.HNontRepr(N));
@@ -558,21 +555,17 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
     DefVars.length = EAG.NextVar + 1;
     for (V = EAG.firstVar; V < EAG.NextVar; ++V)
         Var[V].Factors = nil;
-    // TODO: foreach (N; GenNonts)
-    for (N = EAG.firstHNont; N < EAG.NextHNont; ++N)
+    foreach (N; GenNonts.bitsSet)
     {
-        if (GenNonts[N])
+        SaveAndPatchNont(N);
+        ComputePermutation(N);
+        if (!Error)
         {
-            SaveAndPatchNont(N);
-            ComputePermutation(N);
-            if (!Error)
-            {
-                Error = !EvalGen.IsLEAG(N, true);
-                if (!Error && createMod)
-                    GenerateNont(N);
-            }
-            RestoreNont(N);
+            Error = !EvalGen.IsLEAG(N, true);
+            if (!Error && createMod)
+                GenerateNont(N);
         }
+        RestoreNont(N);
     }
     if (createMod)
     {
