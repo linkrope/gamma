@@ -4,7 +4,7 @@ import EAG = eEAG;
 import IO = eIO;
 import Scanner = eScanner;
 import epsilon.settings;
-import io : TextIn;
+import io : Input, read;
 import log;
 import runtime;
 
@@ -15,7 +15,7 @@ bool[256] IsSymbol;
 
 void Generate(Settings settings)
 {
-    TextIn Fix;
+    Input Fix;
     IO.TextOut Mod;
     int Term;
     int MaxTokLen;
@@ -114,7 +114,7 @@ void Generate(Settings settings)
         }
         if (!Error)
         {
-            Fix = TextIn("fix/eScanGen.fix.d");
+            Fix = read("fix/eScanGen.fix.d");
             name = EAG.BaseName ~ "Scan";
             Mod = new IO.TextOut(settings.path(name ~ ".d"));
             InclFix('$');
@@ -129,7 +129,7 @@ void Generate(Settings settings)
                 Mod.write("    Enter(");
                 Mod.write(Term - EAG.firstHTerm + firstUserTok);
                 Mod.write(", ");
-                Mod.write(Scanner.repr(EAG.HTerm[Term].Id));
+                Mod.write(EAG.HTerm[Term].Id.repr);
                 Mod.write(");\n");
             }
             InclFix('$');
@@ -148,6 +148,18 @@ void Generate(Settings settings)
             IO.CloseOut(Mod);
         }
     }
+}
+
+private string repr(int id)
+{
+    import std.array : replace;
+    import std.range : front;
+
+    const value = Scanner.repr(id);
+
+    if (value.front == '\'')
+        return value.replace("'", "`");
+    return value;
 }
 
 static this()
