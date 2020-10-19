@@ -3,7 +3,7 @@ module eAnalyser;
 import EAG = eEAG;
 import Earley = eEarley;
 import Scanner = eScanner;
-import io : Position, TextIn;
+import io : Input, Position;
 import log;
 import runtime;
 import std.bitmanip : BitArray;
@@ -989,9 +989,9 @@ void ComputeEAGSets()
         warn!"%s warnings"(Warnings);
 }
 
-void Analyse(TextIn textIn)
+void Analyse(Input input)
 {
-    Scanner.Init(textIn);
+    Scanner.Init(input);
     EAG.Init;
     Earley.Init;
     ErrorCounter = 0;

@@ -1,7 +1,7 @@
 module $;
 
 import IO = eIO;
-import io : Position, TextIn;
+import io : Input, Position, read;
 import runtime;
 import std.stdio;
 import S = $;
@@ -275,12 +275,12 @@ void main(string[] args)
     }
 
     if (args.dropOne.empty)
-        Compile(TextIn("stdin", stdin), info, verbose, write);
+        Compile(read("stdin", stdin), info, verbose, write);
 
     try
     {
         foreach (arg; args.dropOne)
-            Compile(TextIn(arg), info, verbose, write);
+            Compile(read(arg), info, verbose, write);
     }
     catch (ErrnoException exception)
     {
@@ -290,7 +290,7 @@ void main(string[] args)
 
 }
 
-void Compile(TextIn textIn, bool info, bool verbose, bool write)
+void Compile(Input input, bool info, bool verbose, bool write)
 {
     HeapType V1;
 
@@ -299,7 +299,7 @@ void Compile(TextIn textIn, bool info, bool verbose, bool write)
         IO.Msg.write("$ compiler: compiling...\n");
         IO.Msg.flush;
         ParserInit(verbose);
-        S.Init(textIn);
+        S.Init(input);
         S.Get(Tok);
         $(V1);
         $

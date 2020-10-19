@@ -5,7 +5,7 @@ import EmitGen = eEmitGen;
 import IO = eIO;
 import SLEAGGen = eSLEAGGen;
 import epsilon.settings;
-import io : TextIn;
+import io : Input, read;
 import runtime;
 import SOAG = soag.eSOAG;
 import SOAGOptimizer = soag.eSOAGOptimizer;
@@ -1527,7 +1527,7 @@ void GenerateModule(Settings settings)
 {
     int R;
     string name;
-    TextIn Fix;
+    Input Fix;
     int StartRule;
 
     void InclFix(char Term)
@@ -1549,7 +1549,7 @@ void GenerateModule(Settings settings)
         Fix.popFront;
     }
 
-    Fix = TextIn("fix/eSOAG.fix.d");
+    Fix = read("fix/eSOAG.fix.d");
     name = EAG.BaseName ~ "Eval";
     Out = new IO.TextOut(settings.path(name ~ ".d"));
     SLEAGGen.InitGen(Out, SLEAGGen.sSweepPass, settings);

@@ -5,7 +5,7 @@ import EmitGen = eEmitGen;
 import IO = eIO;
 import EvalGen = eSLEAGGen;
 import epsilon.settings;
-import io : TextIn, UndefPos;
+import io : Input, read, UndefPos;
 import runtime;
 import std.bitmanip : BitArray;
 import std.stdio;
@@ -60,7 +60,7 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
 
     int V;
     IO.TextOut Mod;
-    TextIn Fix;
+    Input Fix;
     string name;
     EAG.Rule SavedNontDef;
     int SavedNextHFactor;
@@ -531,7 +531,7 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
     Error = Error || !EvalGen.PredsOK();
     if (createMod)
     {
-        Fix = TextIn("fix/eSSweep.fix.d");
+        Fix = read("fix/eSSweep.fix.d");
         name = EAG.BaseName ~ "Eval";
         Mod = new IO.TextOut(settings.path(name ~ ".d"));
         if (!Error)

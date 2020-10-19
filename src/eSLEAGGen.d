@@ -3,7 +3,7 @@ module eSLEAGGen;
 import EAG = eEAG;
 import IO = eIO;
 import epsilon.settings;
-import io : Position, TextIn;
+import io : Input, Position, read;
 import runtime;
 import std.bitmanip : BitArray;
 import std.stdio;
@@ -1394,7 +1394,7 @@ void GenHeapInc(int n)
 
 void GenDeclarations(Settings settings)
 {
-    TextIn Fix;
+    Input Fix;
     string name;
     long TabTimeStamp;
 
@@ -1504,7 +1504,7 @@ void GenDeclarations(Settings settings)
     else
         name = EAG.BaseName ~ ".EvalTab";
     TabTimeStamp = IO.TimeStamp();
-    Fix = TextIn("fix/eSLEAGGen.fix.d");
+    Fix = read("fix/eSLEAGGen.fix.d");
     InclFix('$');
     Mod.write(FirstHeap - 1);
     InclFix('$');

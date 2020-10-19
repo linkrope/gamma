@@ -3,32 +3,39 @@ module io;
 import std.range;
 import std.stdio;
 
-struct TextIn
+Input read(string name)
 {
-    string name;
+    return read(name, File(name));
+}
 
+Input read(string name, File file)
+{
     char[] text;
+    char[] buffer;
 
-    size_t index;
+    while (file.readln(buffer))
+        text ~= buffer;
+    return Input(name, text);
+}
 
-    size_t begin;
+struct Input
+{
+    private string name;
 
-    size_t line = 1;
+    private const(char)[] text;
 
-    size_t col = 1;
+    private size_t index_;
 
-    this(string name)
+    private size_t begin;
+
+    private size_t line = 1;
+
+    private size_t col = 1;
+
+    this(string name, const(char)[] text)
     {
-        this(name, File(name));
-    }
-
-    this(string name, File file)
-    {
-        char[] buffer;
-
         this.name = name;
-        while (file.readln(buffer))
-            text ~= buffer;
+        this.text = text;
     }
 
     void popFront()
@@ -43,20 +50,20 @@ struct TextIn
             ++line;
             col = 0;
         }
-        index += text[index .. $].stride;
+        index_ += text[index_ .. $].stride;
         ++col;
         if (lineBreak)
-            begin = index;
+            begin = index_;
     }
 
     dchar front() const
     {
-        return empty ? 0 : text[index .. $].front;
+        return empty ? 0 : text[index_ .. $].front;
     }
 
     bool empty() const
     {
-        return text[index .. $].empty;
+        return text[index_ .. $].empty;
     }
 
     Position position() const
@@ -67,19 +74,30 @@ struct TextIn
 
         return Position(name, line, col, text[begin .. end]);
     }
+
+    const(char)[] sliceFrom(size_t begin) const
+    in (begin <= index)
+    {
+        return text[begin .. index_];
+    }
+
+    size_t index() const
+    {
+        return index_;
+    }
 }
 
 const UndefPos = Position();
 
 struct Position
 {
-    string name;
+    private string name;
 
-    size_t line;
+    private size_t line;
 
-    size_t col;
+    private size_t col;
 
-    const(char)[] text;
+    private const(char)[] text;
 
     string toString() const
     {

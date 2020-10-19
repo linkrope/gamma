@@ -1,7 +1,7 @@
 module epsilon.main;
 
 import epsilon.settings;
-import io : TextIn;
+import io : Input, read;
 import runtime;
 import std.stdio;
 
@@ -64,12 +64,12 @@ void main(string[] args)
         mkdirRecurse(settings.outputDirectory);
     }
     if (args.dropOne.empty)
-        compile(TextIn("stdin", stdin), settings);
+        compile(read("stdin", stdin), settings);
 
     try
     {
         foreach (arg; args.dropOne)
-            compile(TextIn(arg), settings);
+            compile(read(arg), settings);
     }
     catch (ErrnoException exception)
     {
@@ -82,7 +82,7 @@ void main(string[] args)
     }
 }
 
-void compile(TextIn textIn, Settings settings)
+void compile(Input input, Settings settings)
 {
     import Analyser = eAnalyser;
     import EAG = eEAG;
@@ -97,7 +97,7 @@ void compile(TextIn textIn, Settings settings)
     import std.exception : enforce;
     import std.range : empty;
 
-    Analyser.Analyse(textIn);
+    Analyser.Analyse(input);
 
     enforce(Analyser.ErrorCounter == 0,
             "analyser errors");

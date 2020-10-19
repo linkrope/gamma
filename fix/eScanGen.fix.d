@@ -1,7 +1,7 @@
 module $;
 
 import IO = eIO;
-import io : Position, TextIn;
+import io : Input, Position;
 import runtime;
 import std.stdio;
 
@@ -13,7 +13,7 @@ char[chBufLen] ChBuf;
 Position[chBufLen] PosBuf;
 int CurCh;
 int NextCh;
-TextIn In;
+Input In;
 const nil = 0;
 const firstNode = 1;
 const maxTokLen = $;
@@ -443,9 +443,9 @@ void Get3(ref int Tok)
     }
 }
 
-void Init(TextIn Input)
+void Init(Input input)
 {
-    In = Input;
+    In = input;
     CurCh = firstChBuf;
     NextCh = firstChBuf;
     Ch = ' ';
@@ -502,14 +502,14 @@ private void COPY(T)(string x, ref T v)
     copy(x[], v[]);
 }
 
-private void Read(ref TextIn In, ref char c)
+private void Read(ref Input input, ref char c)
 {
     import std.conv : to;
 
-    c = In.front.to!char;
-    PrevPos = In.position;
-    if (!In.empty)
-        In.popFront;
+    c = input.front.to!char;
+    PrevPos = input.position;
+    if (!input.empty)
+        input.popFront;
 }
 
 static this()

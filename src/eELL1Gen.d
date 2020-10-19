@@ -6,7 +6,7 @@ import IO = eIO;
 import Shift = eShift;
 import EvalGen = eSLEAGGen;
 import epsilon.settings;
-import io : Position, TextIn;
+import io : Input, Position, read;
 import log;
 import runtime;
 import std.bitmanip : BitArray;
@@ -910,7 +910,7 @@ void ComputeSets()
 void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
 {
     IO.TextOut Mod;
-    TextIn Fix;
+    Input Fix;
     int Tok;
     BitArray AllToks;
     string name;
@@ -1358,7 +1358,7 @@ void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
 
     AllToks = BitArray();
     AllToks.length = nToks + 1;
-    Fix = TextIn("fix/eELL1Gen.fix.d");
+    Fix = read("fix/eELL1Gen.fix.d");
     Mod = new IO.TextOut(settings.path(EAG.BaseName ~ ".d"));
     if (parsePass)
         EvalGen.InitGen(Mod, EvalGen.parsePass, settings);

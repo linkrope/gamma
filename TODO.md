@@ -14,10 +14,6 @@
 
 - create abstract syntax tree instead of writing code fragments
 
-## Range-based Scanner
-
-- reintroduce range-based scanner from previous attempt
-
 ## String Representation
 
 - add toString functions to simplify debugging
@@ -38,3 +34,7 @@
 ## UTF-8
 
 - generated scanner should support UTF-8
+
+## RISC Assembler
+
+- revive RISC assembler
