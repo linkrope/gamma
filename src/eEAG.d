@@ -1,9 +1,9 @@
 module eEAG;
 
-import Scanner = eScanner;
 import io : Position;
 import runtime;
 import std.bitmanip;
+import symbols : SymbolTable;
 
 const nil = 0;
 const empty = 0;
@@ -280,6 +280,7 @@ BitArray Null;
 BitArray Pred;
 int StartSym;
 string BaseName;
+SymbolTable symbolTable;
 
 void Expand()
 {
@@ -713,7 +714,7 @@ void NewAlt(ref Alt A, int Sym, ParamsDesc Formal, ParamsDesc Actual, Factor Sub
 
 public string HTermRepr(int Term)
 {
-    return Scanner.repr(HTerm[Term].Id);
+    return symbolTable.symbol(HTerm[Term].Id);
 }
 
 public string HNontRepr(size_t Nont)
@@ -722,27 +723,26 @@ public string HNontRepr(size_t Nont)
 
     if (HNont[Nont].Id < 0)
         return format!"A%s"(-HNont[Nont].Id);
-    return Scanner.repr(HNont[Nont].Id);
+    return symbolTable.symbol(HNont[Nont].Id);
 }
 
 public string VarRepr(int V)
 {
-    import std.conv : to;
     import std.math : abs;
 
     string result;
 
     if (Var[V].Num < 0)
         result ~= '#';
-    result ~= Scanner.repr(MNont[Var[V].Sym].Id);
+    result ~= symbolTable.symbol(MNont[Var[V].Sym].Id);
     if (abs(Var[V].Num) > 1)
-        result ~= (abs(Var[V].Num) - 2).to!string;
+        result ~= symbolTable.symbol(abs(Var[V].Num) - 2);
     return result;
 }
 
 public string NamedHNontRepr(size_t Nont)
 {
-    return Scanner.repr(HNont[Nont].NamedId);
+    return symbolTable.symbol(HNont[Nont].NamedId);
 }
 
 bool Performed(size_t Needed)
@@ -825,6 +825,8 @@ void Init()
     History = 0;
     BaseName = "nothing";
     MaxMArity = 0;
+
+    symbolTable = new SymbolTable;
 }
 
 static this()

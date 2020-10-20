@@ -90,7 +90,6 @@ void compile(Input input, Settings settings)
     import IO = eIO;
     import Predicates = ePredicates;
     import ScanGen = eScanGen;
-    import Scanner = eScanner;
     import SLEAGGen = eSLEAGGen;
     import SSweep = eSSweep;
     import SOAGGen = soag.eSOAGGen;

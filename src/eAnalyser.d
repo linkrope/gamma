@@ -2,7 +2,7 @@ module eAnalyser;
 
 import EAG = eEAG;
 import Earley = eEarley;
-import Scanner = eScanner;
+import epsilon.lexer : Lexer, Token;
 import io : Input, Position;
 import log;
 import runtime;
@@ -12,6 +12,25 @@ const nil = EAG.nil;
 char Tok;
 int ErrorCounter;
 bool NameNotified;
+
+Lexer lexer;
+int Val;
+Position Pos;
+
+void Get(ref char Tok)
+{
+    import std.conv : to;
+
+    static bool start = true;
+
+    if (start)
+        start = false;
+    else
+        lexer.popFront;
+    Tok = lexer.front.to!char;
+    Val = lexer.value.to!int;
+    Pos = lexer.position;
+}
 
 void Error(Position Pos, string ErrMsg)
 {
@@ -33,6 +52,7 @@ void Specification()
 {
     int Id;
     bool IsToken;
+
     /**
      * MetaRule:
      *   ident "=" MetaExpr ".".
@@ -40,6 +60,7 @@ void Specification()
     void MetaRule(int Id, bool IsToken)
     {
         int MNont;
+
         /**
          * MetaExpr:
          *   MetaTerm {"|" MetaTerm}.
@@ -55,20 +76,20 @@ void Specification()
             {
                 while (true)
                 {
-                    if (Tok == Scanner.ide)
+                    if (Tok == Token.name)
                     {
-                        EAG.AppMemb(EAG.FindMNont(Scanner.Val));
-                        Scanner.Get(Tok);
-                        if (Tok == Scanner.num)
+                        EAG.AppMemb(EAG.FindMNont(Val));
+                        Get(Tok);
+                        if (Tok == Token.number)
                         {
-                            Error(Scanner.Pos, "number is not allowed here");
-                            Scanner.Get(Tok);
+                            Error(Pos, "number is not allowed here");
+                            Get(Tok);
                         }
                     }
-                    else if (Tok == Scanner.str)
+                    else if (Tok == Token.string_)
                     {
-                        EAG.AppMemb(-EAG.FindMTerm(Scanner.Val));
-                        Scanner.Get(Tok);
+                        EAG.AppMemb(-EAG.FindMTerm(Val));
+                        Get(Tok);
                     }
                     else
                     {
@@ -84,41 +105,29 @@ void Specification()
                 MetaTerm;
                 EAG.AppMemb(EAG.NewMAlt(MNont, Rhs));
                 if (Tok == '|')
-                {
-                    Scanner.Get(Tok);
-                }
+                    Get(Tok);
                 else
-                {
                     break;
-                }
             }
         }
 
         MNont = EAG.FindMNont(Id);
         EAG.MNont[MNont].IsToken = EAG.MNont[MNont].IsToken || IsToken;
         if (Tok == '=')
-        {
-            Scanner.Get(Tok);
-        }
+            Get(Tok);
         else
-        {
-            Error(Scanner.Pos, "'=' expected");
-        }
+            Error(Pos, "'=' expected");
         MetaExpr;
         if (Tok == '.')
-        {
-            Scanner.Get(Tok);
-        }
+            Get(Tok);
         else
-        {
-            Error(Scanner.Pos, "'.' expected");
-        }
+            Error(Pos, "'.' expected");
     }
 
     void SetBaseName()
     {
         EAG.StartSym = EAG.firstHNont;
-        EAG.BaseName = Scanner.repr(EAG.HNont[EAG.StartSym].Id);
+        EAG.BaseName = EAG.symbolTable.symbol(EAG.HNont[EAG.StartSym].Id);
     }
 
     /**
@@ -183,39 +192,39 @@ void Specification()
             void Affixform(ref int Sym)
             {
                 short Uneq;
-                int Cnt;
+                int Cnt = 0;
                 int Num;
                 Position Pos;
-                Cnt = 0;
+
                 while (true)
                 {
-                    Pos = Scanner.Pos;
-                    if (Tok == Scanner.str)
+                    Pos = Pos;
+                    if (Tok == Token.string_)
                     {
-                        Sym = -EAG.FindMTerm(Scanner.Val);
+                        Sym = -EAG.FindMTerm(Val);
                         Num = 0;
-                        Scanner.Get(Tok);
+                        Get(Tok);
                         ++Cnt;
                     }
-                    else if (Tok == '#' || Tok == Scanner.ide)
+                    else if (Tok == '#' || Tok == Token.name)
                     {
                         if (Tok == '#')
                         {
                             Uneq = -1;
-                            Scanner.Get(Tok);
+                            Get(Tok);
                         }
                         else
                         {
                             Uneq = 1;
                         }
-                        if (Tok == Scanner.ide)
+                        if (Tok == Token.name)
                         {
-                            Sym = EAG.FindMNont(Scanner.Val);
-                            Scanner.Get(Tok);
-                            if (Tok == Scanner.num)
+                            Sym = EAG.FindMNont(Val);
+                            Get(Tok);
+                            if (Tok == Token.number)
                             {
-                                Num = Uneq * (Scanner.Val + 2);
-                                Scanner.Get(Tok);
+                                Num = Uneq * (Val + 2);
+                                Get(Tok);
                             }
                             else
                             {
@@ -225,7 +234,7 @@ void Specification()
                         }
                         else
                         {
-                            Error(Scanner.Pos, "Metanonterminal expected");
+                            Error(Pos, "Metanonterminal expected");
                         }
                     }
                     else
@@ -236,18 +245,16 @@ void Specification()
                     Earley.AppMSym(Sym, Num, Pos);
                 }
                 if (Cnt != 1)
-                {
                     Sym = -1;
-                }
             }
 
             P.Params = EAG.empty;
-            P.Pos = Scanner.Pos;
+            P.Pos = Pos;
             Actual = P;
             Formal = P;
             if (Tok == '<')
             {
-                Scanner.Get(Tok);
+                Get(Tok);
                 isFormal = Tok == '+' || Tok == '-';
                 P.Params = EAG.NextParam;
                 while (true)
@@ -255,46 +262,38 @@ void Specification()
                     if (Tok == '+' || Tok == '-')
                     {
                         if (!isFormal)
-                        {
-                            Error(Scanner.Pos, "'+' or '-' not allowed in actual params");
-                        }
+                            Error(Pos, "'+' or '-' not allowed in actual params");
                         Dir = Tok;
-                        Scanner.Get(Tok);
+                        Get(Tok);
                     }
                     else
                     {
                         if (isFormal)
-                        {
-                            Error(Scanner.Pos, "'+' or '-' expected");
-                        }
+                            Error(Pos, "'+' or '-' expected");
                     }
-                    EAG.AppParam(Earley.StartAffixform(), Scanner.Pos);
+                    EAG.AppParam(Earley.StartAffixform(), Pos);
                     Affixform(Sym);
                     if (isFormal)
                     {
                         if (Sym < 0 || Tok == ':')
                         {
                             if (Tok == ':')
+                                Get(Tok);
+                            else
+                                Error(Pos, "':' expected");
+                            if (Tok == Token.name)
                             {
-                                Scanner.Get(Tok);
+                                EAG.AppDom(Dir, EAG.FindMNont(Val));
+                                Get(Tok);
                             }
                             else
                             {
-                                Error(Scanner.Pos, "':' expected");
+                                Error(Pos, "Metanonterminal expected");
                             }
-                            if (Tok == Scanner.ide)
+                            if (Tok == Token.number)
                             {
-                                EAG.AppDom(Dir, EAG.FindMNont(Scanner.Val));
-                                Scanner.Get(Tok);
-                            }
-                            else
-                            {
-                                Error(Scanner.Pos, "Metanonterminal expected");
-                            }
-                            if (Tok == Scanner.num)
-                            {
-                                Error(Scanner.Pos, "number is not allowed here");
-                                Scanner.Get(Tok);
+                                Error(Pos, "number is not allowed here");
+                                Get(Tok);
                             }
                         }
                         else
@@ -302,37 +301,25 @@ void Specification()
                             EAG.AppDom(Dir, Sym);
                         }
                     }
-                    while (Tok != ',' && Tok != '>' && Tok != Scanner.eot)
+                    while (Tok != ',' && Tok != '>' && Tok != Token.end)
                     {
-                        Error(Scanner.Pos, "symbol not allowed");
-                        Scanner.Get(Tok);
+                        Error(Pos, "symbol not allowed");
+                        Get(Tok);
                     }
                     if (Tok == ',')
-                    {
-                        Scanner.Get(Tok);
-                    }
+                        Get(Tok);
                     else
-                    {
                         break;
-                    }
                 }
-                EAG.AppParam(EAG.nil, Scanner.Pos);
+                EAG.AppParam(EAG.nil, Pos);
                 if (Tok == '>')
-                {
-                    Scanner.Get(Tok);
-                }
+                    Get(Tok);
                 else
-                {
-                    Error(Scanner.Pos, "'>' expected");
-                }
+                    Error(Pos, "'>' expected");
                 if (isFormal)
-                {
                     Formal.Params = P.Params;
-                }
                 else
-                {
                     Actual.Params = P.Params;
-                }
             }
         }
         /**
@@ -347,6 +334,7 @@ void Specification()
             EAG.Alt Last;
             EAG.Factor FirstF;
             EAG.Factor LastF;
+
             /**
              * HyperTerm:
              *   { ident [ActualParams]
@@ -367,38 +355,36 @@ void Specification()
                 Last = null;
                 while (true)
                 {
-                    if (Tok == Scanner.ide)
+                    if (Tok == Token.name)
                     {
                         if (Actual.Params != EAG.empty)
                         {
                             Error(Actual.Pos, "actual params not allowed here");
                             Actual.Params = EAG.empty;
                         }
-                        HNont = EAG.FindHNont(Scanner.Val);
-                        Pos = Scanner.Pos;
-                        Scanner.Get(Tok);
-                        if (Tok == Scanner.num)
+                        HNont = EAG.FindHNont(Val);
+                        Pos = Pos;
+                        Get(Tok);
+                        if (Tok == Token.number)
                         {
-                            Error(Scanner.Pos, "number is not allowed here!");
-                            Scanner.Get(Tok);
+                            Error(Pos, "number is not allowed here!");
+                            Get(Tok);
                         }
                         Params(Actual, Formal);
                         if (Formal.Params != EAG.empty)
-                        {
                             Error(Formal.Pos, "formal params not allowed here");
-                        }
                         EAG.NewNont(Last, HNont, Actual, Pos);
                         Actual.Params = EAG.empty;
                     }
-                    else if (Tok == Scanner.str)
+                    else if (Tok == Token.string_)
                     {
                         if (Actual.Params != EAG.empty)
                         {
                             Error(Actual.Pos, "actual params not allowed here");
                             Actual.Params = EAG.empty;
                         }
-                        EAG.NewTerm(Last, EAG.FindHTerm(Scanner.Val), Scanner.Pos);
-                        Scanner.Get(Tok);
+                        EAG.NewTerm(Last, EAG.FindHTerm(Val), Pos);
+                        Get(Tok);
                     }
                     else
                     {
@@ -406,71 +392,51 @@ void Specification()
                         {
                             Params(Actual, Formal);
                             if (Formal.Params != EAG.empty)
-                            {
                                 Error(Formal.Pos, "formal params not allowed here");
-                            }
                         }
                         if (Tok == '(' || Tok == '[' || Tok == '{')
                         {
-                            Pos = Scanner.Pos;
+                            Pos = Pos;
                             HNont = EAG.NewAnonymNont(Id);
                             EAG.NewNont(Last, HNont, Actual, Pos);
                             Actual.Params = EAG.empty;
                             if (Tok == '(')
                             {
-                                Scanner.Get(Tok);
+                                Get(Tok);
                                 HyperExpr(HNont, Id, '(', HExpr, Pos);
                                 if (Tok == ')')
-                                {
-                                    Scanner.Get(Tok);
-                                }
+                                    Get(Tok);
                                 else
-                                {
-                                    Error(Scanner.Pos, "')' expected");
-                                }
+                                    Error(Pos, "')' expected");
                                 EAG.NewGrp(HNont, HExpr);
                             }
                             else
                             {
                                 Left = Tok;
-                                Scanner.Get(Tok);
+                                Get(Tok);
                                 HyperExpr(HNont, Id, Left, HExpr, Pos);
-                                Pos = Scanner.Pos;
+                                Pos = Pos;
                                 if (Left == '{')
                                 {
                                     if (Tok == '}')
-                                    {
-                                        Scanner.Get(Tok);
-                                    }
+                                        Get(Tok);
                                     else
-                                    {
-                                        Error(Scanner.Pos, "'}' expected");
-                                    }
+                                        Error(Pos, "'}' expected");
                                 }
                                 else
                                 {
                                     if (Tok == ']')
-                                    {
-                                        Scanner.Get(Tok);
-                                    }
+                                        Get(Tok);
                                     else
-                                    {
-                                        Error(Scanner.Pos, "']' expected");
-                                    }
+                                        Error(Pos, "']' expected");
                                 }
                                 Params(Actual, Formal);
                                 if (!EAG.SigOK(HNont))
-                                {
                                     Error(Formal.Pos, "formal params differ");
-                                }
                                 if (Left == '{')
-                                {
                                     EAG.NewRep(HNont, HExpr, Formal, Pos);
-                                }
                                 else
-                                {
                                     EAG.NewOpt(HNont, HExpr, Formal, Pos);
-                                }
                             }
                         }
                         else
@@ -491,17 +457,13 @@ void Specification()
             {
                 Params(Actual, Formal);
                 if (!EAG.SigOK(HNont))
-                {
                     Error(Formal.Pos, "formal params differ");
-                }
                 HyperTerm(Actual, FirstF, LastF);
                 if (Left == '{' && Actual.Params == EAG.empty)
                 {
                     Params(Actual, Formal1);
                     if (Formal1.Params != EAG.empty)
-                    {
                         Error(Formal1.Pos, "formal params not allowed here");
-                    }
                 }
                 else if (Left != '{' && Actual.Params != EAG.empty)
                 {
@@ -510,13 +472,11 @@ void Specification()
                 }
                 EAG.NewAlt(Last, HNont, Formal, Actual, FirstF, LastF, AltPos);
                 if (HExpr is null)
-                {
                     HExpr = Last;
-                }
                 if (Tok == '|')
                 {
-                    AltPos = Scanner.Pos;
-                    Scanner.Get(Tok);
+                    AltPos = Pos;
+                    Get(Tok);
                 }
                 else
                 {
@@ -526,8 +486,7 @@ void Specification()
         }
 
         HNont = EAG.FindHNont(Id);
-        if (!NameNotified && HNont == EAG.firstHNont && ErrorCounter == 0
-                && Scanner.ErrorCounter == 0)
+        if (!NameNotified && HNont == EAG.firstHNont && ErrorCounter == 0 && lexer.ok)
         {
             NameNotified = true;
             SetBaseName;
@@ -536,9 +495,7 @@ void Specification()
         EAG.HNont[HNont].IsToken = EAG.HNont[HNont].IsToken || IsToken;
         Params(Actual, Formal);
         if (Actual.Params != EAG.empty)
-        {
             Error(Actual.Pos, "actual params not allowed here");
-        }
         if (Formal.Params != EAG.empty && EAG.SigOK(HNont))
         {
             Sig = EAG.HNont[HNont].Sig;
@@ -546,83 +503,70 @@ void Specification()
         }
         if (Tok == ':')
         {
-            AltPos = Scanner.Pos;
-            Scanner.Get(Tok);
+            AltPos = Pos;
+            Get(Tok);
         }
         else
         {
-            Error(Scanner.Pos, "':' expected");
+            Error(Pos, "':' expected");
         }
         HyperExpr(HNont, Id, '(', HExpr, AltPos);
         if (Formal.Params != EAG.empty)
-        {
             Distribute(HNont, HExpr, Sig, Formal);
-        }
         EAG.NewGrp(HNont, HExpr);
         if (Tok == '.')
-        {
-            Scanner.Get(Tok);
-        }
+            Get(Tok);
         else
-        {
-            Error(Scanner.Pos, "'.' expected");
-        }
+            Error(Pos, "'.' expected");
     }
 
-    Scanner.Get(Tok);
+    Get(Tok);
     do
     {
         IsToken = false;
-        if (Tok == Scanner.ide)
+        if (Tok == Token.name)
         {
-            Id = Scanner.Val;
-            Scanner.Get(Tok);
+            Id = Val;
+            Get(Tok);
         }
         else
         {
-            Error(Scanner.Pos, "identifier of rule expected");
+            Error(Pos, "identifier of rule expected");
         }
-        if (Tok == Scanner.num)
+        if (Tok == Token.number)
         {
-            Error(Scanner.Pos, "number is not allowed here");
-            Scanner.Get(Tok);
+            Error(Pos, "number is not allowed here");
+            Get(Tok);
         }
         if (Tok == '*')
         {
             IsToken = true;
-            Scanner.Get(Tok);
+            Get(Tok);
         }
         if (Tok == '=')
-        {
             MetaRule(Id, IsToken);
-        }
         else
-        {
             HyperRule(Id, IsToken);
-        }
-        if (Tok != Scanner.ide && Tok != Scanner.eot)
+        if (Tok != Token.name && Tok != Token.end)
         {
-            Error(Scanner.Pos, "not allowed symbol");
+            Error(Pos, "not allowed symbol");
             do
-            {
-                Scanner.Get(Tok);
-            }
-            while (!(Tok == '.' || Tok == Scanner.eot));
-            if (Tok != Scanner.eot)
-            {
-                Scanner.Get(Tok);
-            }
-            Error(Scanner.Pos, "    restart point");
+                Get(Tok);
+            while (!(Tok == '.' || Tok == Token.end));
+            if (Tok != Token.end)
+                Get(Tok);
+            Error(Pos, "    restart point");
         }
     }
-    while (!(Tok == Scanner.eot));
-    ErrorCounter += Scanner.ErrorCounter;
+    while (!(Tok == Token.end));
+    ErrorCounter += lexer.ok ? 0 : 1;
 }
 
 void CheckSemantics()
 {
     int Sym;
     int n;
+
     void Shrink()
     {
         EAG.Alt A;
@@ -669,9 +613,7 @@ void CheckSemantics()
                 Earley.Parse(abs(EAG.DomBuf[Dom]), EAG.ParamBuf[P].Affixform,
                         EAG.ParamBuf[P].Affixform, EAG.ParamBuf[P].isDef);
                 if (EAG.ParamBuf[P].Affixform == EAG.nil)
-                {
                     ++ErrorCounter;
-                }
                 ++Dom;
                 ++P;
             }
@@ -771,7 +713,7 @@ void CheckSemantics()
             if (EAG.HNont[Sym].Id >= 0)
             {
                 ++ErrorCounter;
-                error!"hyper-nonterminal %s undefined"(Scanner.repr(EAG.HNont[Sym].Id));
+                error!"hyper-nonterminal %s undefined"(EAG.symbolTable.symbol(EAG.HNont[Sym].Id));
             }
         }
         else
@@ -785,7 +727,7 @@ void CheckSemantics()
         if (EAG.MNont[Sym].MRule == nil)
         {
             ++ErrorCounter;
-            error!"meta-nonterminal %s undefined"(Scanner.repr(EAG.MNont[Sym].Id));
+            error!"meta-nonterminal %s undefined"(EAG.symbolTable.symbol(EAG.MNont[Sym].Id));
         }
     }
     if (ErrorCounter == 0)
@@ -795,9 +737,7 @@ void CheckSemantics()
         for (n = EAG.firstVar; n < EAG.NextVar; ++n)
         {
             if (EAG.Var[n].Num < 0 && EAG.Var[n].Neg == EAG.nil)
-            {
                 Error(EAG.Var[n].Pos, "#-operator not allowed");
-            }
             if (!EAG.Var[n].Def)
             {
                 import std.format : format;
@@ -811,7 +751,7 @@ void CheckSemantics()
         {
             ++ErrorCounter;
             error!"start symbol %s must have exactly one synthesized attribute"(
-                    Scanner.repr(EAG.HNont[EAG.StartSym].Id));
+                    EAG.symbolTable.symbol(EAG.HNont[EAG.StartSym].Id));
         }
         if (EAG.firstMNont == EAG.NextMNont)
         {
@@ -853,9 +793,7 @@ void ComputeEAGSets()
             while (F !is null)
             {
                 if (cast(EAG.Nont) F !is null && !EAG.Reach[(cast(EAG.Nont) F).Sym])
-                {
                     ComputeReach((cast(EAG.Nont) F).Sym);
-                }
                 F = F.Next;
             }
             A = A.Next;
@@ -951,13 +889,9 @@ void ComputeEAGSets()
                     F = F.Next;
                 }
                 if (TermFound)
-                {
                     Deg[A.Ind] += int.min;
-                }
                 else
-                {
                     TestDeg(A);
-                }
                 A = A.Next;
             }
             while (A !is null);
@@ -991,8 +925,8 @@ void ComputeEAGSets()
 
 void Analyse(Input input)
 {
-    Scanner.Init(input);
     EAG.Init;
+    lexer = Lexer(input, EAG.symbolTable);
     Earley.Init;
     ErrorCounter = 0;
     NameNotified = false;

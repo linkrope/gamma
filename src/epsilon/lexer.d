@@ -135,6 +135,22 @@ struct Lexer
         }
     }
 
+    @("read variable")
+    unittest
+    {
+        with (fixture("foo 42"))
+        {
+            assert(lexer.front == Token.name);
+            assert(symbolTable.symbol(lexer.value) == "foo");
+
+            lexer.popFront;
+
+            assert(lexer.front == Token.number);
+            assert(symbolTable.symbol(lexer.value) == "42");
+            assert(lexer.ok);
+        }
+    }
+
     /**
      * Reads a possibly nested block comment.
      * Line comments are skipped even within block comments.

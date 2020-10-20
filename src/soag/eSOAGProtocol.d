@@ -2,7 +2,6 @@ module soag.eSOAGProtocol;
 
 import EAG = eEAG;
 import IO = eIO;
-import Scanner = eScanner;
 import runtime;
 import SOAG = soag.eSOAG;
 
@@ -55,7 +54,7 @@ void WriteAffix(int i)
         {
             if (EAG.MembBuf[m] < 0)
             {
-                Out.write(Scanner.repr(EAG.MTerm[-EAG.MembBuf[m]].Id));
+                Out.write(EAG.symbolTable.symbol(EAG.MTerm[-EAG.MembBuf[m]].Id));
                 Out.write(" ");
             }
             else

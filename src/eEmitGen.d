@@ -2,7 +2,6 @@ module eEmitGen;
 
 import EAG = eEAG;
 import IO = eIO;
-import Scanner = eScanner;
 import epsilon.settings;
 import runtime;
 import std.bitmanip : BitArray;
@@ -89,7 +88,7 @@ void GenEmitProc(IO.TextOut Mod, Settings settings)
                 if (ANum > CaseLabels)
                 {
                     IO.Msg.write("internal error: Too many meta alts in ");
-                    IO.Msg.write(Scanner.repr(EAG.MTerm[N].Id));
+                    IO.Msg.write(EAG.symbolTable.symbol(EAG.MTerm[N].Id));
                     IO.Msg.writeln;
                     IO.Msg.flush;
                     assert(0);
@@ -105,7 +104,7 @@ void GenEmitProc(IO.TextOut Mod, Settings settings)
                     if (M < 0)
                     {
                         Mod.write("Out.write(");
-                        Mod.write(Scanner.repr(EAG.MTerm[-M].Id));
+                        Mod.write(EAG.symbolTable.symbol(EAG.MTerm[-M].Id));
                         Mod.write("); ");
                         if (MNonts == Type2)
                             WhiteSpace;

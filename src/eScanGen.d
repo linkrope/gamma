@@ -2,7 +2,6 @@ module eScanGen;
 
 import EAG = eEAG;
 import IO = eIO;
-import Scanner = eScanner;
 import epsilon.settings;
 import io : Input, read;
 import log;
@@ -106,7 +105,7 @@ void Generate(Settings settings)
         MaxTokLen = lenOfPredefinedToken;
         for (Term = EAG.firstHTerm; Term < EAG.NextHTerm; ++Term)
         {
-            const Str = Scanner.repr(EAG.HTerm[Term].Id);
+            const Str = EAG.symbolTable.symbol(EAG.HTerm[Term].Id);
 
             TestToken(Str, Len);
             if (Len > MaxTokLen)
@@ -155,7 +154,7 @@ private string repr(int id)
     import std.array : replace;
     import std.range : front;
 
-    const value = Scanner.repr(id);
+    const value = EAG.symbolTable.symbol(id);
 
     if (value.front == '\'')
         return value.replace("'", "`");
