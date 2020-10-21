@@ -385,8 +385,8 @@ void AppParam(int Affixform, Position Pos)
 
 int FindMTerm(int Id)
 {
-    int Sym;
-    Sym = firstMTerm;
+    int Sym = firstMTerm;
+
     MTerm[NextMTerm].Id = Id;
     while (Id != MTerm[Sym].Id)
         ++Sym;
@@ -401,8 +401,8 @@ int FindMTerm(int Id)
 
 int FindMNont(int Id)
 {
-    int Sym;
-    Sym = firstMNont;
+    int Sym = firstMNont;
+
     MNont[NextMNont].Id = Id;
     while (Id != MNont[Sym].Id)
         ++Sym;
@@ -420,8 +420,8 @@ int FindMNont(int Id)
 
 int FindHTerm(int Id)
 {
-    int Sym;
-    Sym = firstHTerm;
+    int Sym = firstHTerm;
+
     HTerm[NextHTerm].Id = Id;
     while (Id != HTerm[Sym].Id)
         ++Sym;
@@ -436,8 +436,8 @@ int FindHTerm(int Id)
 
 int FindHNont(int Id)
 {
-    int Sym;
-    Sym = firstHNont;
+    int Sym = firstHNont;
+
     HNont[NextHNont].Id = Id;
     while (Id != HNont[Sym].Id)
         ++Sym;
