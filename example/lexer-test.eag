@@ -1,0 +1,34 @@
+/* block comment
+! line comment is skipped */
+/*
+ * nested block comment
+ */
+ */
+
+ ε <+ word 1 "\n" word 2: _output>:
+    ! double-quoted string: "\n" represents newline
+    word <word /* left-hand side */ 111111111111111111111>
+    '\n'
+    ! single-quoted string: '\n' represents backslash, followed by "n"
+    word <word /* right-hand side */ 222222222222222222222>
+
+    π <word 111111111111111111111, /* empty */, word 1>
+    π <word 222222222222222222222, /* empty */, word 2>.
+
+_output = word "\n" word.
+
+word = | letter word.
+
+letter = "α" | "β".
+
+word:
+    { <+ letter word: word>
+        <letter> ( <+ "α": letter> "α" | <+ "β": letter> "β" )  <word>
+    } <+ : word>.
+
+π:
+      <- /* empty */: word, - word, + word>
+    | <- "α" word 1: word, - word 2, + "α" word 3: word>
+        π <word 1, word 2, word 3>
+    | <- "β" word 1: word, - word 2, + word 3>
+        π <word 1, "β" word 2, word 3>.
