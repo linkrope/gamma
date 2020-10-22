@@ -33,7 +33,8 @@
 
 ## UTF-8
 
-- generated scanner should support UTF-8
+- rewrite decision-tree implementation in generated lexer
+  (current one is a workaround for the change to UTF-8 support)
 
 ## RISC Assembler
 

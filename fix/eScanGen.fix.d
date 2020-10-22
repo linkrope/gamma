@@ -4,12 +4,13 @@ import IO = eIO;
 import io : Input, Position;
 import runtime;
 import std.stdio;
+import std.uni;
 
 const eot = 0;
 const eol = '\n';
 const firstChBuf = 0;
 const chBufLen = 512;
-char[chBufLen] ChBuf;
+dchar[chBufLen] ChBuf;
 Position[chBufLen] PosBuf;
 int CurCh;
 int NextCh;
@@ -27,22 +28,19 @@ const none = 2;
 
 struct NodeRecord
 {
-    char Ch;
-    int Tok;
-    int Next;
-    int Sub;
+    dchar Ch;
+    int Tok = undef;
+    int Next = nil;
+    int Sub = nil;
 }
 
-alias OpenNode = NodeRecord[];
-OpenNode Node;
+NodeRecord[dchar] Node;
 
 int NextNode;
 char[maxTokLen][maxTok] NameTab;
-bool[256] IsWhitespace;
-bool[256] IsIdent;
-char Ch;
+dchar Ch;
 int Mode;
-char StringCh;
+dchar StringCh;
 Position Pos;
 Position PrevPos;
 
@@ -98,84 +96,50 @@ void GetBufCh()
 void GetPos()
 {
     if (CurCh == NextCh)
-    {
         Pos = PrevPos;
-    }
     else
-    {
         Pos = PosBuf[CurCh - 1];
-    }
 }
 
 void Enter(int Tok, string Name)
 {
+    import std.range : empty, front, popFront;
+
     int Ptr;
-    int i;
 
-    void Insert(ref int Ptr, char Ch)
+    void Insert(ref int Ptr, dchar Ch)
     {
-        void Expand()
-        {
-            long i;
-            OpenNode Node1;
-
-            if (NextNode >= Node.length)
-            {
-                if (Node.length < DIV(int.max, 2))
-                {
-                    Node1 = new NodeRecord[2 * Node.length + 1];
-                    for (i = firstNode; i < Node.length; ++i)
-                        Node1[i] = Node[i];
-                    Node = Node1;
-                }
-                else
-                {
-                    assert(0);
-                }
-            }
-        }
-
         Ptr = NextNode;
-        Node[NextNode].Ch = Ch;
-        Node[NextNode].Tok = undef;
-        Node[NextNode].Next = nil;
-        Node[NextNode].Sub = nil;
+        Node[NextNode] = NodeRecord(Ch);
         ++NextNode;
-        if (NextNode >= Node.length)
-        {
-            Expand;
-        }
     }
 
     if (Tok >= 0)
-    {
         COPY(Name, NameTab[Tok]);
-    }
-    Ptr = Name[0];
-    i = 0;
-    while (i < Name.length)
+    Ptr = Name.front;
+    while (!Name.empty)
     {
-        while (Node[Ptr].Ch != Name[i] && Node[Ptr].Next != nil)
+        if (Ptr !in Node)
+            Node[Ptr] = NodeRecord(Ptr);
+        while (Node[Ptr].Ch != Name.front && Node[Ptr].Next != nil)
+            Ptr = Node[Ptr].Next;
+        if (Node[Ptr].Ch != Name.front)
         {
+            Insert(Node[Ptr].Next, Name.front);
             Ptr = Node[Ptr].Next;
         }
-        if (Node[Ptr].Ch != Name[i])
-        {
-            Insert(Node[Ptr].Next, Name[i]);
-            Ptr = Node[Ptr].Next;
-        }
-        ++i;
-        if (Node[Ptr].Sub != nil && i < Name.length)
+        Name.popFront;
+        if (Node[Ptr].Sub != nil && !Name.empty)
         {
             Ptr = Node[Ptr].Sub;
         }
         else
         {
-            while (i < Name.length)
+            while (!Name.empty)
             {
-                Insert(Node[Ptr].Sub, Name[i]);
+                Insert(Node[Ptr].Sub, Name.front);
                 Ptr = Node[Ptr].Sub;
-                ++i;
+                Name.popFront;
             }
         }
     }
@@ -196,9 +160,7 @@ void Symbol(ref int Tok)
     if (Node[Ptr].Sub != nil)
     {
         if (NextCh >= ChBuf.length - maxTokLen)
-        {
             CopyBuf;
-        }
         Mark = CurCh;
         do
         {
@@ -210,11 +172,9 @@ void Symbol(ref int Tok)
             Ptr = Node[Ptr].Sub;
             GetBufCh;
             while (Ptr != nil && Node[Ptr].Ch != Ch)
-            {
                 Ptr = Node[Ptr].Next;
-            }
         }
-        while (!(Ptr == nil));
+        while (Ptr != nil);
         CurCh = Mark;
     }
     GetCh;
@@ -226,11 +186,15 @@ void Keyword(ref int Tok)
     int LastPtr;
     int Mark;
 
+    if (Ptr !in Node)
+    {
+        Tok = undef;
+        GetCh;
+        return;
+    }
     Tok = Node[Ptr].Tok;
     if (NextCh >= ChBuf.length - maxTokLen)
-    {
         CopyBuf;
-    }
     Mark = CurCh;
     do
     {
@@ -238,12 +202,10 @@ void Keyword(ref int Tok)
         Ptr = Node[Ptr].Sub;
         GetBufCh;
         while (Ptr != nil && Node[Ptr].Ch != Ch)
-        {
             Ptr = Node[Ptr].Next;
-        }
     }
-    while (!(Ptr == nil));
-    if (Node[LastPtr].Tok != undef && !IsIdent[Ch])
+    while (Ptr != nil);
+    if (Node[LastPtr].Tok != undef && !Ch.isAlphaNum)
     {
         Tok = Node[LastPtr].Tok;
         CurCh = NextCh - 1;
@@ -294,9 +256,7 @@ void Comment()
                 GetCh;
                 --Level;
                 if (Level == 0)
-                {
                     break;
-                }
             }
         }
         else
@@ -318,16 +278,14 @@ void Get2(ref int Tok)
         else
         {
             if (Ch == StringCh || Ch == eol)
-            {
                 Mode = none;
-            }
             GetPos;
-            Tok = Node[Ch].Tok;
+            Tok = (Ch in Node) ? Node[Ch].Tok : undef;
             GetCh;
         }
         break;
     case ident:
-        if (IsIdent[Ch])
+        if (Ch.isAlphaNum)
         {
             GetPos;
             Tok = Node[Ch].Tok;
@@ -340,16 +298,14 @@ void Get2(ref int Tok)
         }
         break;
     default:
-        while (IsWhitespace[Ch])
-        {
+        while (Ch.isWhite)
             GetCh;
-        }
         GetPos;
         if (Ch == eot)
         {
             Tok = eot;
         }
-        else if (IsIdent[Ch])
+        else if (Ch.isAlphaNum)
         {
             Keyword(Tok);
         }
@@ -384,16 +340,14 @@ void Get3(ref int Tok)
         else
         {
             if (Ch == StringCh || Ch == eol)
-            {
                 Mode = none;
-            }
             GetPos;
             Tok = Node[Ch].Tok;
             GetCh;
         }
         break;
     case ident:
-        if (IsIdent[Ch])
+        if (Ch.isAlphaNum)
         {
             GetPos;
             Tok = Node[Ch].Tok;
@@ -411,16 +365,14 @@ void Get3(ref int Tok)
         {
             Tok = eot;
         }
-        else if (IsWhitespace[Ch])
+        else if (Ch.isWhite)
         {
             do
-            {
                 GetCh;
-            }
-            while (!!IsWhitespace[Ch]);
+            while (Ch.isWhite);
             Tok = whitespace;
         }
-        else if (IsIdent[Ch])
+        else if (Ch.isAlphaNum)
         {
             Keyword(Tok);
         }
@@ -457,34 +409,9 @@ void BuildTree()
 {
     import std.conv : to;
 
-    for (int i = 0; i < IsIdent.length; ++i)
-    {
-        if ('A' <= i && i <= 'Z')
-            IsIdent[i] = true;
-        else if ('a' <= i  && i <= 'z')
-            IsIdent[i] = true;
-        else if ('0' <= i  && i <= '9')
-            IsIdent[i] = true;
-        else
-            IsIdent[i] = false;
-    }
-    for (int i = 0; i < IsWhitespace.length; ++i)
-    {
-        if (i <= ' ' || '~' < i)
-            IsWhitespace[i] = true;
-        else
-            IsWhitespace[i] = false;
-    }
-    IsWhitespace[eot] = false;
-    Node = new NodeRecord[255];
     NextNode = '~' + 1;
     for (int i = firstNode; i <= NextNode; ++i)
-    {
-        Node[i].Ch = i.to!char;
-        Node[i].Tok = undef;
-        Node[i].Next = nil;
-        Node[i].Sub = nil;
-    }
+        Node[i] = NodeRecord(i);
     ++NextNode;
     COPY("endTok", NameTab[0]);
     COPY("undefTok", NameTab[1]);
@@ -502,11 +429,9 @@ private void COPY(T)(string x, ref T v)
     copy(x[], v[]);
 }
 
-private void Read(ref Input input, ref char c)
+private void Read(ref Input input, ref dchar c)
 {
-    import std.conv : to;
-
-    c = input.front.to!char;
+    c = input.front;
     PrevPos = input.position;
     if (!input.empty)
         input.popFront;

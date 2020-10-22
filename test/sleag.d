@@ -109,3 +109,15 @@ unittest
             .shouldMatch("^ab ba $");
     }
 }
+
+@("compile lexer-test.eag as SLEAG and run compiler")
+unittest
+{
+    with (sandbox)
+    {
+        run!"./epsilon --space example/lexer-test.eag --output-directory %s"(directory)
+            .shouldMatch("SLEAG testing   ε   ok");
+        run!`cd %s && echo α β α β \\\\n α β β α| ./ε`(directory)
+            .shouldMatch("^α α β β \n α α β β $");
+    }
+}
