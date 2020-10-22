@@ -1,19 +1,18 @@
 /* block comment
-! line comment is skipped */
 /*
  * nested block comment
  */
- */
+// not a line comment */
 
  ε <+ word 1 "\n" word 2: _output>:
-    ! double-quoted string: "\n" represents newline
-    word <word /* left-hand side */ 111111111111111111111>
+    // double-quoted string: "\n" represents newline
+    word <word /* left-hand side */ 01>
     '\n'
-    ! single-quoted string: '\n' represents backslash, followed by "n"
-    word <word /* right-hand side */ 222222222222222222222>
+    // single-quoted string: '\n' represents backslash, followed by "n"
+    word <word /* right-hand side */ 02>
 
-    π <word 111111111111111111111, /* empty */, word 1>
-    π <word 222222222222222222222, /* empty */, word 2>.
+    π <word 01, /* empty */, word 1>
+    π <word 02, /* empty */, word 2>.
 
 _output = word "\n" word.
 

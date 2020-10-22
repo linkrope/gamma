@@ -1,4 +1,4 @@
-!  ------------------------   a^n b^n  -> i^n  without EBNF
+// a^n b^n  -> i^n  without EBNF
 
 N = "i" N | .
 

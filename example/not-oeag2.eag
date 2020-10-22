@@ -1,4 +1,4 @@
-! eine Nicht-OEAG, die eine SOAG ist und mit lokalem Backtracking ermittelt wird
+// a non-OEAG, which is a SOAG and is determined with local backtracking
 
 N = "0" .
 

@@ -1,4 +1,4 @@
-! Oberon-0 (Compiler)  MK 12.96
+// Oberon-0 (compiler)  MK 12.96
 
 OberonO <+ Code>: Module <Code>.
 
@@ -448,7 +448,7 @@ Module <+ Code1 Code2 Code3 Code4: Code>:
   Body <Table, N1, Code3, N3> ident <ident>
   "." close <Code4>.
 
-! RISC-Assembler
+// RISC Assembler
 
 label* = "L" N.
 Ls = | Ls Ls
@@ -488,7 +488,7 @@ Negated:
   | <- "BGT": CC, + "BLE": CC> | <- "BLE": CC, + "BGT": CC>.
 
 Code = | Code Code
-  | label "*" | Ls !
+  | label "*" | Ls
   | "ADD"  N "," N "," N
   | "SUB"  N "," N "," N
   | "MUL"  N "," N "," N
@@ -514,7 +514,7 @@ Code = | Code Code
   | "WH"   N
   | "WL"   N.
 
-! Registerzuteilung
+// Register Allocation
 
 Regs = | N ";" Regs.
 
@@ -545,7 +545,7 @@ FreeReg:
             rO <N1> fp <N2>
         ).
 
-! Code-Auswahl
+// Code Selection
 
 Item = "VAR" N "," E | "REG" N | "CONST" E | "COND" CC N Ls "," Ls | "PEND" Ls.
 

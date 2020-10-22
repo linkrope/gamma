@@ -1,4 +1,4 @@
-! DeclAppl: ein reduzierte Beispiel
+// declarations/applications: a reduced example
 
 Tab = | id ";" Tab.
 

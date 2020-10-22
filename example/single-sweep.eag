@@ -1,4 +1,4 @@
-! -----------------------   single sweep test : C E B A D
+// single-sweep test : C E B A D
 
 N = .
 O = .

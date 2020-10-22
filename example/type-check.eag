@@ -1,4 +1,4 @@
-! Oberon-0 (Typüberprüfung)  MK 06.96
+// Oberon-0 (f) type check)  MK 06.96
 
 OberonO = Decls Stmts.
 

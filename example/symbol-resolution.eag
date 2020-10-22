@@ -1,4 +1,4 @@
-! Oberon-0 (Symbolauflösung)  MK 06.96
+// Oberon-0 (e) symbol resolution)  MK 06.96
 
 OberonO = Decls Stmts.
 

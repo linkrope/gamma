@@ -1,4 +1,4 @@
-! Oberon-0 (Typtabellen)  MK 06.96
+// Oberon-0 (b) type tables)  MK 06.96
 
 OberonO = Decls Stmts.
 

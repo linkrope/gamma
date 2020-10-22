@@ -57,19 +57,16 @@ struct Lexer
                 token = Token.end;
                 return;
             }
-            if (input.front == '!')
-            {
-                do
-                    input.popFront;
-                while (input.next != '\n');
-            }
-            else if (input.front == '/')
+            if (input.front == '/')
             {
                 token = input.front;
                 input.popFront;
-                if (input.next != '*')
+                if (input.next == '/')
+                    readLineComment;
+                else if (input.next == '*')
+                    readBlockComment;
+                else
                     return;
-                readComment;
             }
             else
             {
@@ -115,16 +112,6 @@ struct Lexer
         }
     }
 
-    @("read line comment")
-    unittest
-    {
-        with (fixture("!\n"))
-        {
-            assert(lexer.empty);
-            assert(lexer.ok);
-        }
-    }
-
     @("read special character")
     unittest
     {
@@ -151,12 +138,25 @@ struct Lexer
         }
     }
 
-    /**
-     * Reads a possibly nested block comment.
-     * Line comments are skipped even within block comments.
-     * Strings, however, are not recognized within block comments.
-     */
-    private void readComment()
+    private void readLineComment()
+    in (input.next == '/')
+    {
+        do
+            input.popFront;
+        while (!input.empty && input.front != '\n');
+    }
+
+    @("read line comment")
+    unittest
+    {
+        with (fixture("//\n"))
+        {
+            assert(lexer.empty);
+            assert(lexer.ok);
+        }
+    }
+
+    private void readBlockComment()
     in (input.next == '*')
     {
         size_t level = 1;
@@ -177,12 +177,6 @@ struct Lexer
                 if (level == 0)
                     break;
             }
-            if (input.next == '!')
-            {
-                do
-                    input.popFront;
-                while (input.next != '\n');
-            }
             if (input.empty)
             {
                 addError("comment not closed at end of input");
@@ -192,7 +186,7 @@ struct Lexer
         }
     }
 
-    @("read comment")
+    @("read block comment")
     unittest
     {
         with (fixture("/**/"))
@@ -202,7 +196,7 @@ struct Lexer
         }
     }
 
-    @("read nested comment")
+    @("read nested block comment")
     unittest
     {
         with (fixture("/*/**/*/"))
@@ -212,28 +206,17 @@ struct Lexer
         }
     }
 
-    @("read comment with line comment")
+    @("read block comment with line comment")
     unittest
     {
-        with (fixture("/*!*/\n*/"))
+        with (fixture("/* // */"))
         {
             assert(lexer.empty);
             assert(lexer.ok);
         }
     }
 
-    @("read comment with string")
-    unittest
-    {
-        with (fixture(`/*"*/"*/`))
-        {
-            assert(lexer.front == Token.string_);
-            assert(symbolTable.symbol(lexer.value) == `"*/`);
-            assert(!lexer.ok);
-        }
-    }
-
-    @("read invalid comment")
+    @("read invalid block comment")
     unittest
     {
         with (fixture("/*/*/"))

@@ -1,4 +1,4 @@
-! Oberon-0 (Typauflösung)  MK 06.96
+// Oberon-0 (c) type resolution)  MK 06.96
 
 OberonO = Decls Stmts.
 

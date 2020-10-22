@@ -1,4 +1,4 @@
-! Oberon-0 (Frontend)  MK 04.96
+// Oberon-0 (frontend)  MK 04.96
 
 Msg = "done".
 
@@ -160,7 +160,7 @@ IfStatement <- Table: Table>:
   <Table>
     [ <- Table: Table>
         "ELSE" StatementSequence <Table>
-    ] <- Table: Table> 
+    ] <- Table: Table>
   "END".
 
 WhileStatement <- Table: Table>:

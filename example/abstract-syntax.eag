@@ -1,4 +1,4 @@
-! Oberon-0 (Abstrakte Syntax)  MK 06.96
+// Oberon-0 (a) abstract syntax)  MK 06.96
 
 OberonO = Decls Stmts.
 
@@ -161,7 +161,7 @@ IfStatement <+ "IF" Expr Stmts1 Stmts2: Stmts>:
   <Stmts>
     [ <+ Stmts: Stmts>
         "ELSE" StatementSequence <Stmts>
-    ] <+ "NIL": Stmts> 
+    ] <+ "NIL": Stmts>
   "END".
 
 WhileStatement <+ "WHILE" Expr Stmts: Stmts>:
