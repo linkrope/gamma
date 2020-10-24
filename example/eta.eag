@@ -176,7 +176,7 @@ Table = | Kind ident Signature Table.
 
 Find:
     <- Kind ident Signature Table: Table, + Kind, - ident, + Signature>
-  | <- Kind1 #ident Signature1 Table: Table, + Kind, - ident, + Signature>
+  | <- Kind1 !ident Signature1 Table: Table, + Kind, - ident, + Signature>
       Find <Table, Kind, ident, Signature>.
 
 Heading <+ Table>:

@@ -35,6 +35,7 @@
 
 - rewrite decision-tree implementation in generated lexer
   (current one is a workaround for the change to UTF-8 support)
+- add reserved nonterminal "alpha" for Unicode letter?
 
 ## RISC Assembler
 

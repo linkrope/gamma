@@ -233,7 +233,7 @@ FieldTab:
       id <id> Type <Type> FieldTab <IdOpt, TypeOpt1>
       <IdOpt, id, Type, TypeOpt1, TypeOpt>
         ( <- id: IdOpt, - id: id, - Type: Type, - TypeOpt: TypeOpt, + Type: TypeOpt>
-        | <- id: IdOpt, - #id: id, - Type: Type, - TypeOpt: TypeOpt, + TypeOpt: TypeOpt>
+        | <- id: IdOpt, - !id: id, - Type: Type, - TypeOpt: TypeOpt, + TypeOpt: TypeOpt>
         | <- "NIL": IdOpt, - id: id, - Type: Type, - TypeOpt: TypeOpt, + TypeOpt: TypeOpt>
         ).
 
@@ -257,7 +257,7 @@ Map <- TypeOpt1: TypeOpt, - N: N, - IdOpt: IdOpt, + TypeOpt: TypeOpt>:
   "STRUCT" N <N1> Desc <IdOpt, TypeOpt2>
   <N, N1, TypeOpt2, TypeOpt1, TypeOpt>
     ( <- N: N, - N: N, - TypeOpt2: TypeOpt, - TypeOpt1: TypeOpt, + TypeOpt2: TypeOpt>
-    | <- N: N, - #N: N, - TypeOpt2: TypeOpt, - TypeOpt1: TypeOpt, + TypeOpt1: TypeOpt>
+    | <- N: N, - !N: N, - TypeOpt2: TypeOpt, - TypeOpt1: TypeOpt, + TypeOpt1: TypeOpt>
     ).
 
 Object =

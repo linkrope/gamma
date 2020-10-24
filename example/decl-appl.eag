@@ -29,5 +29,5 @@ Bool = "TRUE" | "FALSE".
 
 Find<- id: id, - : Tab, + "FALSE": Bool>: .
 Find<- id: id, - id ";" Tab: Tab, + "TRUE": Bool>: .
-Find<- id: id, - #id ";" Tab: Tab, + Bool: Bool>:
+Find<- id: id, - !id ";" Tab: Tab, + Bool: Bool>:
 	Find<id, Tab, Bool>.

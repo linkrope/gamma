@@ -200,7 +200,7 @@ TypeTab:
       <TypeDef1, id, TypeDef2, TypeDef3>
         ( <- "UNDEF": TypeDef, - id: id, - TypeDef: TypeDef, + "UNDEF": TypeDef>
         | <- id: TypeDef, - id: id, - TypeDef: TypeDef, + TypeDef: TypeDef>
-        | <- #id: TypeDef, - id: id, - TypeDef: TypeDef, + #id: TypeDef>
+        | <- !id: TypeDef, - id: id, - TypeDef: TypeDef, + !id: TypeDef>
         | <- Type: TypeDef, - id: id, - TypeDef: TypeDef, + Type: TypeDef>
         )
       TypeTab <TypeDef3, TypeDef>.

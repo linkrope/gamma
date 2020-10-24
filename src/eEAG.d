@@ -733,7 +733,7 @@ public string VarRepr(int V)
     string result;
 
     if (Var[V].Num < 0)
-        result ~= '#';
+        result ~= '!';
     result ~= symbolTable.symbol(MNont[Var[V].Sym].Id);
     if (abs(Var[V].Num) > 1)
         result ~= symbolTable.symbol(abs(Var[V].Num) - 2);

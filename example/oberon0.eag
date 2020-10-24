@@ -306,7 +306,7 @@ ObjNil = Object | "NIL".
 FindObject:
     <- : Scope, - ident, + "NIL": ObjNil>
   | <- Scope ident Object: Scope, - ident, + Object: ObjNil>
-  | <- Scope #ident Object: Scope, - ident, + ObjNil: ObjNil>
+  | <- Scope !ident Object: Scope, - ident, + ObjNil: ObjNil>
       FindObject <Scope, ident, ObjNil>.
 
 Insert:
@@ -477,7 +477,7 @@ E =
 eqO <- "0": E>: .
 
 uneqO <- E>:
-  <#E>
+  <!E>
     ( <+ "0": E> ).
 
 CC = "BEQ" | "BNE" | "BLT" | "BGE" | "BGT" | "BLE".
@@ -541,7 +541,7 @@ FreeReg:
       fp <N>
   | <- N, - Regs, + N ";" Regs: Regs>
       <N, N>
-        ( <- #N1, - #N2>
+        ( <- !N1, - !N2>
             rO <N1> fp <N2>
         ).
 
@@ -618,7 +618,7 @@ Index:
      - Code, - Regs, + Code "CHKI" N1 "," E1
                             "MULI" N2 "," N1 "," E2
                             "ADD"  N2 "," N "," N2: Code, + Regs2>
-      rO <#N>
+      rO <!N>
       FreeReg <N1, Regs, N2 ";" Regs1> FreeReg <N, Regs1, Regs2>
   | <- "VAR" N "," E: Item, - E1, - E2, - "CONST" E3: Item,
      + "VAR" N "," "(" E "+" "(" E2 "*" E3 ")" ")": Item,

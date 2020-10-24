@@ -154,7 +154,7 @@ void Specification()
         {
             /**
              * Affixform:
-             *   {string | ["#"] ident [number]}.
+             *   {string | ["!"] ident [number]}.
              */
             void Affixform(ref int Sym)
             {
@@ -173,9 +173,9 @@ void Specification()
                         lexer.popFront;
                         ++Cnt;
                     }
-                    else if (lexer.front == '#' || lexer.front == Token.name)
+                    else if (lexer.front == '!' || lexer.front == Token.name)
                     {
-                        if (lexer.front == '#')
+                        if (lexer.front == '!')
                         {
                             Uneq = -1;
                             lexer.popFront;
@@ -719,7 +719,7 @@ void CheckSemantics()
         for (int n = EAG.firstVar; n < EAG.NextVar; ++n)
         {
             if (EAG.Var[n].Num < 0 && EAG.Var[n].Neg == EAG.nil)
-                Error(EAG.Var[n].Pos, "#-operator not allowed");
+                Error(EAG.Var[n].Pos, "! operator not allowed");
             if (!EAG.Var[n].Def)
             {
                 import std.format : format;

@@ -200,7 +200,7 @@ Tab <- AttrOpt1: AttrOpt, - id: id, + AttrOpt: AttrOpt>:
   id <id1> Attr <Attr>
   <id, id1, Attr, AttrOpt1, AttrOpt>
     ( <- id: id, - id: id, - Attr: Attr, - AttrOpt: AttrOpt, + Attr: AttrOpt>
-    | <- id: id, - #id: id, - Attr: Attr, - AttrOpt: AttrOpt, + AttrOpt: AttrOpt>
+    | <- id: id, - !id: id, - Attr: Attr, - AttrOpt: AttrOpt, + AttrOpt: AttrOpt>
     ).
 
 IdDef <+ id: id>:

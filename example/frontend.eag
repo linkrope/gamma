@@ -237,7 +237,7 @@ ObjNil = Object | "NIL".
 FindObject:
     <- "HEAD": Scope, - ident: ident, + "NIL": ObjNil>
   | <- Scope ident Object: Scope, - ident: ident, + Object: ObjNil>
-  | <- Scope #ident Object: Scope, - ident: ident, + ObjNil: ObjNil>
+  | <- Scope !ident Object: Scope, - ident: ident, + ObjNil: ObjNil>
       FindObject <Scope, ident, ObjNil>.
 
 Insert:

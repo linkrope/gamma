@@ -18,7 +18,7 @@ void WriteAffixVariables(int i)
     {
         if (EAG.Var[-i].Num < 0)
         {
-            Out.write("#");
+            Out.write("!");
         }
         Out.write(EAG.VarRepr(-i));
         Out.write(EAG.Var[-i].Num);
@@ -38,7 +38,7 @@ void WriteAffix(int i)
     {
         if (EAG.Var[-i].Num < 0)
         {
-            Out.write("#");
+            Out.write("!");
         }
         Out.write(EAG.VarRepr(-i));
         Out.write("(");
