@@ -1,9 +1,12 @@
 vscode:
   extensions:
     - webfreak.code-d@0.22.0:K65wBqeoqTvGoea7XwBc+A==
-    - grammarcraft.epsilon-eag@0.0.8:9zTVLwpsuuFv9Fk2o2Mu/g==
-    - grammarcraft.epsilon-eag-light-theme@0.0.8:5z3BIl0S3hl/HGLYCRtnkw==
-    - grammarcraft.epsilon-eag-dark-theme@0.0.8:eOg01Ya9U3S14AzEi1JcSg==
+
+    - grammarcraft.epsilon-eag@1.0.0:4ThXhBCaqSDqA0H3S5xo5w==
+
+    - grammarcraft.epsilon-eag-light-theme@1.0.0:dOaZYnQHrqK4tM0WUx/GPw==
+
+    - grammarcraft.epsilon-eag-dark-theme@1.0.0:j7hU12yAopJdvsyN+EHeCg==
 
 image:
   file: .gitpod.Dockerfile
