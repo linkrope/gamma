@@ -20,21 +20,28 @@ Stacks.Stack ZeroInDeg;
 void ComputeVisitNo()
 {
     import std.conv : to;
+    import std.exception : enforce;
+    import std.format: format;
 
     int AP;
     int MaxPart;
     int PartNum;
 
     foreach (S; EAG.All.bitsSet)
-    {
-        MaxPart = DIV(SOAG.Sym[S].MaxPart + 1, 2).to!int;
-        SOAG.Sym[S].MaxPart = MaxPart;
-        for (AP = SOAG.Sym[S].AffPos.Beg; AP <= SOAG.Sym[S].AffPos.End; ++AP)
+        if (!EAG.Pred[S])
         {
-            PartNum = DIV(SOAG.PartNum[AP] + 1, 2).to!int;
-            SOAG.PartNum[AP] = MaxPart - PartNum + 1;
+            MaxPart = DIV(SOAG.Sym[S].MaxPart + 1, 2).to!int;
+            SOAG.Sym[S].MaxPart = MaxPart;
+            for (AP = SOAG.Sym[S].AffPos.Beg; AP <= SOAG.Sym[S].AffPos.End; ++AP)
+            {
+                enforce(SOAG.PartNum[AP] >= 0,
+                        format!"partition number for affix position %d at symbol %s not determined"
+                            (AP, EAG.HNontRepr(S)));
+
+                PartNum = DIV(SOAG.PartNum[AP] + 1, 2).to!int;
+                SOAG.PartNum[AP] = MaxPart - PartNum + 1;
+            }
         }
-    }
 }
 
 /**

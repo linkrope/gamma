@@ -2,6 +2,7 @@ module soag.eSOAGPartition;
 
 import EAG = eEAG;
 import IO = eIO;
+import log;
 import runtime;
 import ALists = soag.eALists;
 import ASets = soag.eASets;
@@ -586,6 +587,8 @@ void DynTopSortSym(int X)
                 ASets.Insert(Leave, a);
         }
     }
+    trace!"compute partition for symbol %s"(EAG.HNontRepr(X));
+    trace!"initially: Cur=%s, Leave=%s"(ASets.elements(Cur), ASets.elements(Leave));
     do
     {
         ALists.Reset(LastCur);
@@ -616,6 +619,7 @@ void DynTopSortSym(int X)
             }
         }
         ++Part;
+        trace!"partition %s: Cur=%s, Leave=%s"(Part, ASets.elements(Cur), ASets.elements(Leave));
         for (a = ASets.firstIndex; a <= Cur.List.Last; ++a)
         {
             SOAG.PartNum[SOAG.Sym[X].AffPos.Beg + Cur.List.Elem[a]] = Part;
@@ -629,6 +633,7 @@ void DynTopSortSym(int X)
                 }
             }
         }
+        trace!"afterwards: Cur=%s, Leave=%s"(ASets.elements(Cur), ASets.elements(Leave));
         tmp = Cur;
         Cur = Leave;
         Leave = tmp;
@@ -667,7 +672,11 @@ void DynTopSort()
  */
 void Compute()
 {
+    const undefined = -1;
+
     SOAG.Init;
+    // initialize partition number of each affix position to finally enforce that it's defined
+    SOAG.PartNum[SOAG.firstPartNum .. SOAG.NextPartNum] = undefined;
     VarBuf = new VarBufDesc[50];
     ChangeBuf = new ChangeBufDesc[64];
     NextVarBuf = firstVarBuf;

@@ -179,9 +179,9 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --soag example/single-sweep.eag --output-directory %s"(directory)
-            .shouldMatch("Grammar is SOEAG")
-            .assertThrown!AssertError;
-        writeln("    FAILED");
+            .shouldMatch("Grammar is SOEAG");
+        run!"cd %s && echo a b c d e | ./S"(directory)
+            .shouldMatch("^$");
     }
 }
 

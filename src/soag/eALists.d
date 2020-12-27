@@ -15,20 +15,12 @@ alias AList = AListDesc;
 
 void Expand(ref AList List)
 {
-    OpenList List1;
-    int i;
-    if (List.Elem.length < DIV(int.max, 2))
-    {
-        List1 = new int[2 * List.Elem.length + 1];
-    }
-    else
-    {
-        assert(0);
-    }
-    for (i = firstIndex; i <= List.Last; ++i)
-    {
+    assert(List.Elem.length < DIV(int.max, 2));
+
+    OpenList List1 = new int[2 * List.Elem.length + 1];
+
+    for (int i = firstIndex; i <= List.Last; ++i)
         List1[i] = List.Elem[i];
-    }
     List.Elem = List1;
 }
 
@@ -80,9 +72,7 @@ void Delete(ref AList List, int Index)
 void Append(ref AList List, int Value)
 {
     if (List.Last + 1 >= List.Elem.length)
-    {
         Expand(List);
-    }
     ++List.Last;
     List.Elem[List.Last] = Value;
 }
@@ -96,18 +86,9 @@ void Append(ref AList List, int Value)
 */
 int IndexOf(ref AList List, int Value)
 {
-    int i;
-    i = firstIndex;
+    int i = firstIndex;
+
     while (List.Elem[i] != Value && i <= List.Last)
-    {
         ++i;
-    }
-    if (i <= List.Last)
-    {
-        return i;
-    }
-    else
-    {
-        return -1;
-    }
+    return (i <= List.Last) ? i : -1;
 }
