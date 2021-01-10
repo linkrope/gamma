@@ -161,32 +161,20 @@ private string repr(int id)
     return value;
 }
 
-static this()
+static this() @nogc nothrow @safe
 {
     for (int i = 0; i < IsIdent.length; ++i)
-    {
         IsIdent[i] = false;
-    }
     for (int i = 'A'; i <= 'Z'; ++i)
-    {
         IsIdent[i] = true;
-    }
     for (int i = 'a'; i <= 'z'; ++i)
-    {
         IsIdent[i] = true;
-    }
     for (int i = '0'; i <= '9'; ++i)
-    {
         IsIdent[i] = true;
-    }
     for (int i = 0; i <= ' '; ++i)
-    {
         IsSymbol[i] = false;
-    }
     for (int i = ' ' + 1; i < IsSymbol.length; ++i)
-    {
         IsSymbol[i] = !IsIdent[i];
-    }
     IsSymbol['\''] = false;
     IsSymbol['"'] = false;
 }

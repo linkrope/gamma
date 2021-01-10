@@ -49,7 +49,7 @@ void ComputeVisitNo()
  * OUT: Visit-Nummer des Affixparameters
  * SEM: Auslesen der Visit-Nummer des Affixparameters, Schnittstellenprozedur
  */
-int GetVisitNo(int AP)
+int GetVisitNo(int AP) @nogc nothrow @safe
 {
     const S = SOAG.SymOcc[SOAG.AffOcc[AP].SymOccInd].SymInd;
 
@@ -61,7 +61,7 @@ int GetVisitNo(int AP)
  * OUT: die maximale Visit-Nummer dieses Symbols
  * SEM: Auslesen der maximalen Visit-Nummer des Symbolvorkommens, Schnittstellenprozedur
  */
-int GetMaxVisitNo(int SO)
+int GetMaxVisitNo(int SO) @nogc nothrow @safe
 {
     return SOAG.Sym[SOAG.SymOcc[SO].SymInd].MaxPart;
 }
@@ -71,7 +71,7 @@ int GetMaxVisitNo(int SO)
  * OUT: Nummer des Eintrages in der Visitsequenz der Regel
  * SEM: Durchsucht die Visitsequenz nach dem Visit des Symbolvorkommens mit entsprechender Besuchsnummer.
  */
-int GetNextVisit(int V, int R, int SO, int VN)
+int GetNextVisit(int V, int R, int SO, int VN) @nogc nothrow @safe
 {
     while (V <= SOAG.Rule[R].VS.End)
     {
@@ -100,7 +100,7 @@ int GetNextVisit(int V, int R, int SO, int VN)
  * OUT: Nummer des Eintrages in der Visitsequenz der Regel
  * SEM: Durchsucht die Visitsequenz nach dem Visit des Symbolvorkommens mit entsprechender Besuchsnummer.
  */
-int GetVisit(int R, int SO, int VN)
+int GetVisit(int R, int SO, int VN) @nogc nothrow @safe
 {
     return GetNextVisit(SOAG.Rule[R].VS.Beg, R, SO, VN);
 }
@@ -110,7 +110,7 @@ int GetVisit(int R, int SO, int VN)
  * OUT: Instruktion oder NIL für NOP
  * SEM: Erzeugung einer Instruktion in Abhäengigkeit vom übergebenen Affixparameter
  */
-SOAG.Instruction MapVS(int AO)
+SOAG.Instruction MapVS(int AO) nothrow
 {
     if (EAG.ParamBuf[SOAG.AffOcc[AO].ParamBufInd].isDef)
     {
@@ -162,7 +162,7 @@ SOAG.Instruction MapVS(int AO)
  * OUT: Instruktion
  * SEM: Berechnung der abschliessenden Instruktionen für ein Symbolvorkommen
  */
-SOAG.Instruction CompleteTraversal(int SO)
+SOAG.Instruction CompleteTraversal(int SO) nothrow
 {
     if (SOAG.IsPredNont(SO))
     {

@@ -8,7 +8,7 @@ class SymbolTable
 
     invariant (table.length == pool.length);
 
-    size_t intern(const(char)[] value)
+    size_t intern(const(char)[] value) nothrow pure @safe
     {
         if (auto id = value in table)
             return *id;
@@ -38,7 +38,7 @@ class SymbolTable
         }
     }
 
-    string symbol(size_t id)
+    string symbol(size_t id) @nogc nothrow pure @safe
     in (id < pool.length)
     {
         return pool[id];

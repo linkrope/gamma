@@ -39,7 +39,7 @@ bool Close;
  *      die Namen der temp. Variablen für die Baumknoten;
  *      die maximale Variablenummer der Regel wird in LocalVars[] abgelegt
  */
-void ComputeNodeNames(int R)
+void ComputeNodeNames(int R) @nogc nothrow
 {
     int Var;
     int ProcVar;
@@ -138,7 +138,7 @@ void ComputeNodeNames(int R)
  * OUT: Affixposition
  * SEM: gibt die Affixposition zurück, zu der der Affixparameter korrespondiert
  */
-int GetCorrespondedAffPos(int AP)
+int GetCorrespondedAffPos(int AP) @nogc nothrow @safe
 {
     int SO;
     int AN;
@@ -147,7 +147,7 @@ int GetCorrespondedAffPos(int AP)
     return SOAG.Sym[SOAG.SymOcc[SO].SymInd].AffPos.Beg + AN;
 }
 
-void WrAffixAppls(int R)
+void WrAffixAppls(int R) @safe
 {
     EAG.ScopeDesc Scope;
     EAG.Rule EAGRule;
@@ -182,7 +182,7 @@ void WrAffixAppls(int R)
  *      alle nicht-applizierten Affixvariablen (AffixAppls[]=0) werden ausgelassen
  * PRE: AffixAppls[] muss berechnet sein
  */
-void ComputeAffixOffset(int R)
+void ComputeAffixOffset(int R) @nogc nothrow @safe
 {
     EAG.ScopeDesc Scope;
     EAG.Rule EAGRule;
@@ -237,7 +237,7 @@ void ComputeAffixOffset(int R)
  * SEM: liefert die echte Anzahl an Affixvariablen in der Regel;
  *      nur zur Information über die Optimierungleistung
  */
-int GetAffixCount(int R)
+int GetAffixCount(int R) @nogc nothrow @safe
 {
     EAG.ScopeDesc Scope;
     EAG.Rule EAGRule;
@@ -263,7 +263,7 @@ int GetAffixCount(int R)
  *      müsste eigentlich von SLEAG geliefert werden (in SSweep wurde es auch intern definiert,
  *      deshalb wird es hier für spätere Module exportiert)
  */
-int HyperArity()
+int HyperArity() nothrow
 {
     const Nonts = EAG.All - EAG.Pred;
     int Max = 0;
@@ -294,7 +294,7 @@ int HyperArity()
 /**
  * SEM: Initialisierung der Datenstrukturen des Moduls
  */
-void Init()
+void Init() nothrow
 {
     int R;
     int SO;
@@ -355,12 +355,10 @@ void Init()
     }
 }
 
-void Ind()
+void Ind() @safe
 {
     for (size_t i = 1; i <= Indent; ++i)
-    {
         Out.write("    ");
-    }
 }
 
 void WrS(T)(T String)
@@ -368,31 +366,31 @@ void WrS(T)(T String)
     Out.write(String);
 }
 
-void WrI(int Int)
+void WrI(int Int) @safe
 {
     Out.write(Int);
 }
 
-void WrSI(string String, int Int)
+void WrSI(string String, int Int) @safe
 {
     Out.write(String);
     Out.write(Int);
 }
 
-void WrIS(int Int, string String)
+void WrIS(int Int, string String) @safe
 {
     Out.write(Int);
     Out.write(String);
 }
 
-void WrSIS(string String1, int Int, string String2)
+void WrSIS(string String1, int Int, string String2) @safe
 {
     Out.write(String1);
     Out.write(Int);
     Out.write(String2);
 }
 
-void GenHeapInc(int n)
+void GenHeapInc(int n) @safe
 {
     if (n != 0)
     {
@@ -403,12 +401,12 @@ void GenHeapInc(int n)
     }
 }
 
-void GenVar(int Var)
+void GenVar(int Var) @safe
 {
     WrSI("V", Var);
 }
 
-void GenHeap(int Var, int Offset)
+void GenHeap(int Var, int Offset) @safe
 {
     WrS("Heap[");
     if (Var > 0)
@@ -422,7 +420,7 @@ void GenHeap(int Var, int Offset)
     WrS("]");
 }
 
-void GenOverflowGuard(int n)
+void GenOverflowGuard(int n) @safe
 {
     if (n > 0)
         WrSIS("if (NextHeap >= Heap.length - ", n, ") EvalExpand;\n");
@@ -433,7 +431,7 @@ void GenOverflowGuard(int n)
  * OUT: -
  * SEM: Generierung eines Zugriffs auf die Instanz einer Affixposition
  */
-void GenAffPos(int S, int AN)
+void GenAffPos(int S, int AN) @safe
 {
     WrSIS("AffPos[S", S, " + ");
     WrIS(AN, "]");
@@ -444,7 +442,7 @@ void GenAffPos(int S, int AN)
  * OUT: -
  * SEM: Generiert einen Zugriff auf den Inhalt eines Affixes
  */
-void GenAffix(int V)
+void GenAffix(int V) @safe
 in (AffixOffset[V] != notApplied)
 {
     int AP;
@@ -469,7 +467,7 @@ in (AffixOffset[V] != notApplied)
  * SEM: Generierung einer Zuweisung zu einer Instanz einer Affixvariable;
  *      nur in Kombination mit der Prozedur GenClose zu verwenden
  */
-void GenAffixAssign(int V)
+void GenAffixAssign(int V) @safe
 in (AffixOffset[V] != notApplied)
 {
     int AP;
@@ -495,7 +493,7 @@ in (AffixOffset[V] != notApplied)
     }
 }
 
-void GenClose()
+void GenClose() @safe
 {
     if (Close)
         WrS("); ");
@@ -509,7 +507,7 @@ void GenClose()
  * SEM: Generiert eine Erhöhung des Referenzzählers des Knotens auf den das Affixes
  *      bzw. der Index verweist, im Falle eines Stacks wird globale Var. RefIncVar verwendet
  */
-void GenIncRefCnt(int Var)
+void GenIncRefCnt(int Var) @safe
 {
     WrS("Heap[");
     if (Var < 0)
@@ -525,7 +523,7 @@ void GenIncRefCnt(int Var)
  * SEM: generiert die Freigabe des alloziierten Speichers,
  *      wenn die Affixvariable das letzte mal appliziert wurde (AffixAppls = 0)
  */
-void GenFreeAffix(int V)
+void GenFreeAffix(int V) @safe
 {
     if (AffixAppls[V] == 0)
     {
@@ -542,7 +540,7 @@ void GenFreeAffix(int V)
  * SEM: generiert die Kellerspeicherfreigabe,
  *      wenn die Affixvariable das letzte mal appliziert wurde (AffixAppls = 0)
  */
-void GenPopAffix(int V)
+void GenPopAffix(int V) @safe
 {
     if (AffixAppls[V] == 0)
     {
@@ -569,7 +567,7 @@ void GenPopAffix(int V)
  * OUT: -
  * SEM: Generierung der Syntheseaktionen eines Besuchs für die besuchsrelevanten Affixparameter eines Symbolvorkommens
  */
-void GenSynPred(int SymOccInd, int VisitNo)
+void GenSynPred(int SymOccInd, int VisitNo) @safe
 {
     int Node;
     int S;
@@ -787,7 +785,7 @@ void GenSynPred(int SymOccInd, int VisitNo)
  * OUT: -
  * SEM: Generierung der Analyseaktionen eines Besuchs für die besuchsrelevanten Affixparameter eines Symbolvorkommens
  */
-void GenAnalPred(int SymOccInd, int VisitNo)
+void GenAnalPred(int SymOccInd, int VisitNo) @safe
 {
     int S;
     int AP;
@@ -1061,7 +1059,7 @@ void GenAnalPred(int SymOccInd, int VisitNo)
  * OUT: -
  * SEM: Generierung eines Aufrufes der Prozedur 'Visit' für den zu generierenden Compiler
  */
-void GenVisitCall(int SO, int VisitNo)
+void GenVisitCall(int SO, int VisitNo) @safe
 {
     Ind;
     WrSIS("Visit(TreeAdr + ", SubTreeOffset[SO], ", ");
@@ -1071,7 +1069,7 @@ void GenVisitCall(int SO, int VisitNo)
 /**
  * SEM: generiert nur Kommentar
  */
-void GenLeave(int VisitNo)
+void GenLeave(int VisitNo) @safe
 {
     Ind;
     WrSIS("// Leave; VisitNo: ", VisitNo, "\n");
@@ -1082,7 +1080,7 @@ void GenLeave(int VisitNo)
  * OUT: -
  * SEM: Generierung des Aufrufes einer Prädikatprozedur
  */
-void GenPredCall(int SO)
+void GenPredCall(int SO) @safe
 {
     int S;
     int AP;
@@ -1198,7 +1196,7 @@ void GenPredCall(int SO)
  * OUT: -
  * SEM: Generierung der Variablendeklarationen einer Regel
  */
-void GenVarDecls(int R)
+void GenVarDecls(int R) @safe
 {
     WrS("IndexType TreeAdr;\n");
     WrS("IndexType VI;\n");
@@ -1220,7 +1218,7 @@ void GenVarDecls(int R)
  * SEM: Generierung der Positionszuweisung vor Prädikatprozeduraufrufen;
  *      zugewiesen wird die Position des vorhergehenden Visits
  */
-void GenPredPos(int R, int i, ref bool PosNeeded)
+void GenPredPos(int R, int i, ref bool PosNeeded) @safe
 {
     int k;
 
@@ -1482,7 +1480,7 @@ void GenVisit()
 /**
  * SEM: Generierung der Konstanten für den Zugriff auf AffPos[] im generierten Compiler
  */
-void GenConstDeclarations()
+void GenConstDeclarations() @safe
 {
     for (int S = SOAG.firstSym; S < SOAG.NextSym; ++S)
     {
@@ -1496,7 +1494,7 @@ void GenConstDeclarations()
 /**
  * SEM: Generierung der Deklarationen der globalen Variablen und Stacks
  */
-void GenStackDeclarations()
+void GenStackDeclarations() @safe
 {
     if (SOAGOptimizer.GlobalVar > 0 || SOAGOptimizer.StackVar > 0)
     {
@@ -1511,7 +1509,7 @@ void GenStackDeclarations()
 /**
  * SEM: Generierung der Initialisierungen der Stacks
  */
-void GenStackInit()
+void GenStackInit() @safe
 {
     if (SOAGOptimizer.StackVar > 0)
     {

@@ -8,7 +8,7 @@ struct Stack
     ALists.AListDesc aList;
 }
 
-void New(ref Stack S, int Len)
+void New(ref Stack S, int Len) nothrow pure @safe
 {
     S = Stack();
     ALists.New(S.aList, Len);
@@ -23,7 +23,7 @@ unittest
     assert(IsEmpty(stack));
 }
 
-void Reset(ref Stack S)
+void Reset(ref Stack S) @nogc nothrow pure @safe
 {
     ALists.Reset(S.aList);
 }
@@ -39,7 +39,7 @@ unittest
     assert(IsEmpty(stack));
 }
 
-void Push(ref Stack S, int Val)
+void Push(ref Stack S, int Val) nothrow pure @safe
 {
     ALists.Append(S.aList, Val);
 }
@@ -55,7 +55,7 @@ unittest
     assert(Top(stack) == 3);
 }
 
-void Pop(ref Stack S, ref int Val)
+void Pop(ref Stack S, ref int Val) @nogc nothrow
 in (!IsEmpty(S))
 {
     Val = S.aList.Elem[S.aList.Last];
@@ -75,13 +75,13 @@ unittest
     assert(IsEmpty(stack));
 }
 
-int Top(ref Stack S)
+int Top(ref Stack S) @nogc nothrow
 in (!IsEmpty(S))
 {
     return S.aList.Elem[S.aList.Last];
 }
 
-bool IsEmpty(Stack S)
+bool IsEmpty(Stack S) @nogc nothrow
 {
     return S.aList.Last < ALists.firstIndex;
 }

@@ -16,7 +16,7 @@ alias ASet = ASetDesc;
 
 ASet S;
 
-void New(ref ASet S, int MaxElem)
+void New(ref ASet S, int MaxElem) nothrow pure @safe
 {
     S = ASet();
     ALists.New(S.List, MaxElem + 1);
@@ -37,7 +37,7 @@ unittest
     assert(!In(set, 1));
 }
 
-void Reset(ref ASet S)
+void Reset(ref ASet S) @nogc nothrow pure @safe
 {
     ALists.Reset(S.List);
     for (int i = firstIndex; i <= S.Max; ++i)
@@ -59,7 +59,7 @@ unittest
     assert(!In(set, 1));
 }
 
-void Insert(ref ASet S, int Elem)
+void Insert(ref ASet S, int Elem) @nogc nothrow pure @safe
 in (Elem <= S.Max)
 {
     if (Elem <= S.List.Last)
@@ -122,7 +122,7 @@ unittest
     assert(In(set, 1));
 }
 
-void Delete(ref ASet S, int Elem)
+void Delete(ref ASet S, int Elem) @nogc nothrow pure @safe
 in (Elem <= S.Max)
 {
     const last = S.List.Last;
@@ -198,17 +198,17 @@ unittest
     assert(!In(set, 1));
 }
 
-bool IsEmpty(const ASet S)
+bool IsEmpty(const ASet S) @nogc nothrow pure @safe
 {
     return S.List.Last < firstIndex;
 }
 
-bool In(ASet S, int Elem)
+bool In(ASet S, int Elem) @nogc nothrow pure @safe
 {
     return (Elem > S.List.Last) ? S.List.Elem[Elem] > noelem : S.List.Elem[Elem] == Elem;
 }
 
-int[] elements(ASet S)
+int[] elements(ASet S) @nogc nothrow pure @safe
 {
     return S.List.Elem[firstIndex .. S.List.Last + 1];
 }

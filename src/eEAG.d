@@ -27,7 +27,7 @@ struct ParamsDesc
     int Params;
     Position Pos;
 
-    public string toString() const
+    public string toString() const pure @safe
     {
         import std.format : format;
 
@@ -41,7 +41,7 @@ struct ParamRecord
     Position Pos;
     bool isDef;
 
-    public string toString() const
+    public string toString() const pure @safe
     {
         import std.format : format;
 
@@ -62,7 +62,7 @@ struct ScopeDesc
     int Beg;
     int End;
 
-    public string toString() const
+    public string toString() const pure @safe
     {
         import std.format : format;
 
@@ -109,7 +109,7 @@ class AltDesc
     ScopeDesc Scope;
     Position Pos;
 
-    public override string toString() const
+    public override string toString() const pure @safe
     {
         import std.format : format;
 
@@ -125,7 +125,7 @@ class AltDesc
     }
 }
 
-void assign(AltDesc lhs, AltDesc rhs)
+void assign(AltDesc lhs, AltDesc rhs) @nogc nothrow pure @safe
 in (lhs !is null)
 in (rhs !is null)
 {
@@ -179,7 +179,7 @@ class Nont : FactorDesc
 
 }
 
-void assign(Nont lhs, Nont rhs)
+void assign(Nont lhs, Nont rhs) @nogc nothrow pure @safe
 in (lhs !is null)
 in (rhs !is null)
 {
@@ -282,9 +282,9 @@ int StartSym;
 string BaseName;
 SymbolTable symbolTable;
 
-void Expand()
+void Expand() nothrow @safe
 {
-    long NewLen(long ArrayLen)
+    size_t NewLen(size_t ArrayLen)
     {
         if (ArrayLen < DIV(int.max, 2))
             return 2 * ArrayLen + 1;
@@ -374,7 +374,7 @@ void Expand()
     }
 }
 
-void AppParam(int Affixform, Position Pos)
+void AppParam(int Affixform, Position Pos) nothrow @safe
 {
     ParamBuf[NextParam].Affixform = Affixform;
     ParamBuf[NextParam].Pos = Pos;
@@ -383,7 +383,7 @@ void AppParam(int Affixform, Position Pos)
         Expand;
 }
 
-int FindMTerm(int Id)
+int FindMTerm(int Id) nothrow @safe
 {
     int Sym = firstMTerm;
 
@@ -399,7 +399,7 @@ int FindMTerm(int Id)
     return Sym;
 }
 
-int FindMNont(int Id)
+int FindMNont(int Id) nothrow @safe
 {
     int Sym = firstMNont;
 
@@ -418,7 +418,7 @@ int FindMNont(int Id)
     return Sym;
 }
 
-int FindHTerm(int Id)
+int FindHTerm(int Id) nothrow @safe
 {
     int Sym = firstHTerm;
 
@@ -434,7 +434,7 @@ int FindHTerm(int Id)
     return Sym;
 }
 
-int FindHNont(int Id)
+int FindHNont(int Id) nothrow @safe
 {
     int Sym = firstHNont;
 
@@ -454,7 +454,7 @@ int FindHNont(int Id)
     return Sym;
 }
 
-int NewAnonymNont(int Id)
+int NewAnonymNont(int Id) nothrow @safe
 {
     HNont[NextHNont].Id = NextAnonym;
     HNont[NextHNont].NamedId = Id;
@@ -468,7 +468,7 @@ int NewAnonymNont(int Id)
     return NextHNont - 1;
 }
 
-void AppDom(char Dir, int Dom)
+void AppDom(char Dir, int Dom) nothrow @safe
 {
     if (Dir == '-')
         Dom = -Dom;
@@ -478,7 +478,7 @@ void AppDom(char Dir, int Dom)
         Expand;
 }
 
-bool WellMatched(int Sig1, int Sig2)
+bool WellMatched(int Sig1, int Sig2) @nogc nothrow @safe
 {
     if (Sig1 == Sig2)
     {
@@ -495,7 +495,7 @@ bool WellMatched(int Sig1, int Sig2)
     }
 }
 
-bool SigOK(int Sym)
+bool SigOK(int Sym) nothrow @safe
 {
     if (HNont[Sym].Sig < 0)
     {
@@ -515,7 +515,7 @@ bool SigOK(int Sym)
     }
 }
 
-int NewMAlt(int Sym, int Right)
+int NewMAlt(int Sym, int Right) nothrow @safe
 {
     int Arity;
     int i;
@@ -545,7 +545,7 @@ int NewMAlt(int Sym, int Right)
     return NextMAlt - 1;
 }
 
-void AppMemb(int Val)
+void AppMemb(int Val) nothrow @safe
 {
     MembBuf[NextMemb] = Val;
     ++NextMemb;
@@ -553,7 +553,7 @@ void AppMemb(int Val)
         Expand;
 }
 
-int FindVar(int Sym, int Num, Position Pos, bool Def)
+int FindVar(int Sym, int Num, Position Pos, bool Def) nothrow @safe
 {
     int V = Scope;
 
@@ -591,7 +591,7 @@ int FindVar(int Sym, int Num, Position Pos, bool Def)
     return V;
 }
 
-void NewTerm(ref Factor F, int Sym, Position Pos)
+void NewTerm(ref Factor F, int Sym, Position Pos) nothrow @safe
 {
     Term F1 = new Term;
 
@@ -614,7 +614,7 @@ void NewTerm(ref Factor F, int Sym, Position Pos)
     }
 }
 
-void NewNont(ref Factor F, int Sym, ParamsDesc Actual, Position Pos)
+void NewNont(ref Factor F, int Sym, ParamsDesc Actual, Position Pos) nothrow @safe
 {
     Nont F1 = new Nont;
 
@@ -638,7 +638,7 @@ void NewNont(ref Factor F, int Sym, ParamsDesc Actual, Position Pos)
     }
 }
 
-void NewGrp(int Sym, Alt Sub)
+void NewGrp(int Sym, Alt Sub) nothrow @safe
 {
     if (HNont[Sym].Def is null)
     {
@@ -658,7 +658,7 @@ void NewGrp(int Sym, Alt Sub)
     }
 }
 
-void NewOpt(int Sym, Alt Sub, ParamsDesc Formal, Position Pos)
+void NewOpt(int Sym, Alt Sub, ParamsDesc Formal, Position Pos) nothrow @safe
 {
     Opt N = new Opt;
 
@@ -671,7 +671,7 @@ void NewOpt(int Sym, Alt Sub, ParamsDesc Formal, Position Pos)
     HNont[Sym].Def = N;
 }
 
-void NewRep(int Sym, Alt Sub, ParamsDesc Formal, Position Pos)
+void NewRep(int Sym, Alt Sub, ParamsDesc Formal, Position Pos) nothrow @safe
 {
     Rep N = new Rep;
 
@@ -685,7 +685,7 @@ void NewRep(int Sym, Alt Sub, ParamsDesc Formal, Position Pos)
 }
 
 void NewAlt(ref Alt A, int Sym, ParamsDesc Formal, ParamsDesc Actual, Factor Sub,
-        Factor Last, Position Pos)
+        Factor Last, Position Pos) nothrow @safe
 {
     Alt A1 = new Alt;
 
@@ -712,12 +712,12 @@ void NewAlt(ref Alt A, int Sym, ParamsDesc Formal, ParamsDesc Actual, Factor Sub
     }
 }
 
-public string HTermRepr(int Term)
+public string HTermRepr(int Term) @nogc nothrow @safe
 {
     return symbolTable.symbol(HTerm[Term].Id);
 }
 
-public string HNontRepr(size_t Nont)
+public string HNontRepr(size_t Nont) @safe
 {
     import std.format : format;
 
@@ -726,7 +726,7 @@ public string HNontRepr(size_t Nont)
     return symbolTable.symbol(HNont[Nont].Id);
 }
 
-public string VarRepr(int V)
+public string VarRepr(int V) nothrow @safe
 {
     import std.math : abs;
 
@@ -740,12 +740,12 @@ public string VarRepr(int V)
     return result;
 }
 
-public string NamedHNontRepr(size_t Nont)
+public string NamedHNontRepr(size_t Nont) @nogc nothrow @safe
 {
     return symbolTable.symbol(HNont[Nont].NamedId);
 }
 
-bool Performed(size_t Needed)
+bool Performed(size_t Needed) @safe
 {
     import log : error;
 
@@ -772,7 +772,7 @@ bool Performed(size_t Needed)
     }
 }
 
-void Init()
+void Init() nothrow
 {
     ParamBuf = new ParamRecord[1023];
     NextParam = firstParam;
@@ -829,7 +829,7 @@ void Init()
     symbolTable = new SymbolTable;
 }
 
-static this()
+static this() @safe
 {
     import log : info;
 

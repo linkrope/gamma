@@ -36,7 +36,7 @@ struct Logger
         this.file = file;
     }
 
-    void log(Level level, string file, size_t line, string message)
+    void log(Level level, string file, size_t line, string message) @safe
     {
         import std.conv : to;
 

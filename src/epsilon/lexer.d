@@ -28,12 +28,12 @@ struct Lexer
         readToken;
     }
 
-    bool empty() const
+    bool empty() const @nogc nothrow pure @safe
     {
         return token == Token.end;
     }
 
-    dchar front() const
+    dchar front() const @nogc nothrow pure @safe
     {
         return token;
     }
@@ -439,17 +439,17 @@ struct Lexer
         error!"%s\n%s"(message, position_);
     }
 
-    bool ok() const
+    bool ok() const @nogc nothrow pure @safe
     {
         return errorCount == 0;
     }
 
-    size_t value() const
+    size_t value() const @nogc nothrow pure @safe
     {
         return value_;
     }
 
-    Position position() const
+    Position position() const @nogc nothrow pure @safe
     {
         return position_;
     }

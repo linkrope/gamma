@@ -3,7 +3,7 @@ module runtime;
 /**
  * Returns the quotient for a floored division.
  */
-long DIV(long D, long d)
+long DIV(long D, long d) @nogc nothrow pure @safe
 {
     long q = D / d;
     const r = D % d;
@@ -25,7 +25,7 @@ unittest
 /**
  * Returns the remainder for a floored division.
  */
-long MOD(long D, long d)
+long MOD(long D, long d) @nogc nothrow pure @safe
 {
     long r = D % d;
 

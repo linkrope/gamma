@@ -12,7 +12,7 @@ const outAffOccData = 4;
 int Level;
 IO.TextOut Out;
 
-void WriteAffixVariables(int i)
+void WriteAffixVariables(int i) @safe
 {
     if (i < 0)
     {
@@ -32,7 +32,7 @@ void WriteAffixVariables(int i)
     }
 }
 
-void WriteAffix(int i)
+void WriteAffix(int i) @safe
 {
     if (i < 0)
     {
@@ -67,7 +67,7 @@ void WriteAffix(int i)
     }
 }
 
-void WriteAffOcc(int a)
+void WriteAffOcc(int a) @safe
 {
     int p;
     p = SOAG.AffOcc[a].ParamBufInd;
@@ -96,7 +96,7 @@ void WriteAffOcc(int a)
     }
 }
 
-void WriteSymOcc(int s)
+void WriteSymOcc(int s) @safe
 {
     Out.write(EAG.HNontRepr(SOAG.SymOcc[s].SymInd));
     Out.write("< ");
@@ -108,7 +108,7 @@ void WriteSymOcc(int s)
     Out.flush;
 }
 
-void WriteAffOccData(int s)
+void WriteAffOccData(int s) @safe
 {
     Out.write("AffOcc[");
     Out.write(s);
@@ -132,7 +132,7 @@ void WriteAffOccData(int s)
     Out.writeln;
 }
 
-void WriteSymOccData(int s)
+void WriteSymOccData(int s) @safe
 {
     Out.write("SymOcc[");
     Out.write(s);
@@ -156,7 +156,7 @@ void WriteSymOccData(int s)
     Out.writeln;
 }
 
-void WriteRuleData(int r)
+void WriteRuleData(int r) @safe
 {
     Out.write("Rule[");
     Out.write(r);
@@ -175,7 +175,7 @@ void WriteRuleData(int r)
     Out.writeln;
 }
 
-void WriteRule(int r)
+void WriteRule(int r) @safe
 {
     int i;
     Out.write("Rule ");
@@ -210,7 +210,7 @@ void WriteRule(int r)
     }
 }
 
-void WriteRules()
+void WriteRules() @safe
 {
     Out.flush;
     for (int i = SOAG.firstRule; i < SOAG.NextRule; ++i)
@@ -220,25 +220,25 @@ void WriteRules()
     }
 }
 
-void WriteRulesL2()
+void WriteRulesL2() @safe
 {
     Level = outRuleData;
     WriteRules;
 }
 
-void WriteRulesL3()
+void WriteRulesL3() @safe
 {
     Level = outSymOccData;
     WriteRules;
 }
 
-void WriteRulesL4()
+void WriteRulesL4() @safe
 {
     Level = outAffOccData;
     WriteRules;
 }
 
-void WriteSymOccs()
+void WriteSymOccs() @safe
 {
     for (int i = SOAG.firstSymOcc; i < SOAG.NextSymOcc; ++i)
     {
@@ -247,7 +247,7 @@ void WriteSymOccs()
     }
 }
 
-void WriteAffOccs()
+void WriteAffOccs() @safe
 {
     for (int i = SOAG.firstAffOcc; i < SOAG.NextAffOcc; ++i)
     {
@@ -299,7 +299,7 @@ void WriteTDPs()
     }
 }
 
-void WriteVSRule(int R)
+void WriteVSRule(int R) @safe
 {
     SOAG.Instruction I;
 
@@ -342,7 +342,7 @@ void WriteVSRule(int R)
     }
 }
 
-void WriteVS()
+void WriteVS() @safe
 {
     for (int r = SOAG.firstRule; r < SOAG.NextRule; ++r)
     {
@@ -352,7 +352,7 @@ void WriteVS()
     }
 }
 
-void CheckVS()
+void CheckVS() @safe
 {
     bool found = false;
 
@@ -383,7 +383,7 @@ void CheckVS()
     }
 }
 
-void WriteAffPos(int SymInd)
+void WriteAffPos(int SymInd) @safe
 {
     for (int i = SOAG.Sym[SymInd].AffPos.Beg; i <= SOAG.Sym[SymInd].AffPos.End; ++i)
     {
@@ -415,7 +415,7 @@ void WriteAffPos(int SymInd)
     }
 }
 
-void WriteSym(int S)
+void WriteSym(int S) @safe
 {
     Out.write("Symbol ");
     Out.write(EAG.HNontRepr(S));
@@ -429,13 +429,13 @@ void WriteSym(int S)
     Out.flush;
 }
 
-void WriteSyms()
+void WriteSyms() @safe
 {
     for (int i = SOAG.firstSym; i < SOAG.NextSym; ++i)
         WriteSym(i);
 }
 
-static this()
+static this() @nogc nothrow @safe
 {
     Out = IO.Msg;
     Level = standardLevel;

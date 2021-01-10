@@ -160,7 +160,7 @@ void GenEmitProc(IO.TextOut Mod, Settings settings)
         GenEmitProcs(Type2);
 }
 
-void GenShowHeap(IO.TextOut Mod)
+void GenShowHeap(IO.TextOut Mod) @safe
 {
     Mod.write("if (info)\n");
     Mod.write("{\n");

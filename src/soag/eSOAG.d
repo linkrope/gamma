@@ -24,7 +24,7 @@ struct SymDesc
     int MaxPart;
     EAG.ScopeDesc AffPos;
 
-    public string toString() const
+    public string toString() const pure @safe
     {
         import std.format : format;
 
@@ -68,7 +68,7 @@ struct SymOccDesc
     EAG.ScopeDesc AffOcc;
     int Next;
 
-    public string toString() const
+    public string toString() const @safe
     {
         import std.format : format;
 
@@ -88,7 +88,7 @@ struct AffOccNumRecord
     int InRule;
     int InSym;
 
-    public string toString() const
+    public string toString() const pure @safe
     {
         import std.format : format;
 
@@ -106,7 +106,7 @@ struct AffOccDesc
     int SymOccInd;
     AffOccNumRecord AffOccNum;
 
-    public string toString() const
+    public string toString() const pure @safe
     {
         import std.format : format;
 
@@ -207,7 +207,7 @@ void Error(T)(int ErrorType, T Proc)
     throw new Exception("TODO");
 }
 
-void Expand()
+void Expand() nothrow @safe
 {
     long NewLen(long ArrayLen)
     {
@@ -251,7 +251,7 @@ void Expand()
     }
 }
 
-void AppAffOcc(int Params)
+void AppAffOcc(int Params) nothrow @safe
 {
     if (Params != EAG.empty)
     {
@@ -269,7 +269,7 @@ void AppAffOcc(int Params)
     }
 }
 
-void AppSymOccs(EAG.Factor Factor)
+void AppSymOccs(EAG.Factor Factor) nothrow @safe
 {
     while (Factor !is null)
     {
@@ -291,7 +291,7 @@ void AppSymOccs(EAG.Factor Factor)
     }
 }
 
-void AppLeftSymOcc(size_t leftSym, int Params)
+void AppLeftSymOcc(size_t leftSym, int Params) @safe
 {
     import std.conv : to;
 
@@ -308,7 +308,7 @@ void AppLeftSymOcc(size_t leftSym, int Params)
         Expand;
 }
 
-void AppEmptyRule(size_t leftSym, EAG.Rule EAGRule)
+void AppEmptyRule(size_t leftSym, EAG.Rule EAGRule) @safe
 {
     EmptyRule A = new EmptyRule;
 
@@ -327,7 +327,7 @@ void AppEmptyRule(size_t leftSym, EAG.Rule EAGRule)
         Expand;
 }
 
-void AppRule(EAG.Alt EAGAlt)
+void AppRule(EAG.Alt EAGAlt) @safe
 {
     OrdRule A = new OrdRule;
 
@@ -344,7 +344,7 @@ void AppRule(EAG.Alt EAGAlt)
         Expand;
 }
 
-void AppRepRule(EAG.Alt EAGAlt)
+void AppRepRule(EAG.Alt EAGAlt) @safe
 {
     OrdRule A = new OrdRule;
 
@@ -366,7 +366,7 @@ void AppRepRule(EAG.Alt EAGAlt)
  * OUT: -
  * SEM: fügt eine Instruktion in die Datenstruktur VS ein
  */
-void AppVS(ref Instruction I)
+void AppVS(ref Instruction I) nothrow @safe
 {
     VS[NextVS] = I;
     ++NextVS;
@@ -379,7 +379,7 @@ void AppVS(ref Instruction I)
  * OUT: boolscher Wert
  * SEM: Test, ob Affixposition inherited ist
  */
-bool IsInherited(int S, int AffOccNum)
+bool IsInherited(int S, int AffOccNum) @nogc nothrow @safe
 {
     return EAG.DomBuf[EAG.HNont[S].Sig + AffOccNum] < 0;
 }
@@ -389,7 +389,7 @@ bool IsInherited(int S, int AffOccNum)
  * OUT: boolscher Wert
  * SEM: Test, ob Affixposition synthesized ist
  */
-bool IsSynthesized(size_t S, int AffOccNum)
+bool IsSynthesized(size_t S, int AffOccNum) @nogc nothrow @safe
 {
     return EAG.DomBuf[EAG.HNont[S].Sig + AffOccNum] > 0;
 }
@@ -399,7 +399,7 @@ bool IsSynthesized(size_t S, int AffOccNum)
  * OUT: boolscher Wert
  * SEM: Test, ob die beiden Affixpositionen orientierbar sind
  */
-bool IsOrientable(int S, int AffOccNum1, int AffOccNum2)
+bool IsOrientable(int S, int AffOccNum1, int AffOccNum2) @nogc nothrow @safe
 {
     return IsInherited(S, AffOccNum1) && IsSynthesized(S, AffOccNum2)
         || IsInherited(S, AffOccNum2) && IsSynthesized(S, AffOccNum1);
@@ -411,7 +411,7 @@ bool IsOrientable(int S, int AffOccNum1, int AffOccNum2)
  * SEM: Test, ob eine Evaluatorregel vorliegt
  * PRECOND: Predicates.Check muss vorher ausgewertet sein
  */
-bool IsEvaluatorRule(size_t R)
+bool IsEvaluatorRule(size_t R) @nogc nothrow
 {
     return !EAG.Pred[SymOcc[Rule[R].SymOcc.Beg].SymInd];
 }
@@ -422,7 +422,7 @@ bool IsEvaluatorRule(size_t R)
  * SEM: Test, ob ein Prädikat vorliegt
  * PRECOND: Predicates.Check muss vorher ausgewertet sein
  */
-bool IsPredNont(int SO)
+bool IsPredNont(int SO) @nogc nothrow
 {
     return EAG.Pred[SymOcc[SO].SymInd];
 }
@@ -433,7 +433,7 @@ bool IsPredNont(int SO)
  * SEM: Test, ob zwei Instruktionnen gleich sind;
  *      etwas optimiert für den Fall, dass einer oder beide Parameter nil ist
  */
-bool isEqual(Instruction I1, Instruction I2)
+bool isEqual(Instruction I1, Instruction I2) @nogc nothrow pure @safe
 {
     if (I1 is null && I2 is null)
         return true;
@@ -544,7 +544,7 @@ void Init()
     }
 }
 
-static this()
+static this() @safe
 {
     import log : info;
 

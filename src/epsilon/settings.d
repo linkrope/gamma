@@ -37,7 +37,7 @@ struct Settings
 
     string outputDirectory;
 
-    string path(string fileName)
+    string path(string fileName) nothrow pure @safe
     {
         import std.path : buildPath;
         import std.range : empty;

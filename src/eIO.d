@@ -30,7 +30,7 @@ class TextOut
         this.file = file;
     }
 
-    void write(string s)
+    void write(string s) @safe
     {
         file.write(s);
     }
@@ -42,60 +42,60 @@ class TextOut
         file.write(fromStringz(s.ptr));
     }
 
-    void write(char c)
+    void write(char c) @safe
     {
         file.write(c);
     }
 
-    void write(long i)
+    void write(long i) @safe
     {
         import std.conv : to;
 
         file.write(i.to!string);
     }
 
-    void writeln()
+    void writeln() @safe
     {
         file.writeln;
     }
 
-    void flush()
+    void flush() @safe
     {
         file.flush;
     }
 }
 
-void CloseOut(ref TextOut Out)
+void CloseOut(ref TextOut Out) @safe
 {
     Out.flush;
     Out = null;
 }
 
-void Show(TextOut Out)
+void Show(TextOut Out) @safe
 {
     import std.file : readText;
 
     write(readText!(char[])(Out.name));
 }
 
-void Compile(TextOut Out)
+void Compile(TextOut Out) @safe
 {
     info!"compile %s"(Out.name);
     files = Out.name ~ files;
 }
 
-void OpenFile(ref File F, string name, ref bool Error)
+void OpenFile(ref File F, string name, ref bool Error) @safe
 {
     // TODO: error handling
     F = File(name, "r");
 }
 
-void CreateFile(ref File F, string name)
+void CreateFile(ref File F, string name) @safe
 {
     F = File(name, "w");
 }
 
-void CloseFile(ref File F)
+void CloseFile(ref File F) @safe
 {
     F.close;
 }
@@ -110,17 +110,17 @@ void GetSet(File F, ref size_t s)
     F.readf!"set %s\n"(s);
 }
 
-void PutLInt(File F, long i)
+void PutLInt(File F, long i) @safe
 {
     F.writefln!"long %s"(i);
 }
 
-void PutSet(File F, size_t s)
+void PutSet(File F, size_t s) @safe
 {
     F.writefln!"set %s"(s);
 }
 
-long TimeStamp()
+long TimeStamp() @nogc nothrow @safe
 {
     import core.time : MonoTime;
 

@@ -24,7 +24,7 @@ ALists.AList VS;
  * SEM: bed. Einfügen des Tripels in die modulglobale Liste VDS, die als Menge interpretiert wird,
  *      deshalb wird das Tripel nur dann eingefügt, wenn es nicht schon Bestandteil der Liste ist.
  */
-void IncludeVDS(int S, int VN1, int VN2)
+void IncludeVDS(int S, int VN1, int VN2) nothrow @safe
 {
     int i = ALists.firstIndex;
     bool notisElement = true;
@@ -42,7 +42,7 @@ void IncludeVDS(int S, int VN1, int VN2)
     }
 }
 
-void WriteVDS()
+void WriteVDS() @safe
 {
     IO.Msg.write("Inhalt VDS:\n");
     for (size_t i = ALists.firstIndex; i <= VDS.Last; i += 3)
@@ -63,7 +63,7 @@ void WriteVDS()
  * SEM: bed. Einfügen des Tupels in die modulglobale Liste VS, die als Menge interpretiert wird,
  *      deshalb wird das Tupel nur dann eingefügt, wenn es nicht schon Bestandteil der Liste ist.
  */
-void IncludeVS(int S, int VN)
+void IncludeVS(int S, int VN) nothrow @safe
 {
     int i = ALists.firstIndex;
     bool notisElement = true;
@@ -80,7 +80,7 @@ void IncludeVS(int S, int VN)
     }
 }
 
-void WriteVS()
+void WriteVS() @safe
 {
     IO.Msg.write("Inhalt VS:\n");
     for (size_t i = ALists.firstIndex; i <= VS.Last; i += 2)
@@ -98,7 +98,7 @@ void WriteVS()
  * OUT: Plannummer
  * SEM: Ermittelt die Nummer des Visitplanes, während dessen Auswertung der Affixparameter berechnet wird
  */
-int GetPlanNo(int R, int AP)
+int GetPlanNo(int R, int AP) @nogc nothrow @safe
 {
     int SO;
     int VN;
@@ -119,7 +119,7 @@ int GetPlanNo(int R, int AP)
  * OUT: Position in der virtuellen extended visit sequence (EVS)
  * SEM: Ermittelt der Position des Affixparameter in der EVS (entspricht set(a) aus der Theorie)
  */
-int GetEVSPosforAffOcc(int R, int AP)
+int GetEVSPosforAffOcc(int R, int AP) @nogc nothrow @safe
 {
     int SO = SOAG.AffOcc[AP].SymOccInd;
     int VN = SOAGVisitSeq.GetVisitNo(AP);
@@ -156,7 +156,7 @@ int GetEVSPosforAffOcc(int R, int AP)
  * SEM: Ermittelt der Position des durch Symbolvorkommen und Visitnummer eindeutig gekennzeichneten Visits
  *      in der EVS (entspricht visit(j,m) aus der Theorie)
  */
-int GetEVSPosforVisit(int R, int SO, int VN)
+int GetEVSPosforVisit(int R, int SO, int VN) @nogc nothrow @safe
 {
     const V = SOAGVisitSeq.GetVisit(R, SO, VN);
 
@@ -166,7 +166,7 @@ int GetEVSPosforVisit(int R, int SO, int VN)
 /**
  * SEM: Initialisierung der Struktur PN - Berechnung der Plannummer jedes Visits
  */
-void Init()
+void Init() nothrow @safe
 {
     int R;
     int V;
@@ -200,7 +200,7 @@ void Init()
 * OUT: -
 * SEM: Initialisierung der Mengen VDS und VS für eine Affixposition (analog Step 1 Theorie)
 */
-void InitVDSandVS(size_t S, int A)
+void InitVDSandVS(size_t S, int A) nothrow
 {
     int SO;
     int AP;
@@ -243,7 +243,7 @@ void InitVDSandVS(size_t S, int A)
 /**
  * SEM: Kompletiert die Initialisierung der Menge VDS (analog Step 2 der Theorie)
  */
-void CompleteInitVDS()
+void CompleteInitVDS() nothrow
 {
     int R;
     int S;
@@ -291,7 +291,7 @@ void CompleteInitVDS()
  * SEM: Test, ob Affixposition als Stack oder als globale Variable abgespeichert werden kann -
  *      nach Theorem 1 und 3 der Theorie
  */
-void CheckStorageType(size_t S, int A)
+void CheckStorageType(size_t S, int A) @nogc nothrow
 {
     int R;
     int SO;
@@ -532,7 +532,7 @@ void CheckStorageType(size_t S, int A)
     }
 }
 
-void Optimize()
+void Optimize() nothrow
 {
     Init;
     GlobalVar = firstGlobalVar - 1;

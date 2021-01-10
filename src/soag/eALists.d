@@ -13,7 +13,7 @@ struct AListDesc
 
 alias AList = AListDesc;
 
-void Expand(ref AList List)
+void Expand(ref AList List) nothrow pure @safe
 {
     assert(List.Elem.length < DIV(int.max, 2));
 
@@ -30,7 +30,7 @@ void Expand(ref AList List)
  * SEM: Anlegen einer neune Liste (Speicherplatzreservierung)
  * SEF: -
  */
-void New(ref AList List, int Len)
+void New(ref AList List, int Len) nothrow pure @safe
 {
     List = AList();
     List.Last = -1;
@@ -43,7 +43,7 @@ void New(ref AList List, int Len)
  * SEM: Löschen des Listeninhalts
  * SEF: -
  */
-void Reset(ref AList List)
+void Reset(ref AList List) @nogc nothrow pure @safe
 {
     List.Last = -1;
 }
@@ -54,7 +54,7 @@ void Reset(ref AList List)
  * SEM: Löschen eines Elements
  * SEF: Auf die Reihenfolge innerhalb der Liste
  */
-void Delete(ref AList List, int Index)
+void Delete(ref AList List, int Index) @nogc nothrow pure @safe
 {
     if (Index >= firstIndex)
     {
@@ -69,7 +69,7 @@ void Delete(ref AList List, int Index)
  * SEM: Anhängen des Elements am Ende der Liste
  * SEF: -
  */
-void Append(ref AList List, int Value)
+void Append(ref AList List, int Value) nothrow pure @safe
 {
     if (List.Last + 1 >= List.Elem.length)
         Expand(List);
@@ -84,7 +84,7 @@ void Append(ref AList List, int Value)
  *      Nach einer Delete-Aktion ist dieser Wert inkonsistent!
  * SEF: -
 */
-int IndexOf(ref AList List, int Value)
+int IndexOf(ref AList List, int Value) @nogc nothrow pure @safe
 {
     int i = firstIndex;
 

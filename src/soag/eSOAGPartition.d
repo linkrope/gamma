@@ -53,7 +53,7 @@ ASets.ASet Leave;
 BSets.BSet New;
 int Seperator;
 
-void Expand()
+void Expand() nothrow @safe
 {
     long NewLen(long ArrayLen)
     {
@@ -81,7 +81,7 @@ void Expand()
     }
 }
 
-void Push(ref ALists.AList Stack, int S, int A1, int A2)
+void Push(ref ALists.AList Stack, int S, int A1, int A2) nothrow pure @safe
 {
     ALists.Append(Stack, S);
     ALists.Append(Stack, A1);
@@ -93,7 +93,7 @@ void Push(ref ALists.AList Stack, int S, int A1, int A2)
  * OUT: boolscher Wert
  * SEM: Test, ob eine Abhängigkeit zwischen den beiden Affixparametern besteht
  */
-bool EdgeInTDP(int R, int A1, int A2)
+bool EdgeInTDP(int R, int A1, int A2) @nogc nothrow
 {
     return SOAG.Rule[R].TDP[SOAG.AffOcc[A1].AffOccNum.InRule][SOAG.AffOcc[A2].AffOccNum.InRule];
 }
@@ -103,7 +103,7 @@ bool EdgeInTDP(int R, int A1, int A2)
  * OUT: -
  * SEM: Fügt ein Tripel in das Feld ChangeBuf ein - Speicherung einer in TDP eingefügten Abhängigkeit.
  */
-void AddTDPChange(int R, int AO1, int AO2)
+void AddTDPChange(int R, int AO1, int AO2) nothrow @safe
 {
     ChangeBuf[NextChangeBuf].RuleInd = R;
     ChangeBuf[NextChangeBuf].AffOccInd1 = AO1;
@@ -118,7 +118,7 @@ void AddTDPChange(int R, int AO1, int AO2)
  * OUT: -
  * SEM: Rücksetzen,der in ChangeBuf gespeicherten Abhängigkeiten in den TDP's
  */
-void ResetTDPChanges(int End)
+void ResetTDPChanges(int End) @nogc nothrow
 {
     for (int i = firstChangeBuf; i <= End; ++i)
     {
@@ -215,7 +215,7 @@ void AddTDPTrans(int R, int AO1, int AO2)
  *      den zugehörigen Affixparameter, sowie das Variablensymbol zu
  * SEF: VarBuf[], NextVarBuf
  */
-void SetAffOccforVars(int AO, int Affixform, bool isDef)
+void SetAffOccforVars(int AO, int Affixform, bool isDef) nothrow @safe
 {
     int MA;
     if (Affixform < 0)
@@ -245,7 +245,7 @@ void SetAffOccforVars(int AO, int Affixform, bool isDef)
  *      und speichert  diesen in DefAffOcc[]
  * SEF: Zugriffe auf VarBuf[]
  */
-void ComputeDefAffOcc(int R)
+void ComputeDefAffOcc(int R) @safe
 {
     EAG.ScopeDesc Scope;
     EAG.Rule EAGRule;
@@ -293,7 +293,7 @@ void ComputeDefAffOcc(int R)
  *      außerdem wird für jeden Vergleich eine Abhängigkeit in den DP aufgenommen
  * PRE: DefAffOcc[] muss berechnet sein
  */
-void ComputeAffixApplCnt(int R)
+void ComputeAffixApplCnt(int R) @nogc nothrow
 {
     EAG.ScopeDesc Scope;
     EAG.Rule EAGRule;
@@ -497,7 +497,7 @@ void Orient(int a, int b, int X, ref BSets.BSet New)
     }
 }
 
-void WriteDS(int XmaxAff)
+void WriteDS(int XmaxAff) @safe
 {
     for (size_t i = 0; i <= XmaxAff; ++i)
     {

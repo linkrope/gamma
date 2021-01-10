@@ -19,7 +19,7 @@ int V711;
 /**
  * SEM: leert die Hash-Tabelle
  */
-void Reset()
+void Reset() @nogc nothrow @safe
 {
     MaxTry = 0;
     for (int i = 0; i < MaxHashTabIndex; ++i)
@@ -31,7 +31,7 @@ void Reset()
  * OUT: -
  * SEM: reserviert Speicher für die Hash-Tabelle und setzt die max. Hash-Adresse
  */
-void Init(int MaxAffInRule)
+void Init(int MaxAffInRule) @safe
 in (MaxAffInRule > 0)
 {
     import std.conv : to;
@@ -53,7 +53,7 @@ in (MaxAffInRule > 0)
  * OUT: Index in der Hash-Tabelle
  * SEM: Ermittlung Indexes in der Hash-Tabelle
  */
-int HashIndex(ref SOAG.Instruction I)
+int HashIndex(ref SOAG.Instruction I) @safe
 {
     import std.conv : to;
 
@@ -121,7 +121,7 @@ int HashIndex(ref SOAG.Instruction I)
  * OUT: boolscher Wert
  * SEM: Test, ob die Instruktion schon in der Hash-Tabelle enthalten ist
  */
-bool IsIn(SOAG.Instruction I)
+bool IsIn(SOAG.Instruction I) @safe
 {
     int Index;
     if (I is null)
@@ -140,7 +140,7 @@ bool IsIn(SOAG.Instruction I)
  * OUT: -
  * SEM: fügt die Instruktion in die Hash-Tabelle ein
  */
-void Enter(SOAG.Instruction I)
+void Enter(SOAG.Instruction I) @safe
 {
     if (I !is null)
     {
@@ -152,7 +152,7 @@ void Enter(SOAG.Instruction I)
     }
 }
 
-static this()
+static this() @nogc nothrow @safe
 {
     V4711 = 4711;
     V711 = 711;

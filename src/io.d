@@ -32,7 +32,7 @@ struct Input
 
     private size_t col = 1;
 
-    this(string name, const(char)[] text)
+    this(string name, const(char)[] text) @nogc nothrow
     {
         this.name = name;
         this.text = text;
@@ -61,12 +61,12 @@ struct Input
         return empty ? 0 : text[index_ .. $].front;
     }
 
-    bool empty() const
+    bool empty() const @nogc nothrow
     {
         return text[index_ .. $].empty;
     }
 
-    Position position() const
+    Position position() const pure @safe
     {
         import std.algorithm : find;
 
@@ -75,13 +75,13 @@ struct Input
         return Position(name, line, col, text[begin .. end]);
     }
 
-    const(char)[] sliceFrom(size_t begin) const
+    const(char)[] sliceFrom(size_t begin) const @nogc nothrow
     in (begin <= index)
     {
         return text[begin .. index_];
     }
 
-    size_t index() const
+    size_t index() const @nogc nothrow
     {
         return index_;
     }
@@ -99,7 +99,7 @@ struct Position
 
     private const(char)[] text;
 
-    string toString() const
+    string toString() const @safe
     {
         import std.array : appender;
 

@@ -13,7 +13,7 @@ struct Stack
     StackList Elem;
 }
 
-void Expand(ref Stack S)
+void Expand(ref Stack S) nothrow pure @safe
 {
     StackList List1;
 
@@ -32,19 +32,19 @@ void Expand(ref Stack S)
     S.Elem = List1;
 }
 
-void New(ref Stack S, int Len)
+void New(ref Stack S, int Len) nothrow pure @safe
 {
     S = Stack();
     S.Elem = new DataType[Len];
     S.Top = emptyStack;
 }
 
-void Reset(ref Stack S)
+void Reset(ref Stack S) @nogc nothrow pure @safe
 {
     S.Top = emptyStack;
 }
 
-void Push(ref Stack S, DataType Val)
+void Push(ref Stack S, DataType Val) nothrow pure @safe
 {
     if (S.Top + 2 >= S.Elem.length)
         Expand(S);
@@ -53,17 +53,17 @@ void Push(ref Stack S, DataType Val)
     S.Elem[S.Top] = Val;
 }
 
-void Pop(ref Stack S)
+void Pop(ref Stack S) @nogc nothrow pure @safe
 {
     --S.Top;
 }
 
-DataType Top(ref Stack S)
+DataType Top(ref Stack S) @nogc nothrow pure @safe
 {
     return S.Elem[S.Top];
 }
 
-DataType TopPop(ref Stack S)
+DataType TopPop(ref Stack S) @nogc nothrow pure @safe
 {
     DataType R;
     R = S.Elem[S.Top];
@@ -71,7 +71,7 @@ DataType TopPop(ref Stack S)
     return R;
 }
 
-bool IsEmpty(Stack S)
+bool IsEmpty(Stack S) @nogc nothrow pure @safe
 {
     return S.Top <= emptyStack;
 }

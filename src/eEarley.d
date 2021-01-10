@@ -35,7 +35,7 @@ int NextItem;
 int CurList;
 bool[] Predicted;
 
-void Expand()
+void Expand() nothrow @safe
 {
     long NewLen(long ArrayLen)
     {
@@ -71,12 +71,12 @@ void Expand()
     }
 }
 
-int StartAffixform()
+int StartAffixform() @nogc nothrow @safe
 {
     return NextMSym;
 }
 
-void AppMSym(int Sym, int Num, Position Pos)
+void AppMSym(int Sym, int Num, Position Pos) nothrow @safe
 {
     if (NextMSym >= MSymBuf.length)
     {
@@ -88,29 +88,25 @@ void AppMSym(int Sym, int Num, Position Pos)
     ++NextMSym;
 }
 
-void EndAffixform(Position Pos)
+void EndAffixform(Position Pos) nothrow @safe
 {
     AppMSym(end, 0, Pos);
 }
 
-void CopyAffixform(int From, ref int To)
+void CopyAffixform(int From, ref int To) nothrow @safe
 {
     To = NextMSym;
     while (true)
     {
         AppMSym(MSymBuf[From].Sym, MSymBuf[From].Num, MSymBuf[From].Pos);
         if (MSymBuf[From].Sym == end)
-        {
             break;
-        }
         else
-        {
             ++From;
-        }
     }
 }
 
-void Parse(int Dom, int Affixform, ref int Tree, bool Def)
+void Parse(int Dom, int Affixform, ref int Tree, bool Def) @safe
 {
     void SimpleParse(int Dom, int Affixform, ref int Tree, bool Def)
     {
@@ -388,7 +384,7 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def)
     }
 }
 
-void Init()
+void Init() nothrow @safe
 {
     MSymBuf = new MSymRecord[2047];
     NextMSym = firstMSym;
@@ -397,7 +393,7 @@ void Init()
     Predicted = null;
 }
 
-void Finit()
+void Finit() @nogc nothrow @safe
 {
     MSymBuf = null;
     ItemBuf = null;

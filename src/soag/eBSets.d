@@ -21,7 +21,7 @@ alias BSet = BSetDesc;
  * SEM: Anlegen einer neuen Liste (Speicherplatzreservierung)
  * SEF: -
  */
-void New(ref BSet S, int MaxElem)
+void New(ref BSet S, int MaxElem) nothrow pure
 {
     S = BSet();
     ALists.New(S.List, 16);
@@ -48,7 +48,7 @@ void Reset(ref BSet S)
  * SEM: fügt Element in die Menge ein
  * SEF: -
  */
-void Insert(ref BSet S, int Elem)
+void Insert(ref BSet S, int Elem) pure
 {
     if (Elem <= S.Max)
     {
@@ -70,7 +70,7 @@ void Insert(ref BSet S, int Elem)
  * SEM: löscht Element aus der Menge
  * SEF: -
  */
-void Delete(ref BSet S, int Elem)
+void Delete(ref BSet S, int Elem) pure
 {
     if (Elem <= S.Max)
     {
@@ -95,7 +95,7 @@ void Delete(ref BSet S, int Elem)
  * SEM: Testet, ob Element in der Menge ist
  * SEF: -
  */
-bool In(BSet S, int Elem)
+bool In(BSet S, int Elem) @nogc nothrow pure
 {
     return S.BitVektor[Elem];
 }

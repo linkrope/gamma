@@ -49,13 +49,13 @@ OpenInt ActualName;
 BitArray RepVar;
 BitArray EmptySet;
 
-void InitScope(EAG.ScopeDesc Scope)
+void InitScope(EAG.ScopeDesc Scope) @nogc nothrow @safe
 {
     for (int i = Scope.Beg; i < Scope.End; ++i)
         EAG.Var[i].Def = false;
 }
 
-void PrepareInit()
+void PrepareInit() nothrow
 {
     VarCnt = new int[EAG.NextVar];
     VarAppls = new int[EAG.NextVar];
@@ -65,7 +65,7 @@ void PrepareInit()
     PreparedHNonts.length = EAG.NextHNont + 1;
 }
 
-void PrepareFinit()
+void PrepareFinit() nothrow
 {
     VarCnt = null;
     VarAppls = null;
@@ -73,7 +73,7 @@ void PrepareFinit()
     PreparedHNonts.length = 0;
 }
 
-void Prepare(size_t N)
+void Prepare(size_t N) @nogc nothrow
 {
     EAG.Rule Node;
     EAG.Alt A;
@@ -333,14 +333,14 @@ bool IsLEAG(size_t N, bool EmitErr)
     return TestHNont(N, EmitErr, false);
 }
 
-void InitTest()
+void InitTest() nothrow
 {
     if (!Generating && !Testing)
         PrepareInit;
     Testing = true;
 }
 
-void FinitTest()
+void FinitTest() nothrow
 {
     if (!Generating)
         PrepareFinit;
@@ -400,7 +400,7 @@ void Test()
     IO.Msg.flush;
 }
 
-void ComputeNodeIdent()
+void ComputeNodeIdent() nothrow @safe
 {
     int N;
     int A;
@@ -446,7 +446,7 @@ void ComputeNodeIdent()
     RefConst = i;
 }
 
-void ComputeConstDat()
+void ComputeConstDat() nothrow
 {
     int A;
     int ConstPtr;
@@ -1316,13 +1316,13 @@ void FinitGen()
     Generating = false;
 }
 
-void GenVar(int Var)
+void GenVar(int Var) @safe
 {
     Mod.write("V");
     Mod.write(Var);
 }
 
-void GenHeap(int Var, int Offset)
+void GenHeap(int Var, int Offset) @safe
 {
     Mod.write("Heap[");
     if (Var <= 0)
@@ -1342,7 +1342,7 @@ void GenHeap(int Var, int Offset)
     Mod.write("]");
 }
 
-void GenIncRefCnt(int Var, int n)
+void GenIncRefCnt(int Var, int n) @safe
 {
     Mod.write("Heap[");
     if (Var < 0)
@@ -1358,7 +1358,7 @@ void GenIncRefCnt(int Var, int n)
     Mod.write("refConst;\n");
 }
 
-void GenOverflowGuard(int n)
+void GenOverflowGuard(int n) @safe
 {
     if (n > 0)
     {
@@ -1368,14 +1368,14 @@ void GenOverflowGuard(int n)
     }
 }
 
-void GenFreeHeap(int Var)
+void GenFreeHeap(int Var) @safe
 {
     Mod.write("FreeHeap(");
     GenVar(Var);
     Mod.write(");\n");
 }
 
-void GenHeapInc(int n)
+void GenHeapInc(int n) @safe
 {
     if (n != 0)
     {
@@ -1570,7 +1570,7 @@ void GenDeclarations(Settings settings)
     GenTabFile(TabTimeStamp);
 }
 
-bool PosNeeded(int P)
+bool PosNeeded(int P) @nogc nothrow @safe
 {
     int V;
     while (EAG.ParamBuf[P].Affixform != EAG.nil)
@@ -2027,7 +2027,7 @@ void Gen1SynTree(int Node, BitArray RepVar, bool IsPred)
     }
 }
 
-void GetAffixSpace(int P)
+void GetAffixSpace(int P) @safe
 {
     int Heap = 0;
 
@@ -2110,7 +2110,7 @@ void GenSynPred(size_t Sym, int P)
     }
 }
 
-void GenRepStart(int Sym)
+void GenRepStart(int Sym) @safe
 {
     int P;
     int Dom;
@@ -2469,7 +2469,7 @@ void GenVarDecl(size_t N)
         Mod.write("bool Failed;\n");
 }
 
-void GenActualParams(int P, bool ParNeeded)
+void GenActualParams(int P, bool ParNeeded) @safe
 {
     if (ParNeeded)
         Mod.write("(");
@@ -2741,7 +2741,7 @@ in (EAG.Pred[N])
     Mod.write(");\n");
 }
 
-static this()
+static this() @nogc nothrow @safe
 {
     Testing = false;
     Generating = false;
