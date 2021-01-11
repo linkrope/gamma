@@ -15,7 +15,7 @@ bool NameNotified;
 
 Lexer lexer;
 
-void Error(Position Pos, string ErrMsg)
+void Error(Position Pos, string ErrMsg) @safe
 {
     import std.exception : enforce;
 

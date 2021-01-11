@@ -85,11 +85,11 @@ bool Warning;
 bool Compiled;
 bool UseReg;
 
-void Expand()
+void Expand() nothrow @safe
 {
-    long ExpLen(long ArrayLen)
+    size_t ExpLen(size_t ArrayLen)
     {
-        if (ArrayLen <= DIV(int.max, 2))
+        if (ArrayLen <= DIV(size_t.max, 2))
             return 2 * ArrayLen;
         else
             assert(0);
@@ -268,7 +268,7 @@ void Init(Settings settings)
     }
 }
 
-void Finit()
+void Finit() @nogc nothrow @safe
 {
     Nont = null;
     Alt = null;
@@ -278,7 +278,7 @@ void Finit()
     GenSetT = null;
 }
 
-void WriteTok(IO.TextOut Out, size_t Tok)
+void WriteTok(IO.TextOut Out, size_t Tok) @safe
 {
     if (Tok == endTok)
         Out.write("!end!");
@@ -299,7 +299,7 @@ void WriteTokSet(IO.TextOut Out, BitArray Toks)
     }
 }
 
-void NewEdge(size_t From, int To)
+void NewEdge(size_t From, int To) nothrow @safe
 {
     if (NextEdge == Edge.length)
         Expand;

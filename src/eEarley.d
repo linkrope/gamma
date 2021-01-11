@@ -37,9 +37,9 @@ bool[] Predicted;
 
 void Expand() nothrow @safe
 {
-    long NewLen(long ArrayLen)
+    size_t NewLen(size_t ArrayLen)
     {
-        if (ArrayLen <= DIV(int.max, 2))
+        if (ArrayLen <= DIV(size_t.max, 2))
         {
             return 2 * ArrayLen;
         }

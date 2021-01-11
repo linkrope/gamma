@@ -19,7 +19,7 @@ BitArray GenFactors;
 bool Error;
 bool Compiled;
 
-void Init()
+void Init() nothrow
 {
     FactorOffset = new int[EAG.NextHFactor + EAG.NextHAlt + 1];
     GenFactors = EAG.Prod & EAG.Reach;
@@ -27,7 +27,7 @@ void Init()
     Error = false;
 }
 
-void Finit()
+void Finit() @nogc nothrow @safe
 {
     FactorOffset = null;
 }
@@ -75,13 +75,11 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
 
     void Expand()
     {
-        long i;
-
         if (NextEdge >= Edge.length)
         {
             OpenEdge Edge1 = new EdgeRecord[2 * Edge.length];
 
-            for (i = firstEdge; i < Edge.length; ++i)
+            for (size_t i = firstEdge; i < Edge.length; ++i)
             {
                 Edge1[i] = Edge[i];
             }
