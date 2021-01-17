@@ -7,15 +7,13 @@ const undef = -1;
 const initialHeapSize = 8192;
 
 alias HeapType = $;
-alias OpenHeap = $;
 
-OpenHeap Heap;
+$ Heap;
 HeapType NextHeap;
 long OutputSize;
 $
-alias OpenPos = Eval.OpenPos;
-OpenPos PosHeap;
-OpenPos PosStack;
+Position[] PosHeap;
+Position[] PosStack;
 long PosTop;
 $
 const maxArity = $;
@@ -24,7 +22,7 @@ HeapType[maxArity] FreeList;
 
 $ void EvalExpand()
 {
-    OpenHeap Heap1 = new HeapType[2 * Heap.length];
+    auto Heap1 = new HeapType[2 * Heap.length];
 
     for (size_t i = 0; i < Heap.length; ++i)
         Heap1[i] = Heap[i];
@@ -38,8 +36,8 @@ void Reset()
 
 $ void EvalExpand()
 {
-    OpenHeap Heap1 = new HeapType[2 * Heap.length];
-    OpenPos PosHeap1 = new Position[2 * Heap.length];
+    auto Heap1 = new HeapType[2 * Heap.length];
+    auto PosHeap1 = new Position[2 * Heap.length];
 
     for (size_t i = 0; i < Heap.length; ++i)
     {
@@ -61,7 +59,7 @@ void PushPos()
 {
     void PosExpand()
     {
-        OpenPos PosStack1 = new Position[PosStack.length * 2];
+        auto PosStack1 = new Position[PosStack.length * 2];
 
         for (size_t i = 0; i < PosStack.length; ++i)
             PosStack1[i] = PosStack[i];

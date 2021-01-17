@@ -8,7 +8,7 @@ import Protocol = soag.eSOAGProtocol;
 import Stacks = soag.eStacks;
 
 const noVisit = -1;
-SOAG.OpenInteger InDeg;
+int[] InDeg;
 Stacks.Stack ZeroInDeg;
 
 /**

@@ -7,19 +7,17 @@ import std.stdio;
 
 const hyperArityConst = $;
 alias TreeType = long;
-alias OpenTree = TreeType[];
-alias OpenPos = Position[];
 // alias HeapType = long;
 
-OpenTree Tree;
-OpenPos PosTree;
+TreeType[] Tree;
+Position[] PosTree;
 long ErrorCounter;
 Position Pos;
 IO.TextOut Out;
 
 $
 
-void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter, TreeType Adr, int HyperArity,
+void TraverseSyntaxTree(TreeType[] Tree1, Position[] PosTree1, long ErrCounter, TreeType Adr, int HyperArity,
         bool info, bool write)
 {
     HeapType V1;

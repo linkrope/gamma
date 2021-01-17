@@ -37,14 +37,12 @@ struct SymDesc
     }
 }
 
-alias OpenTDP = BitArray[];
-
 class RuleDesc
 {
     EAG.ScopeDesc SymOcc;
     EAG.ScopeDesc AffOcc;
-    OpenTDP TDP;
-    OpenTDP DP;
+    BitArray[] TDP;
+    BitArray[] DP;
     EAG.ScopeDesc VS;
 }
 
@@ -141,25 +139,15 @@ class Call : InstructionDesc
     int SymOcc;
 }
 
-alias OpenInteger = int[];
-alias OpenSym = SymDesc[];
-alias OpenPartNum = OpenInteger;
-alias OpenRule = RuleBase[];
-alias OpenSymOcc = SymOccDesc[];
-alias OpenAffOcc = AffOccDesc[];
-alias OpenVS = Instruction[];
-alias OpenDefAffOcc = OpenInteger;
-alias OpenStorageName = OpenInteger;
-alias OpenAffixApplCnt = OpenInteger;
-OpenSym Sym;
-OpenPartNum PartNum;
-OpenRule Rule;
-OpenSymOcc SymOcc;
-OpenAffOcc AffOcc;
-OpenVS VS;
-OpenDefAffOcc DefAffOcc;
-OpenStorageName StorageName;
-OpenAffixApplCnt AffixApplCnt;
+SymDesc[] Sym;
+int[] PartNum;
+RuleBase[] Rule;
+SymOccDesc[] SymOcc;
+AffOccDesc[] AffOcc;
+Instruction[] VS;
+int[] DefAffOcc;
+int[] StorageName;
+int[] AffixApplCnt;
 int NextSym;
 int NextPartNum;
 int NextRule;
@@ -219,7 +207,7 @@ void Expand() nothrow @safe
 
     if (NextAffOcc >= AffOcc.length)
     {
-        OpenAffOcc AffOcc1 = new AffOccDesc[NewLen(AffOcc.length)];
+        auto AffOcc1 = new AffOccDesc[NewLen(AffOcc.length)];
 
         for (size_t i = firstAffOcc; i < AffOcc.length; ++i)
             AffOcc1[i] = AffOcc[i];
@@ -227,7 +215,7 @@ void Expand() nothrow @safe
     }
     if (NextSymOcc >= SymOcc.length)
     {
-        OpenSymOcc SymOcc1 = new SymOccDesc[NewLen(SymOcc.length)];
+        auto SymOcc1 = new SymOccDesc[NewLen(SymOcc.length)];
 
         for (size_t i = firstSymOcc; i < SymOcc.length; ++i)
             SymOcc1[i] = SymOcc[i];
@@ -235,7 +223,7 @@ void Expand() nothrow @safe
     }
     if (NextRule >= Rule.length)
     {
-        OpenRule Rule1 = new RuleBase[NewLen(Rule.length)];
+        auto Rule1 = new RuleBase[NewLen(Rule.length)];
 
         for (size_t i = firstRule; i < Rule.length; ++i)
             Rule1[i] = Rule[i];
@@ -243,7 +231,7 @@ void Expand() nothrow @safe
     }
     if (NextVS >= VS.length)
     {
-        OpenVS VS1 = new Instruction[NewLen(VS.length)];
+        auto VS1 = new Instruction[NewLen(VS.length)];
 
         for (size_t i = firstVS; i < VS.length; ++i)
             VS1[i] = VS[i];

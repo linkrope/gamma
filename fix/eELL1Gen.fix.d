@@ -14,10 +14,9 @@ enum M = size_t.sizeof * 8;
 const endTok = 0;
 const sepTok = 2;
 const firstRecStack = 1;
-alias OpenRecStack = int[];
 alias TokSet = size_t[tokSetLen];
 int Tok;
-OpenRecStack RecStack;
+int[] RecStack;
 int RecTop;
 size_t[nToks][nSetT + 1] SetT;
 TokSet[nSet + 1] Set;
@@ -44,7 +43,7 @@ void ParserExpand()
 
     if (RecTop >= RecStack.length)
     {
-        OpenRecStack RecStack1 = new int[ExpLen(RecStack.length)];
+        auto RecStack1 = new int[ExpLen(RecStack.length)];
 
         for (size_t i = firstRecStack; i < RecStack.length; ++i)
         {

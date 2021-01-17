@@ -3,12 +3,11 @@ module soag.eALists;
 import runtime;
 
 const firstIndex = 0;
-alias OpenList = int[];
 
 struct AListDesc
 {
     int Last;
-    OpenList Elem;
+    int[] Elem;
 }
 
 alias AList = AListDesc;
@@ -17,7 +16,7 @@ void Expand(ref AList List) nothrow pure @safe
 {
     assert(List.Elem.length < DIV(int.max, 2));
 
-    OpenList List1 = new int[2 * List.Elem.length + 1];
+    auto List1 = new int[2 * List.Elem.length + 1];
 
     for (int i = firstIndex; i <= List.Last; ++i)
         List1[i] = List.Elem[i];

@@ -17,8 +17,6 @@ struct MSymRecord
     Position Pos;
 }
 
-alias OpenMSymBuf = MSymRecord[];
-
 struct ItemRecord
 {
     int Dot;
@@ -27,10 +25,9 @@ struct ItemRecord
     int Sub;
 }
 
-alias OpenItemBuf = ItemRecord[];
-OpenMSymBuf MSymBuf;
+MSymRecord[] MSymBuf;
 int NextMSym;
-OpenItemBuf ItemBuf;
+ItemRecord[] ItemBuf;
 int NextItem;
 int CurList;
 bool[] Predicted;
@@ -51,7 +48,7 @@ void Expand() nothrow @safe
 
     if (NextMSym >= MSymBuf.length)
     {
-        OpenMSymBuf MSymBuf1 = new MSymRecord[NewLen(MSymBuf.length)];
+        auto MSymBuf1 = new MSymRecord[NewLen(MSymBuf.length)];
 
         for (size_t i = firstMSym; i < MSymBuf.length; ++i)
         {
@@ -61,7 +58,7 @@ void Expand() nothrow @safe
     }
     if (NextItem >= ItemBuf.length)
     {
-        OpenItemBuf ItemBuf1 = new ItemRecord[NewLen(ItemBuf.length)];
+        auto ItemBuf1 = new ItemRecord[NewLen(ItemBuf.length)];
 
         for (size_t i = firstItem; i < ItemBuf.length; ++i)
         {

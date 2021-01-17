@@ -26,7 +26,6 @@ struct VarBufDesc
     int Num;
     int VarInd;
 }
-alias OpenVarBuf = VarBufDesc[];
 
 struct ChangeBufDesc
 {
@@ -34,11 +33,10 @@ struct ChangeBufDesc
     int AffOccInd1;
     int AffOccInd2;
 }
-alias OpenChangeBuf = ChangeBufDesc[];
 
-OpenVarBuf VarBuf;
+VarBufDesc[] VarBuf;
 int NextVarBuf;
-OpenChangeBuf ChangeBuf;
+ChangeBufDesc[] ChangeBuf;
 int NextChangeBuf;
 int[][] DS;
 int[] Deg;
@@ -65,7 +63,7 @@ void Expand() nothrow @safe
 
     if (NextVarBuf >= VarBuf.length)
     {
-        OpenVarBuf VarBuf1 = new VarBufDesc[NewLen(VarBuf.length)];
+        auto VarBuf1 = new VarBufDesc[NewLen(VarBuf.length)];
 
         for (size_t i = firstVarBuf; i < VarBuf.length; ++i)
             VarBuf1[i] = VarBuf[i];
@@ -73,7 +71,7 @@ void Expand() nothrow @safe
     }
     if (NextChangeBuf >= ChangeBuf.length)
     {
-        OpenChangeBuf ChangeBuf1 = new ChangeBufDesc[NewLen(ChangeBuf.length)];
+        auto ChangeBuf1 = new ChangeBufDesc[NewLen(ChangeBuf.length)];
 
         for (size_t i = firstChangeBuf; i < ChangeBuf.length; ++i)
             ChangeBuf1[i] = ChangeBuf[i];

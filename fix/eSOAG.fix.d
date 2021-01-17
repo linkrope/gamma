@@ -12,13 +12,11 @@ const syntacticPart = 0;
 const hyperArityConst = $;
 $
 alias TreeType = long;
-alias OpenTree = TreeType[];
-alias OpenPos = Position[];
 // alias HeapType = long;
 alias IndexType = long;
 
-OpenTree Tree;
-OpenPos PosTree;
+TreeType[] Tree;
+Position[] PosTree;
 long ErrorCounter;
 int AffixVarCount;
 Position Pos;
@@ -33,13 +31,9 @@ class SemTreeEntry
     IndexType VarInd;
 }
 
-alias OpenSemTree = SemTreeEntry[];
-alias OpenVar = HeapType[];
-alias OpenAffPos = HeapType[];
-
-OpenSemTree SemTree;
-OpenVar Var;
-OpenAffPos AffPos;
+SemTreeEntry[] SemTree;
+HeapType[] Var;
+HeapType[] AffPos;
 IndexType NextSemTree;
 IndexType NextVar;
 
@@ -47,7 +41,7 @@ IndexType NextVar;
 $
 void ExpandSemTree()
 {
-    OpenSemTree SemTree1 = new SemTreeEntry[2 * SemTree.length];
+    auto SemTree1 = new SemTreeEntry[2 * SemTree.length];
 
     for (IndexType i = 0; i < SemTree.length; ++i)
         SemTree1[i] = SemTree[i];
@@ -56,7 +50,7 @@ void ExpandSemTree()
 
 void ExpandVar()
 {
-    OpenVar Var1 = new HeapType[2 * Var.length];
+    auto Var1 = new HeapType[2 * Var.length];
 
     for (IndexType i = 0; i < Var.length; ++i)
         Var1[i] = Var[i];
@@ -78,7 +72,7 @@ void Init()
     $
 }
 
-void TraverseSyntaxTree(OpenTree Tree1, OpenPos PosTree1, long ErrCounter, TreeType Adr, int HyperArity,
+void TraverseSyntaxTree(TreeType[] Tree1, Position[] PosTree1, long ErrCounter, TreeType Adr, int HyperArity,
         bool info, bool write)
 {
     IndexType StartSymbol;

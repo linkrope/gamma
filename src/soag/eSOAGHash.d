@@ -8,9 +8,7 @@ class HashEntry
     SOAG.Instruction Instr;
 }
 
-alias OpenHashTab = HashEntry[];
-OpenHashTab HashTab;
-
+HashEntry[] HashTab;
 int MaxHashTabIndex;
 int MaxTry;
 int V4711;

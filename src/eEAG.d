@@ -51,8 +51,7 @@ struct ParamRecord
     }
 }
 
-alias OpenParamBuf = ParamRecord[];
-OpenParamBuf ParamBuf;
+ParamRecord[] ParamBuf;
 int NextParam;
 const firstNode = 1;
 const firstVar = 1;
@@ -70,8 +69,6 @@ struct ScopeDesc
     }
 }
 
-alias OpenNodeBuf = int[];
-
 struct VarRecord
 {
     int Sym;
@@ -81,10 +78,9 @@ struct VarRecord
     bool Def;
 }
 
-alias OpenVar = VarRecord[];
-OpenNodeBuf NodeBuf;
+int[] NodeBuf;
 int NextNode;
-OpenVar Var;
+VarRecord[] Var;
 int NextVar;
 int Scope;
 alias Rule = RuleDesc;
@@ -200,8 +196,7 @@ int NOOpt;
 int NORep;
 int NOGrp;
 const firstDom = 0;
-alias OpenDomBuf = int[];
-OpenDomBuf DomBuf;
+int[] DomBuf;
 int NextDom;
 int CurSig;
 const firstMAlt = 1;
@@ -215,12 +210,10 @@ struct MAltRecord
     int Next;
 }
 
-alias OpenMAlt = MAltRecord[];
-alias OpenMembBuf = int[];
-OpenMAlt MAlt;
+MAltRecord[] MAlt;
 int NextMAlt;
 int MaxMArity;
-OpenMembBuf MembBuf;
+int[] MembBuf;
 int NextMemb;
 const firstMTerm = 1;
 const firstMNont = 1;
@@ -232,8 +225,6 @@ struct MTermRecord
     int Id;
 }
 
-alias OpenMTerm = MTermRecord[];
-
 struct MNontRecord
 {
     int Id;
@@ -242,14 +233,10 @@ struct MNontRecord
     bool IsToken;
 }
 
-alias OpenMNont = MNontRecord[];
-
 struct HTermRecord
 {
     int Id;
 }
-
-alias OpenHTerm = HTermRecord[];
 
 struct HNontRecord
 {
@@ -260,14 +247,13 @@ struct HNontRecord
     bool IsToken;
 }
 
-alias OpenHNont = HNontRecord[];
-OpenMTerm MTerm;
+MTermRecord[] MTerm;
 int NextMTerm;
-OpenMNont MNont;
+MNontRecord[] MNont;
 int NextMNont;
-OpenHTerm HTerm;
+HTermRecord[] HTerm;
 int NextHTerm;
-OpenHNont HNont;
+HNontRecord[] HNont;
 int NextHNont;
 int NextAnonym;
 
@@ -294,7 +280,7 @@ void Expand() nothrow @safe
 
     if (NextParam >= ParamBuf.length)
     {
-        OpenParamBuf ParamBuf1 = new ParamRecord[NewLen(ParamBuf.length)];
+        auto ParamBuf1 = new ParamRecord[NewLen(ParamBuf.length)];
 
         for (size_t i = firstParam; i < ParamBuf.length; ++i)
             ParamBuf1[i] = ParamBuf[i];
@@ -302,7 +288,7 @@ void Expand() nothrow @safe
     }
     if (NextMTerm >= MTerm.length)
     {
-        OpenMTerm MTerm1 = new MTermRecord[NewLen(MTerm.length)];
+        auto MTerm1 = new MTermRecord[NewLen(MTerm.length)];
 
         for (size_t i = firstMTerm; i < MTerm.length; ++i)
             MTerm1[i] = MTerm[i];
@@ -310,7 +296,7 @@ void Expand() nothrow @safe
     }
     if (NextMNont >= MNont.length)
     {
-        OpenMNont MNont1 = new MNontRecord[NewLen(MNont.length)];
+        auto MNont1 = new MNontRecord[NewLen(MNont.length)];
 
         for (size_t i = firstMNont; i < MNont.length; ++i)
             MNont1[i] = MNont[i];
@@ -318,7 +304,7 @@ void Expand() nothrow @safe
     }
     if (NextHTerm >= HTerm.length)
     {
-        OpenHTerm HTerm1 = new HTermRecord[NewLen(HTerm.length)];
+        auto HTerm1 = new HTermRecord[NewLen(HTerm.length)];
 
         for (size_t i = firstHTerm; i < HTerm.length; ++i)
             HTerm1[i] = HTerm[i];
@@ -326,7 +312,7 @@ void Expand() nothrow @safe
     }
     if (NextHNont >= HNont.length)
     {
-        OpenHNont HNont1 = new HNontRecord[NewLen(HNont.length)];
+        auto HNont1 = new HNontRecord[NewLen(HNont.length)];
 
         for (size_t i = firstHNont; i < HNont.length; ++i)
             HNont1[i] = HNont[i];
@@ -334,7 +320,7 @@ void Expand() nothrow @safe
     }
     if (NextDom >= DomBuf.length)
     {
-        OpenDomBuf DomBuf1 = new int[NewLen(DomBuf.length)];
+        auto DomBuf1 = new int[NewLen(DomBuf.length)];
 
         for (size_t i = firstDom; i < DomBuf.length; ++i)
             DomBuf1[i] = DomBuf[i];
@@ -342,7 +328,7 @@ void Expand() nothrow @safe
     }
     if (NextMAlt >= MAlt.length)
     {
-        OpenMAlt MAlt1 = new MAltRecord[NewLen(MAlt.length)];
+        auto MAlt1 = new MAltRecord[NewLen(MAlt.length)];
 
         for (size_t i = firstMAlt; i < MAlt.length; ++i)
             MAlt1[i] = MAlt[i];
@@ -350,7 +336,7 @@ void Expand() nothrow @safe
     }
     if (NextMemb >= MembBuf.length)
     {
-        OpenMembBuf MembBuf1 = new int[NewLen(MembBuf.length)];
+        auto MembBuf1 = new int[NewLen(MembBuf.length)];
 
         for (size_t i = firstMemb; i < MembBuf.length; ++i)
             MembBuf1[i] = MembBuf[i];
@@ -358,7 +344,7 @@ void Expand() nothrow @safe
     }
     if (NextNode >= NodeBuf.length)
     {
-        OpenNodeBuf NodeBuf1 = new int[NewLen(NodeBuf.length)];
+        auto NodeBuf1 = new int[NewLen(NodeBuf.length)];
 
         for (size_t i = firstNode; i < NodeBuf.length; ++i)
             NodeBuf1[i] = NodeBuf[i];
@@ -366,7 +352,7 @@ void Expand() nothrow @safe
     }
     if (NextVar >= Var.length)
     {
-        OpenVar Var1 = new VarRecord[NewLen(Var.length)];
+        auto Var1 = new VarRecord[NewLen(Var.length)];
 
         for (size_t i = firstVar; i < Var.length; ++i)
             Var1[i] = Var[i];

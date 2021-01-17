@@ -12,7 +12,7 @@ const firstGlobalVar = 1;
 const firstStackVar = 1;
 int GlobalVar;
 int StackVar;
-SOAG.OpenInteger PN;
+int[] PN;
 bool admissible;
 bool disjoint;
 ALists.AList VDS;

@@ -41,21 +41,15 @@ struct NontRecord
     bool Anonym;
 }
 
-alias OpenNont = NontRecord[];
-
 struct AltRecord
 {
     BitArray Dir;
 }
 
-alias OpenAlt = AltRecord[];
-
 struct FactorRecord
 {
     int Rec;
 }
-
-alias OpenFactor = FactorRecord[];
 
 struct EdgeRecord
 {
@@ -63,17 +57,14 @@ struct EdgeRecord
     int Next;
 }
 
-alias OpenEdge = EdgeRecord[];
-alias OpenGenSet = BitArray[];
-alias OpenGenSetT = BitArray[];
-OpenNont Nont;
-OpenAlt Alt;
-OpenFactor Factor;
-OpenEdge Edge;
+NontRecord[] Nont;
+AltRecord[] Alt;
+FactorRecord[] Factor;
+EdgeRecord[] Edge;
 int NextEdge;
-OpenGenSet GenSet;
+BitArray[] GenSet;
 int NextGenSet;
-OpenGenSetT GenSetT;
+BitArray[] GenSetT;
 int NextGenSetT;
 BitArray TestNonts;
 BitArray GenNonts;
@@ -97,7 +88,7 @@ void Expand() nothrow @safe
 
     if (NextEdge >= Edge.length)
     {
-        OpenEdge Edge1 = new EdgeRecord[ExpLen(Edge.length)];
+        auto Edge1 = new EdgeRecord[ExpLen(Edge.length)];
 
         for (size_t i = firstEdge; i < Edge.length; ++i)
             Edge1[i] = Edge[i];
@@ -105,7 +96,7 @@ void Expand() nothrow @safe
     }
     if (NextGenSet >= GenSet.length)
     {
-        OpenGenSet GenSet1 = new BitArray[ExpLen(GenSet.length)];
+        auto GenSet1 = new BitArray[ExpLen(GenSet.length)];
 
         for (size_t i = firstGenSet; i < GenSet.length; ++i)
             GenSet1[i] = GenSet[i];
@@ -113,7 +104,7 @@ void Expand() nothrow @safe
     }
     if (NextGenSetT >= GenSetT.length)
     {
-        OpenGenSetT GenSetT1 = new BitArray[ExpLen(GenSetT.length)];
+        auto GenSetT1 = new BitArray[ExpLen(GenSetT.length)];
 
         for (size_t i = firstGenSetT; i < GenSetT.length; ++i)
             GenSetT1[i] = GenSetT[i];

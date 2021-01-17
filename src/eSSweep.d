@@ -43,8 +43,6 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
         int Next;
     }
 
-    alias OpenEdge = EdgeRecord[];
-
     struct FactorRecord
     {
         int Vars;
@@ -67,7 +65,7 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
     int SavedNextHAlt;
     FactorRecord[] Factor;
     VarRecord[] Var;
-    OpenEdge Edge;
+    EdgeRecord[] Edge;
     int NextEdge;
     int[] Stack;
     int NextStack;
@@ -77,7 +75,7 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
     {
         if (NextEdge >= Edge.length)
         {
-            OpenEdge Edge1 = new EdgeRecord[2 * Edge.length];
+            auto Edge1 = new EdgeRecord[2 * Edge.length];
 
             for (size_t i = firstEdge; i < Edge.length; ++i)
             {

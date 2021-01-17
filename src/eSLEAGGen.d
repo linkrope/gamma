@@ -12,8 +12,6 @@ import std.typecons;
 const parsePass = 0;
 const onePass = 1;
 const sSweepPass = 2;
-alias OpenInt = int[];
-alias OpenBool = bool[];
 IO.TextOut Mod;
 IO.TextOut RC;
 bool SavePos;
@@ -21,31 +19,31 @@ bool UseConst;
 bool UseRefCnt;
 bool TraversePass;
 bool DebugRC;
-OpenInt VarCnt;
-OpenInt VarAppls;
+int[] VarCnt;
+int[] VarAppls;
 bool Testing;
 bool Generating;
 BitArray PreparedHNonts;
-OpenInt VarDeps;
+int[] VarDeps;
 int FirstHeap;
-OpenInt Leaf;
+int[] Leaf;
 int MaxMAlt;
 long RefConst;
-OpenInt AffixPlace;
-OpenInt AffixSpace;
-OpenInt NodeIdent;
-OpenInt AffixName;
+int[] AffixPlace;
+int[] AffixSpace;
+int[] NodeIdent;
+int[] AffixName;
 BitArray HNontDef;
-OpenInt HNontVars;
-OpenInt HNontFVars;
-OpenBool RepAppls;
-OpenInt FormalName;
-OpenInt VarRefCnt;
-OpenInt VarDepPos;
-OpenInt VarName;
-OpenInt NodeName;
+int[] HNontVars;
+int[] HNontFVars;
+bool[] RepAppls;
+int[] FormalName;
+int[] VarRefCnt;
+int[] VarDepPos;
+int[] VarName;
+int[] NodeName;
 int IfLevel;
-OpenInt ActualName;
+int[] ActualName;
 BitArray RepVar;
 BitArray EmptySet;
 
@@ -567,8 +565,8 @@ void ComputeConstDat() nothrow
 
 void ComputeVarNames(size_t N, Flag!"embed" embed)
 {
-    OpenInt FreeVar;
-    OpenInt RefCnt;
+    int[] FreeVar;
+    int[] RefCnt;
     int Top;
     int NextFreeVar;
 
@@ -587,7 +585,7 @@ void ComputeVarNames(size_t N, Flag!"embed" embed)
     {
         if (NextFreeVar >= RefCnt.length)
         {
-            OpenInt Int = new int[2 * RefCnt.length];
+            auto Int = new int[2 * RefCnt.length];
 
             for (int i = 0; i < NextFreeVar; ++i)
                 Int[i] = RefCnt[i];
@@ -597,7 +595,7 @@ void ComputeVarNames(size_t N, Flag!"embed" embed)
         }
         if (Top >= FreeVar.length)
         {
-            OpenInt Int = new int[2 * FreeVar.length];
+            auto Int = new int[2 * FreeVar.length];
 
             for (int i = 0; i < Top; ++i)
                 Int[i] = FreeVar[i];
@@ -1516,7 +1514,7 @@ void GenDeclarations(Settings settings)
         Mod.write("long");
     InclFix('$');
     if (SavePos)
-        Mod.write("Eval.OpenTree");
+        Mod.write("Eval.TreeType[]");
     else
         Mod.write("HeapType[]");
     InclFix('$');
