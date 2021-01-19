@@ -1,6 +1,6 @@
-module eEarley;
+module epsilon.earley;
 
-import EAG = eEAG;
+import EAG = epsilon.eag;
 import io : Position;
 import runtime;
 import std.stdio;

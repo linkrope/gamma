@@ -1,8 +1,8 @@
-module soag.eSOAG;
+module epsilon.soag.soag;
 
-import EAG = eEAG;
-import IO = eIO;
-import Predicates = ePredicates;
+import EAG = epsilon.eag;
+import IO = epsilon.io;
+import Predicates = epsilon.predicates;
 import runtime;
 import std.bitmanip : BitArray;
 

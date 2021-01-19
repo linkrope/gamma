@@ -1,4 +1,4 @@
-module eEAG;
+module epsilon.eag;
 
 import io : Position;
 import runtime;

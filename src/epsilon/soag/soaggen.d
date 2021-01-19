@@ -1,17 +1,17 @@
-module soag.eSOAGGen;
+module epsilon.soag.soaggen;
 
-import EAG = eEAG;
-import EmitGen = eEmitGen;
-import IO = eIO;
-import SLEAGGen = eSLEAGGen;
+import EAG = epsilon.eag;
+import EmitGen = epsilon.emitgen;
+import IO = epsilon.io;
+import SLEAGGen = epsilon.sleaggen;
 import epsilon.settings;
 import io : Input, read;
 import runtime;
-import SOAG = soag.eSOAG;
-import SOAGOptimizer = soag.eSOAGOptimizer;
-import SOAGPartition = soag.eSOAGPartition;
-import Protocol = soag.eSOAGProtocol;
-import SOAGVisitSeq = soag.eSOAGVisitSeq;
+import optimizer = epsilon.soag.optimizer;
+import partition = epsilon.soag.partition;
+import Protocol = epsilon.soag.protocol;
+import SOAG = epsilon.soag.soag;
+import VisitSeq = epsilon.soag.visitseq;
 import std.bitmanip : BitArray;
 
 const cTab = 1;
@@ -713,7 +713,7 @@ void GenSynPred(int SymOccInd, int VisitNo) @safe
     {
         AN = AP - SOAG.SymOcc[SymOccInd].AffOcc.Beg;
         P = SOAG.AffOcc[AP].ParamBufInd;
-        if (!EAG.ParamBuf[P].isDef && (SOAGVisitSeq.GetVisitNo(AP) == VisitNo || IsPred))
+        if (!EAG.ParamBuf[P].isDef && (VisitSeq.GetVisitNo(AP) == VisitNo || IsPred))
         {
             Node = EAG.ParamBuf[P].Affixform;
             SN = SymOccInd - SOAG.Rule[SOAG.SymOcc[SymOccInd].RuleInd].SymOcc.Beg;
@@ -960,7 +960,7 @@ void GenAnalPred(int SymOccInd, int VisitNo) @safe
     {
         AN = AP - SOAG.SymOcc[SymOccInd].AffOcc.Beg;
         if (EAG.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].isDef
-                && (SOAGVisitSeq.GetVisitNo(AP) == VisitNo || IsPred))
+                && (VisitSeq.GetVisitNo(AP) == VisitNo || IsPred))
         {
             Node = EAG.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].Affixform;
             SN = SymOccInd - SOAG.Rule[SOAG.SymOcc[SymOccInd].RuleInd].SymOcc.Beg;
@@ -1345,7 +1345,7 @@ void GenVisitRule(int R)
         Ind;
         WrS("VI = SemTree[Symbol].VarInd;\n\n");
     }
-    if (SOAGVisitSeq.GetMaxVisitNo(SOAG.Rule[R].SymOcc.Beg) == 1)
+    if (VisitSeq.GetMaxVisitNo(SOAG.Rule[R].SymOcc.Beg) == 1)
     {
         onlyoneVisit = true;
     }
@@ -1407,7 +1407,7 @@ void GenVisitRule(int R)
             WrS("// Visit-abschließende Synthese\n");
             GenSynPred(SO, VisitNo);
             GenLeave(VisitNo);
-            if (VisitNo < SOAGVisitSeq.GetMaxVisitNo(SO))
+            if (VisitNo < VisitSeq.GetMaxVisitNo(SO))
             {
                 Ind;
                 WrS("break;\n");
@@ -1496,11 +1496,11 @@ void GenConstDeclarations() @safe
  */
 void GenStackDeclarations() @safe
 {
-    if (SOAGOptimizer.GlobalVar > 0 || SOAGOptimizer.StackVar > 0)
+    if (optimizer.GlobalVar > 0 || optimizer.StackVar > 0)
     {
-        for (int V = SOAGOptimizer.firstGlobalVar; V <= SOAGOptimizer.GlobalVar; ++V)
+        for (int V = optimizer.firstGlobalVar; V <= optimizer.GlobalVar; ++V)
             WrSIS("HeapType GV", V, ";\n");
-        for (int V = SOAGOptimizer.firstStackVar; V <= SOAGOptimizer.StackVar; ++V)
+        for (int V = optimizer.firstStackVar; V <= optimizer.StackVar; ++V)
             WrSIS("Stacks.Stack Stack", V, ";\n");
         WrS("\n");
     }
@@ -1511,9 +1511,9 @@ void GenStackDeclarations() @safe
  */
 void GenStackInit() @safe
 {
-    if (SOAGOptimizer.StackVar > 0)
+    if (optimizer.StackVar > 0)
     {
-        for (int S = SOAGOptimizer.firstStackVar; S <= SOAGOptimizer.StackVar; ++S)
+        for (int S = optimizer.firstStackVar; S <= optimizer.StackVar; ++S)
             WrSIS("Stacks.New(Stack", S, ", 8);\n");
     }
 }
@@ -1547,7 +1547,7 @@ void GenerateModule(Settings settings)
         Fix.popFront;
     }
 
-    Fix = read("fix/eSOAG.fix.d");
+    Fix = read("fix/epsilon/soag.fix.d");
     name = EAG.BaseName ~ "Eval";
     Out = new IO.TextOut(settings.path(name ~ ".d"));
     SLEAGGen.InitGen(Out, SLEAGGen.sSweepPass, settings);
@@ -1591,12 +1591,12 @@ void GenerateModule(Settings settings)
     EmitGen.GenShowHeap(Out);
     InclFix('$');
     if (Optimize)
-        WrI(SOAGOptimizer.StackVar);
+        WrI(optimizer.StackVar);
     else
         WrI(0);
     InclFix('$');
     if (Optimize)
-        WrI(SOAGOptimizer.GlobalVar);
+        WrI(optimizer.GlobalVar);
     else
         WrI(0);
     InclFix('$');
@@ -1620,10 +1620,10 @@ void Generate(Settings settings)
     UseConst = !settings.c;
     UseRefCnt = !settings.r;
     Optimize = !settings.o;
-    SOAGPartition.Compute;
-    SOAGVisitSeq.Generate;
+    partition.Compute;
+    VisitSeq.Generate;
     if (Optimize)
-        SOAGOptimizer.Optimize;
+        optimizer.Optimize;
     IO.Msg.write("SOAG writing ");
     IO.Msg.write(EAG.BaseName);
     IO.Msg.write("   ");

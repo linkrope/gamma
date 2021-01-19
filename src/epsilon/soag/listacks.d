@@ -1,4 +1,4 @@
-module soag.eLIStacks;
+module epsilon.soag.listacks;
 
 import runtime;
 

@@ -84,24 +84,24 @@ void main(string[] args)
 
 void compile(Input input, Settings settings)
 {
-    import Analyser = eAnalyser;
-    import EAG = eEAG;
-    import ELL1Gen = eELL1Gen;
-    import IO = eIO;
-    import Predicates = ePredicates;
-    import ScanGen = eScanGen;
-    import SLEAGGen = eSLEAGGen;
-    import SSweep = eSSweep;
-    import SOAGGen = soag.eSOAGGen;
+    import analyzer = epsilon.analyzer;
+    import EAG = epsilon.eag;
+    import ELL1Gen = epsilon.ell1gen;
+    import IO = epsilon.io;
+    import Predicates = epsilon.predicates;
+    import ScanGen = epsilon.scangen;
+    import SLEAGGen = epsilon.sleaggen;
+    import SSweep = epsilon.ssweep;
+    import SOAGGen = epsilon.soag.soaggen;
     import std.exception : enforce;
     import std.range : empty;
 
-    Analyser.Analyse(input);
+    analyzer.Analyse(input);
 
-    enforce(Analyser.ErrorCounter == 0,
-            "analyser errors");
+    enforce(analyzer.ErrorCounter == 0,
+            "analyzer errors");
 
-    Analyser.Warnings;
+    analyzer.Warnings;
     Predicates.Check;
     if (settings.verbose)
         Predicates.List;
@@ -136,10 +136,10 @@ void compile(Input input, Settings settings)
         SOAGGen.Generate(settings);
         if (settings.verbose)
         {
-            import SOAGProtocol = soag.eSOAGProtocol;
+            import protocol = epsilon.soag.protocol;
 
-            SOAGProtocol.WriteRulesL4;
-            SOAGProtocol.WriteSyms;
+            protocol.WriteRulesL4;
+            protocol.WriteSyms;
         }
         ELL1Gen.GenerateParser(settings);
         success = true;
@@ -161,7 +161,7 @@ void build(string[] files, string outputDirectory)
     import std.string : join;
 
     auto args = "dmd" ~ files ~ "-g" ~ "include/runtime.d"
-        ~ "src/eIO.d" ~ "src/io.d" ~ "src/log.d" ~ "src/soag/eLIStacks.d";
+        ~ "src/epsilon/io.d" ~ "src/io.d" ~ "src/log.d" ~ "src/epsilon/soag/listacks.d";
 
     if (!outputDirectory.empty)
     {

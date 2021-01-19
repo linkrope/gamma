@@ -1,7 +1,7 @@
-module eEmitGen;
+module epsilon.emitgen;
 
-import EAG = eEAG;
-import IO = eIO;
+import EAG = epsilon.eag;
+import IO = epsilon.io;
 import epsilon.settings;
 import runtime;
 import std.bitmanip : BitArray;

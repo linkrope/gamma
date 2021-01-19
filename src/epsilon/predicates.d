@@ -1,7 +1,7 @@
-module ePredicates;
+module epsilon.predicates;
 
-import EAG = eEAG;
-import IO = eIO;
+import EAG = epsilon.eag;
+import IO = epsilon.io;
 import runtime;
 import std.bitmanip : BitArray;
 import std.stdio;

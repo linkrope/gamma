@@ -1,9 +1,9 @@
-module soag.eSOAGProtocol;
+module epsilon.soag.protocol;
 
-import EAG = eEAG;
-import IO = eIO;
+import EAG = epsilon.eag;
+import IO = epsilon.io;
 import runtime;
-import SOAG = soag.eSOAG;
+import SOAG = epsilon.soag.soag;
 
 const standardLevel = 1;
 const outRuleData = 2;

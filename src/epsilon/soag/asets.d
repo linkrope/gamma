@@ -1,7 +1,7 @@
-module soag.eASets;
+module epsilon.soag.asets;
 
 import runtime;
-import ALists = soag.eALists;
+import ALists = epsilon.soag.alists;
 
 const firstIndex = ALists.firstIndex;
 const noelem = -1;

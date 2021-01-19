@@ -1,7 +1,7 @@
-module soag.eStacks;
+module epsilon.soag.stacks;
 
 import runtime;
-import ALists = soag.eALists;
+import ALists = epsilon.soag.alists;
 
 struct Stack
 {

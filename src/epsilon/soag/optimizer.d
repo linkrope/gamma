@@ -1,12 +1,12 @@
-module soag.eSOAGOptimizer;
+module epsilon.soag.optimizer;
 
-import EAG = eEAG;
-import IO = eIO;
+import EAG = epsilon.eag;
+import IO = epsilon.io;
 import runtime;
-import ALists = soag.eALists;
-import SOAG = soag.eSOAG;
-import Protocol = soag.eSOAGProtocol;
-import SOAGVisitSeq = soag.eSOAGVisitSeq;
+import ALists = epsilon.soag.alists;
+import SOAG = epsilon.soag.soag;
+import Protocol = epsilon.soag.protocol;
+import VisitSeq = epsilon.soag.visitseq;
 
 const firstGlobalVar = 1;
 const firstStackVar = 1;
@@ -105,12 +105,12 @@ int GetPlanNo(int R, int AP) @nogc nothrow @safe
     SO = SOAG.AffOcc[AP].SymOccInd;
     if (SO == SOAG.Rule[R].SymOcc.Beg)
     {
-        return SOAGVisitSeq.GetVisitNo(AP);
+        return VisitSeq.GetVisitNo(AP);
     }
     else
     {
-        VN = SOAGVisitSeq.GetVisitNo(AP);
-        return PN[SOAGVisitSeq.GetVisit(R, SO, VN)];
+        VN = VisitSeq.GetVisitNo(AP);
+        return PN[VisitSeq.GetVisit(R, SO, VN)];
     }
 }
 
@@ -122,7 +122,7 @@ int GetPlanNo(int R, int AP) @nogc nothrow @safe
 int GetEVSPosforAffOcc(int R, int AP) @nogc nothrow @safe
 {
     int SO = SOAG.AffOcc[AP].SymOccInd;
-    int VN = SOAGVisitSeq.GetVisitNo(AP);
+    int VN = VisitSeq.GetVisitNo(AP);
     const S = SOAG.SymOcc[SO].SymInd;
     const AN = SOAG.AffOcc[AP].AffOccNum.InSym;
     int V;
@@ -135,11 +135,11 @@ int GetEVSPosforAffOcc(int R, int AP) @nogc nothrow @safe
         }
         else
         {
-            V = SOAGVisitSeq.GetVisit(R, SO, VN - 1);
+            V = VisitSeq.GetVisit(R, SO, VN - 1);
             return V * 3 + 1;
         }
     }
-    V = SOAGVisitSeq.GetVisit(R, SO, VN);
+    V = VisitSeq.GetVisit(R, SO, VN);
     if (SOAG.IsInherited(S, AN))
     {
         return V * 3 + 1;
@@ -158,7 +158,7 @@ int GetEVSPosforAffOcc(int R, int AP) @nogc nothrow @safe
  */
 int GetEVSPosforVisit(int R, int SO, int VN) @nogc nothrow @safe
 {
-    const V = SOAGVisitSeq.GetVisit(R, SO, VN);
+    const V = VisitSeq.GetVisit(R, SO, VN);
 
     return V * 3 + 2;
 }
@@ -271,8 +271,8 @@ void CompleteInitVDS() nothrow
             {
                 if (SOAG.Rule[R].SymOcc.Beg != SO)
                 {
-                    V1 = SOAGVisitSeq.GetVisit(R, SO, VN1);
-                    V2 = SOAGVisitSeq.GetNextVisit(V1, R, SO, VN2);
+                    V1 = VisitSeq.GetVisit(R, SO, VN1);
+                    V2 = VisitSeq.GetNextVisit(V1, R, SO, VN2);
                     if (PN[V1] < PN[V2])
                     {
                         RS = SOAG.SymOcc[SOAG.Rule[SOAG.SymOcc[SO].RuleInd].SymOcc.Beg].SymInd;

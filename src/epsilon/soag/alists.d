@@ -1,4 +1,4 @@
-module soag.eALists;
+module epsilon.soag.alists;
 
 import runtime;
 

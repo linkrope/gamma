@@ -1,6 +1,6 @@
 module $;
 
-import IO = eIO;
+import IO = epsilon.io;
 import io : Input, Position;
 import runtime;
 import std.stdio;

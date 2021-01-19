@@ -1,7 +1,7 @@
-module eScanGen;
+module epsilon.scangen;
 
-import EAG = eEAG;
-import IO = eIO;
+import EAG = epsilon.eag;
+import IO = epsilon.io;
 import epsilon.settings;
 import io : Input, read;
 import log;
@@ -113,7 +113,7 @@ void Generate(Settings settings)
         }
         if (!Error)
         {
-            Fix = read("fix/eScanGen.fix.d");
+            Fix = read("fix/epsilon/scangen.fix.d");
             name = EAG.BaseName ~ "Scan";
             Mod = new IO.TextOut(settings.path(name ~ ".d"));
             InclFix('$');

@@ -1,9 +1,9 @@
-module eSSweep;
+module epsilon.ssweep;
 
-import EAG = eEAG;
-import EmitGen = eEmitGen;
-import IO = eIO;
-import EvalGen = eSLEAGGen;
+import EAG = epsilon.eag;
+import EmitGen = epsilon.emitgen;
+import IO = epsilon.io;
+import EvalGen = epsilon.sleaggen;
 import epsilon.settings;
 import io : Input, read, UndefPos;
 import runtime;
@@ -527,7 +527,7 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
     Error = Error || !EvalGen.PredsOK();
     if (createMod)
     {
-        Fix = read("fix/eSSweep.fix.d");
+        Fix = read("fix/epsilon/ssweep.fix.d");
         name = EAG.BaseName ~ "Eval";
         Mod = new IO.TextOut(settings.path(name ~ ".d"));
         if (!Error)

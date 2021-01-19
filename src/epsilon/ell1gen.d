@@ -1,10 +1,10 @@
-module eELL1Gen;
+module epsilon.ell1gen;
 
-import EAG = eEAG;
-import EmitGen = eEmitGen;
-import IO = eIO;
-import Shift = eShift;
-import EvalGen = eSLEAGGen;
+import EAG = epsilon.eag;
+import EmitGen = epsilon.emitgen;
+import IO = epsilon.io;
+import Shift = epsilon.shift;
+import EvalGen = epsilon.sleaggen;
 import epsilon.settings;
 import io : Input, Position, read;
 import log;
@@ -1349,7 +1349,7 @@ void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
 
     AllToks = BitArray();
     AllToks.length = nToks + 1;
-    Fix = read("fix/eELL1Gen.fix.d");
+    Fix = read("fix/epsilon/ell1gen.fix.d");
     Mod = new IO.TextOut(settings.path(EAG.BaseName ~ ".d"));
     if (parsePass)
         EvalGen.InitGen(Mod, EvalGen.parsePass, settings);

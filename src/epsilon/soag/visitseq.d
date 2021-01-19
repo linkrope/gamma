@@ -1,11 +1,10 @@
-module soag.eSOAGVisitSeq;
+module epsilon.soag.visitseq;
 
-import EAG = eEAG;
+import EAG = epsilon.eag;
 import runtime;
-import SOAG = soag.eSOAG;
-import HashTab = soag.eSOAGHash;
-import Protocol = soag.eSOAGProtocol;
-import Stacks = soag.eStacks;
+import hash = epsilon.soag.hash;
+import SOAG = epsilon.soag.soag;
+import Stacks = epsilon.soag.stacks;
 
 const noVisit = -1;
 int[] InDeg;
@@ -225,9 +224,9 @@ void TopSort(int R)
         Stacks.Pop(ZeroInDeg, AO);
         Instr = MapVS(AO);
         AN = SOAG.AffOcc[AO].AffOccNum.InRule;
-        if (!HashTab.IsIn(Instr))
+        if (!hash.IsIn(Instr))
         {
-            HashTab.Enter(Instr);
+            hash.Enter(Instr);
             SOAG.AppVS(Instr);
         }
         for (BO = SOAG.Rule[R].AffOcc.End; BO >= SOAG.Rule[R].AffOcc.Beg; --BO)
@@ -253,8 +252,8 @@ void Generate()
     SOAG.Instruction Instr;
 
     ComputeVisitNo;
-    // HashTab.Init(SOAG.MaxAffNumInRule); // does not work if (MaxAffNumInRule == 0)
-    HashTab.Init(SOAG.MaxAffNumInRule + 1);
+    // hash.Init(SOAG.MaxAffNumInRule); // does not work if (MaxAffNumInRule == 0)
+    hash.Init(SOAG.MaxAffNumInRule + 1);
     Stacks.New(ZeroInDeg, 32);
     InDeg = new int[SOAG.MaxAffNumInRule + 1];
     for (int R = SOAG.firstRule; R < SOAG.NextRule; ++R)
@@ -262,18 +261,18 @@ void Generate()
         SOAG.Rule[R].VS.Beg = SOAG.NextVS;
         if (SOAG.IsEvaluatorRule(R))
         {
-            HashTab.Reset;
+            hash.Reset;
             TopSort(R);
-            if (MaxTry < HashTab.MaxTry)
-                MaxTry = HashTab.MaxTry;
+            if (MaxTry < hash.MaxTry)
+                MaxTry = hash.MaxTry;
             for (SO = SOAG.Rule[R].SymOcc.Beg + 1; SO <= SOAG.Rule[R].SymOcc.End; ++SO)
             {
                 Instr = CompleteTraversal(SO);
-                if (!HashTab.IsIn(Instr))
+                if (!hash.IsIn(Instr))
                     SOAG.AppVS(Instr);
             }
             Instr = CompleteTraversal(SOAG.Rule[R].SymOcc.Beg);
-            if (!HashTab.IsIn(Instr))
+            if (!hash.IsIn(Instr))
                 SOAG.AppVS(Instr);
         }
         SOAG.Rule[R].VS.End = SOAG.NextVS - 1;

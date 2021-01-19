@@ -1,9 +1,9 @@
 module $;
 
-import IO = eIO;
+import IO = epsilon.io;
 import io : Position;
 import runtime;
-import Stacks = soag.eLIStacks;
+import Stacks = epsilon.soag.listacks;
 import std.stdio;
 
 const nil = -1;

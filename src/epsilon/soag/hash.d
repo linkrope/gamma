@@ -1,7 +1,7 @@
-module soag.eSOAGHash;
+module epsilon.soag.hash;
 
 import runtime;
-import SOAG = soag.eSOAG;
+import SOAG = epsilon.soag.soag;
 
 class HashEntry
 {

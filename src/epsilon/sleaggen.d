@@ -1,7 +1,7 @@
-module eSLEAGGen;
+module epsilon.sleaggen;
 
-import EAG = eEAG;
-import IO = eIO;
+import EAG = epsilon.eag;
+import IO = epsilon.io;
 import epsilon.settings;
 import io : Input, Position, read;
 import runtime;
@@ -1502,7 +1502,7 @@ void GenDeclarations(Settings settings)
     else
         name = EAG.BaseName ~ ".EvalTab";
     TabTimeStamp = IO.TimeStamp();
-    Fix = read("fix/eSLEAGGen.fix.d");
+    Fix = read("fix/epsilon/sleaggen.fix.d");
     InclFix('$');
     Mod.write(FirstHeap - 1);
     InclFix('$');

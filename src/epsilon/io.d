@@ -1,4 +1,4 @@
-module eIO;
+module epsilon.io;
 
 import log;
 import runtime;

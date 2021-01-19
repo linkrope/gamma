@@ -1,7 +1,7 @@
-module eAnalyser;
+module epsilon.analyzer;
 
-import EAG = eEAG;
-import Earley = eEarley;
+import EAG = epsilon.eag;
+import Earley = epsilon.earley;
 import epsilon.lexer : Lexer, Token;
 import io : Input, Position;
 import log;

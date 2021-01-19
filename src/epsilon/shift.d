@@ -1,6 +1,6 @@
-module eShift;
+module epsilon.shift;
 
-import EAG = eEAG;
+import EAG = epsilon.eag;
 import io : UndefPos;
 import runtime;
 import std.bitmanip : BitArray;

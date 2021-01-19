@@ -1,14 +1,14 @@
-module soag.eSOAGPartition;
+module epsilon.soag.partition;
 
-import EAG = eEAG;
-import IO = eIO;
+import EAG = epsilon.eag;
+import IO = epsilon.io;
 import log;
 import runtime;
-import ALists = soag.eALists;
-import ASets = soag.eASets;
-import BSets = soag.eBSets;
-import SOAG = soag.eSOAG;
-import Protocol = soag.eSOAGProtocol;
+import ALists = epsilon.soag.alists;
+import ASets = epsilon.soag.asets;
+import BSets = epsilon.soag.bsets;
+import Protocol = epsilon.soag.protocol;
+import SOAG = epsilon.soag.soag;
 import std.stdio;
 
 const unor = -1;
@@ -279,7 +279,7 @@ void ComputeDefAffOcc(int R) @safe
         else
         {
             writeln(EAG.Var[V].Pos);
-            SOAG.Error(SOAG.notLeftDefined, "eSOAGPartition.ComputeDefAffOcc");
+            SOAG.Error(SOAG.notLeftDefined, "epsilon.soag.partition.ComputeDefAffOcc");
         }
     }
 }

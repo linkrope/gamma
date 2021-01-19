@@ -1,7 +1,7 @@
-module soag.eBSets;
+module epsilon.soag.bsets;
 
 import runtime;
-import ALists = soag.eALists;
+import ALists = epsilon.soag.alists;
 import std.bitmanip : BitArray;
 
 const firstIndex = ALists.firstIndex;
