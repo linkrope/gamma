@@ -1,0 +1,36 @@
+= True Compiler Generation
+Efficient Implementation of a Closed Theory
+
+Jochen Demuth, Stephan Weber,
+Sönke Kannapinn, Mario Kröplin
+
+Report 1997 / 6
+
+Recommended for publication by Prof. Dr. Bleicke Eggers
+
+
+
+
+German Title:
+
+Echte Compilergenerierung +
+Effiziente Implementierung einer abgeschlossenen Theorie
+
+Jochen Demuth, Stephan Weber,
+Sönke Kannapinn, Mario Kröplin
+
+Bericht 1997 / 6
+
+Zur Veröffentlichung empfohlen von Prof. Dr. Bleicke Eggers
+
+// Page i
+
+== Abstract
+
+Today, compiler construction is so well-understood that it is more and more unreasonable why programming language descriptions are still not given completely formally, so that even compilers could be generated automatically. The attribute grammars used for the description are unsatisfactory as they lean on a programming language each: Therefore, a Babylonian confusion among the numerous existing generator systems has emerged; and, worse still, respective "specifications" incorporate large quantities of programs. A promising alternative is offered by the closed calculus of two-level grammars, which are solely based on the principle of the context-free grammars. For the analysis-orientedly restricted Extended Affix Grammars, this report comprises the documentation and full implementation of a system generating e ective compilers. Accompanying examples in the appendices shall demonstrate the expressiveness of the specication formalism.
+
+// Page iii
+
+
+
+
