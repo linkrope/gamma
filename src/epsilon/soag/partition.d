@@ -6,9 +6,9 @@ import log;
 import runtime;
 import ALists = epsilon.soag.alists;
 import ASets = epsilon.soag.asets;
-import BSets = epsilon.soag.bsets;
 import Protocol = epsilon.soag.protocol;
 import SOAG = epsilon.soag.soag;
+import std.bitmanip : BitArray;
 import std.stdio;
 
 const unor = -1;
@@ -48,7 +48,7 @@ ALists.AList MarkedEdges;
 ALists.AList LastCur;
 ASets.ASet Cur;
 ASets.ASet Leave;
-BSets.BSet New;
+BitArray New;
 int Seperator;
 
 void Expand() nothrow @safe
@@ -449,7 +449,7 @@ void ComputeIDPTrans()
  *      aller bei der transitiven Vervollständigung neu entstandenen Abhängigkeiten zurück
  * SEF: auf ChangeBuf[]
  */
-void Orient(int a, int b, int X, ref BSets.BSet New)
+void Orient(int a, int b, int X, ref BitArray New)
 {
     int SO;
     int i;
@@ -458,7 +458,7 @@ void Orient(int a, int b, int X, ref BSets.BSet New)
     int AO1;
     int AO2;
 
-    BSets.Reset(New);
+    New[] = false;
     CyclicTDP = false;
     NextChangeBuf = firstChangeBuf;
     SO = SOAG.Sym[X].FirstOcc;
@@ -490,7 +490,7 @@ void Orient(int a, int b, int X, ref BSets.BSet New)
             a1 = SOAG.AffOcc[AO1].AffOccNum.InSym;
             b1 = SOAG.AffOcc[AO2].AffOccNum.InSym;
             if (SOAG.IsOrientable(X, a1, b1))
-                BSets.Insert(New, a1 * Seperator + b1);
+                New[a1 * Seperator + b1] = true;
         }
     }
 }
@@ -600,10 +600,10 @@ void DynTopSortSym(int X)
                 if (ASets.In(Cur, a) && DS[a][b] == unor)
                 {
                     Orient(a, b, X, New);
-                    for (i = BSets.firstIndex; i <= New.List.Last; ++i)
+                    foreach (size_t elem; New.bitsSet)
                     {
-                        c = DIV(New.List.Elem[i], Seperator).to!int;
-                        d = MOD(New.List.Elem[i], Seperator).to!int;
+                        c = DIV(elem, Seperator).to!int;
+                        d = MOD(elem, Seperator).to!int;
                         DS[c][d] = element;
                         ++Deg[c];
                         if (DS[d][c] == unor)
@@ -655,7 +655,8 @@ void DynTopSort()
     DS = new int[][SOAG.MaxAffNumInSym + 1];
     foreach (ref row; DS)
         row = new int[SOAG.MaxAffNumInSym + 1];
-    BSets.New(New, (SOAG.MaxAffNumInSym + 1) * (SOAG.MaxAffNumInSym + 1));
+    New = BitArray();
+    New.length = (SOAG.MaxAffNumInSym + 1) * (SOAG.MaxAffNumInSym + 1) + 1;
     Seperator = SOAG.MaxAffNumInSym + 1;
     ALists.New(LastCur, 16);
     for (int S = EAG.firstHNont; S < EAG.NextHNont; ++S)
