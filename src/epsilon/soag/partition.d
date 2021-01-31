@@ -5,7 +5,6 @@ import IO = epsilon.io;
 import log;
 import runtime;
 import ALists = epsilon.soag.alists;
-import ASets = epsilon.soag.asets;
 import Protocol = epsilon.soag.protocol;
 import SOAG = epsilon.soag.soag;
 import std.bitmanip : BitArray;
@@ -46,8 +45,8 @@ bool OEAG;
 ALists.AList NUV;
 ALists.AList MarkedEdges;
 ALists.AList LastCur;
-ASets.ASet Cur;
-ASets.ASet Leave;
+BitArray Cur;
+BitArray Leave;
 BitArray New;
 int Seperator;
 
@@ -533,7 +532,6 @@ void DynTopSortSym(int X)
     int b;
     int c;
     int d;
-    ASets.ASet tmp;
 
     XmaxAff = SOAG.SymOcc[SOAG.Sym[X].FirstOcc].AffOcc.End - SOAG.SymOcc[SOAG.Sym[X].FirstOcc].AffOcc.Beg;
     for (a = 0; a <= XmaxAff; ++a)
@@ -573,31 +571,31 @@ void DynTopSortSym(int X)
             }
         }
     }
-    ASets.Reset(Cur);
-    ASets.Reset(Leave);
+    Cur[] = false;
+    Leave[] = false;
     for (a = 0; a <= XmaxAff; ++a)
     {
         if (Deg[a] == 0)
         {
             if (SOAG.IsSynthesized(X, a))
-                ASets.Insert(Cur, a);
+                Cur[a] = true;
             else if (SOAG.IsInherited(X, a))
-                ASets.Insert(Leave, a);
+                Leave[a] = true;
         }
     }
     trace!"compute partition for symbol %s"(EAG.HNontRepr(X));
-    trace!"initially: Cur=%s, Leave=%s"(ASets.elements(Cur), ASets.elements(Leave));
+    trace!"initially: Cur=%s, Leave=%s"(Cur, Leave);
     do
     {
         ALists.Reset(LastCur);
-        for (a = ASets.firstIndex; a <= Cur.List.Last; ++a)
-            ALists.Append(LastCur, Cur.List.Elem[a]);
+        foreach (size_t elem; Cur.bitsSet)
+            ALists.Append(LastCur, elem.to!int);
         for (b = 0; b <= XmaxAff; ++b)
         {
             for (a1 = ALists.firstIndex; a1 <= LastCur.Last; ++a1)
             {
                 a = LastCur.Elem[a1];
-                if (ASets.In(Cur, a) && DS[a][b] == unor)
+                if (Cur[a] && DS[a][b] == unor)
                 {
                     Orient(a, b, X, New);
                     foreach (size_t elem; New.bitsSet)
@@ -608,36 +606,38 @@ void DynTopSortSym(int X)
                         ++Deg[c];
                         if (DS[d][c] == unor)
                             DS[d][c] = nil;
-                        if (ASets.In(Cur, c))
-                            ASets.Delete(Cur, c);
+                        if (Cur[c])
+                            Cur[c] = false;
                         else if (Deg[c] == 1)
-                            ASets.Delete(Leave, c);
+                            Leave[c] = false;
                     }
                 }
             }
         }
         ++Part;
-        trace!"partition %s: Cur=%s, Leave=%s"(Part, ASets.elements(Cur), ASets.elements(Leave));
-        for (a = ASets.firstIndex; a <= Cur.List.Last; ++a)
+        trace!"partition %s: Cur=%s, Leave=%s"(Part, Cur, Leave);
+        foreach (size_t elem; Cur.bitsSet)
         {
-            SOAG.PartNum[SOAG.Sym[X].AffPos.Beg + Cur.List.Elem[a]] = Part;
+            SOAG.PartNum[SOAG.Sym[X].AffPos.Beg + elem] = Part;
             for (b = 0; b <= XmaxAff; ++b)
             {
-                if (DS[b][Cur.List.Elem[a]] == element)
+                if (DS[b][elem] == element)
                 {
                     --Deg[b];
                     if (Deg[b] == 0)
-                        ASets.Insert(Leave, b);
+                        Leave[b] = true;
                 }
             }
         }
-        trace!"afterwards: Cur=%s, Leave=%s"(ASets.elements(Cur), ASets.elements(Leave));
-        tmp = Cur;
+        trace!"afterwards: Cur=%s, Leave=%s"(Cur, Leave);
+
+        BitArray tmp = Cur;
+
         Cur = Leave;
         Leave = tmp;
-        ASets.Reset(Leave);
+        Leave[] = false;
     }
-    while (!ASets.IsEmpty(Cur));
+    while (Cur.count > 0);
     if (SOAG.Sym[X].MaxPart < Part)
         SOAG.Sym[X].MaxPart = Part;
     if (SOAG.MaxPart < Part)
@@ -649,8 +649,10 @@ void DynTopSortSym(int X)
  */
 void DynTopSort()
 {
-    ASets.New(Cur, SOAG.MaxAffNumInSym + 1);
-    ASets.New(Leave, SOAG.MaxAffNumInSym + 1);
+    Cur = BitArray();
+    Cur.length = SOAG.MaxAffNumInSym + 1;
+    Leave = BitArray();
+    Leave.length = SOAG.MaxAffNumInSym + 1;
     Deg = new int[SOAG.MaxAffNumInSym + 1];
     DS = new int[][SOAG.MaxAffNumInSym + 1];
     foreach (ref row; DS)
