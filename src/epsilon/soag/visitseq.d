@@ -4,11 +4,10 @@ import EAG = epsilon.eag;
 import runtime;
 import hash = epsilon.soag.hash;
 import SOAG = epsilon.soag.soag;
-import Stacks = epsilon.soag.stacks;
+import std.range;
 
 const noVisit = -1;
 int[] InDeg;
-Stacks.Stack ZeroInDeg;
 
 /**
  * IN:  -
@@ -204,8 +203,8 @@ void TopSort(int R)
     int BO;
     int BN;
     SOAG.Instruction Instr;
+    int[] ZeroInDeg;
 
-    Stacks.Reset(ZeroInDeg);
     for (BO = SOAG.Rule[R].AffOcc.End; BO >= SOAG.Rule[R].AffOcc.Beg; --BO)
     {
         BN = SOAG.AffOcc[BO].AffOccNum.InRule;
@@ -217,11 +216,12 @@ void TopSort(int R)
                 ++InDeg[BN];
         }
         if (InDeg[BN] == 0)
-            Stacks.Push(ZeroInDeg, BO);
+            ZeroInDeg ~= BO;
     }
-    while (!Stacks.IsEmpty(ZeroInDeg))
+    while (!ZeroInDeg.empty)
     {
-        Stacks.Pop(ZeroInDeg, AO);
+        AO = ZeroInDeg.back;
+        ZeroInDeg.popBack;
         Instr = MapVS(AO);
         AN = SOAG.AffOcc[AO].AffOccNum.InRule;
         if (!hash.IsIn(Instr))
@@ -236,7 +236,7 @@ void TopSort(int R)
             {
                 --InDeg[BN];
                 if (InDeg[BN] == 0)
-                    Stacks.Push(ZeroInDeg, BO);
+                    ZeroInDeg ~= BO;
             }
         }
     }
@@ -254,7 +254,6 @@ void Generate()
     ComputeVisitNo;
     // hash.Init(SOAG.MaxAffNumInRule); // does not work if (MaxAffNumInRule == 0)
     hash.Init(SOAG.MaxAffNumInRule + 1);
-    Stacks.New(ZeroInDeg, 32);
     InDeg = new int[SOAG.MaxAffNumInRule + 1];
     for (int R = SOAG.firstRule; R < SOAG.NextRule; ++R)
     {
