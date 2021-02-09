@@ -1,23 +1,18 @@
 //  Page 1
 
-= Ein Evaluatorgenerator für zwei heuristische TeilklassenSequentiell Orientierbarer Erweiterter Affixgrammatiken
+= An Evaluator Generator for Two Heuristic Subclasses of Sequentially Orientable Extended Affix Grammars
+Denis Kuniß, Diploma Thesis, March 1998
+:description: Diploma Thesis
+:toc:
 
-Master Thesis
-
-March 1998
-
-Denis Kuniß
-
-Technische Universität Berlin
-
-Fachbereich Informatik
-
-Institut für Angewandte Informatik
-
+====
+Technische Universität Berlin +
+Fachbereich Informatik +
+Institut für Angewandte Informatik +
 FG Programmiersprachen und Compiler
+====
 
-// -------------------------------------------------------------------------------
-//  Pages 2-3 Content Directory
+NOTE: This document has been automatically translated from German and was only slightly reviewed.
 
 // -------------------------------------------------------------------------------
 // Page 4
@@ -217,11 +212,10 @@ For all generated compilers additionally the independent module `eLIStacks` was 
 
 === System structure
 
-The SOAG evaluator generator extends the original compiler generator Epsilon by the modules shown in Fig. 3-1. The arrows indicate significant import relationships between the modules. The modules `eALists`, `eStacks`, `eASets`, and `eBSets` are used multiple times to implement Lists, Sets, and Cellar Stores, which can be instantiated in any number. The modules with the "SOAG" prefix describe the actual SOAG evaluator generator. The module `SOAG` contains the central data structures of the generator. In the module `SOAGPartition` the Affixpartition of the analyzed grammar is calculated and thus it is decided whether the generation of an evaluator is possible. In
+The SOAG evaluator generator extends the original compiler generator Epsilon by the modules shown in Fig. 3-1. The arrows indicate significant import relationships between the modules. The modules `eALists`, `eStacks`, `eASets`, and `eBSets` are used multiple times to implement Lists, Sets, and Cellar Stores, which can be instantiated in any number. The modules with the "SOAG" prefix describe the actual SOAG evaluator generator. The module `SOAG` contains the central data structures of the generator. In the module `SOAGPartition` the Affixpartition of the analyzed grammar is calculated and thus it is decided whether the generation of an evaluator is possible. In `SOAGVisitSeq`, the visit sequences for the evaluator are calculated using the `SOAGHash` module, which implements a hash table. Optionally, the `SOAGOptimizer` module provides information to information is provided by the module `SOAGOptimizer`, which allows an optimization of the generated evaluator by storing affix variables in cellar memories and global variables. The module `SOAGGen` generates from the Visit sequences the  The module `SOAGProtocol` serves above all for the logging of central data structure contents during development. central data structure contents during the development.
 
-// doc\soag\images\image-3.1-system-structure.PNG
-
-`SOAGVisitSeq`, the visit sequences for the evaluator are calculated using the `SOAGHash` module, which implements a hash table. Optionally, the `SOAGOptimizer` module provides information to information is provided by the module `SOAGOptimizer`, which allows an optimization of the generated evaluator by storing affix variables in cellar memories and global variables. The module `SOAGGen` generates from the Visit sequences the  The module `SOAGProtocol` serves above all for the logging of central data structure contents during development. central data structure contents during the development.
+.System Structure
+image::images\image-3.1-system-structure.PNG[system structure]
 
 As in the original compiler generator Epsilon, all modules are prefixed with an "e" to prevent name conflicts with the Oberon system.
 
@@ -234,35 +228,33 @@ This chapter provides a brief formal definition of EAGs to capture the terminolo
 
 === Terminology and definition of EAGs
 
-An Extended Affix Grammar is an 8-tuple
-----
-    	EAG = (MN, MT, MR, HN, HT, SPEC, HR, S)
-----
+An Extended Affix Grammar is an 8-tuple +
+_EAG_ = (_MN_, _MT_, _MR_, _HN_, _HT_, _SPEC_, _HR_, _S_) +
 whose individual components are defined as follows:
 
--_MN_ is a finite set of _meta-non-terminals_. If _M_ ∈ _MN_, then _M_, _M1_, _M2_, ... as well as _#M_, _#M1_, _#M2_, ... _Affixes_ to _M_.
+- _MN_ is a finite set of _meta-non-terminals_. If _M_ ∈ _MN_, then _M_, _M1_, _M2_, ... as well as _#M_, _#M1_, _#M2_, ... _Affixes_ to _M_.
 For any affix _A_ to _M_, _dom(A)_ := _M_ is the range of values of the `affix`. In several other sources the term _variable_ is used synonymously to the term `affix`.
 
--_MT_ represents the finite set of _meta-terminals_ with MN ∩ _MT_ = ∅.
+- _MT_ represents the finite set of _meta-terminals_ with MN ∩ _MT_ = ∅.
 
--_MR_ represents the finite set of _meta-rules_ of the form _M~0~_ = _M~1~_.... _M~n~_ with _n0_ and _M~0~_ ∈ _MN_ and _M~i~_ ∈ _MN_ ∪ _MT_).
+- _MR_ represents the finite set of _meta-rules_ of the form _M~0~_ = _M~1~_.... _M~n~_ with _n0_ and _M~0~_ ∈ _MN_ and _M~i~_ ∈ _MN_ ∪ _MT_).
 
 The context-free grammar _MG~M~_ := (_MN_, _MT_, _MR_, _M_) is called the meta-grammar spanned by the meta-non-terminal _M_ is called the _meta-grammar_ spanned by the meta-non-terminal _M_. _Affix forms_ to a meta-non-terminal M are sentence forms of MG~M~ in which all occurring meta-nonterminals have been replaced by corresponding affixes.
 
--_HN- is a finite set of _hyper-nonterminals_.
+- _HN_ is a finite set of _hyper-nonterminals_.
 
--_HT_ is a finite set of _hyper-terminals_, with _HN_ ∩ -HN_ = ∅.
+- _HT_ is a finite set of _hyper-terminals_, with _HN_ ∩ _HN_ = ∅.
 
--_SPEC_ is a finite set of _specifications_ of the form _H_ _( dir(a~1~) dom(a~1~), ..., dir(a~#a(H)~) dom(a~#a(H)~))_,
+- _SPEC_ is a finite set of _specifications_ of the form _H_ _( dir(a~1~) dom(a~1~), ..., dir(a~#a(H)~) dom(a~#a(H)~))_,
 therein are:
 
--_#a(H)_ is the ordinality of _H_
+- _#a(H)_ is the ordinality of _H_
 
--the tuples _ai_ with _0 < i ≤ #a(H)_ affix positions of H, which are also named in the form ai H ai H. The set A(H) = { a~i~^H^ : 0 < i ≤ #a(H)} is the set of all affix positions of the hypernonterminal _H_.
+- the tuples _ai_ with _0 < i ≤ #a(H)_ affix positions of H, which are also named in the form ai H ai H. The set A(H) = { a~i~^H^ : 0 < i ≤ #a(H)} is the set of all affix positions of the hypernonterminal _H_.
 
--_dir(a~i~)_ ∈ {↑,↓} is the direction of the affix position _a~i~_. Affix positions with the direction ↓ are  _inherited_, those with the direction ↑ _synthesized_. _I(H)_ and _S(H)_ denote the sets of inherited and derived affixes of the hyper-nonterminal _H_, respectively.
+- _dir(a~i~)_ ∈ {↑,↓} is the direction of the affix position _a~i~_. Affix positions with the direction ↓ are  _inherited_, those with the direction ↑ _synthesized_. _I(H)_ and _S(H)_ denote the sets of inherited and derived affixes of the hyper-nonterminal _H_, respectively.
 
--_dom(a~i~)_ ∈ _MN_ the range of values of an affix position
+- _dom(a~i~)_ ∈ _MN_ the range of values of an affix position
 
 The specification of an _EAG_ is not explicitly present in the calculus of the compiler generator Epsilon, but is integrated into the syntactic structure of the hyper-rules for simplification. Formally, however, a separation is is unavoidable and also easier to handle. 
 
@@ -296,29 +288,28 @@ _EAGs_ allow the formulation of so-called predicates. Predicates are specified b
 
 The set of _basic non-terminals GN_ of an _EAG_ is inductively defined as follows:
 
--_S_ is a basic non-terminal;
+- _S_ is a basic non-terminal;
 
--if a hyper-rule contains a hyper-terminal on the right-hand side of the rule, then the hyper-non-terminal on the left-hand side of the rule is a basic non-terminal. on the left-hand side of the rule is a basic non-terminal;
+- if a hyper-rule contains a hyper-terminal on the right-hand side of the rule, then the hyper-non-terminal on the left-hand side of the rule is a basic non-terminal. on the left-hand side of the rule is a basic non-terminal;
 
--if a hyper-rule on the right-hand side of the rule contains a basic non-terminal, the hyper-non-terminal on the left-hand side of the rule is a basic non-terminal. on the left-hand side of the rule is a basic non-terminal. 
+- if a hyper-rule on the right-hand side of the rule contains a basic non-terminal, the hyper-non-terminal on the left-hand side of the rule is a basic non-terminal. on the left-hand side of the rule is a basic non-terminal. 
 The set _PN_ of _predicate non-terminals_ contains all hyper-non-terminals which are not basic non-terminals. are.
 
 A hyper-rule is a _predicate rule_ if on its left-hand side there is a symbol occurrence of a predicate non-terminal; all other rules are evaluator rules. The basic grammar (also called _parser grammar_) of an _EAG_ is a context-free grammar consisting of the basic non-terminals, the hyper-terminals and the evaluator rules. hyper-terminals and the evaluator rules, in which the predicate non-terminals and all parameterisations have been parameterisations have been eliminated. The start symbol of the _EAG_ remains as the start symbol.
 
 A parser generated from the basic grammar produces derivation trees of the parser grammar, which, however, no longer contain hyper-terminals. no longer contain hyper-terminals. A derivation tree _t_ is an ordered tree. Each node of _t_ is
-
 // -------------------------------------------------------------------------------
 // Page 19
-
-is marked with a basic non-terminal. For each node _k_ of the derivation tree _t_ there exists a rule _r=X~0~^r^_ : _X^r^~1~,...,X^r^~#S(r)~_, so that _k- instance of the symbol occurrence _X~0~^r^_ and its sons are instances of the symbol occurrences _X^r^~1~,...,X^r^~#S(r)~_; _k_ is additionally marked with _r_. Furthermore, each node is assigned the instances of the affixes occurring in the hyper-rule - called _affix variables_ - are assigned to each node. of the defining affix and contain the translation of the evaluation. The root of each derivation tree generated by the parser is an instance of the start symbol _S_ of the _EAG_. 
+marked with a basic non-terminal. For each node _k_ of the derivation tree _t_ there exists a rule _r=X~0~^r^_ : _X^r^~1~, ..., X^r^~#S(r)~_, so that _k_ instance of the symbol occurrence _X_~0~^_r_^ and its sons are instances of the symbol occurrences _X^r^~1~, ..., X^r^~#S(r)~_; _k_ is additionally marked with _r_. Furthermore, each node is assigned the instances of the affixes occurring in the hyper-rule - called _affix variables_ - are assigned to each node. of the defining affix and contain the translation of the evaluation. The root of each derivation tree generated by the parser is an instance of the start symbol _S_ of the _EAG_. 
 
 === Well-formedness conditions for EAGs
 
 An EAG is well-formed if
-1. its basic grammar is unambiguous and each basic rule arises from exactly one hyper-rule,
-2. every meta-non-terminal _M_ ∈ _MR_ is _strictly synthesised_ or the meta-grammar spanned by _M_ is _MG~M~_ is  unique,
-3. the EAG is cycle-free, and
-4. all predicate rules are left-defining and the reachable predicates are unique and convergent.
+
+. its basic grammar is unambiguous and each basic rule arises from exactly one hyper-rule,
+. every meta-non-terminal _M_ ∈ _MR_ is _strictly synthesised_ or the meta-grammar spanned by _M_ is _MG~M~_ is  unique,
+. the EAG is cycle-free, and
+. all predicate rules are left-defining and the reachable predicates are unique and convergent.
 
 The first condition enables the strict separation of the context-free analysis from the analysis of the context dependencies and thus an independent generation of parsers and evaluators. It is not automatically verifiable, since the problem of the uniqueness of any context-free language is not decidable. decidable.
 
@@ -367,9 +358,11 @@ To calculate the SOAG property of a specification, each alternative of the initi
 
 The connection to the output data structure of the EAG module is established by the RECORD field `Rule` in the type extension `EmptyRule` and by the RECORD field `Alt` in the type extension `OrdRule` (_ordinary rule_). These are necessary to enable access to the parameters and text positions of the rules. enable access to the parameters and text positions of the rules. The transformed rules are directly reflected in the data structure to be described. For a pictorial illustration of the data structure, I use the following table (Table 4-1)
 
-// doc\soag\images\-table-4-1-Transformation-of-the-EBNF-rules.PNG
+// TODO make a real table allowing to translate header
+.Transformation of the EBNF rules
+image::images/table- 4-1-Transformation of the EBNF rules.PNG[]
 
-Example specification. The unique indexing of the affixes in Table 4-1 serves only to track their positioning after the transformation. _λ_ symbolises the empty word. (r1) and (r2) denote two rules uniquely, and some indices on hyper-nonterminals are used to uniquely distinguish different occurrences of the hyper-non-terminal _A.
+Example specification. The unique indexing of the affixes in Table 4-1 serves only to track their positioning after the transformation. _λ_ symbolises the empty word. (r1) and (r2) denote two rules uniquely, and some indices on hyper-nonterminals are used to uniquely distinguish different occurrences of the hyper-non-terminal _A_.
 
 ----
 TYPE
@@ -390,7 +383,8 @@ VAR
 // -------------------------------------------------------------------------------
 // Page 21
 
-// doc\soag\images\figure-4-1-illustration-of-the-connection-between-SOAG-and-EAG-data-structure.PNG
+.Illustration of the connection between SOAG and EAG data structure
+image::images/figure-4-1- illustration-of-the-connection-between-SOAG-and-EAG-data-structure.PNG[]
 
 The field `SymOcc` contains all symbol occurrences that occur in the transformed rules of the specification. `SymInd` is an index into the field `Sym`. `Nont` refers to the HyperNonterminal of the output data structure of the module EAG. As in the previous type declaration, the RECORD field `AffOcc` refers to the affix parameters belonging to the hyper-non-terminal.  affix parameters belonging to the hyper-non-terminal. The RECORD field `Next` points to the next occurrence of the same hyper non-terminal. `Next` is used to form a list of all occurrences of a hyper-non-terminal in all rules. are formed.
 
@@ -416,7 +410,8 @@ The affix parameters of a hyper non-terminal are stored in the `AffOcc` field. E
 // -------------------------------------------------------------------------------
 // Page 22
 
-// doc\soag\images\figure 4-1- illustration-of-the-connection-between-SOAG-and-EAG-data-structure.PNG
+.Illustration of the data structure of the SOAG evaluator generator
+image::images/figure-4-2-illustration-of-the-data-structure-of-the-SOAG-evaluator-generator.PNG[]
 
 ----
 TYPE
@@ -477,24 +472,25 @@ A visit of a tree starts and ends at the root _r_ and consists in between of an 
 
 In order to have at least one constructive criterion for deciding whether a given family of partitions is is visit-correct, an equivalent characterisation of multi-visit EAGs is given below. is given. Instead of specifying evaluation orders by total orders on _A(X)_ , the more appropriate concept of orientations is used. more appropriate concept of orientations is used, where an order is determined only between each inherited and each synthesised affix position. An _orientation_ of the symmetric product _A*B_ = _(A×B)_ ∪ _(B×A)_ for sets _A_ and _B_ is a relation _R_ ⊆ _A*B_, where for each _a_ ∈ _A_ and _b_ ∈ _B_. either _(a,b)_ ∈ _R_ or _(b,a)_ ∈ _R_ holds. In the following, a bijection between the _canonical partitions_ _(A~1~(X),...,A~n(X)~(X))_ of _A(X)_ where each _A~i~(X)_ is an inherited affix for _1≤i<n(X)_, and for _1<i≤n(X)_ a synthesised affix position, and the corresponding acyclic orientations of _I(X)_ * _S(X)_.
 
-Definition 5-1_(acyclic orientation)_::
+Definition 5-1 (_acyclic orientation_)::
 Let (A1(X),...,An(X)(X)) be an ordered partition of A(X) for X ∈ HN. Then +
-        DS(X) = {_(a,b)_ ∈ _I(X)_ × _S(X)_: -a_ ∈ _Ai(X)_ and _b_ ∈ _Aj(X)_ for _i≤j} ∪ +
-                {_(b,a)_ ∈ _S(X)_ × _I(X)_: _a_ ∈ _Ai(X)_ and _b_ ∈ _Aj(X)_ for _i>j} +
+        DS(X) = {_(a,b)_ ∈ _I(X)_ × _S(X)_: _a_ ∈ _Ai(X)_ and _b_ ∈ _Aj(X)_ for _i_ ≤ _j_} ∪ 
+                {_(b,a)_ ∈ _S(X)_ × _I(X)_: _a_ ∈ _Ai(X)_ and _b_ ∈ _Aj(X)_ for _i_ > _j_} +
 the corresponding (acyclic) orientation of I(X) * S(X).
 
-Definition 5-2(Construction of a partition):
-Let DS(X) be an acyclic orientation of I(X) * S(X) for X ∈ HN. To this end, inductively construct the set
-B0(X) = ∅,
-B1(X) = { a ∈ S(X): there is no (a,b) ∈ DS(X)},
-Bi+1(X) = { a: for all (a,b) ∈ DS(X) there is b ∈ Bi(X) }
-is defined. Then there is a smallest number n(X) for which B2n(X)(X) = A(X) holds, and with.
-Ai(X) = B2(n(X)-i+1)(X) / B2(n(X)-i)(X), (A1(X),...,An(X)(X)) is the associated ordered partition of A(X).
-For the construction of the associated partition of A(X), the following always applies
-Ai(X) ∩ I(X) = B2(n(X)-i+1)(X) \ B2(n(X)-i)+1(X)
-Ai(X) ∩ I(X) = B2(n(X)-i)+1(X) \ B2(n(X)-i)(X), 
+Definition 5-2 (Construction of a partition)::
+Let DS(X) be an acyclic orientation of I(X) * S(X) for X ∈ HN. To this end, inductively the set +
+_B_~0~(X) = ∅, +
+_B_~1~(X) = { _a_ ∈ _S_(_X_): there is no (_a_,_b_) ∈ _DS_(_X_)}, +
+_B_~_i_+1~(X) = { _a_: for all (_a_,_b_) ∈ _DS_(_X_) there is _b_ ∈ _B~i~_(_X_) } +
+is defined. Then there is a smallest number _n_(_X_) for which _B_~2n(_X_)~(_X_) = _A_(_X_) holds, and with +
+_A_~i~(_X_) = _B_~2(_n_(_X_)-_i_+1)~(_X_) / _B_~2(_n_(_X_)-_i_)~(_X_), (_A_~1~(_X_),...,_A_~_n_(_X_)~(_X_)) is the associated ordered partition of A(X).
 
-even if _DS(X)_ as below is only the transitive hull of a subset of an acyclic orientation _I(X) * S(X)_. In this case, _(A~1~(X),...,A~n(X)~(X))_ is called the _box partition belonging_ to _DS(X)_,  which is characterized by the fact that in a partition as short as possible each affix position is arranged as late as possible ("lazy"). ("lazy") in the shortest possible partition. The corresponding orientation is then called _box completion_. 
+For the construction of the associated partition of A(X), the following always applies +
+_A_~_i_~(_X_) ∩ _I_(_X_) = _B_~2(_n_(_X_)-_i_+1)~(_X_) \ _B_~2(_n_(_X_)-_i_)+1~(_X_) +
+_A_~_i_~(_X_) ∩ _I_(_X_) = _B_~2(_n_(_X_)-_i_)+1~(_X_) \ _B_~2(_n_(_X_)-_i_)~(_X_), 
+
+even if _DS(X)_ as below is only the transitive closure of a subset of an acyclic orientation _I(X) * S(X)_. In this case, _(A~1~(X), ..., A~n(X)~(X))_ is called the _box partition belonging_ to _DS(X)_,  which is characterized by the fact that in a partition as short as possible each affix position is arranged as late as possible ("lazy"). ("lazy") in the shortest possible partition. The corresponding orientation is then called _box completion_. 
 
 It is easy to see that an EAG is a multi-visit EAG exactly if for every _X_ ∈ _HN_ there is an orientation _DS(X)_ of _I(X) * S(X)_ such that the extended dependencies.  
 
@@ -507,23 +503,20 @@ are acyclic. Thus, the decision problem of whether a given EAG is a multi-visit 
 
 However, from the dependencies _D^-1^_, we can efficiently read a necessary condition that every visit-correct family of partitions must satisfy. For this purpose, all direct and resulting indirect dependencies between affix parameters of a symbol occurrence are transferred to all corresponding affix parameters of the same symbol.
 
-Definition 5-3 (_induced dependencies_):
-
+Definition 5-3 (_induced dependencies_)::
 Let _DP_ be a relation on affix parameters. Then the induced dependencies are defined as the smallest relation defined as 
-    
-_ind(DP)_ = _DP_ ∪ {_(a^(q,j)^, b^(q,j)^)_: _(a^(r,i)^, b ^(r,i)^)_ ∈ _ind(DP)^+^_ for _X^r^~i~ = X^q^~j~_} 
-
-is satisfied, where _R^+^_ denotes the transitive hull of a relation _R_. 
+_ind(DP)_ = _DP_ ∪ {_(a^(q,j)^, b^(q,j)^)_: _(a^(r,i)^, b ^(r,i)^)_ ∈ _ind_(_DP_)+  for _X^r^~i~ = X^q^~j~_} 
+is satisfied, where _R^+^_ denotes the transitive closure of a relation _R_. 
 
 The induced dependences _IDP_ = _ind(D^-1^)_ reflect not only transitive dependences to the derivation trees, but also such arrangements, which result compellingly from the abstraction from the context of the symbols. The projection of _IDP_ onto _A(X)_ is denoted by _IDS(X)_, i.e. 
 
-_IDS(X)_ = {_(a,b)_ :_(a^(r,i)^_, _b^(r,i)^)_ ∈ _IDP_ for _X^r^~i~_ = X}, 
+_IDS(X)_ = {_(a,b)_ :(_a_^(_r,i_)^, _b_^(_r,i_)^) ∈ _IDP_ for _X^r^~i~_ = X}, 
 
 and for any visit-correct family of partitions with associated orientations _DS(X)_, it follows that 
 
 _IDS(X)_ ∩ _(I(X) * S(X))_ ⊆ _DS(X)_. 
 
-Furthermore, for any multi-visit EAG IDP is acyclic. If this is the case, then for any _X_ ∈ _HN_, _IDS(X)_ is the transitive hull of a subset of an acyclic orientation of _I(X) * S(X)_. 
+Furthermore, for any multi-visit EAG IDP is acyclic. If this is the case, then for any _X_ ∈ _HN_, _IDS(X)_ is the transitive closure of a subset of an acyclic orientation of _I(X) * S(X)_. 
 
 From the given necessary condition, Kastens has determined in <<Kastens>> a subclass of multi-visit AGs for which a visit-correct family of partitions can be computed efficiently, and which is also very easily, as shown by Kutza <<Kutza>>, can be applied to EAGs. An EAG is exactly if _IDP_ is acyclic and the family of box partitions belonging to _IDS(X)_ is visit-correct.
 
@@ -536,34 +529,34 @@ The weakness of the OEAG method is that the partitions from _IDS(X)_ for _X_ ∈
 // -------------------------------------------------------------------------------
 // Page 31
 
-The example of an EAG shown in Figure 5-1 combines in two rules the dependencies of a "leftto-right threading" (a) and a "right-to-left threading" (b). According to Reps and Teitelbaum [RepTei] illustrate multi-visit AGs corresponding to this type of EAGs illustrate a practically relevant constellation in which the OAG procedure, and hence the OEAG procedure, fails. Since there is only one symbol in this case, the sequential method cannot be successful either. At this point the superiority of the c_oncept of orientations_. Every ordered partition of the set {_(X, {a}_*{b}): _a_ ∈ _I(X)_ and _b_ ∈ _S(X)_ for  _X_ ∈ _HN_} is an orientation sequence. An orientation sequence (C1,...,Cm) is trivial if _m_ = 1 holds, and _elementary_ if each set _C~j~_ contains only exactly one pair.
+The example of an EAG shown in Figure 5-1 combines in two rules the dependencies of a "leftto-right threading" (a) and a "right-to-left threading" (b). According to Reps and Teitelbaum [RepTei] illustrate multi-visit AGs corresponding to this type of EAGs illustrate a practically relevant constellation in which the OAG procedure, and hence the OEAG procedure, fails. Since there is only one symbol in this case, the sequential method cannot be successful either. At this point the superiority of the _concept of orientations_. Every ordered partition of the set {_(X, {a}_*{b}): _a_ ∈ _I(X)_ and _b_ ∈ _S(X)_ for  _X_ ∈ _HN_} is an orientation sequence. An orientation sequence (C1,...,Cm) is trivial if _m_ = 1 holds, and _elementary_ if each set _C~j~_ contains only exactly one pair.
 
-Definition 5-4 (_immediately successful orientation sequence_):
-
-Let _(C~1~,...,C~m~)_ be an orientation sequence, then it is inductively defined as follows: initially holds _IDP~0~_ = _IDP_. For acyclic _IDP~j-1~_ with the partitions belonging to the boxes of {_(a,b)_ : _(a^(r,i)^ , b^(r,i)^)_ ∈ _IDP~j-1~_ for _X^r^~i~_ = X} belonging to orientations _DS~j~(X)_ of _I(X) * S(X)_ holds. 
-
-_IDP~j~_ = _ind(IDP~j-1~_ ∪ {(_a_^(_r,i_)^, b^(r,i)^): (_a,b_) ∈ _DS~j~(X)_ for (_X_, {_a_}*{_b_}) ∈ _C~j~_}). 
-Thus, the orientation sequence is immediately successful if each _IDP~j~_ is acyclic for 0 ≤ _j- ≤ _m_. In this case, the projections of _IDP~m~_ onto _A(X)_, i.e. 
-
-_DS(X)_ = {(_a,b_) :(_a_^(_r,i_)^, _b_^(_r,i_)^) ∈ _IDP~m~- for _X^r^~i~_ = X}, 
-
+Definition 5-4 (_immediately successful orientation sequence_)::
+Let _(C~1~,...,C~m~)_ be an orientation sequence, then it is inductively defined as follows: initially holds _IDP~0~_ = _IDP_. For acyclic _IDP~j-1~_ with the partitions belonging to the boxes of {_(a,b)_ : _(a^(r,i)^ , b^(r,i)^)_ ∈ _IDP~j-1~_ for _X^r^~i~_ = X} belonging to orientations _DS~j~(X)_ of _I(X) * S(X)_ holds. +
+ +
+_IDP~j~_ = _ind(IDP~j-1~_ ∪ {(_a_^(_r,i_)^, b^(r,i)^): (_a,b_) ∈ _DS~j~(X)_ for (_X_, {_a_}*{_b_}) ∈ _C~j~_}). +
+ +
+Thus, the orientation sequence is immediately successful if each _IDP~j~_ is acyclic for 0 ≤ _j_ ≤ _m_. In this case, the projections of _IDP~m~_ onto _A(X)_, i.e. +
+ +
+_DS(X)_ = {(_a,b_) :(_a_^(_r,i_)^, _b_^(_r,i_)^) ∈ _IDP~m~_ for _X^r^~i~_ = X}, +
+ +
 acyclic orientations of _I(X) * S(X)_, and the family of associated partitions is visit-correct.
 
-Clearly, an EAG is an OEAG if and only if the trivial orientation order is immediately is successful. Furthermore, then every orientation order is immediately successful, and it is easy to to see that for each _DS~j~_(_X_) the box partition coincides with the box partition of _IDS(_X_). So, for each orientation order, the same visit-correct family of partitions is determined as in the OEAG procedure. In general, for any immediately successful orientation sequence, any finer orientation sequence in which each _C~j~_ is replaced by any ordered partition, is immediately successful. 
+Clearly, an EAG is an OEAG if and only if the trivial orientation order is immediately is successful. Furthermore, then every orientation order is immediately successful, and it is easy to to see that for each _DS~j~_(_X_) the box partition coincides with the box partition of _IDS_(_X_). So, for each orientation order, the same visit-correct family of partitions is determined as in the OEAG procedure. In general, for any immediately successful orientation sequence, any finer orientation sequence in which each _C~j~_ is replaced by any ordered partition, is immediately successful. 
 
-The "more careful" procedure outlined by Kastens can now be characterized by the fact that for a fixed order (X1,...,Xm) of symbols the orientation order (_C~1~,...,C~m~_) with _C~j~_ = {(_X~j~, {_a_}*{_b_}): _a_ ∈ _I(_X~j~_) and _b_ ∈ _S(_X_~j~_)} is immediately successful. This is a symbol-wise orientation order, which is uniquely determined by the order of symbols.
+The "more careful" procedure outlined by Kastens can now be characterized by the fact that for a fixed order (X1,...,Xm) of symbols the orientation order (_C~1~,...,C~m~_) with _C~j~_ = {(_X~j~_, {_a_}*{_b_}): _a_ ∈ _I_(_X~j~_) and _b_ ∈ _S_(_X~j~_)} is immediately successful. This is a symbol-wise orientation order, which is uniquely determined by the order of symbols.
 
-Definition 5-5 (_successful orientation sequence_):
-
-Let (_C~1~,...,C~m~_) now be an elementary orientation sequence and let _IDP~j~_ and _DS~j~(_X_) be defined as before However, if _IDP~j~_ is cyclic, then instead it is defined with inverse dependencies: 
-
-_IDP~j~_ = _ind(_IDP~j-1~_ ∪ {(_b^(r,i)^_, _a^(r,i)^_): (_a,b_) ∈ -DS~j~_(_X~j~_) for (_X^r^~i~, {_a_}*{_b_}) = _C~j~_}). 
-
+Definition 5-5 (_successful orientation sequence_)::
+Let (_C~1~,...,C~m~_) now be an elementary orientation sequence and let _IDP~j~_ and _DS~j~_(_X_) be defined as before However, if _IDP~j~_ is cyclic, then instead it is defined with inverse dependencies: +
+ +
+_IDP~j~_ = _ind_(_IDP_~_j_-1~ ∪ {(_b^(r,i)^_, _a^(r,i)^_): (_a,b_) ∈ _DS~j~_(_X~j~_) for (_X^r^~i~_, {_a_}*{_b_}) = _C~j~_}). +
+ +
 The orientation sequence is _successful_ if again every _IDP~j~_ is acyclic for 0 ≤ _j_ ≤ _m_. 
 
 Obviously, any elementary orientation sequence that is immediately successful is successful,and so for any OEAG, any elementary orientation sequence is successful. Since the first alternative is always acyclic, we get the same visit-correct family of partitions as for the OEAG-
 
-// doc\soag\images\figure-5-1-one-left-to-right-threading-a-and-one-right-to-left-threading-b.PNG
+."left-to-right threading" (a) and a "right-to-left threading" (b)
+image::images/figure-5-1-one-left-to-right-threading-a-and-one-right-to-left-threading-b.PNG[]
 
 // -------------------------------------------------------------------------------
 // Page 32
@@ -578,7 +571,7 @@ Since the decision problem whether an EAG is a SOEAG is NP-complete, the impleme
 
 Starting from the OEAG method, considerations of easy and efficient implementability hardly allow any other reasonable decision than with respect to the pursued orientation strategy in principle symbol-wise, namely in an arbitrary ad hoc order (_X~1~,...,X~k~_) of the symbols _X_∈ _HN_. To this end, the following two degrees of refinement of increasing power are conceivable:
 
-1. the orientation order (_C~1~,...,C~m~_) with _C~j~_ = {(_X_, {_a_}*{_b_}): _a_ ∈ _I_(_X_) and _b_ ∈ _S_(_X_) for _X_ ∈ _HN_}is refined to an elementary refined one, i.e., for each symbol _X~i~_ a partition of one-element sets is formed. Each of these sets is assigned to a _C~j~_ in ascending order. The success of each orientation is immediately checked. However, in case of failures, backtracking is omitted for efficiency reasons. Only the immediate success of one ad hoc order per symbol is checked instead of all its permutations. are checked. This approach is called the (ad hoc) ESO method (ad hoc elementary symbol sequentially orienting) and approximates the first heuristic grammar subclass to be presented.
+1. the orientation order (_C~1~,...,C~m~_) with _C~j~_ = {(_X_, {_a_}*{_b_}): _a_ ∈ _I_(_X_) and _b_ ∈ _S_(_X_) for _X_ ∈ _HN_} is refined to an elementary refined one, i.e., for each symbol _X~i~_ a partition of one-element sets is formed. Each of these sets is assigned to a _C~j~_ in ascending order. The success of each orientation is immediately checked. However, in case of failures, backtracking is omitted for efficiency reasons. Only the immediate success of one ad hoc order per symbol is checked instead of all its permutations. are checked. This approach is called the (ad hoc) ESO method (ad hoc elementary symbol sequentially orienting) and approximates the first heuristic grammar subclass to be presented.
 
 2. the same strategy is slightly more complicated to implement when checking for a successful rather than an immediately successful orientation sequence. This may require the undoing of extensions in the dependency graph of the affix parameters of a rule, which in the worst case leads to an increased effort. This procedure is called (ad hoc) ESOB procedure (ad hoc elementary symbol sequentially orienting with local backtracking) and describes by construction the second, more powerful grammar subclass.
 
@@ -590,26 +583,25 @@ It is easy to see that an implementation for the approximation of the second mor
 
 The dependencies between the affix parameters of a rule induced by the affix forms are held in the data structure TDP. This data structure is also used to store the transitive closed intermediate results IDPj+ where at the j-th orientation step IDPj+ is calculated from IDPj-1+ is calculated in situ. The data structure TDP is implemented in the present evaluator generator in the module SOAG as a data element of the data structure RuleDesc in the field Rule.
 
-For the expenditure of the approximating procedure for the generation of SOEAG evaluators is formative the algorithm used for the transitive extension of the relation TDP, whereby always only dependencies between affix parameters of the same rule. In the following, in formal notation, an efficient algorithm of Ibaraki and Katoh for the incremental transitive hulling of a monotonically growing relation is presented.  
+For the expenditure of the approximating procedure for the generation of SOEAG evaluators is formative the algorithm used for the transitive extension of the relation TDP, whereby always only dependencies between affix parameters of the same rule. In the following, in formal notation, an efficient algorithm of Ibaraki and Katoh for the incremental transitive closure of a monotonically growing relation is presented.  
 
 // -------------------------------------------------------------------------------
 // Page 33
 
-Definition 5-6 (_incremental transitive hull_):
-
-Let _S_ be a finite set and _R_ ∪ {(_u,v_)} ⊆ _S^2^_. Then the operators + and * are given by
-            
-∅^+^ = ∅,
-
-(_R_ ∪ {(_u,v_)})+ = _R^+^_ ∪ {_x_ : _x R* u_} _×_ {_y_ : _v R* y_} and
-
-_R*_ = _R^+^_ ∪ {(_x,x_) : _x_ ∈ _S_}.
+Definition 5-6 (_incremental transitive closure_)::
+Let _S_ be a finite set and _R_ ∪ {(_u,v_)} ⊆ _S^2^_. Then the operators + and * are given by +
+[grid="none", frame="none", cols=">5,1,<9"]
+|===
+|∅^+^| = |∅
+|(_R_ ∪ {(_u,v_)})+| = | _R^+^_ ∪ {_x_ : _x R* u_} _×_ {_y_ : _v R* y_} and 
+|_R_^*^ | = | _R^+^_ ∪ {(_x,x_) : _x_ ∈ _S_}.
+|===
 
 It can be seen immediately that _R_ ∪{(_u,v_)}+ from _R+_ with the effort _O_(|_S_|^2^) can be determined. It is now, related to _R_ and (_u,v_), special predecessor and successor sets
 
-_P~R~_(_u,v_)= {_x_ : _x R* u_, but not _x R^+^ v_} and
+_P~R~_(_u,v_) = {_x_ : _x R^*^ u_, but not _x R^+^ v_} and
 
-_S~R~_(_u,v_)={_x_ : _v R^+^ x_, but not _u R^+^ x_}
+_S~R~_(_u,v_) = {_x_ : _v_ _R_+ _x_, but not _u R^+^ x_}
 
 is introduced. Thus, first tightening
 
@@ -631,7 +623,7 @@ The transitive extension of the relation _TDP_ is implemented in the `SOAGPartit
 
 In this section, we present an algorithm that attempts to specify a successful orientation order in a single topological sort per symbol attempts to specify a successful orientation order. 
 
-Considering _TDP_ = _IDP~k-1~^+^ then for _X_ ∈ _HN_ the projections are 
+Considering _TDP_ = _IDP_~_k_-1~^+^ then for _X_ ∈ _HN_ the projections are 
 
 _DS_(_X_) = { (_a,b_) ∈ _I_(_X_) * _S_(_X_) : (_a^(r,i)^_}, _b_^(_r,i_)^) ∈ _TDP_ for _X^r^~i~_=X}
 
@@ -660,15 +652,15 @@ END;
 
 _new_ := {(_a,b_) ∈ _I_(_X_) * _S_(_X_): (_a_^(_r,i_)^,_b_^(_r,i_)^) ∈ _TDP_ \ _TDP'_ for an _X^r^~i~_=_X_ }
 
-After Termination obviously holds   
+After termination obviously holds   
 
 _new_ ∪ _DS_(_X_) = { (_a,b_) ∈ _I_(_X_) * _S_(_X_): (_a_^(_r,i_)^,_b_^(_r,i_)^) ∈ _TDP_ for an _X^r^~i~_=_X_ }.
 
 It is clear that eventually _new_ contains not only either (_b,a_) or (_a,b_), but also possibly other new induced evaluation sequences projected onto _A_(_X_). To track _TDP_, the relation _DS_(_X_) has to be extended accordingly by these new dependencies _new_, which in turn has repercussions on the topological sorting process. on the topological sorting process of _DS_(_X_). The intended algorithm can thus be characterized as a dynamic topological sorting of the projection _DS_(_X_), interleaved with the calculation of _TDP_ and the computation of _TDP_ and the checking of cycles.
 
-To derive the algorithm, a key intermediate result is described below: Let j ≥ 0 such that the computation of the quantities ∅ = _B~0~_(_X_) ⊆ _B~1~_(_X_) ⊆ ... ⊆ _B~2n(X)~_(_X_)=_A_(_X_) has already been completed up to and including -B~j~_(_X_), since these sets initially have the properties
+To derive the algorithm, a key intermediate result is described below: Let j ≥ 0 such that the computation of the quantities ∅ = _B~0~_(_X_) ⊆ _B~1~_(_X_) ⊆ ... ⊆ _B~2n(X)~_(_X_)=_A_(_X_) has already been completed up to and including _B~j~_(_X_), since these sets initially have the properties
 
-_B~0~_(_X-) = ∅,
+_B~0~_(_X_) = ∅,
 
 _B~1~_(_X_) = { _a_ ∈ _S_(_X_): there is no (_a,b_) ∈ _DS_(_X_)} 
 
@@ -682,7 +674,7 @@ and since, moreover, because of the validity of
 
 acyclic expansions of _DS_(_X_) remain without influence on the validity of these invariants. The set variable
 
-_cur- = { _a_ ∈ _A_(_X_) \ _B~i~_(_X_): for all (_a,b_) ∈ _DS_(_X_) _b_ ∈ _B~j~_(_X_) holds } (3)
+_cur_ = { _a_ ∈ _A_(_X_) \ _B~i~_(_X_): for all (_a,b_) ∈ _DS_(_X_) _b_ ∈ _B~j~_(_X_) holds } (3)
 
 contains candidates for affixes new in _B~j+1~_(_X_) with respect to _B~j~_(_X_). (The computation of the sets _B~i~_(_X_) and also of _n_(_X_) is done only implicitly). Obviously now the validity of 
 
@@ -720,7 +712,7 @@ _leaves_ = { _a_ ∈ _A_(_X_) \ (_B~j~_(_X_) ∪ _cur_): _deg_(_a_)=0 },
 
 _deg_(_a_)=|_DS_(_X_)(_a_) \ _B~j~_(_X_)| for all _a_ ∈ _A_(_X_). 
 
-How _deg_ and _leaves_ can be efficiently carried along is described in more detail in Section 5.6 "Implementation Details". in more detail.
+How _deg_ and _leaves_ can be efficiently carried along is described in more detail in section <<Implementation details>> in more detail.
 
 === Implementation details
 
@@ -752,7 +744,7 @@ After calculating the `SOAG.DefAffOcc` field, all direct dependencies are added 
 
 `MarkedEdges` marked. In parallel to the calculation of _TDP_, all direct dependencies of a rule _r_ are dependencies of a rule _r_ are entered into the data structure `SOAG.Rule[_r_]`. `DP`.
 
-In the procedure `ComputeInducedTDP` all marked edges are successively removed from the cellar memory `MarkedEdges`. For each marked edge all transitive dependencies are computed and added to the dependency graph if they were not already included. All newly entered edges will be marked by adding them to the basement memory `MarkedEdges`. This procedure is repeated until the basement memory is empty. The termination of the loop is guaranteed by the finiteness of the transitive hull of a dependency graph.
+In the procedure `ComputeInducedTDP` all marked edges are successively removed from the cellar memory `MarkedEdges`. For each marked edge all transitive dependencies are computed and added to the dependency graph if they were not already included. All newly entered edges will be marked by adding them to the basement memory `MarkedEdges`. This procedure is repeated until the basement memory is empty. The termination of the loop is guaranteed by the finiteness of the transitive closure of a dependency graph.
 
 The procedure `orient` implements the abstract procedure _orient_ introduced in Section 5.5 "Dynamic topological sorting". abstract procedure orient. If the orientation of two affix positions in _TDP_ results in a cycle, then all previous extensions of _TDP_ must be undone before inserting the reverse dependency. must be undone before inserting the reverse dependency. For this the module-global variable ´`phase` must be set to `dynTopSort`. If this is the case, then during the transitive completion in AddTDPTrans by the procedure `AddTDPChange` in the ´ChangeBuf` field with the structure
 
@@ -783,11 +775,11 @@ TYPE
     DS: POINTER TO ARRAY OF INTEGER;
 ----
 It realizes for a symbol _X_ the set of acyclic orientations _DS_(_X_). Furthermore, since _DS_(_X_) ∩ _unor_ holds, the relation _unor_ is additionally integrated in the data structure `DS`. Since the orientations for all symbols independently and successively, the data structure `DS` can be reused for each symbol. can be reused for each symbol. For an entry in the field `DS` thus applies
-----
-DS[a][b] = element ⇔ (a, b) ∈ _DS_(_X_)
-DS[a][b] = nil ⇒ (a, b) ∉ _DS_(_X_)
-DS[a][b] = unor ⇔ a _unor_ b
-----
+
+`DS[a][b] = element` ⇔ (a, b) ∈ _DS_(_X_) +
+`DS[a][b] = nil` ⇒ (a, b) ∉ _DS_(_X_) +
+`DS[a][b] = unor` ⇔ a _unor_ b
+
 During the computation of the relation _unor_, the field `Deg` is filled simultaneously, which contains for each affix positionc of the current symbol.
 
 Then, the two sets cur and leave are initialized, which are `cur` and `leave` from Section 5.5 "Dynamic topological sorting". Both sets are of type `ASets` in order to be able to delete elements with a constant effort.
@@ -805,11 +797,11 @@ _A^I^~j~_(_X_) = _B~j~_(_X_) \ _B~j-1~_(_X_),
 
 and the derived partition sets then result from
 
-_A~i~_(_X_) = _A^I^~_2(n(X)-i+1)_~(_X_) ∪ _A^I^_~_2(n(X)-i)+1_~(X) with
+_A~i~_(_X_) = _A^I^_~2(_n_(_X_)-_i_+1)~(_X_) ∪ _A^I^_~2(_n_(_X_)-_i_)+1~(_X_) with
 
-_A^I^~_2(n(X)-i+1)_~(_X_) = _A~i~_(_X_) ∩ _I_(_X_) and
+_A^I^_~2(_n_(_X_)-_i_+1)~(_X_) = _A~i~_(_X_) ∩ _I_(_X_) and
 
-_A^I^~_2(n(X)-i+1)_~(_X_) = _A~i~_(_X_) ∩ _S_(_X_).
+_A^I^_~2(_n_(_X_)-_i_+1)~(_X_) = _A~i~_(_X_) ∩ _S_(_X_).
 
 Thus, the computed partition sets alternately contain only inherited or synthesized affixes.However, this does not further limit the implemented algorithm, since the sought partition sets, can be derived very easily, as stated above. In the following the partition sets are always the implementation-related partition sets are meant as partition sets. 
 
@@ -841,23 +833,14 @@ For each node _k_ of a derivation tree to which the rule _r_ has been applied, t
 
 To map affix parameters to instructions, the _MAP_VS_ function is defined.
 
-MAP_VS(a(r,i)) :=
+Definition 6-1 (MAP_VS)::
+[horizontal]
+MAP_VS(a(r,i)) := ::
+*_VISIT_(X~i~^r^, n)*, if a^(r,i)^ ∈ AP~D~(r), i>0 and a^(r,i)^ ∈ A~n~(X) with X= X~i~^r^ and X ist a basic nonterminal; or +
+*_LEAVE_(n)*, if a^(r,i)^ ∈ AP~D~(r), i=0 and a^(r,i)^ ∈ A~n~(X) with X= X~i~^r^ and X ist a basic nonterminal; or +
+*_CALL_(X)*, if a^(r,i)^ ∈ AP~D~(r), i>0 and with X=X~i~^r^ is X a pridcate nonterminal; or +
+*_NOP_*, else (no instruction).
 
-[cols="1,4"]
-|===
-
-|VISIT(Xir, n)
-|if a(r,i) ∈ APD(r), i>0 and a(r,i) ∈ An(X) with X= Xir and X ist a basic nonterminal; or
-
-|LEAVE(n)
-|if a(r,i) ∈ APD(r), i=0 and a(r,i) ∈ An(X) with X= Xir and X ist a basic nonterminal; or
-b
-|CALL(X)
-|if a(r,i) ∈ APD(r), i>0 and with X=Xir is X a pridcate nonterminal; or
-
-|NOP
-|else (no instruction).
-|=== 
 
 The partition (_A~1~_(_X_),...,_A~n(X)_~(_X_)) found for the affix positions of a symbol _X_ shows the order in which the affix positions must be calculated. order the affix positions have to be calculated. If a partition set _A~i~_(_X_) contains more than one affix positions, their order of calculation can be chosen arbitrarily. In the dependency graphs of the rules with symbol occurrences of _X_, additional dependencies between the affix parameters of the symbol occurrence _X_ are entered in such a way that the calculation sequence is thereby manifested. The application of the function _MAP_VS_ to the topologically sorted affix parameters of a rule yields a list of instructions.  of instructions. After adding some final instructions and eliminating duplicate instructions from this list, the result is instructions from this list, the visit sequence of a rule results. 
 
@@ -867,21 +850,13 @@ _MAP_VS_(_a~1~_^(_r_)^)... _MAP_VS_(_a~k~_^(_r_)^) _INSTR_(_X~i~^r^_)..._INSTR_(
 
 where duplicate instructions are deleted.
 
-Definition 6-2 (INSTR):
-VISIT(Xi
-r
-, n(X)) if i>0 and Xi
-r
-=X is a basic non-terminal; or
-INSTR(Xi
-r
-) := LEAVE(n(X)), if i=0 and Xi
-r
-=X is a basic non-terminal; or
-CALL(X), if i>0 and Xi
-r
-=X is a predicate nonterminal; or
-NOP, else.
+Definition 6-2 (INSTR)::
+[horizontal]
+INSTR(X~i~^r^) := ::
+*_VISIT_(X~i~^r^)*, n(X)), if i>0 and X~i~^r^=X is a basic non-terminal; or +
+*_LEAVE_(n(X))*, if i=0 and X~i~^r^=X is a basic non-terminal; or +
+*_CALL_(X)*, if i>0 and X~i~^r^=X is a predicate nonterminal; or +
+*_NOP_*, else.
 
 The final instructions ensure that the traversal of the derivation tree is complete and that all affix parameters are calculated. and that all affix parameters are calculated. 
 
@@ -946,7 +921,7 @@ The optimisation conditions presented in <<EngJong>> refer to affix positions of
 
 A further refinement of the approach presented here with regard to the affix variables of each rule is conceivable. In doing so, one could assume that the affix variables of a rule possess optimisation properties, independent of the affix variables of other rules, whereas in the approach to be presented an in one rule affects the optimisation properties of the affix variables of all other rules with the same symbol occurrence. rules with the same symbol occurrence. This possibility of refinement will not be further investigated further.
 
-=== Optimisation through basement storage
+=== Optimisation through stack storage
 
 One possibility for optimisation is to use cellar storage for affix positions that meet certain conditions, cellar storage for affix positions that meet certain conditions, a separate cellar storage for each affix position. An instance of such an affix position would be placed in the basement memory after it has been calculated, and after the calculation of the instance that depends on it, it would be removed from there. In this way, the value of the instance is only the shortest possible period of time.
 
@@ -954,56 +929,60 @@ First, each plan _VS~r~^i^_ of the visit sequence of a rule _r_
 
 _VS~r~^i^_ = _VISIT_(_X~1~, j~1~_) ... _VISIT_(_X~k~, j~k~_) _LEAVE_(_i_)
 
-to calculate the sets of inheritedAffixpositions before and after each visit (CALL's are abstracted here) _AI~l~(_X_) = {_a~k~^(r,j)^_ : a~k~^X^ ∈ _A~l~_(_X)_ ∩ _I_(_X_) with _X_ = _X~j~^r^_ } and synthesised affix positions _ASl_(_X_) = {_a~k~^(r,j)^_ : a~k~^X^ ∈ _A~l~_(_X)_ ∩ _S_(_X_) with _X_ = _X~j~^r^_ } extended:
+to calculate the sets of inheritedAffixpositions before and after each visit (CALL's are abstracted here) _AI~l~_(_X_) = {_a~k~^(r,j)^_ : a~k~^X^ ∈ _A~l~_(_X)_ ∩ _I_(_X_) with _X_ = _X~j~^r^_ } and synthesised affix positions _ASl_(_X_) = {_a~k~^(r,j)^_ : a~k~^X^ ∈ _A~l~_(_X)_ ∩ _S_(_X_) with _X_ = _X~j~^r^_ } extended:
 
-_EVS~r~^i^_ = _AI~i~_(_Y~0~r^^_) _AI~j1~_(_X~1~_) _VISIT_(_X~1~, j~1~_) _AS~j1~_(_X~1~_) ... AIjk(Xk) VISIT(Xk, jk) ASjk(Xk) ASi(Y0r) LEAVE(i)
+_EVS~r~^i^_ = _AI~i~_(_Y~0~^r^_) _AI~j1~_(_X~1~_) _VISIT_(_X~1~, j~1~_) _AS~j1~_(_X~1~_) ... AI~jk~(X~k~) VISIT(X~k~, jk) AS~jk~(X~k~) AS~i~(Y~0~^r^) LEAVE(i)
 
 The plans _EVS~r~^i^_ become an extended visit sequence 
 
 _EVS~r~_ = _EVS~r~^0^ EVS~r~^n(X)_^ with _X_ = _X~0~^r^_ 
 
-summarised. Note that each affix parameter _a~k~_^(_r_,_j_)^ of the rule _r_ is an element of exactly one set in _EVS~r~_ which is defined by _set~r~_(_ak_^(_r_,_j_)^) uniquely. For two elements _u_ and _v_ of the extended visit sequence _EVS~r~_, a relation "<" is now defined so that _u_<_v_ applies if _u_ precedes _v_ in the sequence _EVS~r~_. Analogously the relation "≤" is defined. 
+summarised. Note that each affix parameter _a~k~_^(_r_,_j_)^ of the rule _r_ is an element of exactly one set in _EVS~r~_ which is defined by _set~r~_(_ak_^(_r_,_j_)^) uniquely. For two elements _u_ and _v_ of the extended visit sequence _EVS~r~_, a relation "<" is now defined so that _u_ < _v_ applies if _u_ precedes _v_ in the sequence _EVS~r~_. Analogously the relation "≤" is defined. 
 
 // -------------------------------------------------------------------------------
 // Page 53
 
-// doc\soag\images\figure 7-1-unsuitable-calculation-sequences-for-basement-storage.PNG
+.Unsuitable calculation sequences for stack storage
+image::images/figure-7-1-unsuitable-calculation-sequences-for-basement-storage.PNG[]
 
 In principle, there are two cases of evaluation order that exclude the implementation of an affix position instance as a basement memory. Let _α~1~_ and _α~2~_ be two instances of the affix position _a^X^_ and _β_, _γ_ the instances of two other affix positions. If now β is calculated from _α~1~_ and γ from _α~2~_, then _β_ must not be calculated before _γ_ if _a^X^_ is to be implemented as a basement memory (see Figure 7-1, first drawing; the thick line symbolises the chronological order of the computations, the thin arrows indicate the data flow dependencies). For if the values of _α~1~_ and _α~2~_ are located on the basement memory, so that _α~2~_ is on top, then the value of _α~1~_ cannot be accessed when calculating _β_. The same applies in the case (see Figure 7-1, second drawing) that _β_ and _γ_ are identical. To calculation of _β_ = _γ_, both the highest and the lowest value of the basement storage would have to be used. However, on a cellar storage only the uppermost value is always accessible, and it is not clear in which order the two values are needed in the calculation. All other sequences do not interfere with the use of a cellar memory. Particularly interesting in this context are the Particularly interesting in this context are the "embedded" calculation sequences as shown in Figure 7-2.
 
-// doc\soag\images\figure-7-2- (Embedded)-calculation-sequences.PNG
+."Embedded" calculation sequences
+image::images/figure-7-2-embedded-calculation-sequences.PNG[]
 
 In order to be able to express the above-mentioned problem in a theorem that unambiguously determines whether an affix position _a^X^_ can be implemented as a cellar memory, the set of ^_visit dependencies_ _VDS_(_a^X^_), which is defined as follows: 
 
-Definition 7-1(_VDS_(_a^X^_)):
-
-_VDS_(_a~m~^X^_) contains all tuples (_Y_,(_i,j_)) with _Y_ ∈ _HN_, _i,j_ ∈ [_1,n_(_Y_)] and _i_<_j_, for which there exists a decorated derivation tree _t_ and a subtree _t~0~_ whose root is marked with _Y_ exist, so that for adependency (_a~l~_(_r,k_)^, _b_^(_r_)^) ∈ _DP_(_r_) with _m_=_l_ and _X_=_X~k~^r^_ the affix parameter _a~l~_^(_r,k_)^ during the _i_-th visitof the node marked with _Y_ and _b_^(_r_)^ during the jth visit.
+Definition 7-1(_VDS_(_a^X^_))::
+_VDS_(_a~m~^X^_) contains all tuples (_Y_,(_i,j_)) with _Y_ ∈ _HN_, _i,j_ ∈ [_1,n_(_Y_)] and _i_ < _j_, for which there exists a decorated derivation tree _t_ and a subtree _t~0~_ whose root is marked with _Y_ exist, so that for adependency (_a~l~_(_r,k_)^, _b_^(_r_)^) ∈ _DP_(_r_) with _m_=_l_ and _X_=_X~k~^r^_ the affix parameter _a~l~_^(_r,k_)^ during the _i_-th visitof the node marked with _Y_ and _b_^(_r_)^ during the jth visit.
 
 For the investigation of an affix position, only those direct dependencies are of interest that are determined by an affix parameter corresponding to the affix position. The calculation of the quantity _VDS_ can be abstractly described as follows:
 
-Step 1: For all hyper-rules _r_=_X~0~_: _X~1~_..._X~#S_(_r_)~ and all direct dependencies (_a~l~_^(_r,k_)^, _b_^(_r_)^) ∈ _D_(_r_), for which _a~l~_^(_r,k_)^ is the corresponding affix parameter to the affix position _a^X^_ the tuple (_X~0~_, (_i,j_)) is transformed into _VDS_(_a^X^_) if _a~l~_^(_r,k_)^ during the plan _VS~i~^r^_ and _b_^(_r_)^ during schedule _VS~j~^r^_ and _i_<_j_ is calculated.
+Step 1: For all hyper-rules _r_=_X~0~_: _X~1~_..._X~#S_(_r_)~ and all direct dependencies (_a~l~_^(_r,k_)^, _b_^(_r_)^) ∈ _D_(_r_), for which _a~l~_^(_r,k_)^ is the corresponding affix parameter to the affix position _a^X^_ the tuple (_X~0~_, (_i,j_)) is transformed into _VDS_(_a^X^_) if _a~l~_^(_r,k_)^ during the plan _VS~i~^r^_ and _b_^(_r_)^ during schedule _VS~j~^r^_ and _i_ < _j_ is calculated.
 
-Step 2: For all tuples (_Y_,(_i,j_)) of the set _VDS_(_a^X^_), each hyper-rule _r_=_X~0~_: _X~1~_..._X~#S_(_r_)~ and each :_m_ ∈ [1,_#S_(_r_)] with _X~m~_=_Y_, the tuple (_X~0~_,(_p,q_)) is inserted into the set _VDS_(_a^X^_) if the visit instructions _VISIT_(_X~m~,i_) in the plan _VS~p~^r^_ and _VISIT_(_X~m~,j_) in the schedule _VS~q~^r^_ occur. This is repeated until no more tuples are added to _VDS_(_a^X^_) no more new tuples are added.
+Step 2: For all tuples (_Y_,(_i,j_)) of the set _VDS_(_a^X^_), each hyper-rule _r_=_X~0~_: _X~1~_..._X~#S_(_r_)~ and each _m_ ∈ [1,_#S_(_r_)] with _X~m~_=_Y_, the tuple (_X~0~_,(_p,q_)) is inserted into the set _VDS_(_a^X^_) if the visit instructions _VISIT_(_X~m~,i_) in the plan _VS~p~^r^_ and _VISIT_(_X~m~,j_) in the schedule _VS~q~^r^_ occur. This is repeated until no more tuples are added to _VDS_(_a^X^_).
 
 // -------------------------------------------------------------------------------
 // Page 54
 
-Theorem 7-1:
+Theorem 7-1::
+The instance of an affix position _a_ cannot be implemented as a cellar memory in the generated SOAG evaluator if a hyper-rule _r_=_X~0~_: _X~1~_..._X~#S_(_r_)~ exists. such that (at least) one of the following four conditions applies: 
 
-The instance of an affix position _a_ cannot be implemented as a cellar memory in the generated SOAG evaluator if a hyper-rule _r_=_X~0~_: _X~1~_..._X~#S_(_r_)~ exists. such that (at least) one of the following four conditions applies following four conditions apply: 
-
-1. there exist two direct dependencies (_b,c_) ∈ _DP_(_r_) and (_d,e_) ∈ _DP_(_r_), such that _b_ and _d_ are corresponding affix parameters to the affix position _a_ and 
-
+. there exist two direct dependencies (_b,c_) ∈ _DP_(_r_) and (_d,e_) ∈ _DP_(_r_), such that _b_ and _d_ are corresponding affix parameters to the affix position _a_ and +
+ +
 _set~r~_(_b_) < _set~r~_(_d_) < _set~r~_(_c_) < _set~r~_(_e_) in _EVS~r~_. 
 
-2. there is a direct dependence (_b,c_) ∈ _DP_(_r_) where _b_ is a corresponding affix parameter to the affix position _a_. affix parameter to the affix position a and there exists a tuple (_X~m~_, (_i,j_)) in _VDS_(_a_) with _m_ ∈ [1,_#S_(_r_)], such that 
-
+. there is a direct dependence (_b,c_) ∈ _DP_(_r_) where _b_ is a corresponding affix parameter to the affix position _a_. affix parameter to the affix position a and there exists a tuple (_X~m~_, (_i,j_)) in _VDS_(_a_) with _m_ ∈ [1,_#S_(_r_)], such that +
+ +
 _set~r~_(_b_) < _VISIT_(_X~m~,i_) < _set~r~_(_c_) < _VISIT_(_X~m~,j_) holds in _EVS~r~_.
 
-3. as in 2., except that _VISIT_(_X~m~,i_) < _set~r~_(_b_) < _VISIT_(_X~m~,j_) < _set~r~_(_c_) in _EVS~r~_ holds.
+. as in 2., except that +
+ +
+_VISIT_(_X~m~,i_) < _set~r~_(_b_) < _VISIT_(_X~m~,j_) < _set~r~_(_c_) in _EVS~r~_ holds.
 
-4. there exist two tuples (Xk, (i,j)) and (Xm,(p,q)) in VDS(a) with k,m ∈ [1,#S(r)] and k≠m such that.
-VISIT(Xk,i) < VISIT(Xm,p) < VISIT(Xk,j) < VISIT(Xm,q) holds in EVSr.
+. there exist two tuples (Xk, (i,j)) and (Xm,(p,q)) in VDS(a) with k,m ∈ [1,#S(r)] and k≠m such that +
+ +
+_VISIT_(_X~k~_,_i_) < _VISIT_(_X~m~_,_p_) < _VISIT_(_X~k~_,_j_) < _VISIT_(_X~m~_,_q_) holds in _EVS~r~_.
+
 The proof of this theorem can be found in <<EngJong>>. 
 
 === Optimization through global variables
@@ -1012,21 +991,27 @@ If the lifetimes of instances of affix positions implemented as basement memorie
 
 In order to be able to formulate a theorem that unambiguously states whether an affix position can be implemented as a global variable, the _set of visits_ _VS_(_a^X^_) of an affix position aX which is defined as follows.
 
-Definition 7-2(_VS_(_a^X^_)):
-
+Definition 7-2(_VS_(_a^X^_))::
 The set of visits _VS_(_a^X^_) of an affix position _a^X^_ contains all pairs (_Y,i_) with _Y_ ∈ _HN_ and _i_ ∈[_1,n_(_Y_)], for which there exist a decorated derivation tree _t_ and a node _y_, marked with _Y_, such that at least one instance of _a^X^_ is computed during the _i_-th visit of _y_.
 
-Theorem 7-2:
-
+Theorem 7-2::
 The instance of an affix position _a_ cannot be implemented as a global variable in the generated SOAG evaluator if there is a hyper-rule _r_=_X~0~_: _X~1~...X~#S_(_r_)~. variable such that (at least) one of the following four conditions holds is true:
 
-1. there exists a direct dependency (_b,c_) ∈ _DP_(_r_) and an affix parameter _d_, so that _b_ and _d_ are corresponding affix parameters to the affix position _a_ and _set~r~_(_b_) < _set~r~_(_d_) < _set~r~_(_c_) in _EVS~r~_ is.
+. there exists a direct dependency (_b,c_) ∈ _DP_(_r_) and an affix parameter _d_, so that +
+ +
+_b_ and _d_ are corresponding affix parameters to the affix position _a_ and _set~r~_(_b_) < _set~r~_(_d_) < _set~r~_(_c_) in _EVS~r~_ is.
 
-2. there exists a direct dependence (_b,c_) ∈ _DP_(_r_) where _b_ is a corresponding affix parameter to the affix position _a_ and there exists a tuple (_X~m~, i_) in _VS_(_a_) with _m_ ∈ [_1,#S_(_r_)] such that _set~r~_(_b_) < _VISIT_(_X~m~,i_) < _set~r~_(_c_) in _EVS~r~_ holds.
+. there exists a direct dependence (_b,c_) ∈ _DP_(_r_) where _b_ is a corresponding affix parameter to the affix position _a_ and there exists a tuple (_X~m~, i_) in _VS_(_a_) with _m_ ∈ [_1,#S_(_r_)] such that +
+  +
+ _set~r~_(_b_) < _VISIT_(_X~m~,i_) < _set~r~_(_c_) in _EVS~r~_ holds.
 
-3. there exist a tuple (_X~m~_, (_i,j_)) in _VDS_(_a_) with _m_ ∈ [_1,#S_(_r_)] and an affix parameter _d_, where _d_ is the is the corresponding affix parameter to the affix position _a_, such that _VISIT_(_X~m~,i_) < _set~r~_(_b_) < _VISIT_(_X~m~,j_) holds in _EVS~r~_.
+. there exist a tuple (_X~m~_, (_i,j_)) in _VDS_(_a_) with _m_ ∈ [_1,#S_(_r_)] and an affix parameter _d_, where _d_ is the is the corresponding affix parameter to the affix position _a_, such that +
+  +
+ _VISIT_(_X~m~,i_) < _set~r~_(_b_) < _VISIT_(_X~m~,j_) holds in _EVS~r~_.
 
-4. there exist a tuple (_X~k~_, (_i,j_)) in _VDS_(_a_) and a pair (_X~m~,q_) in _VS_(_a_) with _k,m_ ∈ [_1,#S_(_r_)] and _k_≠_m_ such that _VISIT_(_X~k~,i_) < _VISIT_(_X~m~,q_) < _VISIT_(_X~k~,j_) in _EVS~r~_ holds. 
+. there exist a tuple (_X~k~_, (_i,j_)) in _VDS_(_a_) and a pair (_X~m~,q_) in _VS_(_a_) with _k,m_ ∈ [_1,#S_(_r_)] and _k_≠_m_ such that +
+  +
+ _VISIT_(_X~k~,i_) < _VISIT_(_X~m~,q_) < _VISIT_(_X~k~,j_) in _EVS~r~_ holds. 
 
 The proof of this theorem can be found in <<EngJong>>.
 
@@ -1052,13 +1037,15 @@ The boolean variables `admissible` and `disjoint` contain the optimization prope
 
 Theorems 7-1 and 7-2 require the realization of relations "<" and "≤" on the set of each extended visit sequence, but these are not concretely present in the implementation. Since the two relations practically refer to positions to be compared within the extended visit sequence, they can be mapped for visit instructions to a comparison of the positions within the "simple" visit sequence. for visit instructions. In order to avoid the subsequent realization of the extended visit sequence for the _set~r~_(_a_) function, the "simple" visit sequence is symbolically stretched so that an additional position is added before and after each visit instruction is freed before and after each visit instruction. The two functions `GetEVSPosforAffOcc` and `GetEVSPosforVisit` realize this symbolic stretching. The function `GetEVSPosforVisit` function determines the position of the given visit instruction in the "simple" visit sequence, multiplies it by three and adds two to place it in the center of the expanded area. Let V be the position of the visit instruction in the "simple" visit sequence, then we get the position of the visit instruction in the extended visit sequence is given by 
 
-Position in _EVS_ = _V_ * 3 + 2.
+position in _EVS_ = _V_ * 3 + 2.
 
-The function `GetEVSPosforAffOcc` determines for an affix parameter the position of the visit instruction before or after which the value of the affix parameter will be calculated, and positions the set containing the affix parameter before or after the corresponding visit instruction. In Depending on whether the affix parameter corresponds to an inherited or synthesized affix position, the position in the extended visit sequence is calculated as inherited: 
+The function `GetEVSPosforAffOcc` determines for an affix parameter the position of the visit instruction before or after which the value of the affix parameter will be calculated, and positions the set containing the affix parameter before or after the corresponding visit instruction. In Depending on whether the affix parameter corresponds to an inherited or synthesized affix position, the position in the extended visit sequence is calculated as 
 
-position in                 _EVS_ = (_V_ * 3 + 2) - 1 = _V_ * 3 + 1,
+inherited:: 
+position in _EVS_ = (_V_ * 3 + 2) - 1 = _V_ * 3 + 1,
 
-synthesized: position in    _EVS_ = (_V_ * 3 + 2) + 1 = _V_ * 3 + 3.
+synthesized::
+position in _EVS_ = (_V_ * 3 + 2) + 1 = _V_ * 3 + 3.
 
 The procedure `CheckStorageType` performs the actual calculation of the optimization properties for a given affix position. for a given affix position. It implements in its subprocedures `CheckT2P1andT1P1`, `CheckT1P2andP3`, `CheckT1P4`, `CheckT2P2`, `CheckT2P3` and `CheckT2P4` it implements the single conditions formulated in the Theorems formulated conditions. If one of the conditions is true, one of the global variables `admissible` and `disjoint` are set to `FALSE`. The optimization properties will be set to FALSE for all Affixposition in evaluator rules and all inherited Affixposition in predicates are computed.  
 
@@ -1095,9 +1082,9 @@ In summary, then, with respect to the implementation of the method, two characte
 
 A topological sort of affix positions _A_(_X_) for determining a box completion _DS~j~_(_X_) for an _X_ ∈ _HN_ is of effort _O_(_x^2^_); a topological sorting of the affix parameters at most _p x_ belonging to a rule _r_ in the course of generating a visit sequence for _r_ is of effort _O_(_p^2^ x^2^_).
 
-As explained in Section 5.4 "Dynamic transitive hull", the stepwise transitive expansion requires of an arbitrary relation R+ over a finite carrier set _S_ by the dependencies from a set _R′_ ⊆ _S^2^_ requires an overhead of _O_(|_S_|^3^). Assume that the elementary orientation order determined by the described procedure for the present EAG determined by the described procedure for the EAG at hand (_C~1~,...,C~m~_) is immediately successful, then successively all _m_ affix position orders can be transferred to the corresponding affix parameters in _TDP_ and induced without causing a cycle. And cumulatively, all transitive insertions in _TDP_ then cause the effort _O_(|_HR_| _p^3^ x^3^_), because in _TDP_ only dependencies between at most _p x_    affix parameters of one hyper-rule can arise.
+As explained in Section 5.4 "Dynamic transitive closure", the stepwise transitive expansion requires of an arbitrary relation R+ over a finite carrier set _S_ by the dependencies from a set _R′_ ⊆ _S^2^_ requires an overhead of _O_(|_S_|^3^). Assume that the elementary orientation order determined by the described procedure for the present EAG determined by the described procedure for the EAG at hand (_C~1~,...,C~m~_) is immediately successful, then successively all _m_ affix position orders can be transferred to the corresponding affix parameters in _TDP_ and induced without causing a cycle. And cumulatively, all transitive insertions in _TDP_ then cause the effort _O_(|_HR_| _p^3^ x^3^_), because in _TDP_ only dependencies between at most _p x_    affix parameters of one hyper-rule can arise.
 
-In the case of a successful instead of an _immediately_ successful orientation sequence, a certain number of affix arrangements will not be generated with the preferred affix parameter, but only with the reverse affix parameter dependence expanded to an acyclic _TDP_. Let this number be denoted by β then an additional β-times further effort of -O_(|_HR_| _p^3^ x^3^_) for transitive insertions into _TDP_ to be calculated, which led to one cycle. This effort also covers the necessary retractions of the _TDP_ extensions made. For the effort of the entire procedure, the following results thus provisionally 
+In the case of a successful instead of an _immediately_ successful orientation sequence, a certain number of affix arrangements will not be generated with the preferred affix parameter, but only with the reverse affix parameter dependence expanded to an acyclic _TDP_. Let this number be denoted by β then an additional β-times further effort of _O_(|_HR_| _p^3^ x^3^_) for transitive insertions into _TDP_ to be calculated, which led to one cycle. This effort also covers the necessary retractions of the _TDP_ extensions made. For the effort of the entire procedure, the following results thus provisionally 
 
 _O_(|_HN_| _x^2^ x^2^_ + |_HR_| _p^2^ x^2^_ + |_HR_| _p^3^ x^3^_ (1 + β)) = _O_(|_HN_| _x^4^_ + |_HR_| _p^3^ x^3^_(1 + β)). 
 
@@ -1163,7 +1150,8 @@ The `Rule` entry marks each node with the rule whose structure corresponds to th
 ----
 Figure 9-1 shows an example of the structure of a decorated derivation tree.
 
-// doc\soag\images\figure-9-1-structure-of-the-decorated-derivation-tree.PNG
+.Structure of the decorated derivation tree
+image::images/figure-9-1-structure-of-the-decorated-derivation-tree.PNG[]
 
 // -------------------------------------------------------------------------------
 // Page 65
@@ -1195,7 +1183,8 @@ In order to be able to reuse the problem solutions found in <<DeWe>>, a high-lev
      alternate number = node identifier MOD arityConst.
 ----
 
-// doc\soag\images\figure-9-2-representation-of-the-set-'2' '1'-to-the-value-range-symbol-N.PNG
+.Representation of the sentence '2'  '1' for the value range symbol N
+image::images/figure-9-2-representation-of-the-sentence-2-1-for-the-value-range-symbol-N.PNG[]
 
 // -------------------------------------------------------------------------------
 // Page 66
@@ -1255,13 +1244,15 @@ The procedure `Visit` is necessary, since on the basis the rule, with which a no
 
 In a synthesis, for the instance of an affix parameter, its value is calculated. This is done with the help of the affixes of the current rule, which are arranged according to the affix form of the affix parameter. The affixes occurring in the affix form are placeholders for synthesized subtrees. The SOAG property of the Grammar ensures that these are already fully computed. By creating new nodes a new tree is constructed step by step from these subtrees (an example of this is shown in Figure 9-3). can be seen).
 
-// doc\soag\images\figure-9-3-synthesis-of-the-set-'2'-N-to-the-value-range-symbol-N.PNG
+.Synthesis of the sentence '2' N  for the value range symbol N
+image::images/figure-9-3-synthesis-of-the-sentence-2-N-for-the-value-range-symbol-N.PNG[]
 
 ==== Analyses 
 
 In an analysis, the value of an affix parameter instance is compared with the structure given by the affix form of the affix parameter. is compared with the structure given by the affix form of the affix parameter. Since this value is available as a derivation tree, the node identifiers are checked during a preorder traversal at compiler runtime. If the tree structure corresponds to the affix form, the corresponding subtrees are determined for the affixes occurring in it. In order to nested indexing when accessing the subtrees, temporary variables are used for the elimination of common subexpressions (an example is shown in Figure 9-4). This additionally optimizes the runtime of the compiler.
 
-// doc\soag\images\figure-9-4-analysis-of-the-set-'2'-D-for-the-value-range-symbol-N.PNG
+.Analysis of the sentence '2' D for the value range symbol N
+image::images/figure-9-4-analysis-of-the-sentence-2-D-for-the-value-range-symbol-N.PNG[]
 
 ==== Compare
 
@@ -1345,7 +1336,8 @@ To reduce the size of the generated code, the error handlings in the procedures 
 
 The texts of the error messages are created automatically by the generator from the identifiers occurring in the specification. in the specification. Together with the error message a position in the input text is output. Analysis error messages for hyper non-terminal _N_ have the form "analysis in _N_ failed". For failed comparisons the name of the affix _M_ is combined with the name of the corresponding hyper-non-terminal to the error message "_M_ failed in _N_". If a predicate _P_ fails, the error message "predicate _P_ failed" is output.
 
-// doc\soag\images\figure-9-5-explanation-of-the-memory-structure-in-the-generated-evaluators.PNG
+.Explanation of the memory structure in the generated evaluators
+image::images/figure-9-5-explanation-of-the-memory-structure-in-the-generated-evaluators.PNG[]
 
 ==== Optimization of terminal affix forms 
 
@@ -1587,7 +1579,8 @@ Based on the fragment of a non-OEAG shown in <<KröpKann>>, a SOEAG was construc
 
 Grammar G1:
 
-// doc\soag\images\figure-A-1-dependency-subgraph-of-a-non-OEAG.PNG
+.Dependency subgraph of a non-OEAG
+image::images/figure-A-1-dependency-subgraph-of-a-non-OEAG.PNG[]
 
 Figure A-1 represents part of the dependency graph of the hyper-rule for symbol _B_ of this grammar. Affix positions to a symbol are written in lower case, odd indices symbolize inherited-affix positions, even indices synthesized-affix positions.  An evaluator generator that arranges affix positions in an affix partition as late as possible ("lazy"), would determine the following two partitions for the symbols _B_ and _C_ according to <<KröpKann>>:
 
@@ -1630,7 +1623,8 @@ Grammar G~2~:
 ----
 The grammar G~2~ was created by a modification of the grammar G~1~ and is also not an OEAG. The presented SOEAG method calculates first again the affix partition of the symbol _B_ and afterwards the affix partition of the symbol _C_:
 
-// doc\soag\images\figure-A-2-dependency-subgraph-of-a-non-OEAG.PNG
+.Dependency subgraph of a non-OEAG
+image::images/figure-A-2-dependency-subgraph-of-a-non-OEAG.PNG[]
 
 As can be seen inFigure A-2, which again shows only the relevant part of the dependence graph for the hyper-rule of symbol _B_, inserting the dependency _c1_ → _c2_ results in the cycle
 
@@ -1692,7 +1686,7 @@ The evaluator generator produces from the above specification, using constant co
 // -------------------------------------------------------------------------------
 // Page 103 References
 
-[[[bibliography]]]
+[bibliography]
 == References
 
 [[[COMA]]] Wagner, Ripphausen-Lipa, Scheffler: Computerorientierte Mathematik II, Skript zur LV, SS 1991
