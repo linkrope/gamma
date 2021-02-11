@@ -219,6 +219,16 @@ image::images\image-3.1-system-structure.PNG[system structure]
 
 As in the original compiler generator Epsilon, all modules are prefixed with an "e" to prevent name conflicts with the Oberon system.
 
+=== Implementation
+
+Please note that the links below are targeting the actual implementation in D, the original implementation referenced in the original German version was done in Modual-2.
+
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/soag/eALists.d[src/soag/eALists.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/soag/eStacks.d[src/soag/eStacks.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/soag/eBSets.d[src/soag/eBSets.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/soag/eASets.d[src/soag/eASets.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/soag/eLIStacks.d[src/soag/eLIStacks.d]
+
 // -------------------------------------------------------------------------------
 // Page 17
 
@@ -456,6 +466,12 @@ VAR
 
 All variables of the form `NextFieldname` refer to the next free field entry of the respective field. 
 (This implementation principle was also used in the `EAG` module).
+
+=== Implementation
+
+Please note that the links below are targeting the actual implementation in D, the original implementation referenced in the original German version was done in Modual-2.
+
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/soag/eSOAG.d[src/soag/eSOAG.d]
 
 // -------------------------------------------------------------------------------
 // Page 29
@@ -813,12 +829,16 @@ At the end of the REPEAT loop, `Cur` results from `Leave`, `Leave` is emptied, a
 
 The membership of an affix position to a partition set is modeled by the partition number in the field `SOAG.PartNum`. After completion of the topological sorting process all affix positions of a partition set of a partition set have the same partition number. 
 
-===  Implementations
+=== Implementation
+
+Please note that the links below are targeting the actual implementation in D, the original implementation referenced in the original German version was done in Modual-2.
+
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/soag/eSOAGPartition.d[src/soag/eSOAGPartition.d]
 
 // -------------------------------------------------------------------------------
 // Page 45 
 
-=== Calculation of the visit sequences
+== Calculation of the visit sequences
 
 This chapter describes how to construct the visit sequences for the evaluator rules of a SOAG.
 are constructed.
@@ -906,7 +926,12 @@ always maps to odd numbers. This ensures that the list of alternate addresses is
 
 With a table load of less than 50%, which is always the case with the above table size, the average collision depths to be expected with equally distributed _f_(i) are, according to <<COMA>> p.90, less than 1.5. The implemented function _f_ does not produce absolutely equally distributed values, but it is sufficient for the required purpose. purpose, so that the average collision depths to be expected are unlikely to be greater than 1.5. 
 
-=== Implementations
+=== Implementation
+
+Please note that the links below are targeting the actual implementation in D, the original implementation referenced in the original German version was done in Modual-2.
+
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/soag/eSOAGVisitSeq.d[src/soag/eSOAGVisitSeq.Mod]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/soag/eSOAGHash.d[src/soag/eSOAGHash.Mod]
 
 // -------------------------------------------------------------------------------
 // Page 52
@@ -1054,7 +1079,11 @@ The exported `Optimize` procedure performs the optimization calculation for all 
 // -------------------------------------------------------------------------------
 // Page 56
 
-=== Implementations
+=== Implementation
+
+Please note that the links below are targeting the actual implementation in D, the original implementation referenced in the original German version was done in Modual-2.
+
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/soag/eSOAGOptimizer.d[src/soag/eSOAGOptimizer.Mod]
 
 // -------------------------------------------------------------------------------
 // Page 62
@@ -1569,6 +1598,13 @@ The context-free derivation tree provided by the parser contains in each of its 
 The `UseConst`, `UseRefCnt` and `Optimize` switches control generation of a compiler using using the constant convolution, the reference counter method and the optimization of the affix variable storage. The contents of the data structures described above are calculated in the procedure `Init` procedure. 
 
 The `GenerateModule` procedure performs the actual textual generation of the compiler source file. The constant file `eSOAG.Fix` is read in and successively extended. It contains at the positions to be positions, up to which the operation `InclFix` reads the contents of the file. reads in the contents of the file. Then the required extensions are entered. The procedure Generate controls the entire generation process and is also exported.
+
+=== Implementation
+
+Please note that the links below are targeting the actual implementation in D, the original implementation referenced in the original German version was done in Modual-2.
+
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/soag/eSOAGGen.d[src/soag/eSOAGGen.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/fix/eSOAG.fix.d[fix/eSOAG.Fix]
 
 // -------------------------------------------------------------------------------
 // Page 91
