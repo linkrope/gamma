@@ -315,10 +315,7 @@ bool TestHNont(size_t N, bool EmitErr, bool SLEAG)
         A = A.Next;
     }
     while (A !is null);
-    if (SLEAG)
-        return isSLEAG;
-    else
-        return isLEAG;
+    return SLEAG ? isSLEAG : isLEAG;
 }
 
 bool IsSLEAG(int N, bool EmitErr)
@@ -350,7 +347,7 @@ bool PredsOK()
     bool OK = true;
 
     foreach (N; EAG.Pred.bitsSet)
-        OK = OK && IsLEAG(N, true);
+        OK = IsLEAG(N, Yes.EmitErr) && OK;
     return OK;
 }
 

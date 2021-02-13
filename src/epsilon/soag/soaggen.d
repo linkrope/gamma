@@ -140,10 +140,9 @@ void ComputeNodeNames(int R) @nogc nothrow
  */
 int GetCorrespondedAffPos(int AP) @nogc nothrow @safe
 {
-    int SO;
-    int AN;
-    SO = SOAG.AffOcc[AP].SymOccInd;
-    AN = AP - SOAG.SymOcc[SO].AffOcc.Beg;
+    const SO = SOAG.AffOcc[AP].SymOccInd;
+    const AN = AP - SOAG.SymOcc[SO].AffOcc.Beg;
+
     return SOAG.Sym[SOAG.SymOcc[SO].SymInd].AffPos.Beg + AN;
 }
 

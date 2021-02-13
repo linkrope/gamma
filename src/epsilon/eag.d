@@ -83,17 +83,13 @@ int NextNode;
 VarRecord[] Var;
 int NextVar;
 int Scope;
-alias Rule = RuleDesc;
-alias Alt = AltDesc;
 
-class RuleDesc
+class Rule
 {
     Alt Sub;
 }
 
-alias Factor = FactorDesc;
-
-class AltDesc
+class Alt
 {
     int Ind;
     int Up;
@@ -121,7 +117,7 @@ class AltDesc
     }
 }
 
-void assign(AltDesc lhs, AltDesc rhs) @nogc nothrow pure @safe
+void assign(Alt lhs, Alt rhs) @nogc nothrow pure @safe
 in (lhs !is null)
 in (rhs !is null)
 {
@@ -136,38 +132,38 @@ in (rhs !is null)
     lhs.Pos = rhs.Pos;
 }
 
-class Grp : RuleDesc
+class Grp : Rule
 {
 }
 
-class Opt : RuleDesc
-{
-    Position EmptyAltPos;
-    ScopeDesc Scope;
-    ParamsDesc Formal;
-}
-
-class Rep : RuleDesc
+class Opt : Rule
 {
     Position EmptyAltPos;
     ScopeDesc Scope;
     ParamsDesc Formal;
 }
 
-class FactorDesc
+class Rep : Rule
+{
+    Position EmptyAltPos;
+    ScopeDesc Scope;
+    ParamsDesc Formal;
+}
+
+class Factor
 {
     int Ind;
     Factor Prev;
     Factor Next;
 }
 
-class Term : FactorDesc
+class Term : Factor
 {
     int Sym;
     Position Pos;
 }
 
-class Nont : FactorDesc
+class Nont : Factor
 {
     int Sym;
     ParamsDesc Actual;
@@ -243,7 +239,7 @@ struct HNontRecord
     int Id;
     int NamedId;
     int Sig;
-    RuleDesc Def;
+    Rule Def;
     bool IsToken;
 }
 
@@ -272,10 +268,9 @@ void Expand() nothrow @safe
 {
     size_t NewLen(size_t ArrayLen)
     {
-        if (ArrayLen < DIV(int.max, 2))
-            return 2 * ArrayLen + 1;
-        else
-            assert(0);
+        assert(ArrayLen < DIV(int.max, 2));
+
+        return 2 * ArrayLen + 1;
     }
 
     if (NextParam >= ParamBuf.length)
@@ -467,18 +462,13 @@ void AppDom(char Dir, int Dom) nothrow @safe
 bool WellMatched(int Sig1, int Sig2) @nogc nothrow @safe
 {
     if (Sig1 == Sig2)
-    {
         return true;
-    }
-    else
+    while (DomBuf[Sig1] == DomBuf[Sig2] && DomBuf[Sig1] != nil && DomBuf[Sig2] != nil)
     {
-        while (DomBuf[Sig1] == DomBuf[Sig2] && DomBuf[Sig1] != nil && DomBuf[Sig2] != nil)
-        {
-            ++Sig1;
-            ++Sig2;
-        }
-        return DomBuf[Sig1] == nil && DomBuf[Sig2] == nil;
+        ++Sig1;
+        ++Sig2;
     }
+    return DomBuf[Sig1] == nil && DomBuf[Sig2] == nil;
 }
 
 bool SigOK(int Sym) nothrow @safe
@@ -493,12 +483,9 @@ bool SigOK(int Sym) nothrow @safe
         CurSig = NextDom;
         return true;
     }
-    else
-    {
-        DomBuf[NextDom] = nil;
-        NextDom = CurSig;
-        return WellMatched(HNont[Sym].Sig, CurSig);
-    }
+    DomBuf[NextDom] = nil;
+    NextDom = CurSig;
+    return WellMatched(HNont[Sym].Sig, CurSig);
 }
 
 int NewMAlt(int Sym, int Right) nothrow @safe
@@ -737,25 +724,20 @@ bool Performed(size_t Needed) @safe
 
     Needed = Needed & ~History;
     if (Needed == 0)
-    {
         return true;
-    }
-    else
-    {
-        if (Needed & analysed)
-            error!"analyse a specification first";
-        if (Needed & predicates)
-            error!"check for predicates first";
-        if (Needed & parsable)
-            error!"test for ELL1 attribute first";
-        if (Needed & isSLEAG)
-            error!"test for SLEAG attribute first";
-        if (Needed & isSSweep)
-            error!"test for single sweep attribute first";
-        if (Needed & hasEvaluator)
-            error!"generate an evaluator first";
-        return false;
-    }
+    if (Needed & analysed)
+        error!"analyse a specification first";
+    if (Needed & predicates)
+        error!"check for predicates first";
+    if (Needed & parsable)
+        error!"test for ELL1 attribute first";
+    if (Needed & isSLEAG)
+        error!"test for SLEAG attribute first";
+    if (Needed & isSSweep)
+        error!"test for single sweep attribute first";
+    if (Needed & hasEvaluator)
+        error!"generate an evaluator first";
+    return false;
 }
 
 void Init() nothrow

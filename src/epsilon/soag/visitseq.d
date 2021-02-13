@@ -110,48 +110,39 @@ int GetVisit(int R, int SO, int VN) @nogc nothrow @safe
  */
 SOAG.Instruction MapVS(int AO) nothrow
 {
-    if (EAG.ParamBuf[SOAG.AffOcc[AO].ParamBufInd].isDef)
+    if (!EAG.ParamBuf[SOAG.AffOcc[AO].ParamBufInd].isDef)
+        return null;
+
+    const SO = SOAG.AffOcc[AO].SymOccInd;
+
+    if (SOAG.IsPredNont(SO))
     {
-        int SO = SOAG.AffOcc[AO].SymOccInd;
+        SOAG.Call Call = new SOAG.Call;
 
-        if (SOAG.IsPredNont(SO))
+        Call.SymOcc = SO;
+        return Call;
+    }
+
+    const R = SOAG.SymOcc[SO].RuleInd;
+
+    if (SOAG.Rule[R].SymOcc.Beg == SO)
+    {
+        if (GetVisitNo(AO) - 1 > 0)
         {
-            SOAG.Call Call = new SOAG.Call;
+            SOAG.Leave Leave = new SOAG.Leave;
 
-            Call.SymOcc = SO;
-            return Call;
+            Leave.VisitNo = GetVisitNo(AO) - 1;
+            return Leave;
         }
-        else
-        {
-            const R = SOAG.SymOcc[SO].RuleInd;
-
-            if (SOAG.Rule[R].SymOcc.Beg == SO)
-            {
-                if (GetVisitNo(AO) - 1 > 0)
-                {
-                    SOAG.Leave Leave = new SOAG.Leave;
-
-                    Leave.VisitNo = GetVisitNo(AO) - 1;
-                    return Leave;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                SOAG.Visit Visit = new SOAG.Visit;
-
-                Visit.SymOcc = SO;
-                Visit.VisitNo = GetVisitNo(AO);
-                return Visit;
-            }
-        }
+        return null;
     }
     else
     {
-        return null;
+        SOAG.Visit Visit = new SOAG.Visit;
+
+        Visit.SymOcc = SO;
+        Visit.VisitNo = GetVisitNo(AO);
+        return Visit;
     }
 }
 
@@ -169,26 +160,22 @@ SOAG.Instruction CompleteTraversal(int SO) nothrow
         Call.SymOcc = SO;
         return Call;
     }
-    else
+
+    const R = SOAG.SymOcc[SO].RuleInd;
+
+    if (SOAG.Rule[R].SymOcc.Beg == SO)
     {
-        const R = SOAG.SymOcc[SO].RuleInd;
+        SOAG.Leave Leave = new SOAG.Leave;
 
-        if (SOAG.Rule[R].SymOcc.Beg == SO)
-        {
-            SOAG.Leave Leave = new SOAG.Leave;
-
-            Leave.VisitNo = GetMaxVisitNo(SO);
-            return Leave;
-        }
-        else
-        {
-            SOAG.Visit Visit = new SOAG.Visit;
-
-            Visit.SymOcc = SO;
-            Visit.VisitNo = GetMaxVisitNo(SO);
-            return Visit;
-        }
+        Leave.VisitNo = GetMaxVisitNo(SO);
+        return Leave;
     }
+
+    SOAG.Visit Visit = new SOAG.Visit;
+
+    Visit.SymOcc = SO;
+    Visit.VisitNo = GetMaxVisitNo(SO);
+    return Visit;
 }
 
 /**
@@ -248,7 +235,6 @@ void TopSort(int R)
 void Generate()
 {
     int SO;
-    int MaxTry = 0;
     SOAG.Instruction Instr;
 
     ComputeVisitNo;
@@ -262,8 +248,6 @@ void Generate()
         {
             hash.Reset;
             TopSort(R);
-            if (MaxTry < hash.MaxTry)
-                MaxTry = hash.MaxTry;
             for (SO = SOAG.Rule[R].SymOcc.Beg + 1; SO <= SOAG.Rule[R].SymOcc.End; ++SO)
             {
                 Instr = CompleteTraversal(SO);

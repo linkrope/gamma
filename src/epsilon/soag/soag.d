@@ -117,24 +117,22 @@ struct AffOccDesc
     }
 }
 
-class InstructionDesc
+class Instruction
 {
 }
 
-alias Instruction = InstructionDesc;
-
-class Visit : InstructionDesc
+class Visit : Instruction
 {
     int SymOcc;
     int VisitNo;
 }
 
-class Leave : InstructionDesc
+class Leave : Instruction
 {
     int VisitNo;
 }
 
-class Call : InstructionDesc
+class Call : Instruction
 {
     int SymOcc;
 }
@@ -199,10 +197,9 @@ void Expand() nothrow @safe
 {
     size_t NewLen(size_t ArrayLen)
     {
-        if (ArrayLen < DIV(size_t.max, 2))
-            return 2 * ArrayLen + 1;
-        else
-            assert(0);
+        assert(ArrayLen < DIV(size_t.max, 2));
+
+        return 2 * ArrayLen + 1;
     }
 
     if (NextAffOcc >= AffOcc.length)

@@ -10,7 +10,6 @@ class HashEntry
 
 HashEntry[] HashTab;
 int MaxHashTabIndex;
-int MaxTry;
 int V4711;
 int V711;
 
@@ -19,7 +18,6 @@ int V711;
  */
 void Reset() @nogc nothrow @safe
 {
-    MaxTry = 0;
     for (int i = 0; i < MaxHashTabIndex; ++i)
         HashTab[i] = null;
 }
@@ -58,7 +56,7 @@ int HashIndex(ref SOAG.Instruction I) @safe
     int Index;
     int Index0;
     int Try;
-    bool notfound;
+    bool found;
 
     /**
      * Fehler im Compiler: kann keine Integerkonstanten > 128 in Multiplikationen verarbeiten
@@ -88,28 +86,24 @@ int HashIndex(ref SOAG.Instruction I) @safe
     Index = Index0;
     if (HashTab[Index] is null)
     {
-        notfound = false;
+        found = true;
     }
     else
     {
-        notfound = !SOAG.isEqual(I, HashTab[Index].Instr);
+        found = SOAG.isEqual(I, HashTab[Index].Instr);
     }
-    while (notfound)
+    while (!found)
     {
         ++Try;
         Index = MOD(Index0 - Try * (DIV(Index0, 2) * 2 + 1), MaxHashTabIndex).to!int;
         if (HashTab[Index] is null)
         {
-            notfound = false;
+            found = true;
         }
         else
         {
-            notfound = !SOAG.isEqual(I, HashTab[Index].Instr);
+            found = SOAG.isEqual(I, HashTab[Index].Instr);
         }
-    }
-    if (MaxTry < Try)
-    {
-        MaxTry = Try;
     }
     return Index;
 }
@@ -121,16 +115,12 @@ int HashIndex(ref SOAG.Instruction I) @safe
  */
 bool IsIn(SOAG.Instruction I) @safe
 {
-    int Index;
     if (I is null)
-    {
         return true;
-    }
-    else
-    {
-        Index = HashIndex(I);
-        return HashTab[Index] !is null;
-    }
+
+    const Index = HashIndex(I);
+
+    return HashTab[Index] !is null;
 }
 
 /**

@@ -80,10 +80,9 @@ void Expand() nothrow @safe
 {
     size_t ExpLen(size_t ArrayLen)
     {
-        if (ArrayLen <= DIV(size_t.max, 2))
-            return 2 * ArrayLen;
-        else
-            assert(0);
+        assert(ArrayLen <= DIV(size_t.max, 2));
+
+        return 2 * ArrayLen;
     }
 
     if (NextEdge >= Edge.length)
@@ -1151,11 +1150,8 @@ void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                         ExactOneToken = false;
                         return;
                     }
-                    else
-                    {
-                        ExactOneToken = true;
-                        TheOneToken = Tok;
-                    }
+                    ExactOneToken = true;
+                    TheOneToken = Tok;
                 }
                 ++Tok;
             }

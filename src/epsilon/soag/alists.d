@@ -4,13 +4,11 @@ import runtime;
 
 const firstIndex = 0;
 
-struct AListDesc
+struct AList
 {
     int Last;
     int[] Elem;
 }
-
-alias AList = AListDesc;
 
 void Expand(ref AList List) nothrow pure @safe
 {

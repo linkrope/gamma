@@ -54,17 +54,13 @@ void Generate(Settings settings)
         {
             i = 2;
             while (IsIdent[s[i]])
-            {
                 ++i;
-            }
         }
         else if (IsSymbol[s[1]])
         {
             i = 2;
             while (IsSymbol[s[i]])
-            {
                 ++i;
-            }
         }
         else
         {

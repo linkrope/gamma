@@ -100,18 +100,14 @@ void WriteVS() @safe
  */
 int GetPlanNo(int R, int AP) @nogc nothrow @safe
 {
-    int SO;
-    int VN;
-    SO = SOAG.AffOcc[AP].SymOccInd;
+    const SO = SOAG.AffOcc[AP].SymOccInd;
+
     if (SO == SOAG.Rule[R].SymOcc.Beg)
-    {
         return VisitSeq.GetVisitNo(AP);
-    }
-    else
-    {
-        VN = VisitSeq.GetVisitNo(AP);
-        return PN[VisitSeq.GetVisit(R, SO, VN)];
-    }
+
+    const VN = VisitSeq.GetVisitNo(AP);
+
+    return PN[VisitSeq.GetVisit(R, SO, VN)];
 }
 
 /**
@@ -130,24 +126,12 @@ int GetEVSPosforAffOcc(int R, int AP) @nogc nothrow @safe
     if (SO == SOAG.Rule[R].SymOcc.Beg && SOAG.IsInherited(S, AN))
     {
         if (VN == 1)
-        {
             return 0;
-        }
-        else
-        {
-            V = VisitSeq.GetVisit(R, SO, VN - 1);
-            return V * 3 + 1;
-        }
-    }
-    V = VisitSeq.GetVisit(R, SO, VN);
-    if (SOAG.IsInherited(S, AN))
-    {
+        V = VisitSeq.GetVisit(R, SO, VN - 1);
         return V * 3 + 1;
     }
-    else
-    {
-        return V * 3 + 3;
-    }
+    V = VisitSeq.GetVisit(R, SO, VN);
+    return SOAG.IsInherited(S, AN) ? V * 3 + 1 : V * 3 + 3;
 }
 
 /**
