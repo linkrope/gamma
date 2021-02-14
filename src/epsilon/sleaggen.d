@@ -4,6 +4,7 @@ import EAG = epsilon.eag;
 import IO = epsilon.io;
 import epsilon.settings;
 import io : Input, Position, read;
+import log;
 import runtime;
 import std.bitmanip : BitArray;
 import std.stdio;
@@ -182,13 +183,7 @@ bool TestHNont(size_t N, bool EmitErr, bool SLEAG)
     {
         isSLEAG = false;
         if (EmitErr)
-        {
-            writeln;
-            writeln(Pos);
-            IO.Msg.write("\t");
-            IO.Msg.write(Msg);
-            IO.Msg.flush;
-        }
+            error!"%s\n%s"(Msg, Pos);
     }
 
     void CheckDefPos(int P)
@@ -352,47 +347,42 @@ bool PredsOK()
 }
 
 void Test()
+in (EAG.Performed(EAG.analysed | EAG.predicates))
 {
     bool isSLEAG;
     bool isLEAG;
 
-    IO.Msg.write("SLEAG testing   ");
-    IO.Msg.write(EAG.BaseName);
-    IO.Msg.flush;
-    if (EAG.Performed(EAG.analysed | EAG.predicates))
+    info!"SLEAG testing %s"(EAG.BaseName);
+    EAG.History &= ~EAG.isSLEAG;
+    InitTest;
+    scope (exit)
+        FinitTest;
+    isSLEAG = true;
+    isLEAG = true;
+    foreach (N; EAG.Prod.bitsSet)
     {
-        EAG.History &= ~EAG.isSLEAG;
-        InitTest;
-        isSLEAG = true;
-        isLEAG = true;
-        foreach (N; EAG.Prod.bitsSet)
+        if (isSLEAG && EAG.HNont[N].Id >= 0)
         {
-            if (isSLEAG && EAG.HNont[N].Id >= 0)
+            if (!TestHNont(N, true, true))
             {
-                if (!TestHNont(N, true, true))
-                {
-                    isSLEAG = false;
-                    if (!TestHNont(N, false, false))
-                        isLEAG = false;
-                }
+                isSLEAG = false;
+                if (!TestHNont(N, false, false))
+                    isLEAG = false;
             }
         }
-        if (isSLEAG)
-        {
-            EAG.History |= EAG.isSLEAG;
-            IO.Msg.write("   ok");
-        }
-        else
-        {
-            if (isLEAG)
-                IO.Msg.write("\n\tno SLEAG but LEAG");
-            else
-                IO.Msg.write("\n\tno LEAG");
-        }
     }
-    FinitTest;
-    IO.Msg.writeln;
-    IO.Msg.flush;
+    if (isSLEAG)
+    {
+        EAG.History |= EAG.isSLEAG;
+        info!"OK";
+    }
+    else
+    {
+        if (isLEAG)
+            info!"no SLEAG but LEAG";
+        else
+            info!"no LEAG";
+    }
 }
 
 void ComputeNodeIdent() nothrow @safe
@@ -1222,10 +1212,7 @@ void InitGen(IO.TextOut MOut, int Treatment, Settings settings)
     }
 
     if (Generating)
-    {
-        IO.Msg.write("\nresetting SLEAG\n");
-        IO.Msg.flush;
-    }
+        trace!"resetting SLEAG";
     Mod = MOut;
     SavePos = false;
     TraversePass = false;
@@ -1233,17 +1220,7 @@ void InitGen(IO.TextOut MOut, int Treatment, Settings settings)
     UseRefCnt = !settings.r;
     DebugRC = settings.dR;
     SetFlags(Treatment);
-    if (UseRefCnt)
-        IO.Msg.write('+');
-    else
-        IO.Msg.write('-');
-    IO.Msg.write("rc ");
-    if (UseConst)
-        IO.Msg.write('+');
-    else
-        IO.Msg.write('-');
-    IO.Msg.write("ct ");
-    IO.Msg.flush;
+    info!"%s %s"(UseRefCnt ? "+rc" : "-rc", UseConst ? "+ct" : "-ct");
     if (!Testing)
         PrepareInit;
     ComputeNodeIdent;

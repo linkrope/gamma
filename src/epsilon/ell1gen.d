@@ -73,7 +73,6 @@ BitArray ConflictNonts;
 int nToks;
 bool Error;
 bool Warning;
-bool Compiled;
 bool UseReg;
 
 void Expand() nothrow @safe
@@ -268,25 +267,16 @@ void Finit() @nogc nothrow @safe
     GenSetT = null;
 }
 
-void WriteTok(IO.TextOut Out, size_t Tok) @safe
+string TokRepr(size_t Tok) @safe
 {
     if (Tok == endTok)
-        Out.write("!end!");
+        return "<end>";
     else if (Tok == undefTok)
-        Out.write("!undef!");
+        return "<undef>";
     else if (Tok == sepTok)
-        Out.write("!sep!");
+        return "<sep>";
     else
-        Out.write(EAG.HTermRepr(Tok.to!int + EAG.firstHTerm - firstUserTok));
-}
-
-void WriteTokSet(IO.TextOut Out, BitArray Toks)
-{
-    foreach (Tok; Toks.bitsSet)
-    {
-        WriteTok(Out, Tok);
-        Out.write(" ");
-    }
+        return EAG.HTermRepr(Tok.to!int + EAG.firstHTerm - firstUserTok);
 }
 
 void NewEdge(size_t From, int To) nothrow @safe
@@ -379,19 +369,18 @@ void ComputeDir()
         int n;
         int E;
         size_t N1;
-        bool Leftrecursion;
+        bool leftRecursion = false;
 
         Stack[Top] = N;
         ++Top;
         n = Top;
         State[N] = n;
         E = Nont[N].Edge;
-        Leftrecursion = false;
         while (E != nil)
         {
             N1 = Edge[E].Dest;
             if (N1 == N)
-                Leftrecursion = true;
+                leftRecursion = true;
             if (State[N1] == 0)
                 ComputeFirst(N1);
             if (State[N1] < State[N])
@@ -401,34 +390,34 @@ void ComputeDir()
         }
         if (State[N] == n)
         {
-            Leftrecursion = Leftrecursion || Top > n;
-            if (Leftrecursion)
-            {
-                Error = true;
-                IO.Msg.write("\n  left recursion over nonterminals:");
-            }
+            string[] culprits;
+
+            leftRecursion = leftRecursion || Top > n;
             do
             {
                 --Top;
                 N1 = Stack[Top];
                 State[N1] = int.max;
-                if (Leftrecursion)
+                if (leftRecursion)
                 {
-                    IO.Msg.write("\n    ");
-                    IO.Msg.write(EAG.NamedHNontRepr(N1));
                     if (Nont[N1].Anonym)
                     {
-                        IO.Msg.write(" (EBNF at ");
-                        writeln;
-                        writeln(EAG.HNont[N1].Def.Sub.Pos);
-                        IO.Msg.write(")");
+                        culprits ~= format!"EBNF expression in %s\n%s"
+                            (EAG.NamedHNontRepr(N1), EAG.HNont[N1].Def.Sub.Pos);
+                    }
+                    else
+                    {
+                        culprits ~= EAG.NamedHNontRepr(N1);
                     }
                 }
                 Nont[N1].First = Nont[N].First;
             }
-            while (!(Top < n));
-            if (Leftrecursion)
-                IO.Msg.flush;
+            while (Top >= n);
+            if (leftRecursion)
+            {
+                error!"left recursion over nonterminals%-(\n%s%)"(culprits);
+                Error = true;
+            }
         }
     }
 
@@ -462,29 +451,27 @@ void ComputeDir()
                 State[N1] = int.max;
                 Nont[N1].Follow = Nont[N].Follow;
             }
-            while (!(Top < n));
+            while (Top >= n);
         }
     }
 
     void Conflict(size_t N, Position Pos, BitArray Dir, BitArray PrevDirs)
     {
-        BitArray Toks;
+        import std.algorithm : map;
 
-        Warning = true;
-        writeln;
-        writeln(Pos);
-        IO.Msg.write("  director set conflict in ");
-        IO.Msg.write(EAG.NamedHNontRepr(N));
-        IO.Msg.write(": ");
-        Toks = Dir & PrevDirs;
-        WriteTokSet(IO.Msg, Toks);
-        Toks = Dir - PrevDirs;
-        if (Toks.bitsSet.empty)
+        const msg = format!"director set conflict in %s: %-(%s, %)\n%s"
+            (EAG.NamedHNontRepr(N), (Dir & PrevDirs).bitsSet.map!TokRepr, Pos);
+
+        if ((Dir - PrevDirs).bitsSet.empty)
         {
+            error!"%s\nalternative will never be chosen"(msg);
             Error = true;
-            IO.Msg.write("\n    alternative will never be chosen");
         }
-        IO.Msg.flush;
+        else
+        {
+            warn!"%s"(msg);
+            Warning = true;
+        }
     }
 
     State = new int[EAG.NextHNont];
@@ -719,7 +706,7 @@ void ComputeDefaultAlts()
                 MinPos = i;
             }
         }
-        while (!(i == 0 || MinPrio == 1));
+        while (i != 0 && MinPrio != 1);
         Nont[Stack[MinPos].Nont].DefaultAlt = Stack[MinPos].Alt;
         Edge = Nont[Stack[MinPos].Nont].Edge;
         StackPos[Stack[Top].Nont] = MinPos;
@@ -1023,11 +1010,9 @@ void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                         }
                         else
                         {
-                            Warning = true;
                             Mod.write("throw new Exception(\"runtime error: call of nonproductive nonterminal!\");\n");
-                            IO.Msg.write("\n  generated compiler contains corrupt code");
-                            IO.Msg.write("\n    for nonproductive nonterminals!");
-                            IO.Msg.flush;
+                            warn!"generated compiler contains corrupt code for non-productive nonterminals";
+                            Warning = true;
                         }
                     }
                     F = F.Next;
@@ -1066,11 +1051,7 @@ void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                 {
                     if (!LoopNeeded && (Alt[A.Ind].Dir & Poss).bitsSet.empty)
                     {
-                        writeln;
-                        writeln(A.Pos);
-                        IO.Msg.write("  dead alternative in ");
-                        IO.Msg.write(EAG.NamedHNontRepr(N));
-                        IO.Msg.flush;
+                        warn!"dead alternative in %s\n%s"(EAG.NamedHNontRepr(N), A.Pos);
                         Warning = true;
                     }
                     Mod.write("case ");
@@ -1161,20 +1142,12 @@ void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
         {
             if (Poss <= Nont[N].Follow && (Nont[N].First & Poss).bitsSet.empty)
             {
-                writeln;
-                writeln(EAG.HNont[N].Def.Sub.Pos);
-                IO.Msg.write("  dead [ ] - brackets in ");
-                IO.Msg.write(EAG.NamedHNontRepr(N));
-                IO.Msg.flush;
+                warn!"dead brackets in %s\n%s"(EAG.NamedHNontRepr(N), EAG.HNont[N].Def.Sub.Pos);
                 Warning = true;
             }
             else if (Poss <= Nont[N].First)
             {
-                writeln;
-                writeln(EAG.HNont[N].Def.Sub.Pos);
-                IO.Msg.write("  useless [ ] - brackets in ");
-                IO.Msg.write(EAG.NamedHNontRepr(N));
-                IO.Msg.flush;
+                warn!"useless brackets in %s\n%s"(EAG.NamedHNontRepr(N), EAG.HNont[N].Def.Sub.Pos);
                 Warning = true;
             }
             Mod.write("while (1)\n");
@@ -1230,11 +1203,7 @@ void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
         {
             if (Poss <= Nont[N].Follow && (Nont[N].First & Poss).bitsSet.empty)
             {
-                writeln;
-                writeln(EAG.HNont[N].Def.Sub.Pos);
-                IO.Msg.write("  dead { } - braces in ");
-                IO.Msg.write(EAG.NamedHNontRepr(N));
-                IO.Msg.flush;
+                warn!"dead braces in %s\n%s"(EAG.NamedHNontRepr(N), EAG.HNont[N].Def.Sub.Pos);
                 Warning = true;
             }
             EvalGen.GenRepStart(N.to!int);
@@ -1443,101 +1412,65 @@ void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     WriteTab(name);
     Mod.flush;
     if (settings.showMod)
-    {
         IO.Show(Mod);
-    }
     else
-    {
         IO.Compile(Mod);
-        Compiled = true;
-    }
     IO.CloseOut(Mod);
     EvalGen.FinitGen;
 }
 
 void Test(Settings settings)
+in (EAG.Performed(EAG.analysed | EAG.predicates))
 {
-    IO.Msg.write("ELL(1) testing    ");
-    IO.Msg.write(EAG.BaseName);
-    IO.Msg.flush;
-    if (EAG.Performed(EAG.analysed | EAG.predicates))
-    {
-        EAG.History &= ~EAG.parsable;
-        Init(settings);
-        if (GrammarOk())
-        {
-            ComputeDir;
-            if (!(Error || Warning))
-            {
-                IO.Msg.write("   ok");
-                EAG.History |= EAG.parsable;
-            }
-        }
+    info!"ELL(1) testing %s"(EAG.BaseName);
+    EAG.History &= ~EAG.parsable;
+    Init(settings);
+    scope (exit)
         Finit;
-    }
-    IO.Msg.writeln;
-    IO.Msg.flush;
+    if (!GrammarOk)
+        return;
+    ComputeDir;
+    if (Error || Warning)
+        return;
+    info!"OK";
+    EAG.History |= EAG.parsable;
 }
 
 void Generate(Settings settings)
+in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.isSLEAG))
 {
-    IO.Msg.write("ELL(1) writing   ");
-    IO.Msg.write(EAG.BaseName);
-    IO.Msg.write("   ");
-    IO.Msg.flush;
-    Compiled = false;
-    if (EAG.Performed(EAG.analysed | EAG.predicates | EAG.isSLEAG))
-    {
-        EAG.History &= ~EAG.parsable;
-        Init(settings);
-        if (GrammarOk())
-        {
-            ComputeDir;
-            if (!Error)
-            {
-                ComputeDefaultAlts;
-                ComputeSets;
-                GenerateMod(No.parsePass, settings);
-                EAG.History |= EAG.parsable;
-            }
-        }
+    info!"ELL(1) writing %s"(EAG.BaseName);
+    EAG.History &= ~EAG.parsable;
+    Init(settings);
+    scope (exit)
         Finit;
-    }
-    if (!Compiled)
-    {
-        IO.Msg.writeln;
-    }
-    IO.Msg.flush;
+    if (!GrammarOk)
+        return;
+    ComputeDir;
+    if (Error)
+        return;
+    ComputeDefaultAlts;
+    ComputeSets;
+    GenerateMod(No.parsePass, settings);
+    EAG.History |= EAG.parsable;
 }
 
 void GenerateParser(Settings settings)
+in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.hasEvaluator))
 {
-    IO.Msg.write("ELL(1) writing parser of ");
-    IO.Msg.write(EAG.BaseName);
-    IO.Msg.write("   ");
-    IO.Msg.flush;
-    Compiled = false;
-    if (EAG.Performed(EAG.analysed | EAG.predicates | EAG.hasEvaluator))
-    {
-        EAG.History &=  ~EAG.parsable;
-        Init(settings);
-        if (GrammarOk())
-        {
-            EAG.History = 0;
-            Shift.Shift;
-            ComputeDir;
-            if (!Error)
-            {
-                ComputeDefaultAlts;
-                ComputeSets;
-                GenerateMod(Yes.parsePass, settings);
-            }
-        }
+    info!"ELL(1) writing parser of %s"(EAG.BaseName);
+    EAG.History &=  ~EAG.parsable;
+    Init(settings);
+    scope (exit)
         Finit;
-    }
-    if (!Compiled)
-    {
-        IO.Msg.writeln;
-    }
-    IO.Msg.flush;
+    if (!GrammarOk)
+        return;
+    EAG.History = 0;
+    Shift.Shift;
+    ComputeDir;
+    if (Error)
+        return;
+    ComputeDefaultAlts;
+    ComputeSets;
+    GenerateMod(Yes.parsePass, settings);
 }

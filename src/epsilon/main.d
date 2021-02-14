@@ -63,11 +63,11 @@ void main(string[] args)
 
         mkdirRecurse(settings.outputDirectory);
     }
-    if (args.dropOne.empty)
-        compile(read("stdin", stdin), settings);
-
     try
     {
+        if (args.dropOne.empty)
+            compile(read("stdin", stdin), settings);
+
         foreach (arg; args.dropOne)
             compile(read(arg), settings);
     }
@@ -98,14 +98,16 @@ void compile(Input input, Settings settings)
 
     analyzer.Analyse(input);
 
-    enforce(analyzer.ErrorCounter == 0,
-            "analyzer errors");
+    enforce(analyzer.ErrorCounter == 0);
 
     analyzer.Warnings;
     Predicates.Check;
     if (settings.verbose)
         Predicates.List;
+
     ELL1Gen.Test(settings);
+
+    enforce(!ELL1Gen.Error);
 
     bool success = false;
 

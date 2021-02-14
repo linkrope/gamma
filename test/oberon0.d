@@ -10,7 +10,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon example/frontend.eag --output-directory %s"(directory)
-            .shouldMatch("SLEAG testing   OberonO   ok");
+            .shouldMatch("SLEAG testing OberonO[^ ]* OK");
         run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
             .shouldMatch("^done$");
         run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/BigSample.Mod"))
@@ -27,7 +27,7 @@ static foreach (eag; ["oberon0.eag", "unequal.eag"])
         with (sandbox)
         {
             run!"./epsilon --space example/%s --output-directory %s"(eag, directory)
-                .shouldMatch("SLEAG testing   OberonO   ok");
+                .shouldMatch("SLEAG testing OberonO[^ ]* OK");
             run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
                 .shouldMatch("^L1 .* RET 0 $");
             run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/BigSample.Mod"))
@@ -45,13 +45,13 @@ unittest
         run!"./epsilon --space example/abstract-syntax.eag --output-directory %s"(directory)
             .shouldMatch("SSweep testing OberonOa   ok");
         run!"./epsilon --space example/type-tables.eag --output-directory %s"(directory)
-            .shouldMatch("SLEAG testing   OberonOb   ok");
+            .shouldMatch("SLEAG testing OberonOb[^ ]* OK");
         run!"./epsilon --space example/type-resolution.eag --output-directory %s"(directory)
             .shouldMatch("SSweep testing OberonOc   ok");
         run!"./epsilon --space example/symbol-tables.eag --output-directory %s"(directory)
-            .shouldMatch("SLEAG testing   OberonOd   ok");
+            .shouldMatch("SLEAG testing OberonOd[^ ]* OK");
         run!"./epsilon --space example/symbol-resolution.eag --output-directory %s"(directory)
-            .shouldMatch("SLEAG testing   OberonOe   ok");
+            .shouldMatch("SLEAG testing OberonOe[^ ]* OK");
         run!"./epsilon --space example/type-check.eag --output-directory %s"(directory)
             .shouldMatch("SSweep testing OberonOf   ok");
 

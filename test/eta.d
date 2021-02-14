@@ -11,7 +11,7 @@ static foreach (eag; ["eta.eag", "eta-utf8.eag"])
         with (sandbox)
         {
             run!"./epsilon --space example/%s --output-directory %s"(eag, directory)
-                .shouldMatch("SLEAG testing   Eta   ok");
+                .shouldMatch("SLEAG testing Eta[^ ]* OK");
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Pico.Cola"))
                 .shouldMatch(`^program < \+ 'ok' : CODE > : $`);
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Mikro.Cola"))
