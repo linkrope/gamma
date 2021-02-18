@@ -1,6 +1,8 @@
 = True Compiler Generation
 Efficient Implementation of a Closed Theory
 :figure-caption!:
+:toc:
+:toclevels: 5
 
 Jochen Demuth, Stephan Weber,
 Sönke Kannapinn, Mario Kröplin
@@ -28,7 +30,7 @@ Zur Veröffentlichung empfohlen von Prof. Dr. Bleicke Eggers
 
 == Abstract
 
-Today, compiler construction is so well-understood that it is more and more unreasonable why programming language descriptions are still not given completely formally, so that even compilers could be generated automatically. The attribute grammars used for the description are unsatisfactory as they lean on a programming language each: Therefore, a Babylonian confusion among the numerous existing generator systems has emerged; and, worse still, respective "specifications" incorporate large quantities of programs. A promising alternative is offered by the closed calculus of two-level grammars, which are solely based on the principle of the context-free grammars. For the analysis-orientedly restricted Extended Affix Grammars, this report comprises the documentation and full implementation of a system generating e ective compilers. Accompanying examples in the appendices shall demonstrate the expressiveness of the specication formalism.
+Today, compiler construction is so well-understood that it is more and more unreasonable why programming language descriptions are still not given completely formally, so that even compilers could be generated automatically. The attribute grammars used for the description are unsatisfactory as they lean on a programming language each: Therefore, a Babylonian confusion among the numerous existing generator systems has emerged; and, worse still, respective "specifications" incorporate large sets of programs. A promising alternative is offered by the closed calculus of two-level grammars, which are solely based on the principle of the context-free grammars. For the analysis-orientedly restricted Extended Affix Grammars, this report comprises the documentation and full implementation of a system generating e ective compilers. Accompanying examples in the appendices shall demonstrate the expressiveness of the specication formalism.
 
 // Page iii
 
@@ -52,16 +54,13 @@ Nevertheless, the consistent substitution is sufficient to express more complica
 
 While two-level grammars provide an excellent foundation for the denition of programming languages, the transition to usable implementations is arbitrarily indeterminate. Thus, a naive interleaving of the two-step payment of rules and strings is unsuccessfully inefficient, and, moreover, the termination cannot be guaranteed for theoretical reasons. cannot be guaranteed for theoretical reasons. On the other hand, from the long development of the over- systematic methods for classical syntax analysis as well as for attribute evaluation are available. attribute evaluation are available. In order to be able to profit from them, the simplest means is a transformation of two-level grammars into corresponding attribute grammars. For this the formalism of extended axiom grammars can be used to specify analysis-oriented restricted two-level grammars can be specified in the formalism of extended axi grammars. To simplify the transformation, it is explicitly defined for each parameter whether it is to be treated as input or output parameter. The restriction, since only sentence forms are allowed on the parameter positions in rule patterns, is to simplify additionally the attribute evaluation rules which can be generated, by thereby the Syntax analysis of the parameter values into the transformation can be brought forward.
 
-A transformation of extended axgrammatics into attribute grammars is conceptually difficult, if the inevitably occurring problematic traps are simply excluded. are excluded. Instead of logical programming, only functional dependencies between input and output parameters are supported, since the necessary backtracking beyond individual attribute evaluation rules is not necessary. individual attribute evaluation rules does not fit into the concept. Furthermore an attribute grammar for the original extended axgrammar still represents a, possibly non-contractual, language description. Language description represents. In order to be able to abstract now with the compiler generation on the basis of extended axgrammatics from the transformation and at all from attribute grammars certain well-formedness conditions must be kept. Powerful sufficient conditions for it, since the described language is preserved under the transformation, are related to undecidable problems (in particular uniqueness and termination) and therefore cannot be directly checked automatically.
+A transformation of extended affix grammars into attribute grammars is conceptually difficult, if the inevitably occurring problematic traps are simply excluded. are excluded. Instead of logical programming, only functional dependencies between input and output parameters are supported, since the necessary backtracking beyond individual attribute evaluation rules is not necessary. individual attribute evaluation rules does not fit into the concept. Furthermore an attribute grammar for the original extended affix grammar still represents a, possibly non-contractual, language description. Language description represents. In order to be able to abstract now with the compiler generation on the basis of extended affix grammars from the transformation and at all from attribute grammars certain well-formedness conditions must be kept. Powerful sufficient conditions for it, since the described language is preserved under the transformation, are related to undecidable problems (in particular uniqueness and termination) and therefore cannot be directly checked automatically.
 
-On the basis of understanding well-formedness constraints in the above sense for the first time, the
-the development of the Eta compiler generator at the Technische Universitat Berlin was decisively
-
+On the basis of understanding well-formedness constraints in the above sense for the first time, the development of the Eta compiler generator at the Technische Universitat Berlin was decisively
 // page v
+favored by the choice of very powerful conditions along with the consequence, as their compliance should be the responsibility of the user. Furthermore, the transformation was simplified by the introduction of an intermediate language, for which an easily understandable normal form of Extended Affix Grammars was denoted. However, it is not enough to implement only the transformation, because neither generally accepted generator systems for attribute grammars are available, nor can errors in terminology of extended axi grammars be reported in this way. With the complete implementation of a core system, however, it was possible to demonstrated by various specifications for subsets of programming languages, since the since the required restrictions often prohibit only curious formulations and since the marking of the information The labeling of the information by directions of the parameters is very helpful. In a subsequent growth phase, the modularly structured prototype was extended to include the more restrictive methods for generating more efficient compilers. more efficient compilers. The legacy was finally a too large system on dying hardware.
 
-favored by the choice of very powerful conditions along with the consequence, as their compliance should be the responsibility of the user. Furthermore, the transformation was simplified by the introduction of an intermediate language, for which an easily understandable normal form of Extended Axgrammatics was denoted. However, it is not enough to implement only the transformation, because neither generally accepted generator systems for attribute grammars are available, nor can errors in terminology of extended axi grammars be reported in this way. With the complete implementation of a core system, however, it was possible to demonstrated by various specifications for subsets of programming languages, since the since the required restrictions often prohibit only curious formulations and since the marking of the information The labeling of the information by directions of the parameters is very helpful. In a subsequent growth phase, the modularly structured prototype was extended to include the more restrictive methods for generating more efficient compilers. more efficient compilers. The legacy was finally a too large system on dying hardware.
-
-A porting of selected components is however inappropriate in this situation, since substantial Ezienzeinbuen are to be led back straight on it, since already the interfaces of the Eta generator system are based on the too simple normalized Extended Axgrammatics. Besides it was recognized, how deficits in the expression comfort can be repaired, by e.g. replacing the inequality mentioned above by a special notation, which can be understood as an abbreviation and thus and thus preserving the purity of the calculus. A necessary redesign led in the group diploma thesis of two of the authors (J. Demuth and S. Weber) to a core system for the generation of practical compilers, which is presented in this report. is presented. We are now hoping to use this approach to present the promising approach that has been developed at the University of Berlin due to lack of personnel and lack of interest, to a broader public. Influenced by the work with the Oberon system of Prof. Wirth, we join his criticism of the dimensions of common software systems. So we follow his example and print the source code of our implementation commented and complete in the original. We consider this is indispensable for an assessment of the complexity of a system and thus of its adequacy. system and thus its appropriateness; also a discussion of different programming techniques can only be can only take place on the basis of such publications. This procedure affects itself unquestionably also strongly on the form of the implementation. On the one hand an easily readable programming language is required, on the other hand the algorithms used must be implemented concisely and be implemented. As a consequence, the usually presented " abstract algorithms\ can be omitted, which in any case largely obscure the existing optimization possibilities. For the reasons mentioned above, we consider the source code as an essential aspect of the publication.
+A porting of selected components is however inappropriate in this situation, since substantial Ezienzeinbuen are to be led back straight on it, since already the interfaces of the Eta generator system are based on the too simple normalized Extended Affix Grammars. Besides it was recognized, how deficits in the expression comfort can be repaired, by e.g. replacing the inequality mentioned above by a special notation, which can be understood as an abbreviation and thus and thus preserving the purity of the calculus. A necessary redesign led in the group diploma thesis of two of the authors (J. Demuth and S. Weber) to a core system for the generation of practical compilers, which is presented in this report. is presented. We are now hoping to use this approach to present the promising approach that has been developed at the University of Berlin due to lack of personnel and lack of interest, to a broader public. Influenced by the work with the Oberon system of Prof. Wirth, we join his criticism of the dimensions of common software systems. So we follow his example and print the source code of our implementation commented and complete in the original. We consider this is indispensable for an assessment of the complexity of a system and thus of its adequacy. system and thus its appropriateness; also a discussion of different programming techniques can only be can only take place on the basis of such publications. This procedure affects itself unquestionably also strongly on the form of the implementation. On the one hand an easily readable programming language is required, on the other hand the algorithms used must be implemented concisely and be implemented. As a consequence, the usually presented " abstract algorithms\ can be omitted, which in any case largely obscure the existing optimization possibilities. For the reasons mentioned above, we consider the source code as an essential aspect of the publication.
 
 The documentation starts with a short critique of the traditional compiler design and an introduction to the underlying calculus of the implementation. Chapter 2 presents the redesign of our compiler generator _Epsilon_ in comparison to Eta. The chapter 3 introduces the description of the implementation with an overview.  In the following chapters 4, 5, 6 and 7 the individual modules are treated in detail, structured according to the following main tasks the main tasks reading of a specification, generation of scanner and parser as well as of two alternative evaluators. Chapter 8 offers an outlook.
 
@@ -69,48 +68,48 @@ In the appendix the specification language of Epsilon and a reduced example are 
 
 Berlin, March 1997
 
-Jochen Demuth, Stephan Weber, Sonke Kannapinn, Mario Kroplin
+Jochen Demuth, Stephan Weber, Sönke Kannapinn, Mario Kröplin
 
 // page 1
 
 == Introduction
 
-=== 1.1 Motivation
+=== Motivation
 
 The development of compiler construction in the last decades led to a standard modularization of translators and to methods for the realization of these modules. Partly even "tools" are used for the generation of single modules, but these are inconsistent and in complicated areas (context conditions, code generation) without intimate knowledge of the details. with difficulty understandable. Finally, the automation of the "translator construction by hand" is at least questionable.
 
 A more systematic approach for a generation of translators is the formal description of a programming language by means of a calculus. of a programming language with the help of a calculus. As an example for this the van Wijngaarden grammars may be mentioned, a form of form of two-suggested grammars. Such a grammar was used for the first time to denote the context conditions of the language Algol 68. however this calculus is not suitable for the generation of appropriate compilers. In contrast to it the well-known attribute grammars are implementation-nearer; they represent an open Kalkul, in that they require the use of a further specification or programming language. Thus they are on the one hand more difficult to understand, on the other hand this openness led to a multiplicity different realizations.
 
-The analysis-oriented _extended axgrammars_ proposed by Watt combine the advantages of both classes of grammars <<Watt>>; as a closed calculus they offer the possibility of the description of programming languages with their translations and form the basis of our compiler generator. basis of our compiler generator.
+The analysis-oriented _extended affix grammars_ proposed by Watt combine the advantages of both classes of grammars <<Watt>>; as a closed calculus they offer the possibility of the description of programming languages with their translations and form the basis of our compiler generator. basis of our compiler generator.
 
-The principal suitability of this calculus for the automatic production of translators was already demonstrated by the compiler generator Eta <<Schroer>>, which was developed in 1984. has been used with many extensions in the context of courses. The choice of languages for implementation on a mainframe computer as well as the sheer size of the system made system made maintenance or porting almost impossible. Thus, only one system was transferred to modern UNIX computers; in addition, the outdated conception of the system outdated conception blocks substantial optimizations.
+The principal suitability of this calculus for the automatic production of translators was already demonstrated by the compiler generator Eta <<Schröer>>, which was developed in 1984. has been used with many extensions in the context of courses. The choice of languages for implementation on a mainframe computer as well as the sheer size of the system made system made maintenance or porting almost impossible. Thus, only one system was transferred to modern UNIX computers; in addition, the outdated conception of the system outdated conception blocks substantial optimizations.
 
 With _Epsilon_, a _small_ experimental system with greater flexibility and controllability was to be designed and implemented from scratch. compilers from a uniform, formal specification.
 
 // page 2
 
-=== 1.2 Advanced Axgrammatics
+=== Extended Affix Grammars
 
-In the following, it is assumed that the reader is already familiar with the principle of two-eyed grammars. since the terms needed later are introduced here only informally. In the foreground stands the textual naming of essential contents for the clarification of the conceptual level as well as the introduction of a procedure model as operational semantics, which is sufficient and especially helpful for the understanding of the implementation. A formal definition of EAGen can be found for example in <<Schroer>>.
+In the following, it is assumed that the reader is already familiar with the principle of two-eyed grammars. since the terms needed later are introduced here only informally. In the foreground stands the textual naming of essential contents for the clarification of the conceptual level as well as the introduction of a procedure model as operational semantics, which is sufficient and especially helpful for the understanding of the implementation. A formal definition of EAGs can be found for example in <<Schröer>>.
 
-An _Extended Axgrammar_, called _EAG_ for short, is a two-part grammar: It consists of a context-free grammar whose non-terminals are enriched by parameters (the _hyper-grammar_), and a set of context-free rules (with their own terminals and non-terminals) to describe the parameter values (the _meta-grammar_).
+An _Extended Affix Grammar_, called _EAG_ for short, is a two-level grammar: It consists of a context-free grammar whose non-terminals are enriched by parameters (the _hyper-grammar_), and a set of context-free rules (with their own terminals and non-terminals) to describe the parameter values (the _meta-grammar_).
 
-For each parameter of a hyper-non-terminal, a direction (input, output) and by a meta-non-terminal (the _value range symbol_); the sequence of the directions and value range symbols of all parameters of a hyper-non-terminal is called its _signature_. In the hyper rules, each parameter position has an _affixform_ for the respective value range symbol. This is a record form to this meta non-terminal, in which each non-terminal occurring in it with a number possibly following it is combined to a so called _variable_.
+For each parameter of a hyper-non-terminal, a direction (input, output) and by a meta-non-terminal (the _value range symbol_); the sequence of the directions and value range symbols of all parameters of a hyper-non-terminal is called its _signature_. In the hyper rules, each parameter position has an _affix form_ for the respective value range symbol. This is a record form to this meta non-terminal, in which each non-terminal occurring in it with a number possibly following it is combined to a so called _variable_.
 
 In the following, it is assumed that the reader is already familiar with the principle of two-eyed grammars.
 since the terms needed later are introduced here only informally. In the foreground stands the textual naming of essential contents for the clarification of the conceptual level as well as
 the introduction of a procedure model as operational semantics, which is sufficient and especially helpful for the understanding of the implementation. A formal definition of EAGen
-can be found for example in [Schroer].
+can be found for example in <<Schröer>>.
 
-An Extended Axgrammar, called EAG for short, is a two-part grammar: It consists of a context-free grammar whose non-terminals are enriched by parameters
+An Extended Affix Grammar, called EAG for short, is a two-level grammar: It consists of a context-free grammar whose non-terminals are enriched by parameters
 (the hyper-grammar), and a set of context-free rules (with their own terminals and
 non-terminals) to describe the parameter values (the meta-grammar).
 
 For each parameter of a hyper-non-terminal, a direction (input, output) and by
 a meta-non-terminal (the _value range symbol_); the sequence of the
-directions and value range symbols of all parameters of a hyper-non-terminal is called its _signature_. In the hyper rules, each parameter position has an _affixform_ for the respective value range symbol. This is a record form to this meta non-terminal, in which each non-terminal occurring in it with a number possibly following it is combined to a so called _variable_. 
+directions and value range symbols of all parameters of a hyper-non-terminal is called its _signature_. In the hyper rules, each parameter position has an _affix form_ for the respective value range symbol. This is a record form to this meta non-terminal, in which each non-terminal occurring in it with a number possibly following it is combined to a so called _variable_. 
 
-If one removes the parametrization from the hyper-grammar, one obtains a usual context-free grammar, the _skeleton grammar_; however, this is for EAGen usually ambiguous, since certain computations are formulated with hyper-non-terminals (the _pradicates_), which can be which are only derivable by empty (and this in general ambiguous), but which consequently contribute nothing to the context-free part of the source language. If one deletes also the pradicates, the _basic grammar_ of the EAG is obtained; if this is unambiguous, then a parser can be created according to classical methods of syntax analysis, which for correct inputs supplies the _appropriate derivation tree_ for correct input.
+If one removes the parametrization from the hyper-grammar, one obtains a usual context-free grammar, the _skeleton grammar_; however, this is for EAGs usually ambiguous, since certain computations are formulated with hyper-non-terminals (the _pradicates_), which can be which are only derivable by empty (and this in general ambiguous), but which consequently contribute nothing to the context-free part of the source language. If one deletes also the pradicates, the _basic grammar_ of the EAG is obtained; if this is unambiguous, then a parser can be created according to classical methods of syntax analysis, which for correct inputs supplies the _appropriate derivation tree_ for correct input.
 
 The large expression power of EAGs results however from the parametrization of the HyperGrammar. An implementation can be made by it, since each hyper-non-terminal is realized by a _procedure_. The parameters of the non-terminals are converted into procedure parameters, and the direction and type are transferred accordingly. Each affix form describes the syntactic structure of a parameter, which is checked (_analysis_) or built up (_synthesis_) according to the direction. Equal variables in affix forms of a hyper-rule stand for the same values (_consistent substitution_). This must be checked in the implementation if necessary by _comparisons_. For the structural checks is required, since the meta-grammar for a value range symbol, for which analyses or comparisons are performed, is unambiguous.
 
@@ -128,23 +127,19 @@ can be regarded as an attribute grammar whose attributes are typed according to 
 
 == Revision and redesign
 
-=== 2.1 Previous implementations
+=== Previous implementations
 
-Already in 1984 the compiler generator Eta <<Schroer>> was developed at the TU-Berlin, which can look back on a use of many years in the context of lectures.
+Already in 1984 the compiler generator Eta <<Schröer>> was developed at the TU-Berlin, which can look back on a use of many years in the context of lectures.
 
 The compilers generated by Eta consist basically of three successive phases. phases. In the first phase a source text is transferred by a fixed scanner into a token sequence. into a token sequence. In the second phase, a generated parser checks this token sequence for syntactic correctness with respect to the context-free basic grammar and generates the link derivation of the source text.  In the third phase, this is processed by an evaluator, which detects context errors and in the error-free case creates and outputs the translation of the source program. The Data transfer between the phases takes place over files.
 
 The generation of a compiler always takes place in four phases. In the first phase the data stored in language COLA is converted into a standardized EAG after checking for correctness.  EAG, on the basis of which the compiler is generated. In this non-trivial AFFIxforms occur at the most in the so-called primitive pradicates created by the normalization. created by normalization. In the second phase a parser is generated. In the third and fourth phase an evaluator is generated. In the third phase, program code is generated for the non-terminals specified as pradicates and for the primitive pradicates. In the fourth phase the generation of the evaluator using the already generated pradicate code.
 
-=== 2.2 Increase of the expression comfort
+=== Increase of the expression comfort
 
-Under Eta, EAGs are described in the specification language COLA. For the new implementation, extensions have been made to this language with the goal of increasing expressive convenience. These language extensions represent abbreviation mechanisms, but they also provide hints for optimizations in the implementation. In particular the calculus of the EAGen is not abandoned.
+Under Eta, EAGs are described in the specification language COLA. For the new implementation, extensions have been made to this language with the goal of increasing expressive convenience. These language extensions represent abbreviation mechanisms, but they also provide hints for optimizations in the implementation. In particular the calculus of the EAGs is not abandoned.
 
-To be able to require the inequality of variable values in COLA analogous to the consistent substitution the formulation of unequal radicals is necessary. The avoidance of the extensive naive formulation leads thereby to a complicated specification. In addition a large part of the resources in the implementation, which leads to inefficient compilers. leads. Provided that the meta-grammar is unambiguous, a well-formed unequal predicate can be generated automatically. The implementation of this pradicate
-
-// page 6
-
-is, however, more favorable as a negation of the primitive equal-radical. As a new means of expression we provide in Epsilon the inequality sign "`#`" as a new means of expression. If it is prefixed to the identifier of a variable, then this expression designates a new variable, which is compared with the original variable by the inequal-pradicate. On deffining positions different occurrences of the different occurrences of the new variable must receive the same values. For simplification and for practical relevance, no more than one unequal operator may be applied to an identifier. Complements of affix forms as well as the general negation are not supported.
+To be able to require the inequality of variable values in COLA analogous to the consistent substitution the formulation of unequal radicals is necessary. The avoidance of the extensive naive formulation leads thereby to a complicated specification. In addition a large part of the resources in the implementation, which leads to inefficient compilers. leads. Provided that the meta-grammar is unambiguous, a well-formed unequal predicate can be generated automatically. The implementation of this pradicate is, however, more favorable as a negation of the primitive equal-radical. As a new means of expression we provide in Epsilon the inequality sign "`#`" as a new means of expression. If it is prefixed to the identifier of a variable, then this expression designates a new variable, which is compared with the original variable by the inequal-pradicate. On deffining positions different occurrences of the different occurrences of the new variable must receive the same values. For simplification and for practical relevance, no more than one unequal operator may be applied to an identifier. Complements of affix forms as well as the general negation are not supported.
 
 The context-free structure of programming languages is usually given in language reports in EBNF notation. In order to be able to use this as a basis for a specification, the EBNF operators for alternatives, options and repetitions are introduced in Epsilon. Their meaning is determined by specifying a transformation into context-free rules. The direct transformation of each grouping into a new non-terminal proves to be proves to be favorable.
 
@@ -154,19 +149,15 @@ If an EBNF operator occurs in the nontrivial context, an anonymous nonterminal i
 
 table-2.2-transformation-of-EBNF-operators-without-context.PNG
 
-In contrast to COLA, however, the signatures for anonymous non-terminals, i.e. the directions and value range symbols of the parameters, can no longer be assigned to an identifier, which is why these properties are specified together with the parameterization within the rules. However, such formal parameter lists are only used if they are
-
-// page 7
-
-in the transformed rules belong to left pages. Thus these properties are generally specified several times. This specification is extended to all non-terminals for consistency. A special section of the specification, in which the signatures of the hyper-non-terminals is no longer necessary. Analogous to programming languages without FORWARD declarations, however, the verification of the affix forms is then is not already possible when reading in the specification.
+In contrast to COLA, however, the signatures for anonymous non-terminals, i.e. the directions and value range symbols of the parameters, can no longer be assigned to an identifier, which is why these properties are specified together with the parameterization within the rules. However, such formal parameter lists are only used if they are in the transformed rules belong to left pages. Thus these properties are generally specified several times. This specification is extended to all non-terminals for consistency. A special section of the specification, in which the signatures of the hyper-non-terminals is no longer necessary. Analogous to programming languages without FORWARD declarations, however, the verification of the affix forms is then is not already possible when reading in the specification.
 
 Furthermore anonymous non-terminals, which are to be treated as Pradikate particularly, cannot be be listed in a section of the specification. Moreover, there is no explicit distinction of pradicates is appropriate to their controversial role. A determination of the pradicates can be determined by the generator, whereby different implementations are conceivable.
 
-In meta-rules the use of EBNF operators is not reasonable, because an inductive construction and deconstruction of affixes with anonymous meta-non-terminals cannot be formulated. Thus, in meta-rules a restriction is made to the operator " j\ to summarize alternatives.
+In meta-rules the use of EBNF operators is not reasonable, because an inductive construction and deconstruction of affixes with anonymous meta-non-terminals cannot be formulated. Thus, in meta-rules a restriction is made to the operator "|" to summarize alternatives.
 
 The separation of meta- and hyper-rules is also removed. For the distinction of meta- and hyper-rules, different characters are used to separate the left and right rule sides. rule pages are used.
 
-=== 2.3 Redesign of the compiler generator
+=== Redesign of the compiler generator
 
 The strict separation of the three phases in the compilers generated by Eta is to be removed. be abolished. Remaining data transfers from the parser to the evaluator shall be done efficiently in memory. A confusion of the lexical and the syntactical analysis is realized in Epsilon because the splitting of the source text is not done in one go, but token by token is done.
 
@@ -178,13 +169,13 @@ The calculation of the parameter values is no longer done by primitive pradices 
 
 The lexical analysis is implemented similarly as under Eta by a fixed, parameterized scanner. In order to be able to generate one-pass compilers, the syntactic analysis is carried out according to the LL(1) method. For an efficient implementation of repetitions in loops, the LEAG condition must be restricted. As an example of a more powerful evaluation procedure, a separate single sweep evaluator is provided.
 
-For the generation the normalization of an EAG and the introduction of primitive Pradikaten is is rather a hindrance, since the structure of the affix forms is lost. The data transfer between the the phases in the generator is also efficient, because an internalization of the speci is permanently present in the memory.
+For the generation the normalization of an EAG and the introduction of primitive predicates is is rather a hindrance, since the structure of the affix forms is lost. The data transfer between the the phases in the generator is also efficient, because an internalization of the speci is permanently present in the memory.
 
 // page 9
 
 == General information about the implementation
 
-=== 3.1 The implementation language 
+=== The implementation language 
 
 For the implementation of the Epsilon compiler generator a simple imperative programming language should be chosen, in order to be able to formulate the essential algorithms on the one hand efficiently and on the other hand well readable. well readable on the other hand. At present the language _Oberon_ appears to us, which is also suitable for the which is touted as the successor of Pascal and Modula, also with regard to the publication of extensive <<ReiWi>>, as the most suitable.
 
@@ -194,7 +185,7 @@ Also on a long-term basis Oberon seems to be a reasonable choice, since the smal
 
 In the following still two modules are presented, which provide fundamental basic functions. One serves Epsilon as an interface to the operating system, in the other arbitrarily large sets of natural numbers are implemented as an abstract data type.
 
-==== 3.1.1 The interface to the operating system
+==== The interface to the operating system
 
 The module `eIO` serves as an interface to the operating system, in order to limit changes to this module for porting to other platforms.  Conceptually it is on the (text-oriented) window interface the Oberon system, but its peculiarities are isolated to such an extent that, for example that, for example, a version for UNIX can be realized without the window surface can be realized. 
 
@@ -273,7 +264,7 @@ Ideally, the `TimeStamp` procedure returns a new value each time it is called. u
 
 This module is not printed because implementations are system specific.
 
-==== 3.1.2 Sets
+==== Sets
 
 The module `eSets` provides sets of natural numbers with common operations on them as an abstract data type.
 
@@ -311,7 +302,7 @@ The `New` procedure dynamically creates a new, initially empty set. In this set 
 
 The procedures  `nSetsUsed` and `ConvertToSET` serve the conversion of a set of the type `OpenSet` into a sequence of sets of the basic type `SET`. The procedure `nSetsUsed` returns the number of required sets. of the required sets, the procedure `ConvertToSET` returns the set specified in the second parameter. The first set (with index zero) contains the elements of the range `[0 ... MAX(SET)]`, the second one contains the elements of `[MAX(SET) + 1 ... 2 * MAX(SET) + 1]` and so on.
 
-=== 3.2 Overview of Epsilon
+=== Overview of Epsilon
 
 The Epsilon compiler generator is a modular system, the components of which are shown in Figure 3.1 in a module hierarchy. a module hierarchy. The arrows in it indicate the main import relations are indicated. Since the EAG module is imported by all other modules, these relationships are only indicated.
 
@@ -322,7 +313,7 @@ A compiler specification is read in by the `analyzer` using a `scanner` for the 
 .Figure 3.1: Module hierarchy of epsilon
 image::images/figure-3.1-module-hierarchy-of-epsilon.PNG[module hierarchy of epsilon]
 
-This uses an extended `Earley` parser to create derivation trees for axforms specified on parameter positions. `Predicates` exports a command for determination of the pradicates of the speciation.
+This uses an extended `Earley` parser to create derivation trees for affix forms specified on parameter positions. `Predicates` exports a command for determination of the pradicates of the speciation.
 
 As the first step of generation, the `ScanGen` module can now be used to create a scanner can be used. The module  `ELL1Gen` is the implementation of an ELL(1) parser generator, which can be used to generate real one-pass compilers. For this purpose, procedures exported from the `SLEAGGen` module are used to embed the corresponding evaluation code into the parser code. The module `EmitGen` serves the production of output procedures for the so generated compiler.
 
@@ -330,7 +321,7 @@ Using the `Shift` module, the parser generator can also be used to generate a pa
 
 To avoid naming confl In order to avoid naming conflicts in the Oberon system, all module names were prefixed with the letter "e" in front of all module names.
 
-=== 3.3 Generally used programming techniques
+=== Generally used programming techniques
 
 In this section special programming techniques and conventions are introduced, which are common to all modules. 
 
@@ -348,7 +339,7 @@ In references to objects stored in such fields, the constant `nil` is used analo
 
 == The internalization
 
-=== 4.1 The internal representation of the EAG
+=== The internal representation of the EAG
 
 The module `EAG` provides the whole compiler generator with an internal representation of the specification. to the entire compiler generator. For this purpose, this module contains exposed data structures for efficient access to components of the meta- and hyper-grammar. Furthermore there are associated constructor procedures for the construction of the internal representation as well as simple output procedures for messages in terminology of the specification.
 
@@ -361,7 +352,8 @@ As an example for the explanation of the internal representation the following s
       <N> f <+ 'i' N: N> 'a' <N> g <+ : N>
       <N> f <- 'i' N: N> 'b' <N> g <- : N>.
 ----
-==== 4.1.1 Meta grammar
+
+==== Meta grammar
 
 The meta-terminals, -non-terminals as well as -rules are represented in the fields `MTerm`, `MNont` resp. `MAlt` and `MembBuf` respectively (see Figure 4.1).
 
@@ -396,7 +388,7 @@ image::images/figure-4.1-internal-representation-of-the-meta-grammar.PNG[interna
 
 // page 17 
 
-==== 4.1.2 Hyper-terminals and -non-terminals
+==== Hyper-terminals and -non-terminals
 ----
     TYPE
         Rule = POINTER TO RuleDesc;
@@ -454,7 +446,7 @@ A hyper terminal is represented by a unique entry in the `HTerm` field. The `Id`
 
 The variable `StartSym` points to the start symbol of the hyper-grammar.
 
-==== 4.1.3 Hyper rules
+==== Hyper rules
 ----
     CONST
         firstHAlt = 0; firstHFactor = 0;
@@ -509,9 +501,9 @@ A hyper-alternative consists of a (possibly empty) sequence of factors represent
 
 The components Ind of the alternatives and factors each contain a unique index. The variables `NextHAlt` and `NextHFacto` indicate the next index value to be assigned. The variable `NONont` contains the number of nodes of the type `Nont`. 
 
-For an EAG the quantities of the reachable, productive and empty derivable hypernonterminals as well as the quantity of the pradicates are stored. Since gaps can occur in the field `HNont` for technical reasons (see page 24), the quantity of denoted entries is described by `All`.
+For an EAG the sets of the reachable, productive and empty derivable hypernonterminals as well as the quantity of the pradicates are stored. Since gaps can occur in the field `HNont` for technical reasons (see page 24), the quantity of denoted entries is described by `All`.
 
-==== 4.1.4 Parameters
+==== Parameters
 ----
     TYPE
         ParamsDesc = RECORD
@@ -551,7 +543,7 @@ An entry in `ParamBuf` points to the tree representation of an affix form. This 
 .Figure 4.4: Explanation of the pointer structure of the parameters
 image::images/figure-4.4-explanation-of-the-pointer-structure-of-the-parameters.PNG[explanation of the pointer structure of the parameters]
 
-The nodes of a derivation tree are represented in the `NodeBuf` field, variables in the Var field. If the component `Affixform` has a negative value, the affix form consists of a variable; the absolute value refers to an entry in the `Var` field. If the component  `Affixform` component has a positive value, it refers to an entry in `NodeBuf`. The component `isDef` indicates whether the axform terminates on denoting or applying affix position is located.
+The nodes of a derivation tree are represented in the `NodeBuf` field, variables in the Var field. If the component `Affixform` has a negative value, the affix form consists of a variable; the absolute value refers to an entry in the `Var` field. If the component  `Affixform` component has a positive value, it refers to an entry in `NodeBuf`. The component `isDef` indicates whether the affix form terminates on denoting or applying affix position is located.
 
 Nodes of a derivation tree are represented by consecutive entries in the NodeBuf field. `NodeBuf[i]` denotes the applied meta alternative, `NodeBuf[i+j]` denotes the j-th subtree. If `NodeBuf[i+j]` is a negative value, it denotes a variable.
 
@@ -559,7 +551,7 @@ A variable is described by an entry in the `Var` field. A reference to this entr
 
 The `Scope` data type identifies the variables of a scope. They are specified in the field `Var` in the entries from `Beg` to `End - 1`.
 
-==== 4.1.5 Other
+==== Miscellaneous
 ----
     CONST
         BaseNameLen = 18;
@@ -594,17 +586,14 @@ The variable `History` reflects the processing state of the EAG. As entries are 
 
 The procedures `WriteX` allow a uniform output of objects of the data type X.
 
-=== 4.2 The reading of specifications
+=== The reading of specifications
 
 The analyzer internalizes the textual representation of an EAG and stores its internal representation in the base `EAG` module.
 
-Since in the Epsilon specification language (see Section A) the signatures of the hyper-nonter-
-
 // page 23 
+Since in the Epsilon specification language (see Section A) the signatures of the hyper-nonterminals and the meta-rules are not specified in their own sections separate from the hyper-rules, they are generally not known when the hyper-rules are read in. Since they must be available, for example, for the syntactic analysis of the affix forms, two passes are necessary for the internalization. In the _first_ pass the syntactic analysis is carried out as far as possible and the signatures are as well as the meta-rules are determined. In the internal representation internal representation, errors may occur, since ambiguities in the context-free grammar may cause in the context-free grammar, the current parameters cannot be assigned unambiguously without knowledge of the signature. Also it cannot be decided during the reading, whether for an operator an anonymous non-terminal must be generated or not, because the context is not yet known. Since affix forms cannot be edited, they are stored internally as a token sequence. The _second_ pass takes place over the internal representation, because in this This is because the parameters are essentially checked and the structure is corrected. Here, as described in section 4.4, the parsing of the affix forms is done according to Earley's algorithm. For error messages, position information is stored. After an error-free internalization typical properties of the context-free skeleton grammar are calculated.
 
-minals and the meta-rules are not specified in their own sections separate from the hyper-rules, they are generally not known when the hyper-rules are read in. Since they must be available, for example, for the syntactic analysis of the affix forms, two passes are necessary for the internalization. In the _first_ pass the syntactic analysis is carried out as far as possible and the signatures are as well as the meta-rules are determined. In the internal representation internal representation, errors may occur, since ambiguities in the context-free grammar may cause in the context-free grammar, the current parameters cannot be assigned unambiguously without knowledge of the signature. Also it cannot be decided during the reading, whether for an operator an anonymous non-terminal must be generated or not, because the context is not yet known. Since affix forms cannot be edited, they are stored internally as a token sequence. The _second_ pass takes place over the internal representation, because in this This is because the parameters are essentially checked and the structure is corrected. Here, as described in section 4.4, the parsing of the affix forms is done according to Earley's algorithm. For error messages, position information is stored. After an error-free internalization typical properties of the context-free skeleton grammar are calculated.
-
-==== 4.2.1 First pass
+==== First pass
 
 Syntactic analysis is performed by a recursive descending parser with a pregriss symbol. Syntactic units are recognized by procedures of the same name. The structure of the internal representation is done in these procedures by the constructor statements provided in the module EAG. constructor statements. A conflict in the context-free grammar is that an identifier has both a hyper identifier introduces both a hyper-rule and a meta-rule. This conflict is solved by Factorization in the `Specification` procedure. Another conflict ict arises from the fact that both actual and formal parameters are introduced by the character "<" character. To solve this problem, the recognition of formal and current parameters is combined in the procedure `Params`. If formal parameters are recognized, they are passed in the procedure parameter  `Formal` otherwise in `Actual`. This procedure recognizes the abbreviated notation for formal parameters described in is recognized in this procedure. 
 
@@ -623,7 +612,7 @@ Formal parameters on the left side of the rule are recognized as abbreviated not
 
 The parser provides error handling that continues with the recognition after syntax errors.
 
-==== 4.2.2 Second pass
+==== Second pass
 
 In the second pass, the structures that were created incorrectly due to ambiguity are first are corrected. After that the parametrization and further context conditions are checked. 
 
@@ -636,21 +625,18 @@ This creates gaps in the `EAG.HNont` field. Therefore there is the set `EAG.All`
 
 Due to the ambiguities described above, a wrong structure may have been created. Internally mu in both cases a current parameter list is swapped with an empty one. The procedures `CheckActual` and `CheckRep` check the structure and correct it if necessary. 
 
-==== 4.2.3 Analysis of the Skeleton Grammar
+==== Analysis of the Skeleton Grammar
 
 In the following, we discuss the computation of the sets of reachable, empty-derivable, and productive hyper-nonterminals.
 
 The set of reachable nonterminals consists of the start symbol and all nonterminals that occur as a factor of a rule of a reachable nonterminal. `EAG.Reach` is computed by traversing the grammar using the recursive procedure `ComputeReach`.
 
-A hyper-nonterminal is empty-derivable if there is a terminal derivation to that nonterminal through the base grammar representing the empty word. Thus all non-terminals are empty derivable, which have an alternative without factors, as well as options and repetitions; also all non-terminals are empty derivable, which have an alternative in which all factors are empty derivable. The induction step can be performed by iteratively loosing the nonterminals in alternatives and testing whether an alternative is empty. This is done symbolically in the implementation by decrementing a numerator, which represents the number of non-terminals of an alternative (`Deg`), and comparing it to 0. The initial set is represented by a Keller
-
-// page 25
-
+A hyper-nonterminal is empty-derivable if there is a terminal derivation to that nonterminal through the base grammar representing the empty word. Thus all non-terminals are empty derivable, which have an alternative without factors, as well as options and repetitions; also all non-terminals are empty derivable, which have an alternative in which all factors are empty derivable. The induction step can be performed by iteratively loosing the nonterminals in alternatives and testing whether an alternative is empty. This is done symbolically in the implementation by decrementing a numerator, which represents the number of non-terminals of an alternative (`Deg`), and comparing it to 0. The initial set is represented by a stack
 (`stack`). For the calculation of the empty derivable non-terminals, alternatives with terminals are hidden. So that the algorithm is linear, in the field Edge a structure is built in the Edge field, in which non-terminals are referred to their occurrences. The first entries of this field are used as entry points.
 
 Hyper-terminals are productive, and a hyper-non-terminal is productive if it has an alternative in which all factors are productive. As in the computation of empty-derivative non-terminals, an iterative deletion into alternatives is performed, but in this case additionally all terminals are deleted. This is also implemented by corresponding decrementing of the numerator is implemented. Concretely, the determination of the productive non-terminals is carried out as a continuation of the determination of the empty derivable ones by deleting the terminals.
 
-=== 4.3 The Scanner
+=== The Scanner
 
 The scanner is used for character-by-character reading of epsilon specifications. It decomposes an input text on the basis of the regular language parts used there and returns a corresponding token sequence; for strings, identifiers and numbers it abstracts from their textual representation. It provides the following interface:
 ----
@@ -673,10 +659,8 @@ When a number is recognized, its value is assigned to the variable `Val`, when s
 
 Spaces (blanks, tabs, line breaks, ... ) and comments separate tokens and are read over. and will be read over. Numbers outside the valid range as well as unclosed strings and comments are reported as errors; the number of detected errors is stored in the variable `ErrorCounter`.
 
-The implementation of the `Get` procedure requires a single prefix character in a global variable `c`. After reading over the space and comments, this prefix is used to determine the token to be recognized. character is used to determine the token to be recognized; the recognition of strings, identifiers, numbers, etc. is not possible.
-
+The implementation of the `Get` procedure requires a single prefix character in a global variable `c`. After reading over the space and comments, this prefix is used to determine the token to be recognized. The recognition of strings, identifiers, numbers, 
 // page 26
-
 and comments is done in corresponding subprocedures. For the storage of the textual The following data structures are used to store the textual representations:
 ----
     CharBuf : POINTER TO ARRAY OF CHAR; NextChar : INTEGER;
@@ -702,11 +686,11 @@ image::images/figure-4.7-situation-after-recognition-of-the-tokens-Ab-Str-Id-Str
 
 // page 27
 
-4.4 The Earley parser
+=== The Earley parser
 
 The affix forms specified as parameters in hyper-rules must be checked for syntactic correctness during internalization by the analyzer. with regard to algorithms used later, it makes sense not to use a flat, textual representation of the affix forms in the `EAG` module, but rather their derivation trees, from which the required structural structure information can be read off. The module `Earley` presented here covers these both tasks.
 
-Syntactically correct are affix forms, if they are sentence forms to the respective value range symbol in which variables occur instead of meta-non-terminals. A check must be possible for arbitrary, possibly also ambiguous meta-grammars and is done here as in Eta by a universal parser proposed by Earley [Earley], which does not require a generation but is directly controlled by a grammar. In the further description of this module we have to assume the reader's knowledge of the original algorithm, since a comprehensive explanation of the procedure would go beyond the given framework. An Earley parser can be regarded as a parallel bottom-up parser; while the input is read token by token, { starting from the start symbol { bottom up all possible partial derivation trees for the input prax read so far are kept in parallel in so-called _item lists_.For correct inputs finally a complete derivation tree is available.
+Syntactically correct are affix forms, if they are sentence forms to the respective value range symbol in which variables occur instead of meta-non-terminals. A check must be possible for arbitrary, possibly also ambiguous meta-grammars and is done here as in Eta by a universal parser proposed by Earley <<Earley>>, which does not require a generation but is directly controlled by a grammar. In the further description of this module we have to assume the reader's knowledge of the original algorithm, since a comprehensive explanation of the procedure would go beyond the given framework. An Earley parser can be regarded as a parallel bottom-up parser; while the input is read token by token, -- starting from the start symbol -- bottom up all possible partial derivation trees for the input prax read so far are kept in parallel in so-called _item lists_.For correct inputs finally a complete derivation tree is available.
 
 Since the original Earley parser cannot recognize sentence forms, but only sentences, this problem was solved in Eta. problem was brought back to the word problem in Eta by extending the meta-grammar with rules in which the in which the meta-non-terminals appear as new terminals. This leads to an increased complexity and also inconsistency, because the original algorithm can be extended to the recognition of sentence forms by a trivial change in the scanner step. A second extension of the Earley parser serves not only to check the correctness of axes of affix forms, but also to build the corresponding derivation trees.
 
@@ -727,10 +711,8 @@ Initially the module can be initialized by calling `Init`, finally the dynamical
 
 While the affix forms are being read in, they can be transferred to a buffer in this module with the procedures `StartAffixform`, `AppMSym` and `EndAffixform`. `StartAffixform` returns a unique reference to the stored affix form. The procedure `CopyAffixform` procedure is used by the analyzer when resolving the abbreviated specification of parameters on the left to duplicate affix forms.
 
-If all meta rules are available in the `EAG` module, the procedure `Parse` can be used to check a previously entered axform and to build it. previously entered affix form and to build a corresponding derivation tree. be used. The procedure expects beside the affix form to be treated the value range symbol as well as a marker as input, which indicates whether the affix form in question is based on defining
-
+If all meta rules are available in the `EAG` module, the procedure `Parse` can be used to check a previously entered affix form and to build a corresponding derivation tree. The procedure expects, beside the affix form to be treated, a value range symbol as well as a marker as input, which indicates whether the affix form in question is based on defining
 // page 28
-
 or applying position. This marker is stored unseen to newly created variables and will be used later by the analyzer. As output a reference to the tree, which was built in the fields NodeBuf and Var of the module EAG.
 
 For the intermediate storage of the Afxforms and the parsing by the algorithm of Earley's algorithm, the following global data structures are used:
@@ -763,16 +745,16 @@ To be able to build derivation trees with the Earley parser, the items are exten
 
 // page 29  
 
-After recognition of a correct affix form, the last item list consists of only one item, from which a recognition path can be traced backwards via the `left` and `sub` chaining. can be traced. The items which can be reached from the last item via these two components form together with these components themselves as edges a tree, from which in a traversal a derivation tree can be created. For an ambiguous meta-grammar, this derivation tree reflects the first derivation found; in particular, it is relevant that for an trivial affix form, which consists of `only` one meta-variable, this trivial derivation is recognized. To facilitate the tree construction, the variables to be created for an affix form are already variables to be created for an axform are already created in `EAG.Var` during the recognition in the scanner step; References to them are stored as negative numbers in the components `Sub` and transferred later into the derivation tree.
+After recognition of a correct affix form, the last item list consists of only one item, from which a recognition path can be traced backwards via the `left` and `sub` chaining. can be traced. The items which can be reached from the last item via these two components form together with these components themselves as edges a tree, from which in a traversal a derivation tree can be created. For an ambiguous meta-grammar, this derivation tree reflects the first derivation found; in particular, it is relevant that for an trivial affix form, which consists of `only` one meta-variable, this trivial derivation is recognized. To facilitate the tree construction, the variables to be created for an affix form are already variables to be created for an affix form are already created in `EAG.Var` during the recognition in the scanner step. References to them are stored as negative numbers in the components `Sub` and transferred later into the derivation tree.
 
 Figure 4.8 shows a small grammar and derivation tree of an affix form with variables. Figure 4.9 shows the items created by the Earley parser for this and accessible from the root via `Left` and `Sub` in the tree representation mentioned above. `Left`-pointers are shown as arrows pointing to the left arrows, `sub`-pointers as arrows pointing to the right. The three dotted arrows are references to variables that have already been created.
 
-.Figure 4.8: Meta grammar and derivation tree for an affixform
-image::images/figure-4.8-meta-grammar-and-derivation-tree-for-an-affixform.PNG[meta grammar and derivation tree for an affixform]
+.Figure 4.8: Meta grammar and derivation tree for an affix form
+image::images/figure-4.8-meta-grammar-and-derivation-tree-for-an-affixform.PNG[meta grammar and derivation tree for an affix form]
 
-In this implementation, some significant optimizations have been added. So a token is used to avoid unnecessary additions of items to the current list; an item is not list; an item will not be inserted if the symbol behind the point is a terminal and does not match the next input symbol. This leads not only to a speedup, but also to sometimes significantly smaller item lists. In particular hashing when searching for items, since the constant effort of initializing the hash table in the of initializing the hash table when creating a new list now { for common affix forms and meta grammars { is greater than the savings in searching in these lists.
+In this implementation, some significant optimizations have been added. So a token is used to avoid unnecessary additions of items to the current list; an item is not list; an item will not be inserted if the symbol behind the point is a terminal and does not match the next input symbol. This leads not only to a speedup, but also to sometimes significantly smaller item lists. In particular hashing when searching for items, since the constant effort of initializing the hash table in the of initializing the hash table when creating a new list now -- for common affix forms and meta grammars -- is greater than the savings in searching in these lists.
 
-Furthermore, the boolean `Predicted` field is used to perform the Predictor step at most once { for each non-terminal per item list.
+Furthermore, the boolean `Predicted` field is used to perform the Predictor step at most once -- for each non-terminal per item list.
 
 A last optimization resulted from the analysis of common EAGs: Almost 90% of all affix forms consist either trivially only of the value range symbol itself or simply of a right rule page. The recognition and the construction of the associated derivation trees can be done directly much faster than with the Earley parser. This treatment of simple affix forms is described in
 
@@ -783,7 +765,7 @@ image::images/figure-4.9-tree-representation-of-items-of-the-earley-parser.PNG[t
 
 of the procedure `SimpleParse` is implemented. The Earley parser is only called after a failure of this procedure.
 
-=== 4.5 The determination of the predicates
+=== The determination of the predicates
 
 In the module  `Predicates.Mod` the pradicates of an EAG are determined. Pradicates are those hyper-non-terminals, which can be derived context-free up to the empty word. Also, the pradicates should be productive. 
 
@@ -797,13 +779,13 @@ After the calculation of the predicates, they can be output with the `List` comm
 
 // page 32
 
-=== 4.6 Implementations
+=== Implementations
 
 // page 55
 
-== Scanner and parser generator
+== Scanner and Parser Generator
 
-=== 5.1 The Scanner Generator
+=== The Scanner Generator
 
 Efficient scanner generation is difficult. This applies in particular for the scanner generation from an EAG, since here the regular components of a source language are described by parts of the context-free basic grammar. Therefore in Epsilon despite the resulting the recognition of the real regular parts of speech as well as the corresponding parameter calculation is additionally performed by the generated parser and only the constant part of speech described by the hyper-terminals is recognized by a scanner.
 
@@ -816,14 +798,12 @@ A sequence of letters and digits that represents a keyword is recognized by the 
 A string consists as in Modula-2 of an arbitrary string, which is separated by the characters " ' " or " " ". Because the recognition of strings is done by the parser, the scanner recognizes tokens character by character after such a delimiter until either a corresponding delimiter terminates the string or the end of the line or text is reached. To avoid the recognition of blank characters in a string, a single blank character is allowed as a token. 
 
 Comments are arbitrary strings that are " nested\ by the symbols " (* " and " \*) " symbols. If the symbol "(* " does not occur explicitly as a token, comments
-
 // page 56
-
 treated by the scanner as an intermediate space.
 
 To reduce the generation effort, a parametric scanner was designed. This is parameterized with pairs of token values and representations of hyper-terminals. There is a unique assignment between tokens and their representations.
 
-==== 5.1.1 The Parametric Scanner
+==== The Parametric Scanner
 
 Decision trees are used to analyze the finite language of token representations of an EAG. Since the realization of these trees is quite simple, a table to be created by the generator can be avoided. by the generator can be avoided, by parameterizing the scanner by inserted  procedure calls, which builds the trees during initialization (see Fig. 5.1). The recognition of a token representation then starts at the root of the associated decision tree. In each step, the character read in is compared with that of the node. In case of equality a transition to the son (vertical arrows) takes place together with the reading of the next character. In case of inequality, the current character is passed to the brother (horizontal arrows). If there is no son left, a token representation is fully recognized. On the other hand, the unsuccessful search of all brothers indicates that the current character does not belong to the token representation. However, a beginning of the read string can already be completely recognized at a string may have been recognized completely. This reflects an existing token value.
 
@@ -888,7 +868,7 @@ are stored in parallel in the `PosBuf` field.
 
 The buffered reading of the input is implemented by the procedure `GetBufCh`, the unbuffered reading by the procedure `GetCh`. Both procedures read characters primarily from the buffer. To reset the input after buffered reading only the initial index `CurCh` must be reset. If an overflow threatens, the buffer is shifted by the procedure `CopyBuf` to the beginning of the field `ChBuf`. For checking one query per token is sufficient, because the maximum token length is known.
 
-==== 5.1.2 The generator
+==== The Generator
 
 The creation of a scanner consists in this implementation only of the parameterization of a fixed scanner body. As with the parser generation the constant parts from a text file into the scanner to be generated. At the insertion marks "$" the variable parts are inserted. These are the module name, the length of the longest token and the number of the tokens. In the procedure `BuildTree` of the generated scanner furthermore initialization calls for all hyper-terminals of the EAG, which make their textual representation and their token number known to the scanner.
 
@@ -903,29 +883,29 @@ Allowed is only
 
 All terminals of the EAG are checked for these conditions and Verstoe is reported as an errorand the scanner will not be generated in this case.
 
-=== 5.2 The parser generator
+=== The Parser Generator
 
-This implementation of the EAGen assumes the conceptual separation of syntax analysis and affix evaluation. The syntax analysis is performed classically on the basis of the context-free basic grammar. Special attention must be paid to the EBNF constructs (alternatives, options and repetitions), which are to be implemented for Ezienzgrunden by appropriate instructions. On the other hand, derivation trees are formally introduced using the transformation from Section 2.2. To create a static derivation tree for arbitrary evaluation strategies the parser must be extended by appropriate constructor instructions. For a restricted evaluation strategy the affix evaluation (parameter calculation) can be done directly in the inserted instructions. In the case of an extended LL(1) parser corresponds this the handwritten compilers after the method of the recursive descent, whereby the derivative tree is dynamically in the form of procedure calls. Thus now a parser, which can be generated as a special one-pass compiler, whose specification corresponds to the specialization of this compiler is automatically generated according to the mentioned transformation.
+This implementation of the EAGs assumes the conceptual separation of syntax analysis and affix evaluation. The syntax analysis is performed classically on the basis of the context-free basic grammar. Special attention must be paid to the EBNF constructs (alternatives, options and repetitions), which are to be implemented for Ezienzgrunden by appropriate instructions. On the other hand, derivation trees are formally introduced using the transformation from Section 2.2. To create a static derivation tree for arbitrary evaluation strategies the parser must be extended by appropriate constructor instructions. For a restricted evaluation strategy the affix evaluation (parameter calculation) can be done directly in the inserted instructions. In the case of an extended LL(1) parser corresponds this the handwritten compilers after the method of the recursive descent, whereby the derivative tree is dynamically in the form of procedure calls. Thus now a parser, which can be generated as a special one-pass compiler, whose specification corresponds to the specialization of this compiler is automatically generated according to the mentioned transformation.
 
 // page 59
 
 Bottom-up methods are unsuitable for interleaving syntax analysis and affix evaluation in the generated bottom-up procedures are unsuitable, since an efficient evaluation results in a too strongly restricted strategy. Already the reporting of conflicts is not easy to design in a user-friendly way, and the handling of EBNF constructs seems to be rather problematic.
 
-==== 5.2.1 The generated parsers
+==== The Generated Parsers
 
 We generate parsers using the method of recursive descent with a pregriss symbol in the generator target language Oberon. As usual, a procedure is generated for each (non-anonymous) non-terminal. procedure is generated. The evaluator generator embeds the evaluation code directly into this procedure, which promises a substantial speed advantage in relation to the Auslagerung into own procedures. promises. Furthermore a user-friendly error handling is implemented. Because of their effect on the parser structure this is presented first.
 
-===== 5.2.1.1 Error Handling
+===== Error Handling
 
-The parsers have an automatic error handling according to an implementation suggestion of Grosch <<Grosch>> following the procedure of Rohrich <<Rohrich>>. All information can be read from the grammar by the generator and incorporated into the parser. no additional information by the specifier is required. Syntax errors are not only detected and reported, but also repaired according to the grammar. The evaluation code can therefore always rely on formally correct derivation trees.
+The parsers have an automatic error handling according to an implementation suggestion of Grosch <<Grosch>> following the procedure of Röhrich <<Röhrich>>. All information can be read from the grammar by the generator and incorporated into the parser. no additional information by the specifier is required. Syntax errors are not only detected and reported, but also repaired according to the grammar. The evaluation code can therefore always rely on formally correct derivation trees.
 
 During the LL(1) syntax analysis, trap situations are to be treated as error situations, since with analysis of a terminal the current input token is different from the expected terminal, since when analyzing alternatives, the input token is not contained in any director set, and since when analyzing options or repetitions the input token is neither in the first nor in the follow set of the construct. For a good error handling the test must be performed in time, so that the option or repetition can still be used for repair. retry can still be used for repair.
 
 When a syntax error occurs, the error position is reported along with a subset of the tokens that were a correct input continuation (Expected set). Subsequently the set of all tokens is calculated, which can serve as restart points (recovery set). The shortest token sequence up to one of these tokens is overread and the recovery point is reported. The parsing is now continued in the repair mode. The parser with affix evaluation instructions behaves as usual, except that no tokens are read from the input. but a "simple" token sequence is determined as insertion and reported. The parser remains in this mode until the current input token can be accepted. The input text can be considered repaired if the overread tokens are replaced by the ones reported as inserted; a tool can actually perform these modifications.
 
-The exact follow quantities as well as the expect and recovery quantities are dependent on the context and thus on the dynamic call hierarchy. To determine them it is necessary to information about them during parsing. For the analysis of correct inputs the union over all contexts is sufficient as (too large) follow set. With incorrect errors are detected textually as early as possible, but the state of the parser may be so far but the parser state can be already so far advanced, since no more all continuations are possible and only a subset of the exact expect set can be reported.
+The exact follow sets as well as the expect and recovery sets are dependent on the context and thus on the dynamic call hierarchy. To determine them it is necessary to information about them during parsing. For the analysis of correct inputs the union over all contexts is sufficient as (too large) follow set. With incorrect errors are detected textually as early as possible, but the state of the parser may be so far but the parser state can be already so far advanced, since no more all continuations are possible and only a subset of the exact expect set can be reported.
 
-For efficiency reasons the too large follow sets are used as usual. Furthermore only the subsets of the expected tokens are reported, which can already be determined at the generation time. These quantities are calculated by the generator for each possible error position.
+For efficiency reasons the too large follow sets are used as usual. Furthermore only the subsets of the expected tokens are reported, which can already be determined at the generation time. These sets are calculated by the generator for each possible error position.
 
 // page 60
 
@@ -935,7 +915,7 @@ The error handling repairs each incorrect input by overreading and inserting tok
 
 The two procedures RecoveryTerminal and ErrorRecovery are used to initiate error repair when a terminal or an EBNF construct is analyzed. They issue an error message, calculate the global recovery amount, read over tokens up to the recovery point and finally switch to the recovery mode. and finally switch to repair mode. In the repair mode no errors are reported or tokens are overread, instead only the inserted tokens are reported. As soon as the analysis of a terminal is successful, the error handling is finished and this mode is left again.
 
-===== 5.2.1.2 Overview of the generated parsers 
+===== Overview of the generated parsers 
 
 The generated parsers consist of one module. The structure can be seen in the program fragment can be seen. The essential procedures of the error handling are indicated with.
 ----
@@ -956,9 +936,6 @@ The generated parsers consist of one module. The structure can be seen in the pr
     (* global procedures of the parser and the inserted evaluator *)
     PROCEDURE SkipTokens(Recover : INTEGER);
         VAR GlobalRecoverySet : TokSet; i, j : INTEGER;
-----
-// page 61
-----
     BEGIN
         GlobalRecoverySet := Set[Recover];
         FOR i := firstRecStack TO RecTop - 1 DO
@@ -1013,16 +990,13 @@ The generated parsers consist of one module. The structure can be seen in the pr
         EvalInit; ParserInit; Scanner.Init; Scanner.Get(Tok);
         P0(V1); Emit(V1)
     END Compile;
-----
 
-// page 62
-----
 BEGIN ReadParserTab("Parsername.Tab")
 END Parsername.
 ----
-The required first, follow, expected and recovery quantities are read from a parser table in the module body immediately from a parser table when loading the parser. Only the parameterless procedure Compile (command) is exported, which calls the procedure of the start symbol of the basic grammar after initializations. This procedure analyzes the entire input; the included evaluator code checks the static semantics by affix calculations during parsing and generates the translation of the input, which is passed to the output procedure by the variable `V1`. 
+The required first, follow, expected and recovery sets are read from a parser table in the module body immediately from a parser table when loading the parser. Only the parameterless procedure Compile (command) is exported, which calls the procedure of the start symbol of the basic grammar after initializations. This procedure analyzes the entire input; the included evaluator code checks the static semantics by affix calculations during parsing and generates the translation of the input, which is passed to the output procedure by the variable `V1`. 
 
-===== 5.2.1.3 Code Schemes
+===== Code Schemes
 
 The conversion of symbol occurrences and EBNF constructs on right rule pages into Oberon statements can be described by the following code schemes:
 ----
@@ -1045,10 +1019,6 @@ The conversion of symbol occurrences and EBNF constructs on right rule pages int
     Analyse der Ausgabeparameter zu N
 
     (* Alternative A = A1 j : : : j An *)
-----
-
-// page 63
-----
     LOOP
         CASE Tok OF
         | Direktormenge von A1 :
@@ -1098,7 +1068,7 @@ The conversion of symbol occurrences and EBNF constructs on right rule pages int
 ----
 The LOOP statement is a real loop only in case of repetition, otherwise it only serves to avoid having to write the body twice in succession. With the standard alternatives this duplication is not avoided and can also occur nested.
 
-Occurrences of only after empty derivable non-terminals { the so-called pradicates of an EAG omitted in the basic grammar { on right rule pages are converted into calls of Boolean function procedures, which are generated by the evaluator generator. Pradicates do not contribute to the context-free denition of the source language; the code scheme is only given here for the sake of completeness.
+Occurrences of only after empty derivable non-terminals -- the so-called pradicates of an EAG omitted in the basic grammar -- on right rule pages are converted into calls of Boolean function procedures, which are generated by the evaluator generator. Pradicates do not contribute to the context-free denition of the source language; the code scheme is only given here for the sake of completeness.
 
 // page 64
 
@@ -1113,7 +1083,7 @@ Oberon statements for alternatives need only be present for real alternatives wi
 For options and repetitions, the test whether the input token is contained in the first or follow set can be coded as a direct comparison for small sets (especially one-element sets). can be coded.
 
 
-===== 5.2.1.4 Saving the First and Follow Sets
+===== Saving the First and Follow Sets
 
 In the Oberon statements for options and repetitions it is tested whether the current input token is contained in the first or follow set. input token is contained in the first or follow set. For each non-terminal N these sets are usually stored in an `ARRAY OF SET`; a test for being contained in, for example, the for example the ridge set is then implemented as follows:
 ----
@@ -1125,31 +1095,24 @@ This expression requires two divisions at runtime. Grosch [Grosch] remarks that 
 First : ARRAY MaxNont DIV 32 + 1, MaxTok OF SET;
 Tok 2 f irst(N) (N MOD 32) IN First[N DIV 32][Tok]
 ----
-The two divisions are now constant and can already be performed by the generator. The storage of the follow quantities is done analogously.
+The two divisions are now constant and can already be performed by the generator. The storage of the follow sets is done analogously.
 
-===== 5.2.2 The generator
+===== The Generator
 
 The parser generator is divided into the following subtasks:
 
-1. calculation of the first-, follow- and from there the director sets. Here all con-
-and errors are detected and reported.
-
-2. collection of information for error handling.
-
+. Calculation of the first-, follow- and from there the director sets. Here all conflicts and errors are detected and reported.
+. Collection of information for error handling.
 // page 65
-
-(a) Determination of the continuation grammar for error correction.
-
-(b) Calculation of the expected and recovery quantities for error messages and the finding of
+.. Determination of the continuation grammar for error correction.
+.. Calculation of the expected and recovery sets for error messages and the finding of
 of recovery points after errors.
+. Generation of the parser module.
+. Generation of a parser table (auxiliary file) using data calculated above.
 
-3. generation of the parser module.
+Since we do not have a suitable scanner generator, we have favored as a provisional solution to use the parser. solution to let the parser read not only the context-free, but also the regular language part, as it was already practiced in simple form under Eta. For this a parameterizable scanner is used, which however only recognizes all terminals as tokens and splits an input text into a sequence of such tokens according to fixed rules. The actually regular parts of the language, such as names or numbers, are parsed as a sequence of letter tokens or ornamental tokens. Spaces (blanks, line breaks, tabs, ...) were therefore allowed within these parts of speech and could not be used to separate the intended tokens. To solve this problem, markers were introduced to mark non-terminals as tokens by the specifier. The scanner and parser generator have been extended in that the tokenized nonterminals are terminated by intervening space and some tokenized nonterminals are thus superseded. conflict messages that have become conflict messages are suppressed. Additional well-formedness conditions for these non-terminals are also checked in the parser generator. The behavior of the generated parsers is in many practically relevant cases no longer distinguishable from a real scanner-parser combination.
 
-4. generation of a parser table (auxiliary file) using data calculated above.
-
-Since we do not have a suitable scanner generator, we have favored as a provisional solution to use the parser. solution to let the parser read not only the context-free, but also the regular language part, as it was already practiced in simple form under Eta. For this a parameterizable scanner is used, which however only recognizes all terminals as tokens and splits an input text into a sequence of such tokens according to fixed rules. The actually regular parts of the language, such as names or numbers, are parsed as a sequence of letter tokens or ornamental tokens. Spaces (blanks, line breaks, tabs, : : : ) were therefore allowed within these parts of speech and could not be used to separate the intended tokens. To solve this problem, markers were introduced to mark non-terminals as tokens by the specifier. The scanner and parser generator have been extended in that the tokenized nonterminals are terminated by intervening space and some tokenized nonterminals are thus superseded. conflict messages that have become conflict messages are suppressed. Additional well-formedness conditions for these non-terminals are also checked in the parser generator. The behavior of the generated parsers is in many practically relevant cases no longer distinguishable from a real scanner-parser combination.
-
-===== 5.2.2.1 Data structures
+===== Data Structures
 
 The following global data structures are filled in the course of the generation and are finally used to create the parser module and table:
 ----
@@ -1183,7 +1146,7 @@ GenSetT : POINTER TO ARRAY OF Sets.OpenSet; NextGenSetT : INTEGER;
 ----
 The `Nont`, `Alt`, and `Factor` fields contain information about each non-terminal, alternative, and factor of the base grammar. `Nont` is created as a parallel field to `EAG.HNont` for alternatives and factors, the `Ind` component of these EAG data structures is the index of the associated information.
 
-For each non-terminal, its first and follow set is stored, as well as an initial follow set, which is included in the expect set. iet. As information for the error correction a default alternative (`DefaultAlt`) and, if necessary, the indices of the first and follow sets as well as the local recovery and expected sets for the EBNF constructs alternative and option or repetition are stored. The quantities required in the generated parser are stored in the generator in the fields `GenSet` and `GenSetT` and finally written into the parser table. The components `AltRec`, `OptRec`, `AltExp`, `OptExp` as well as `FirstIndex` and `FollowIndex` refer to these fields and are entered into the generated parser code as fixed numbers. in the generated parser code.
+For each non-terminal, its first and follow set is stored, as well as an initial follow set, which is included in the expect set. iet. As information for the error correction a default alternative (`DefaultAlt`) and, if necessary, the indices of the first and follow sets as well as the local recovery and expected sets for the EBNF constructs alternative and option or repetition are stored. The sets required in the generated parser are stored in the generator in the fields `GenSet` and `GenSetT` and finally written into the parser table. The components `AltRec`, `OptRec`, `AltExp`, `OptExp` as well as `FirstIndex` and `FollowIndex` refer to these fields and are entered into the generated parser code as fixed numbers. in the generated parser code.
 
 The `Edge` component in `Nont` is used to store outgoing edges in corresponding graphs; `Edge` is the index of the first list entry in the `Edge` field, in which the adjacency lists of a (multi-) graph are represented. `Anonymous` is just an easier to read label anonymous non-terminals (`EAG.HNont[N].Id` < 0).
 
@@ -1205,9 +1168,9 @@ The fields `Edge`, `GenSet` and `GenSetT` are expandable, the size of which is n
 
 // page 67
 
-===== 5.2.2.2 Calculation of the First, Follow and Director Quantities
+===== Calculation of the First, Follow and Director Sets
 
-The calculation of these quantities takes place in the procedure `ComputeDir`, first that of the Firstmengen, then that of the follow quantities, whereby the initial follow quantities are stored likewise. Finally, the director sets for the alternatives are created from these sets.
+The calculation of these sets takes place in the procedure `ComputeDir`, first that of the Firstmengen, then that of the follow sets, whereby the initial follow sets are stored likewise. Finally, the director sets for the alternatives are created from these sets.
 
 The ridge sets The ridge set of a non-terminal _N_ is the set of all tokens with which a word derived from _N_ can begin. Since left recursion is forbidden, ridge sets can be computed by a recursive procedure, where first the ridge sets of the factors at the beginning of all alternatives. A flag to prevent multiple computations can also be used to detect calculations can also be used to detect left recursion.
 
@@ -1239,7 +1202,7 @@ Violations of the LL(1) condition except the left recursion already recognized a
 
 The low power of the LL(1) procedure can be somewhat supported by this regularized conflict handling. It results in this form from the usual implementation scheme and is realized in the generator as follows: If a director set overlaps with the union of the director sets of the previous alternatives, then in the procedure `Conflict` a director set conflict is reported. The problematic intersection is also output and then removed from the director set. If this becomes an empty set, it means that the corresponding alternative became unreachable or that the option was always executed or that the repetition (for correct alternatives) was not possible. the option was always executed or the repetition (for correct inputs) could not be canceled; this trap is interpreted as a design error, and parser generation is then suppressed.
 
-===== 5.2.2.3 Determination of the continuation grammar
+===== Determination of the Continuation Grammar
 
 If an alternative is to be parsed in repair mode and the input token is not contained in any director set, the parser has to select one of the alternatives for continuation arbitrarily or considering the concrete input to select one of the alternatives for continuation. As long as the expected tokens now differ from the current input token, they are reported as inserted. So that these always terminate, the alternative selected in case of an error must not lead to a cycle.
 
@@ -1274,7 +1237,7 @@ The EBNF constructs option and repetition require special attention. In their co
 
 Since this procedure computes exactly the productive nonterminals, only in a special order, it terminates successfully for any reduced basic grammar, i.e. for all non-terminals above those for options and repetitions a default alternative is chosen.
 
-===== 5.2.2.4 Calculation of Expected and Local Recovery Sets
+===== Calculation of Expected and Local Recovery Sets
 
 The generated parsers output a set of expected tokens when a syntax error is detected. when a syntax error is detected. For efficiency reasons, only the subsets that can already be determined at generation time are reported here. These so-called expected sets must be calculated by the generator for all possible error locations.
 
@@ -1287,26 +1250,27 @@ For alternatives (with at least two traps) the expect set consists of the set of
 After the message of the expected set the generated parsers read over a token sequence up to the so-called restart point. The set of those tokens, which can serve as a restart point, is called recovery set. The understanding of the denition of this set requires knowledge of the parser state when a syntax error is detected:
 
 In the case of a grammar without EBNF constructs, the analysis of the input was performed by the call to the procedure_P~1~_ generated for the start symbol _N~1~_, which analyzes a particular grammar rule. A non-terminal _N~2~_ in this rule led to the call of procedure _P~2~_. The analysis of further rules then caused at the corresponding non-terminals _N~3~_, ... , _N~n~_ the calls of the procedures _P~3~_, ... , _P~n~_. The procedure _P~n~_ now discovers a syntax error during the analysis of the factor _F_ a syntax error. The resulting call hierarchy can be illustrated as follows:
-----
-_P~1~_ analysiert _N~1~_ !    _N~2~_    : ... .
-_P~2~_ analysiert _N~2~_ !    _N~3~_    : ... .
-       .              .                 .
-       .              .                 .
-       .              .                 .
-_P~n~_ analysiert _N~n~_ !    F    : ... .
-----
+
+====
+_P~1~_ analyses _N~1~_ -> ... _N~2~_ ... .
+
+_P~2~_ analyses _N~2~_ -> ... _N~3~_ ... .
+
+  ...
+ 
+_P~n~_ analyses _N~n~_ -> ... F ... .
+====
+
 If only the last rule is considered, the analysis of the parser could be continued for all factors to the right of _F_ could be continued. The local recovery set _REC~n~_ is therefore the union of the ridge sets of these factors. of the ridge sets of these factors (the ridge set of a terminal is the terminal itself).
 
 In general, however, the restriction to the local recovery set _REC~n~_ leads to the over-reading of very large input parts. Therefore, the other rules under analysis must also be taken into account; the parsing can also be continued for all factors not yet analyzed here. can be continued. The corresponding recovery sets _REC~i~_ (_i_ = 1; ... ; _n_ - 1) are accordingly the unions of the ridge sets of all factors to the right of _N~i+1~_. The (global) recovery set _REC_ is now the union of all local recovery sets _REC~1~_, ... , _REC~n~_.
 
 After an error, tokens are read over in the input until the current input token is contained in _REC_. Its position is the recovery point mentioned above several times. The token found at this point is read in the further progress of the parsing in the repair mode in one of the procedures _P~1~_, ... _P~n~_ and leads at least there to the exit of this mode. Until then, for each terminal this procedure itself and for each non-terminal the procedure the word generated by the continuation grammar is reported as inserted. If the input token occurs in one of the inserted words, then in this implementation the repair mode is left repair mode, which leads to smaller insertions, but sometimes also to further error messages.
 
-The global recovery quantities must be calculated at runtime because, as shown, they depend on the respective call hierarchy. The local recovery quantities for all factors of all rules can already be calculated by the generator. At runtime of the generated parser are then managed as indices in a cellar, which reflects the call hierarchy; from this can be used to compute the global recovery set, if required.
+The global recovery sets must be calculated at runtime because, as shown, they depend on the respective call hierarchy. The local recovery sets for all factors of all rules can already be calculated by the generator. At runtime of the generated parser are then managed as indices in a cellar, which reflects the call hierarchy; from this can be used to compute the global recovery set, if required.
 
 For EBNF grammars, the global recovery set is analogously denoted by the transformation from section 2.2. is denoted analogously. It should be noted, however, that since anonymous non-terminals are transformed into embedded code, the
-
 // page 71
-
 are set and therefore no procedure calls for them are available in the call hierarchy at runtime; however, the cellarization of their local recovery sets could still be performed. This explicit cellarization at runtime can, however, be saved by the fact that the generator anticipates the union of the respective local recovery sets on the runtime cellar, by adding the local recovery set of an anonymous factor to all local recovery sets of this non-terminal. The local recovery set of an anonymous factor then does not need to be placed on the no longer need to be placed on the basement at runtime. The code schemes for alternatives, options and repetitions contain the ridge set of the non-terminal through which they are realized; if this is an anonymous non-terminal, then the local recovery set of the anonymous factor is added, as just described.
 
 The procedure `ComputeRec` performs all necessary computations for EBNF grammars. The alternatives are iterated from the back to the front; for each alternative a current local recovery set is enriched by corresponding tokens and stored to the factors. Anonymous non-terminals for EBNF constructs are generated by a recursive traversal with passing the current local recovery set as initialization. 
@@ -1315,23 +1279,21 @@ In some cases, after a syntax error, the entire remainder of the input is overri
 
 The denition of recovery sets for EBNF grammars via the transformation from section 2.2 leads to the inclusion of the ridge set of the corresponding non-terminal in the local recovery sets of the factors of the construct; in the right recursive formulation of the repetition, the last factor F is included in REC if it is a terminal. formulation of the repetition, the last factor of each alternative is the recursive recall. recurrence. This results in a recovery behavior that is independent of the use of this EBNF construct. consistent recurrence behavior. The inclusion of this ridge set seems to have been forgotten in Grosch's implementation proposal.
 
-===== 5.2.2.5 Storage of the sets for the generated parser
+===== Storage of the Sets for the Generated Parser
 
-The quantities needed in the generated parser are computed in the generator to components of the grammar and made available over an external table to the parser, in which they are stored in global fields. Thus, quantities can be denoted there by their index in one of the fields. To be able to enter these indices as fixed numbers into the parser module, the parser table could be created before its generation and the position of each set could be logged as its index. A compression of the table as well as the transposition of the first and the require, however, that the global fields of the generated parser are stored in the generator after the generated parser in the generator and to transfer them later into the parser table.
+The sets needed in the generated parser are computed in the generator to components of the grammar and made available over an external table to the parser, in which they are stored in global fields. Thus, sets can be denoted there by their index in one of the fields. To be able to enter these indices as fixed numbers into the parser module, the parser table could be created before its generation and the position of each set could be logged as its index. A compression of the table as well as the transposition of the first and the require, however, that the global fields of the generated parser are stored in the generator after the generated parser in the generator and to transfer them later into the parser table.
 
-In the procedure `ComputeSets` all necessary first and follow sets are stored in the field `GenSetT` and all expected and local recovery sets in the field `GenSet` by a single traversal of the grammar. GenSet field. In order to save memory space in the generated parsers, the same quantities are quantities are entered only once in each field; this requires a linear search over the previous entries. entries is necessary. The indices of the sets are stored in corresponding components to non-terminals and factors.
+In the procedure `ComputeSets` all necessary first and follow sets are stored in the field `GenSetT` and all expected and local recovery sets in the field `GenSet` by a single traversal of the grammar. GenSet field. In order to save memory space in the generated parsers, the same sets are sets are entered only once in each field; this requires a linear search over the previous entries. entries is necessary. The indices of the sets are stored in corresponding components to non-terminals and factors.
 
-For each option and each repetition a first and a follow set is needed. Since these quantities have already been calculated and stored for the non-terminals. the required selection only has to be copied into the field `enSetT`. The indices of the sets in this field are stored in the `nont` components `FirstIndex` and
-
+For each option and each repetition a first and a follow set is needed. Since these sets have already been calculated and stored for the non-terminals. the required selection only has to be copied into the field `enSetT`. The indices of the sets in this field are stored in the `nont` components `FirstIndex` and
 // page 72
-
 `FollowIndex` filed.
 
 Expected sets are needed for the EBNF constructs Alternative (with at least two traps), option and repetition. In this implementation non-terminals can realize an alternative and an option or repetition at the same time. The indices of the expect sets are therefore stored in the two `nont` components `AltExp` and `OptExp`. To note is, since for the generation always only one Expect set is needed, because in the implementation of an alternative the error handling part is optimized away, if the corresponding non-terminal also implements an option or a repetition.
 
 Recovery sets are required for each terminal and each named non-terminal on a right-hand rule page. The indices are stored in the `factor` component `Rec`. Anonymous non-terminals on right-hand rule pages are converted into embedded code; their local recovery set is therefore already added by the generator to all of its local recovery sets and does not need to be stored anymore. Further recovery sets are necessary for the above EBNF constructs. The indices of these sets are stored with their realizing non-terminals in the `nont` components `AltRec` and `OptRec`. As with the Expected sets only one of the two components is needed for the generation. Calculated are the Expected and local recovery sets are calculated as described in the previous section.
 
-===== 5.2.2.6 Generation of the parser module
+===== Generation of the Parser Module
 
 The creation of a parser module is done by the procedure `GenerateMod`. The module structure and the fixed parts, as for example the procedures for the error repair, are copied from a text file into the parser to be generated. The specific parts are inserted at the insertion marks "$". parts are inserted.
 
@@ -1345,17 +1307,17 @@ If, as described in Section 7, a one-pass compiler is not generated, but a parse
 
 // page 73
 
-5.2.2.7 Creating the parser table
+===== Creating the Parser Table
 
 The parser table is created in the procedure `WriteTab` as a permanent file and contains the first, follow, expected and local recovery sets required by the generated parser. These could also be entered into the source code of the parser module; however, since the generator target language Oberon does not provide for structured constants, the use of an external table is the more appropriate choice.
 
-First, the first and follow sets stored in the global field `GenSetT` are thus entered into the source code as a sequence of values of the base type SET are written into the table, since the values described in section 5.2.1.4 is realized. transposition described in section 5.2.1.4 is realized. Behind this, the expected and local recovery quantities from the field from the `GenSet` field, also as a sequence of values of type SET.
+First, the first and follow sets stored in the global field `GenSetT` are thus entered into the source code as a sequence of values of the base type SET are written into the table, since the values described in section 5.2.1.4 is realized. transposition described in section 5.2.1.4 is realized. Behind this, the expected and local recovery sets from the field from the `GenSet` field, also as a sequence of values of type SET.
 
 Some additional file entries allow the generated parser to check for a correct read-in (especially in the case of (especially when porting to other computers) or to check if the table belonging to it has been read. table belonging to it has been read in.
 
-===== 5.2.2.8 Special treatment of non-terminals with token markings
+===== Special Treatment of Non-terminals With Token Marks
 
-Normally a generated parser does not consider intervening space in the input. Since this also analyzes the nonterminals with token markings { in the following called token nonterminals in the following, interspace within tokens would be admissible without special treatment and therefore not usable for their separation. If token non-terminals occur in a rule this circumstance can manifest itself as unintended ambiguity.
+Normally a generated parser does not consider intervening space in the input. Since this also analyzes the nonterminals with token markings -- in the following called token nonterminals in the following, interspace within tokens would be admissible without special treatment and therefore not usable for their separation. If token non-terminals occur in a rule this circumstance can manifest itself as unintended ambiguity.
 
 As a remedy the used scanner was extended by a second `Get` procedure; this behaves exactly as the original Get procedure. behaves exactly like the original procedure, but it does not simply read over the space in the input but returns the special token `sepTok`. The parser generator also adds in basic grammars behind each occurrence of a token nonterminal in an alternative of a usual non-terminal an optional terminal for interspace. These entries take place only virtually, by simply inserting the terminals in the procedures for the computation of of follow, expected, and recovery sets, as well as the generation procedure for factors.Furthermore, the generated parsers use the new get procedure for the analyses of the token non-terminals. These are now correctly terminated by intervening space.
 
@@ -1364,20 +1326,18 @@ In the procedure `ComputeRegNonts` all so-called subtoken nonterminals reachable
 To keep the option of a real scanner generator open, the token nonterminals must not be empty-derivable. For subtoken non-terminals empty derivability is allowed, but they must not appear in the alternatives of usual non-terminals. This corresponds to the usual separation of the context-free grammars from the token grammars and represents practically no restriction. Furthermore, the start symbol of the basic grammar must not be contained in `RegNonts`.
 
 A last argument to be eliminated are the LL(1) conflict messages due to the ambiguity mentioned above. For example, if a specification contains two token non-terminals for recognizing names occur directly one after the other in a specification, the director set of the alternative for appending letter tokens overlaps with the director set of the termination alternative. In both sets all letters are contained, in the second additionally  the token `sepTok`. Since two names separated in the input only by space are now however are read in correctly, a conflict message is unnecessary. is necessary; but this is often not easy to recognize by the user because the This is often not easy to recognize by the user, because the message usually does not refer to a token non-terminal,
-
 // page 74
-
 but to subtoken non-terminals occurring therein.
 
 To partially solve this problem, for common tokens formed with EBNF constructs, we use messages formed with EBNF constructs are suppressed in the following way: If the choice of termination leaves a token, then for options and repetitions an overlapping of the director set for this abort (i.e. the follow set) with the director set for the choice of the option or repetition, (i.e. the union of the director sets of all alternatives) is ignored, unless, one of the alternatives is empty derivable. The choice of termination verlat a token for sure, if the nonterminal which realizes the option or repetition can be used in arbitrary set forms to all Token nonterminals occurs only at the very end. The non-terminals with this property are determined in the procedure `ComputeRegNonts` by traversing the grammar and are stored in  the set `ConflictNonts`.
 
-=== 5.3 Implementierungen
+=== Implementierungen
 
 // page 99
 
-== The generation of evaluation code
+== The Generation of Evaluation Code
 
-=== 6.1 The Evaluator Generator
+=== The Evaluator Generator
 
 In the generated compiler the Evaluator realizes the semantic analysis as well as possibly the code production. Conceptually, the derivation tree to the basic grammar is used with corresponding sentences of the meta-grammar "decorated" . Thereby the pradicates given in the hyper-grammar are evaluated. pradicates are evaluated. If no suitable decoration exists, corresponding context errors are to be reported. Furthermore, consequential errors shall be suppressed by repairs when the evaluation is continued.
 
@@ -1388,18 +1348,16 @@ After the model of efficient compilers, which are realized as extension of recur
 On the other hand, it should also be possible to use a separate evaluator, for which the derivation tree must actually be built. Here we take advantage of the fact that the construction of a derivation tree according to the transformed basic grammar itself can be described by a (generatable) SLEAG, so that for this task according to the above description a "One-PassCompiler" can be generated for this task.
 
 As an example of a separate evaluator, the single-sweep procedure is to be implemented. The corresponding grammar class is characterized by the fact that for each hyper-rule there is one
-
 // page 100
-
 permutation of the right-hand side with which the rule becomes left-denoting. In particular this is fulfilled for each LEAG. The greater power as well as the fact that axpositions can be further eciently can be realized as procedure parameters, make a generator based on the SingleSweep method appear to be an easily achievable and practically useful alternative.
 
-==== 6.1.1 The Evaluation
+==== The Evaluation
 
 Here first the direct evaluation of simple rules (without EBNF operators) is described according to the LEAG procedure is described.
 
-In the signature of a hyper-nonterminal, input ("-" ) and output parameters ("+" ) are distinguished. The values of the input parameters on the left side of the rule and the values of the output parameters on the right side of the rule are determined in the rule context. The corresponding affixpositions are called denoting. A real axform on denoting position thus requires an analysis of the supplied value. In addition, comparisons must be made for variables denoting position must be performed.
+In the signature of a hyper-nonterminal, input ("-") and output parameters ("+") are distinguished. The values of the input parameters on the left side of the rule and the values of the output parameters on the right side of the rule are determined in the rule context. The corresponding affixpositions are called denoting. A real affix form on denoting position thus requires an analysis of the supplied value. In addition, comparisons must be made for variables denoting position must be performed.
 
-Conversely, the values of the output parameters on the left side of the rule as well as the values of the input parameters on the right side of the rule are determined within the rule. The corresponding affixpositions are then called applying, and a real affixform on the applying position now requires a synthesis of the value to be provided.
+Conversely, the values of the output parameters on the left side of the rule as well as the values of the input parameters on the right side of the rule are determined within the rule. The corresponding affixpositions are then called applying, and a real affix form on the applying position now requires a synthesis of the value to be provided.
 
 A rule is left-denoting if for each variable on an applying position there is a hyper-non-terminal occurrence of the right side to the left of it, there is a (different) hyper-non-terminal occurrence with this variable on denoting position.
 
@@ -1429,8 +1387,8 @@ As parameter values, sets to the value range symbol are represented by their der
 
 For reasons of memory efficiency and with regard to an own free memory management a high linguistic reproduction of the memory, called `Heap`, is used. There the nodes of derivation trees are stored in successive entries: `Heap[V]` is a node identifier, `Heap[V+i]` refers to the ith subtree (an example is given in Figure 6.1). The node identifier is conceptually a pair of alternate number and digitness, i.e. the number of subtree. To save memory, we encode these pairs by numbers. The constant `arityConst` is used for the reconstruction of the components as follows :
 ----
-Stelligkeit = Knotenbezeichner DIV arityConst,
-Alternativennummer = Knotenbezeichner MOD arityConst.
+Arity = node identifier DIV arityConst,
+Alternative number  = node identifier MOD arityConst.
 ----
 
 .Figure 6.1: Saving the representation of the record a b to the value range symbol id
@@ -1439,7 +1397,7 @@ image::images/figure-6.1-saving-the-representation-of-the-record-a-b-to-the-valu
 In Eta, the performance of analyses and syntheses is further subdivided. Formally analysis and synthesis radicates for each meta-alternative (as well as equal and transfer radicates for each meta-nonterminal). These primitive predicates are implemented as short procedures. implemented. The evaluator code then consists essentially of sequences of procedure calls. This is in this respect improvable, as it leads to efficiency losses due to the multiplicity of procedure calls together with parameter transfers. Here the possibility offers itself of optimizing the run time by using the procedure bodies directly, so to speak, and eliminating the assignments for parameter transfers by variable renaming as far as possible. In
 general, however, this will increase the size of the generated evaluator.
 
-===== 6.1.1.1 Syntheses
+===== Syntheses
 
 In a synthesis, a new derivation tree is created from existing subtree gema of an affix form. Variables occurring in the affix form are placeholders for already existing variables.
 
@@ -1452,15 +1410,15 @@ Since the size of the nodes to be created and their number are known at generati
 .Figure 6.2: Synthesis of id b to the value range symbol id
 image::images/figure-6.2-synthesis-of-id-b-to-the-value-range-symbol-id.PNG[synthesis of id b to the value range symbol id]
 
-===== 6.1.1.2 Transfer
+===== Transfer
 
 This is a technical problem that arises because in the procedure of a non-terminal different identifiers are required for the formal parameters. If a variable occurs repeatedly variable occurs repeatedly as a trivial affix form on the positions of the left side, so for applying positions the same value must be supplied by simple assignments.
 
-===== 6.1.1.3 Analyses
+===== Analyses
 
-In an analysis a derivation tree is checked for the structure given by the affix form. by the affixform. If the analysis is successful, the subtree for the variables occurring in the affix form are determined.
+In an analysis a derivation tree is checked for the structure given by the affix form. by the affix form. If the analysis is successful, the subtree for the variables occurring in the affix form are determined.
 
-The necessary verification of the node identifiers is done during a preorder traversal of the derivation tree to the axform. of the derivation tree to the affix form. The corresponding traversal of the tree to be analyzed can be done at runtime of the generated compiler. The access to the can be coded by nested indexes, which represent the respective way from the root. 
+The necessary verification of the node identifiers is done during a preorder traversal of the derivation tree to the affix form. The corresponding traversal of the tree to be analyzed can be done at runtime of the generated compiler. The access to the can be coded by nested indexes, which represent the respective way from the root. 
 
 As can be seen from Figure 6.3, these expressions can grow rapidly^1^. This can be by the usual use of temporary variables to eliminate common subexpressions (see Figure 6.4). (see Figure 6.4), which additionally optimizes the runtime.
 
@@ -1474,13 +1432,13 @@ image::images/figure-6.3-analysis-of-a-x-to-the-value-range-symbol-id.PNG[analys
 .Figure 6.4: Analysis of a x to the value range symbol id using temporary variables
 image::images/figure-6.4-analysis-of-a-x-to-the-value-range-symbol-id-using-temporary-variables.PNG[analysis of a x to the value range symbol id using temporary variables]
 
-===== 6.1.1.4 Comparisons
+===== Comparisons
 
 If a variable `M` is in the denominating position more than once, the corresponding values must be the same due to the requirement of consistent substitution. On the other hand the values of the variables `M` and `#M` must be different.
 
 The verification is realized simply by comparing the derivation trees. The Boolean function procedure `Equal` accomplishes this task by a recursive traversal of both derivation trees with successful termination at equal references. To check whether two trees are different, the result is negated. This procedure is called during the analysis analysis, directly after the determination of the corresponding subtree.
 
-===== 6.1.1.5 Pradicates
+===== Pradicates
 
 Some hyper-non-terminals can only be derived to the empty word. They do not contribute to the context-free denotation of the source language. These so-called pradicates have to be because of the deliberate ambiguity allowed for them.
 
@@ -1531,7 +1489,7 @@ Only the call of a predicate procedure from a procedure for a basic non-terminal
 
 // page 105
 
-===== 6.1.1.6 Error Handling
+===== Error Handling
 
 As mentioned above, errors can occur during the evaluation: Analyses, comparisons, and predicates may fail. This indicates context errors and prevents a correct translation.  However, an abort of the generated compiler is an unsatisfactory behavior. represents. The program flow is to be continued, in order to find and report further context errors. to be able. Follow-up error messages are to be suppressed.
 
@@ -1555,7 +1513,7 @@ In order to reduce the size of the generated code, the error handling in the pro
 
 The texts of the error messages are created automatically by the generator from the identifiers occurring in the specification in the specification. Together with the error message a position in the input text is output. Analysis error messages for the hyper non-terminal N have the form "analysis in _N_ failed" . For failed comparisons, the name of the variable _M_ is compared with the name of the hyper associated hyper non-terminal in "_M_ failed in _N_". If a predicate _P_ fails, the error message "predicate _P_ failed" is output.
 
-===== 6.1.1.7 EBNF operators
+===== EBNF Operators
 
 The semantics of ENBF operators is defined by the transformation described in section 2.2. For the resulting rules without EBNF operators, the LEAG procedure described so far can be applied. LEAG procedure can be used for the resulting rules without EBNF operators, if they are left-defining. 
 
@@ -1679,7 +1637,7 @@ As a solution, in the code of an alternative in which this variable is not appli
     END;
     ...
 ----
-===== 6.1.1.8 Optimization of terminal axes shapes
+===== Optimization of Terminal Affix Forms
 
 Terminal affix forms are constant in the sense that they are represented in the evaluator by always identical trees in the evaluator. In principle, a synthesis has to be done only once; later it is enough to provide a reference to the tree. it is sufficient to provide a reference to the tree. Likewise, for each final rule (without non-terminals) a leaf must exist only once in the heap. By such a constant folding the memory memory requirements can be reduced, and naturally a shorter and faster program results.
 
@@ -1706,7 +1664,7 @@ In analyses, terminal affix forms cannot generally be used, since the trees to b
     IF Heap[V3 + 1] # 43 (* Verweis auf Blatt *) THEN Fehlerbehandlung END;
     V2 := Heap[V1 + 2];
 ----
-===== 6.1.1.9 Free space management
+===== Free Memory Management
 
 Since memory for nodes is explicitly requested during syntheses, but never explicitly released and since potentially a large part of the heap is used for the representation of intermediate results with a temporary meaning, the evaluator shall be optionally extended by a free space management.
 
@@ -1731,11 +1689,11 @@ For the evaluation of basic non-terminals this results in an optimization possib
 
 In the implementation the node identifier is conceptually extended by the reference numerator to a triple. The additional constant refConst is used as follows for the reconstruction of the components:
 ----
-       Referenzzahler = Knotenbezeichner DIV refConst,
-           Stelligkeit = (Knotenbezeichner MOD refConst) DIV arityConst,
-    Alternativennummer = Knotenbezeichner MOD arityConst.
+       Reference counter = node identifier DIV refConst,
+                   Arity = (node identifier MOD refConst) DIV arityConst,
+      Alternative Number = node identifier MOD arityConst.
 ----
-In the reference payer, only the number of additional references to a node is paid.
+In the reference counter, only the number of additional references to a node is counted.
 
 A separate free list is created for each node location. Shared nodes are managed according to their position in these lists. The entries of the `FreeList` field point to the first node of such a list. The chaining is as shown in figure 6.7, in the first entry of the free nodes.
 
@@ -1762,25 +1720,23 @@ The example in Figure 6.4 changes under the condition that no optimization of te
     V2 := Heap[V1 + 2]; INC(Heap[V2], 3 * refconst);
 FreeHeap(V1);
 ----
-===== 6.1.1.10 Storage of position information
+===== Storage of Position Information
 
 For error messages in a separate evaluator, the derivation tree built by the "One-Pass-Compiler" is enriched with position information (see chapter 7). For this purpose the derivation tree for each possible error location. For the structure statements are inserted into the evaluation code of the one-pass compiler.
 
 In the implementation, the positions are represented in parallel to the heap in the `PosHeap` field. For the correct entry of the positions they are cached in the cellar `PosStack` cellar. By calling the procedure `PushPos` after the evaluation of a denoting position a position is stored on the cellar; before the synthesis of the output parameter of a procedure, these entries are transferred from the cellar to the field `PosHeap` by calling the procedure `PopPos`.
 
-==== 6.1.2 The Generator
+==== The Generator
 
 The SLEAG evaluator generator allows the generation of an evaluation either according to the LEAG procedure for transformed EBNF rules or according to the SLEAG procedure. It is divided into
-
 // page 112
-
 test part, which contains procedures for checking the leftness and the SLEAG conditions for repetitions, and a collection of procedures, which are based on the fragments for global declarations, pradicates, declarations of formal procedure formal procedure parameters and local variables, predicate calls, and analysis and synthesis code. These are used elsewhere to sprinkle evaluator code into surrounding code. 
 
 Both the test and the generation orient themselves at the procedure scheme and take place therefore not terminal-wise. It is to be noted, since with the LEAG procedure also for anonymous non-terminals are created own procedures. The pradicate coding is done exclusively according to the according to the LEAG procedure.
 
 In the generated code optionally an optimization of terminal affix forms can take place. Also can be optionally extended by a free space management. Due to the many case distinctions the special size of the module `SLEAGGen.Mod` results.
 
-===== 6.1.2.1 Evaluability Checking 
+===== Evaluability Checking 
 
 The evaluability check is carried out independently of the actual generation.
 ----
@@ -1796,7 +1752,7 @@ Briefly, the SLEAG condition for the entire grammar can be checked with the `Tes
 
 The verification of the left-denieredness is done by a traversal of the transformed rules which precedes the evaluation. At the beginning the variables of a rule are marked as undefined. If a variable occurs in the course of the traversal on defining position, it is marked as defined. A rule is left-defining if no undefined variable occurs on the variable occurs in the applying position.
 
-===== 6.1.2.2 Interface
+===== Interface
 
 The generation of an evaluation procedure is divided into the generation of global parts and the generation of procedurally local parts.
 ----
@@ -1833,12 +1789,10 @@ In order to know the number and names of temporary variables for the declaration
 
 Since in the Oberon language the formal parameters of a procedure and its FORWARD declaration must be identical, their names are assigned according to a fixed scheme, so that for their generation no complete variable is required. no complete variable assignment is necessary for their generation.
 
-===== 6.1.2.3 Assignment of variable names
+===== Assignment of Variable Names
 
-Affix positions and variables are represented in the procedures of the generated program by temporary variables. The affix positions of the left rule side of a non-terminal are represented by are represented by the same Oberon variables, i.e. by the formal procedure parameters. If a variable occurs as trivial affix form on applying position, the variable and the corresponding position are represented by the same temporal variable. This succeeds not in the case that a variable occurs several times as a trivial affix form on applying positions.
-
+Affix positions and variables are represented in the procedures of the generated program by temporary variables. The affix positions of the left rule side of a non-terminal are represented by are represented by the same Oberon variables, i.e. by the formal procedure parameters. If a variable occurs as trivial affix form on applying position, the variable and the corresponding position are represented by the same temporal variable. This succeeds not in the case that a variable occurs several times as a trivial affix form on applying positions
 // page 114
-
 is on the left side. In this case a transfer is necessary. If a variable occurs as a trivial affiform on defining position, this optimization may only be done for the denition position of the variable, otherwise the value of the temporary variable is overwritten.
 
 The evaluation of repetitions requires in addition to the temporary variables for the applying positions of the formal parameters in each case a run variable (see section 6.1.1.7).
@@ -1873,7 +1827,8 @@ To determine the lifetime of a temporary variable for a variable `M`, its depend
     VAR
         VarDeps: POINTER TO ARRAY OF INTEGER;
 ----
-===== 6.1.2.4 Data structures for generation
+
+===== Data Structures for Generation
 
 The following data structures are also required for generation:
 ----
@@ -1912,7 +1867,7 @@ The VarRefCnt and VarDepPos fields are used to store information for optimizing 
 
 The set `RepVar` contains those variables which occur on defining positions of recursion parameters. This set is needed for the syntheses in repetitions. The set `EmptySet` represents the empty set and is used for synthesis in all other cases. In the  `RepAppls` field for each variable on the defining position of the recursion parameter the information whether it is applied in all alternatives of repetition is stored in the field RepAppls.
 
-=== 6.2 The output of the translation 
+=== The Output of the Translation 
 
 In the generated compiler the values of the output parameters of the start symbol calculated by the evaluator represent the start symbol represent the translation. The `EmitGen` module generates code that outputs this translation.  output. Internally, the translation is represented by the evaluator through a derivation tree to the MetaGrammar. The output is therefore a traversal of this derivation tree.
 
@@ -1949,17 +1904,17 @@ The generation of the output procedures is done by the procedure `GenEmitProc`, 
 
 // page 118
 
-=== 6.3 Implementations
+=== Implementations
 
 // page 145
 
-== Compiler with more powerful evaluation methods
+== Compiler With More Powerful Evaluation Methods
 
 For non-left-defining EAGs, affix evaluation cannot be performed in a depth-first left-to-right traversal; thus, they do not satisfy the LEAG condition, and more powerful evaluation methods have to be applied. With such methods the traversing traversing of the derivation tree, which is necessary for the evaluation, cannot be done with the procedures of the parser for its construction, what a separation of the evaluation from the parsing and thus a static this makes a separation of the evaluation from the parsing and thus a static representation of the derivation tree necessary. In Section 7.1, the construction of derivation trees by automatically generated compilers is described in the already known "Heap" is presented.
 
 As example of a more powerful evaluation procedure and thus at the same time as example of a generation in the sense of an _abstraction of algorithms_, the _single sweep procedure_ and its implementation are presented. This is a generalization of the LEAG procedure, in which the visits of subtrees of a node in the derivation tree are permuted. may be performed permuted. Each subtree is visited exactly once; this is also the restriction that is irrelevant in practice. irrelevant restriction compared to the better known single visit method, in which subtree are visited _at most once_. Formally, an EAG is single sweep evaluable if there are no there is a perm tation of the factors for each alternative for the EAG transformed according to section 2.2. factors for which the EAG is left-denoting, i.e. a LEAG.
 
-=== 7.1 The creation of static derivation trees
+=== The Creation of Static Derivation Trees
 
 Instead of enriching a generated parser for the creation of static derivation trees with appropriate constructor instructions, it is generated as a special one-pass compiler, whose specification is automatically generated by the `Shift` module (see Section 7.3). This compiler has no output procedures, but passes the "translation" of its input, namely the tree in `Heap`, to the traversal procedure `TraverseSyntaxTree` of a separate evaluator.
 
@@ -1971,11 +1926,11 @@ In order to allow the subsequent evaluator to report the positions when context 
 
 A simple mapping between `heap` entries and their positions is realized by a parallel field `PosHeap` is implemented. At runtime this position field is filled by instructions, which are entered by the evaluation generator `SLEAGGen` into the generated compiler. For this the parser generator transfers to the evaluation generator during its initialization the "contract agreement" `sSweepPass`.
 
-=== 7.2 The generated single sweep evaluators
+=== The Generated Single Sweep Evaluators
 
 A generated evaluator is an independent module, which is imported by an upstream compiler, which generates a derivation tree and then passes it to the evaluator. For each non-terminal, a separate traversal procedure is generated, into which the evaluation code is embedded directly as in the generated one-pass compilers. Since nodes of the derivation tree are not visited multiple times, the calculated affix values do not need to be stored statically between visits, but can again be dynamically held in procedure parameters. The single sweep procedure is the most powerful practically relevant evaluation procedure that allows this memory-recurrent representation of affix values.
 
-==== 7.2.1 Overview of the single sweep evaluators
+==== Overview of the Single Sweep Svaluators
 
 A generated evaluator consists of a module, the rough structure of which is shown in the following simplified program fragment:
 ----
@@ -2012,7 +1967,7 @@ A generated evaluator consists of a module, the rough structure of which is show
 ----
 The strict type calling of the programming language Oberon makes it necessary to export the types `TreeType`, `OpenTree` and `OpenPos`, so that the upstream compiler can store the derivation tree and the positions in such typed fields and pass them to the also exported procedure `TraverseSyntaxTree` together with the root of the derivation tree. procedure `TraverseSyntaxTree` together with the root of the derivation tree. The latter procedure makes the passed fields generally accessible by copying the pointers to global variables and then calls the procedure generated for the start symbol for evaluation. There, the static semantics are checked and the translation of the input - is generated in a field `Heap` -, which is not listed here, which is passed to the output procedure by the variable V1. output procedure.
 
-==== 7.2.2 Code Schemes for the Evaluation Procedures
+==== Code Schemes for the Evaluation Procedures
 
 The structure of the procedures generated for the basic non-terminals is similar to the procedures of a one-pass compiler and can be described by the following code scheme:
 ----
@@ -2034,9 +1989,6 @@ The structure of the procedures generated for the basic non-terminals is similar
 In the `Adr` parameter, the root of the subtree to be evaluated is passed to each procedure. Within the CASE statement, the rule applied to this node is determined and the code of the corresponding alternative is executed. This consists of the calls of the procedures for the basic non-terminals or pradicates occurring in this alternative together with the associated the corresponding analyses and syntheses of parameters. The calls take place thereby in a The calls are made in a permutation of the textual order determined by the generator according to the following scheme:
 ----
     (* Aufruf eines Grundnichtterminals N *)
-----
-// paghe 148
-----
     Synthese der Eingabeparameter zu N
     N(Tree[Adr + Offset des Verweises auf den Unterbaum], ...);
     Pos := PosTree[Adr + Offset des Verweises auf den Unterbaum];
@@ -2050,7 +2002,7 @@ In the `Adr` parameter, the root of the subtree to be evaluated is passed to eac
 ----
 Contextual errors can be detected during evaluation only in analyses (and comparisons) and pradicates in analyses (and comparisons) as well as in predicates; in order to be able to easily output the corresponding position in the code generated for analyses together with a message, the global variable Pos is set accordingly before each analysis. However, this is only necessary if analyses are actually performed at the corresponding positions. Pradicates do not process any parts of the derivation tree, therefore, no reference to it is passed to the corresponding procedures. In case of failure, however, a meaningful error position should be reported. For this the position of the immediately before visited subtree is used; if in an alternative first a procedure is called first in an alternative, then there is no such previously visited subtree and the position stored for the first heap entry of a node is reported.
 
-=== 7.3 The Shift module
+=== The Shift Module
 
 This module is used by the parser generator to create "compilers", which only build derivation trees statically and which can be prepended to any separate evaluators. can be switched. In addition from the basic grammar of an EAG a further EAG is generated automatically. which describes the identical mapping on the context-free language; structurally, the transformation from the section 2.2, since the meta-grammar does not contain any EBNF constructs. Each (possibly anonymous) hyper-nonterminal has exactly one output parameter to raise the recognized structure to the meta-level. Thus, the generated EAG is a SLEAG for which a one-pass compiler can be generated; without output, this compiler returns the desired this compiler returns the desired derivation trees in the heap.
 
@@ -2060,11 +2012,11 @@ Since the modification of the representation of an EAG is destructive, the separ
 
 // page 149
 
-=== 7.4 The single sweep evaluator generator
+=== The Single Sweep Evaluator Generator
 
 The single sweep evaluator generator tries to determine for each alternative of an EAG a permutation of the factors with which the alternative becomes left-defining. If this succeeds, then an evaluator module with the procedures for traversing a derivation tree presented in section 7.2. derivation tree is generated. The evaluator code can again be inserted into the tree by using the module `SLEAGGen` into it.
 
-==== 7.4.1 Generation of the evaluator module
+==== Generation of the Evaluator Module
 
 The evaluator module is created in the `GenerateMod` procedure. The module structure is copied from a fixed text file and extended at the insertion marks "$" by the variable parts. The calculation of the permutations is done non-terminally during the generation.
 
@@ -2078,12 +2030,10 @@ Suitable permutations are computed in the `ComputePermutation` procedure describ
 
 Violations of the single sweep condition are only detected if no suitable permutations can be determined for a non-terminal. In this case the already generated parts of the evaluator are deleted and further generation is suppressed; however, the determination of the remaining permutations is still attempted in order to be able to report all violations to the user. A pure test on single sweep evaluability of an EAG is realized by the fact that the generation is underprinted from the beginning, i.e. only the permutations are calculated. 
 
-==== 7.4.2 Calculation of Permutations
+==== Calculation of Permutations
 
 In a generated evaluator the procedures for the evaluation of subtree and the Pradikatprozeduren may be called only if all input parameters are computed. At
-
 // page 150
-
 single sweep method, the generator already determines a sequence of calls for each alternative. the non-terminal occurrences of each alternative are reordered in such a way, that the alternative becomes left-defining.
 
 An obvious solution to the problem of finding a suitable permutation would be to build a "dependency graph" for each alternative, whose nodes are the nonterminal occurrences and whose edges reflect the dependencies arising from applying and defining variable occurrences, and then sort this graph topologically. For the following nontrivial example, Figure 7.1 shows the dependency graph of the one alternative of the non-terminal S. Variables in defining positions are italicized in the example.
@@ -2109,10 +2059,8 @@ The problem is that variables can be in multiple defining positions and it is no
 In general, there are many possible evaluation sequences for an alternative. Here we want to Here, a sequence shall be determined, in which the factors keep their textual order as far as possible; in particular, an evaluation according to the LEAG-method results for left-defining EAGs. This leads to a natural order of the reports of context errors by the generated evaluator.
 
 The determination of permutations can be done efficiently again with a modification of the algorithm for the computation of empty derivable non-terminals (cf. Section 4.2.3). The essential
-
 // page 151
-
-The idea is to show the dependencies of factors not on other factors, but on variables. The following data structures are used for this purpose:
+idea is to show the dependencies of factors not on other factors, but on variables. The following data structures are used for this purpose:
 ----
     Var : POINTER TO ARRAY OF RECORD Factors : INTEGER END;
     Factor : POINTER TO ARRAY OF RECORD
@@ -2136,16 +2084,14 @@ image::images/figure-7.2-initial-assignment-of-the-data-structures-for-the-examp
 In `Stack` for the example only the factor `C` is entered at the beginning, in `DefVars` only the variable `r` is contained.
 
 The priority of the factors controls the choice of the factor to be removed from `Stack`; a selection corresponds to the denition of the variables in the defining position for this factor,
-
 // page 152
-
 which by the clever choice of the data structures can now easily be incorporated into the set `DefVars` and the application payer of the factors. If such a payer sinks to zero, the corresponding factor is included in `Stack`.
 
-If `Stack` is finally completely emptied, then all factors must have been removed exactly once from it and thereby a new position in the stack. must have been removed exactly once from the stack and thus received a new position in the reordering; furthermore all variables from the left side of the rule must be defined. If these conditions are fulfilled, then the alternative is single sweep evaluable and the evaluation order can be changed by re-sorting of the factors in the module `EAG` "stored" . Otherwise a corresponding error message and a global variable `Error` is set to `TRUE`, in order to suppress a further generation. underprint.
+If `Stack` is finally completely emptied, then all factors must have been removed exactly once from it and thereby a new position in the stack. must have been removed exactly once from the stack and thus received a new position in the reordering; furthermore all variables from the left side of the rule must be defined. If these conditions are fulfilled, then the alternative is single sweep evaluable and the evaluation order can be changed by re-sorting of the factors in the module `EAG` "stored" . Otherwise a corresponding error message and a global variable `Error` is set to `TRUE`, in order to suppress a further generation.
 
 // page 153
 
-=== 7.5 Implementations
+=== Implementations
 
 // page 163
 
@@ -2156,15 +2102,17 @@ In order to enable an evaluation of the generated compilers and thus of the Epsi
 The size of the Epsilon compiler generator is very compact with 6500 lines of source code, i.e. about 80 pages, very compact. From the 14-page specification of an Oberon 0 compiler for a RIS Oberon 0 compiler for a RISC processor, the 170 kB source code of a 1-pass compiler in the generator target language Oberon can be generated in 1.5 seconds. with 140 kB object code (single sweep compiler: 170 kB object code).
 
 For the compilation of a 30-page Oberon 0 program (43 kB) containing nested sorting and multiplication procedures, the 1-pass compiler needs one second to compute the 180 kB large translation and another second to output it (single sweep compiler: 3+1 seconds). The amount of memory needed for this depends on the optimizations the compiler with which the compilers were generated and can be taken from the following table:
-----
-Optimierungen Speicherbedarf
-ohne #-Operator, ohne Optimierungen 18000 kB
-mit #-Operator, ohne Optimierungen 3342 kB
-mit #-Operator, mit Konstantenfaltung 822 kB
-mit #-Operator, mit Freispeicherverwaltung 476 kB
-mit #-Operator, mit beiden Optimierungen 310 kB
-----
-tabelle
+
+[cols="3,1"]
+|===
+| Optimizations | Memory Consumption 
+
+| without # operator, without optimization     | 18000 kB
+| wih # operator, without optimization         | 3342 kB
+| wih # operator, with constant folding        | 822 kB
+| wih # operator, with free storage management | 476 kB
+| wih # operator, with both optimizations      | 310 kB
+|===
 
 The single sweep method requires an additional 600 kB of memory for the representation of the derivation tree.
 
@@ -2172,13 +2120,13 @@ The effort required for these optimizations is therefore justified and leads to 
 
 // page 165
 
-== Syntax of the Epsilon input language
+== Syntax of the Epsilon Input Language
 
 An extended Bakkus-Naur formalism (EBNF) is used to describe the ambiguous syntax of Epsilon specifications.
 
 Terminals are represented by strings consisting of non-empty chars, enclosed in quotes or apostrophes (as in Modula-2). Terminals are equal if their strings are equal. To prevent misleading error handling, strings must not extend beyond the end of the line. Non-terminals consist of sequences of lowercase and uppercase letters of arbitrary length. Numbers are represented by an ornamental sequence and are restricted to values between 0 and 9999 for system independence.
 
-A simple comment starts (as in Ada) with an exclamation mark (instead of "-" and extends to the end of the line. For hiding parts of the specification there are still comments (as in Modula-2), which consist of an opening bracket "(*" followed by an arbitrary string and the corresponding closing parenthesis "(*)".*)". These comments may be nested. Simple comments hide lines even in nested comments. 
+A simple comment starts (as in Ada) with an exclamation mark (instead of "-" and extends to the end of the line. For hiding parts of the specification there are still comments (as in Modula-2), which consist of an opening bracket "(\*" followed by an arbitrary string and the corresponding closing parenthesis "*)". These comments may be nested. Simple comments hide lines even in nested comments. 
 
 The exact combinations of parameterizations are explained by tables 2.1 and 2.2.
 
@@ -2220,7 +2168,7 @@ In formal parameters the value range symbol may be omitted if the affix form con
 ----
 // page 167
 
-== A reduced example
+== A Reduced Example
 
 The following example shows the specification of a simple language as well as the verification of a typical context condition of programming languages. Besides it illustrates the above syntax of the input language of Epsilon defined above and shows a clear usage of the EBNF operators. In order to support the readability, the specification texts contain the grammar are printed in bold and affixes on defining positions are highlighted in italics.
 
@@ -2264,9 +2212,9 @@ The compiler generated from the shown EAG accepts as input a sequence of declara
 ----
 // page 169
 
-== Specification of an Oberon 0 compiler
+== Specification of an Oberon-0 Compiler
 
-As an introduction to the "Fundamentals and Techniques of Translator Construction" Wirth presents in his textbook <<Wirth>> the complete implementation of an efficient and compact compiler. The source language is a substantial subset of the Oberon programming language, and the hypothetical target machine is based on the concept of RISC architectures. is the basis. The following specification <<Kroplin>> is closely based on the hand-written compiler in order to provide an exemplary comparison of the two approaches. However, here symbolic assembler code is generated, which must be transformed afterwards into the actual machine program. transformed into the actual machine program. On the necessary assembler then also the computation of arithmetic expressions can be shifted, which otherwise in the compiler would require circumstantial pradicates. The transparency doubted by Wirth for the generation seems to be problematic to us essentially at the places, which are already handled by his sample compiler.
+As an introduction to the "Fundamentals and Techniques of Translator Construction" Wirth presents in his textbook <<Wirth>> the complete implementation of an efficient and compact compiler. The source language is a substantial subset of the Oberon programming language, and the hypothetical target machine is based on the concept of RISC architectures. is the basis. The following specification <<Kröplin>> is closely based on the hand-written compiler in order to provide an exemplary comparison of the two approaches. However, here symbolic assembler code is generated, which must be transformed afterwards into the actual machine program. On the necessary assembler then also the computation of arithmetic expressions can be shifted, which otherwise in the compiler would require circumstantial pradicates. The transparency doubted by Wirth for the generation seems to be problematic to us essentially at the places, which are already handled by his sample compiler.
 
 // page 170
 ----
@@ -3098,7 +3046,7 @@ As an introduction to the "Fundamentals and Techniques of Translator Constructio
 ----
 // page 185
 
-== Inequality in pure calculus
+== Inequality in the Pure Calculus
 
 In the pure calculus of two-level grammars (without inequality #), the naive formulation of inequality of single letters is theoretically trivial, but practically the listing of hundreds of hundreds of rules for the case which is quadratic in the number of letters. many cases. The simple idea that only different letters can be removed one by one from the alphabet, systematically leads to an auxiliary radical for deleting a character from a string. However, if this is to be formulated generally as a function, for example for the specification to delete the first occurrence from strings with repetition, already the inequality of characters is necessary; however "works" here for the actual calls the restriction to strings without repetition. If in the specification of the Oberon 0 compiler for checking the inequality of identifiers and numbers, the following pradicates are used, this causes an enormous waste of memory for the permanent supply of the strings without optimization of terminal affix forms, and in any case the generated compiler is considerably slowed down.
 
@@ -3153,7 +3101,7 @@ In the pure calculus of two-level grammars (without inequality #), the naive for
 ----
 // page 187
 
-== Specification of a Eta-to-Epsilon converter
+== Specification of a Eta-to-Epsilon Converter
 
 In order not to have to transfer existing Eta specifications manually into the new specian appropriate tool is needed, which itself can be regarded as a simple compiler. For the following specification the special treatment of the token non-terminals is indispensable. token non-terminals in the parser generator is indispensable for the following specification, so that also token identifiers are recognized correctly. Since with the transformation auer the syntax analysis almost no since during the transformation almost no check takes place and subsequent messages refer to the generated specification, the readability of the output translation plays a central role here. 
 
@@ -3672,7 +3620,7 @@ ba ; ab ; b ; a ;
 ----
 // page 199
 
-== Demonstration of the Fault Handling
+== Demonstration of the Error Handling
 
 In order to show the goodness of error detection, restart behavior, and repair, we reproduce here the error messages in a clear form, which the Oberon-0 compiler mentioned in chapter 8 outputs during the compilation of an abundantly buggy test program. The message texts are fully generated and therefore do not correspond to the usual form. To be noted, since due to the error repair parallel to the syntax errors also context errors can be reported parallel to the syntax errors.
 ----
@@ -3700,9 +3648,6 @@ In order to show the goodness of error detection, restart behavior, and repair, 
     BEGIN > b;  -  c := 0;
     ^       ^^    ^ ^
    18     19 20  21 22
-----
-// page 200
-----
   WHILE a > 0 BEGIN
                ^
             23
@@ -3755,9 +3700,6 @@ In order to show the goodness of error detection, restart behavior, and repair, 
         symbol inserted: :=
   18 syntax error, expected: a b ... y z A B ... Y Z IF WHILE REPEAT
   19    restart point
-----
-// page 201
-----
   20 analysis in 'AssignmentOrProcedureCall' failed
   21 syntax error, expected: a b ... y z A B ... Y Z IF WHILE REPEAT
   22    restart point
@@ -3811,11 +3753,11 @@ The erroneous program was transformed during parsing into the following syntacti
 
 [[Earley]] J. Earley:
 An efficient context-free parsing algorithm
-Communications of the ACM 13: 94{102 (1970)
+Communications of the ACM 13: 94--102 (1970)
 
 [[Grosch]] J. Grosch:
 Efficient and Comfortable Error Recovery in Recursive Descent Parsers
-Structured Programming 11: 129{140 (1990)
+Structured Programming 11: 129--140 (1990)
 
 [[Kröplin]] M. Kröplin:
 Eta nach Epsilon (Teil II): Spezifikation eines Oberon-0-Compilers
@@ -3832,7 +3774,7 @@ Addison-Wesley 1992
 
 [[Röhrich]] J. Röhrich:
 Methods for the Automatic Construction of Error Correcting Parsers
-Acta Informatica 13: 115{139 (1980)
+Acta Informatica 13: 115--139 (1980)
 
 [[Schröer]] F. W. Schröer:
 Eta: Ein Compiler-Generator auf der Basis zweistffiger Grammatiken
