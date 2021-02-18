@@ -1,5 +1,6 @@
 = True Compiler Generation
 Efficient Implementation of a Closed Theory
+:figure-caption!:
 
 Jochen Demuth, Stephan Weber,
 Sönke Kannapinn, Mario Kröplin
@@ -318,7 +319,8 @@ A compiler specification is read in by the `analyzer` using a `scanner` for the 
 
 // page 13
 
-//image: figure-3.1
+.Figure 3.1: Module hierarchy of epsilon
+image::images/figure-3.1-module-hierarchy-of-epsilon.PNG[module hierarchy of epsilon]
 
 This uses an extended `Earley` parser to create derivation trees for axforms specified on parameter positions. `Predicates` exports a command for determination of the pradicates of the speciation.
 
@@ -389,7 +391,8 @@ The meta-terminals, -non-terminals as well as -rules are represented in the fiel
 ----
 Here the components `Id` refer to the textual representations in the `Scanner` module. The component `IsToken` says, since the non-terminal in the specification with the character "*" for the output was marked as a token. The component `MRule` refers to the (textual) first alternative of a non-terminal; the next alternative can be reached via the `Next` component. The right side of an alternative is described by a range in the field `MembBuf` which is terminated with the value `nil`. Meta-terminals are described by negative numbers, meta-nonterminals by positive numbers; the amount then points to the field to the `MTerm` or `MNont` field. For the Earley parser, the entry after the field is used to refer to the corresponding alternative (in `MAlt`).
 
-//immage: figure-4.1-internal-representation-of-the-meta-grammar.PNG
+.Figure 4.1: Internal representation of the meta grammar
+image::images/figure-4.1-internal-representation-of-the-meta-grammar.PNG[internal representation of the meta grammar]
 
 // page 17 
 
@@ -442,7 +445,8 @@ Hyper non-terminals are represented by a unique entry in the `HNont` field. A po
 
 The `Sub` component of the `Rule` data type refers to the hyper-rules of a non-terminal. Any non-terminal (i.e., even a named one) can represent an EBNF operator, which is expressed by is expressed by the `Grp`, `Opt` and `Rep` extensions of this datatype. An optional resp. a repetition have an empty alternative, for which the `Formal` component takes the formal parameter list.
 
-//immage: figure-4.2-explanation-of-the-pointer-structure-of-hyper-nonterminals.PNG
+.Figure 4.2: Explanation of the pointer structure of hyper nonterminals
+image::images/figure-4.2-explanation-of-the-pointer-structure-of-hyper-nonterminals.PNG[explanation of the pointer structure of hyper nonterminals]
 
 The signature of a hyper-non-terminal is described by a sequence of entries in the field `DomBuf` field. A negative entry indicates an input parameter, a positive entry indicates an output parameter. In both cases, the absolute value refers to the `MNont` field and thereby identifies the value range symbol of a parameter. The entry `nil` terminates a signature. The function procedures `SigOk` and `WellMatched` ensure the consistency of signatures. 
 
@@ -494,7 +498,8 @@ The variable `StartSym` points to the start symbol of the hyper-grammar.
 ----
 The transformed EBNF rules are represented together with parameters in the data structures `Alt` and `Factor` data structures.
 
-//image: figure-4.3-explanation-of-the-pointer-structures-of-a-hyper-rule.PNG
+.Figure 4.3: Explanation of the pointer structures of a hyper rule
+image::images/figure-4.3-explanation-of-the-pointer-structures-of-a-hyper-rule.PNG[explanation of the pointer structures of a hyper rule]
 
 A hyper-nonterminal occurs on the left side of one or more hyper-rules (or also-alternatives) represented by the type `Alt`. In it, the `Up` component specifies this left-hand side non-terminal. Furthermore, an alternative has formal parameters represented by the component `Formal`. To the alternatives of a repetition exist recursion parameters, which are represented by the component `Actual`. If there are several alternatives for a non-terminal, they are concatenated by the component `Next`. The components `Sub` and `Last` refer to the first and last factor of the alternative. factor of the alternative.
 
@@ -543,7 +548,8 @@ An entry in `ParamBuf` points to the tree representation of an affix form. This 
 
 // page 21
 
-//image: figure-4.4-explanation-of-the-pointer-structure-of-the-parameters.PNG
+.Figure 4.4: Explanation of the pointer structure of the parameters
+image::images/figure-4.4-explanation-of-the-pointer-structure-of-the-parameters.PNG[explanation of the pointer structure of the parameters]
 
 The nodes of a derivation tree are represented in the `NodeBuf` field, variables in the Var field. If the component `Affixform` has a negative value, the affix form consists of a variable; the absolute value refers to an entry in the `Var` field. If the component  `Affixform` component has a positive value, it refers to an entry in `NodeBuf`. The component `isDef` indicates whether the axform terminates on denoting or applying affix position is located.
 
@@ -562,7 +568,8 @@ The `Scope` data type identifies the variables of a scope. They are specified in
 ----
 // page 22
 
-//image: figure-4.5-explanation-of-the-Scope-data-type.PNG
+.Figure 4.5: Explanation of the scope data type
+image::images/figure-4.5-explanation-of-the-Scope-data-type.PNG[explanation of the Scope data type]
 ----
     CONST
         analysed = 0; predicates = 1;
@@ -580,6 +587,7 @@ The `Scope` data type identifies the variables of a scope. They are specified in
     PROCEDURE WriteNamedHNont (VAR Out: eIO.TextOut; Nont: INTEGER);
     PROCEDURE WriteVar (VAR Out: eIO.TextOut; V: INTEGER);
 ----
+
 The variable `BaseName` contains the name of the EAG, which can be used by the individual processing steps for identification (e.g. as file name). The length of the name is limited by the constant `BaseNameLen`.
 
 The variable `History` reflects the processing state of the EAG. As entries are the values `analyzed`, `predicates`, `parsable`, `isSLEAG`, `isSSweep` and `hasEvaluator`. The function procedure `Performed` allows to query a minimum status. If this is not reached, error messages are output as side effects.
@@ -621,7 +629,8 @@ In the second pass, the structures that were created incorrectly due to ambiguit
 
 Since all hyper-rules are known, the internal structure can be used to check whether a named non-terminal exists. This is the case if a non-terminal has no formal parameters internally and the only factor of the and the only factor of the only alternative of this non-terminal has no current parameters and an EBNF current parameters and is an EBNF operator. It is then used by the procedure Shrink the rule of the named non-terminal is deleted and that of the anonymous one is moved (see Figure 4.6).
 
-//image: figure-4.6-example-of-a-reduction-by-the-procedure-Shrink.PNG
+.Figure 4.6: Example of a reduction by the procedure Shrink
+image::images/figure-4.6-example-of-a-reduction-by-the-procedure-Shrink.PNG[example of a reduction by the procedure Shrink]
 
 This creates gaps in the `EAG.HNont` field. Therefore there is the set `EAG.All` which contains those indices in `EAG.HNont` which actually represent a hyper-non-terminal. 
 
@@ -688,7 +697,8 @@ To reduce the effort of searching for strings, a hash value is calculated for ea
 
 The presented technique is extremely efficient and allows the storage of unlimited long strings. Figure 4.7 illustrates the use of the data structures.
 
-//image: figure-4.7-situation-after-recognition-of-the-tokens-Ab-Str-Id-Str-and-Ab.PNG
+.Figure 4.7: Situation after recognition of the tokens Ab Str Id Str and Ab
+image::images/figure-4.7-situation-after-recognition-of-the-tokens-Ab-Str-Id-Str-and-Ab.PNG[situation after recognition of the tokens Ab Str Id Str and Ab]
 
 // page 27
 
@@ -757,7 +767,8 @@ After recognition of a correct affix form, the last item list consists of only o
 
 Figure 4.8 shows a small grammar and derivation tree of an affix form with variables. Figure 4.9 shows the items created by the Earley parser for this and accessible from the root via `Left` and `Sub` in the tree representation mentioned above. `Left`-pointers are shown as arrows pointing to the left arrows, `sub`-pointers as arrows pointing to the right. The three dotted arrows are references to variables that have already been created.
 
-//image: figure-4.8-meta-grammar-and-derivation-tree-for-an-affixform.PNG
+.Figure 4.8: Meta grammar and derivation tree for an affixform
+image::images/figure-4.8-meta-grammar-and-derivation-tree-for-an-affixform.PNG[meta grammar and derivation tree for an affixform]
 
 In this implementation, some significant optimizations have been added. So a token is used to avoid unnecessary additions of items to the current list; an item is not list; an item will not be inserted if the symbol behind the point is a terminal and does not match the next input symbol. This leads not only to a speedup, but also to sometimes significantly smaller item lists. In particular hashing when searching for items, since the constant effort of initializing the hash table in the of initializing the hash table when creating a new list now { for common affix forms and meta grammars { is greater than the savings in searching in these lists.
 
@@ -767,7 +778,8 @@ A last optimization resulted from the analysis of common EAGs: Almost 90% of all
 
 // page 30
 
-//image: figure-4.9.PNG
+.Figure 4.9: Tree representation of items of the Earley parser
+image::images/figure-4.9-tree-representation-of-items-of-the-earley-parser.PNG[tree representation of items of the earley parser]
 
 of the procedure `SimpleParse` is implemented. The Earley parser is only called after a failure of this procedure.
 
@@ -815,7 +827,8 @@ To reduce the generation effort, a parametric scanner was designed. This is para
 
 Decision trees are used to analyze the finite language of token representations of an EAG. Since the realization of these trees is quite simple, a table to be created by the generator can be avoided. by the generator can be avoided, by parameterizing the scanner by inserted  procedure calls, which builds the trees during initialization (see Fig. 5.1). The recognition of a token representation then starts at the root of the associated decision tree. In each step, the character read in is compared with that of the node. In case of equality a transition to the son (vertical arrows) takes place together with the reading of the next character. In case of inequality, the current character is passed to the brother (horizontal arrows). If there is no son left, a token representation is fully recognized. On the other hand, the unsuccessful search of all brothers indicates that the current character does not belong to the token representation. However, a beginning of the read string can already be completely recognized at a string may have been recognized completely. This reflects an existing token value.
 
-//image: figure-5.1.PNG
+.Figure 5.1: Example of a decision tree
+image::images/figure-5.1-example-of-a-decision-tree.PNG[example of a decision tree]
 
 When recognizing a symbol, the longest-match principle is realized by choosing the last node with a token value. For possibly over characters the recognition starts again at the root of a decision tree.
 
@@ -1380,7 +1393,7 @@ As an example of a separate evaluator, the single-sweep procedure is to be imple
 
 permutation of the right-hand side with which the rule becomes left-denoting. In particular this is fulfilled for each LEAG. The greater power as well as the fact that axpositions can be further eciently can be realized as procedure parameters, make a generator based on the SingleSweep method appear to be an easily achievable and practically useful alternative.
 
-===== 6.1.1 The Evaluation
+==== 6.1.1 The Evaluation
 
 Here first the direct evaluation of simple rules (without EBNF operators) is described according to the LEAG procedure is described.
 
@@ -1419,7 +1432,9 @@ For reasons of memory efficiency and with regard to an own free memory managemen
 Stelligkeit = Knotenbezeichner DIV arityConst,
 Alternativennummer = Knotenbezeichner MOD arityConst.
 ----
-//image: figure-6.1-saving-the-representation-of-the-record-a-b-to-the-value-range-symbol-id.PNG
+
+.Figure 6.1: Saving the representation of the record a b to the value range symbol id
+image::images/figure-6.1-saving-the-representation-of-the-record-a-b-to-the-value-range-symbol-id.PNG[saving the representation of the record a b to the value range symbol id]
 
 In Eta, the performance of analyses and syntheses is further subdivided. Formally analysis and synthesis radicates for each meta-alternative (as well as equal and transfer radicates for each meta-nonterminal). These primitive predicates are implemented as short procedures. implemented. The evaluator code then consists essentially of sequences of procedure calls. This is in this respect improvable, as it leads to efficiency losses due to the multiplicity of procedure calls together with parameter transfers. Here the possibility offers itself of optimizing the run time by using the procedure bodies directly, so to speak, and eliminating the assignments for parameter transfers by variable renaming as far as possible. In
 general, however, this will increase the size of the generated evaluator.
@@ -1434,7 +1449,8 @@ synthesized subtree. From these, a new tree is constructed step by step by creat
 
 Since the size of the nodes to be created and their number are known at generation time, the required memory can be requested for all nodes at once. During a preorder traversal of the derivation tree to the affix form, the required assignments are determined. indexing of the memory cells can be done relative to a fixed offset (see figure 6.2 for an example). Figure 6.2 is an example).
 
-//image: figure-6.2.PNG
+.Figure 6.2: Synthesis of id b to the value range symbol id
+image::images/figure-6.2-synthesis-of-id-b-to-the-value-range-symbol-id.PNG[synthesis of id b to the value range symbol id]
 
 ===== 6.1.1.2 Transfer
 
@@ -1452,9 +1468,11 @@ As can be seen from Figure 6.3, these expressions can grow rapidly^1^. This can 
 
 // page 103
 
-//image: figure-6.3-analysis-of-a-x-to-the-value-range-symbol-id.PNG
+.Figure 6.3: Analysis of a x to the value range symbol id
+image::images/figure-6.3-analysis-of-a-x-to-the-value-range-symbol-id.PNG[analysis of a x to the value range symbol id]
 
-//image: figure-6.4-analysis-of-a-x-to-the-value-range-symbol-id-using-temporary-variables.PNG
+.Figure 6.4: Analysis of a x to the value range symbol id using temporary variables
+image::images/figure-6.4-analysis-of-a-x-to-the-value-range-symbol-id-using-temporary-variables.PNG[analysis of a x to the value range symbol id using temporary variables]
 
 ===== 6.1.1.4 Comparisons
 
@@ -1669,7 +1687,8 @@ Terminal affix forms are constant in the sense that they are represented in the 
 
 The generation of such an optimized evaluation is optional, since it is not suitable for the generation of derivation trees. is not suitable for the generation of derivation trees due to the resulting collapsing. In the implementation, all leaves and the trees of terminal affix forms are initially presynthesized in a reserved part of the heap. reserved part of the heap. The references are thereby known and can be used in syntheses. The end of this reserved area is marked by the constant predefined, as shown in Figure 6.5. The example of a synthesis from Figure 6.2
 
-//image: figure-6.5-explanation-of-the-memory-structure-in-the-generated-evaluators.PNG
+.Figure 6.5: Explanation of the memory structure in the generated evaluators
+image::images/figure-6.5-explanation-of-the-memory-structure-in-the-generated-evaluators.PNG[explanation of the memory structure in the generated evaluators]
 
 changes as a result:
 ----
@@ -1697,7 +1716,8 @@ The reference to a tree is expressed by the increment of the payer of the root n
 
 // page 110
 
-//image: figure-6.6-explanation-of-multiple-reference-to-subtree.PNG
+.Figure 6.6: Explanation of multiple reference to subtree
+image::images/figure-6.6-explanation-of-multiple-reference-to-subtree.PNG[explanation of multiple reference to subtree]
 
 If the last reference loses its validity, the root node and all its subtree nodes are freed. nodes of its subtree, to which no further reference exists, by entering them in free space lists. are entered. Requested heap memory is then primarily taken from these lists.
 
@@ -1721,7 +1741,8 @@ A separate free list is created for each node location. Shared nodes are managed
 
 // page 111
 
-//image: figure-6.7-example-of-a-free-space-list.PNG
+.Figure 6.7: Example of a free space list
+image::images/figure-6.7-example-of-a-free-space-list.PNG[example of a free space list]
 
 In syntheses, memory is now requested node by node using the procedure `GetHeap` procedure. The deletion of a reference as well as a possible release of the memory is carried out by the procedure `FreeHeap`.
 
@@ -2079,7 +2100,9 @@ An obvious solution to the problem of finding a suitable permutation would be to
     D <+ : p, -q : q, -n : n> : "d".
     E <-n : n, + : q, -r : r, + : p> : "e".
 ----
-//image: figure-7.1-dependence-graph-of-the-one-alternative-of-the-non-terminal-S.PNG
+
+.Figure 7.1: Dependency graph of the one alternative of the non-terminal S
+image::images/figure-7.1-dependence-graph-of-the-one-alternative-of-the-non-terminal-S.PNG[dependency graph of the one alternative of the non-terminal S]
 
 The problem is that variables can be in multiple defining positions and it is not yet clear which it is not yet clear which is dynamically the first defining position. In Eta the leftmost position was simply set as the defining point; however, this approach is not suitable for the single sweep method. however, is not suitable. The dependency graph shown contains too many edges and cannot be topologically sorted. cannot be sorted topologically (the graph contains cycles). For example, the first factor depends on the second and vice versa. If, however, the third factor is sorted to the front, then the variable `n` is defined behind it and for further sorting all edges marked with `n`, which point to other that factors must be deleted from the graph. By making such deletions, the dependency graph shown can now be sorted.
 
@@ -2107,7 +2130,8 @@ Initially, for each factor of an alternative, a list of the variables in the def
 
 In `Stack`, the set of those factors is stored whose application count has fallen to zero, i.e. which only apply variables that have already been denoted. In `DefVars` during the already defined variables are successively added to the sorting of the factors. this set is initialized with the variables defined on the left side of the rule. The dotted slopes in Figure 7.1 dependencies between factors and the left side of the rule must be included in the initial assignment of the data structures, as shown in figure 7.2.
 
-//image: figure-7.2-initial-assignment-of-the-data-structures-for-the-example.PNG
+.Figure-7.2: Initial assignment of the data structures for the example
+image::images/figure-7.2-initial-assignment-of-the-data-structures-for-the-example.PNG[initial assignment of the data structures for the example]
 
 In `Stack` for the example only the factor `C` is entered at the beginning, in `DefVars` only the variable `r` is contained.
 
