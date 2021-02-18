@@ -3786,16 +3786,16 @@ The erroneous program was transformed during parsing into the following syntacti
 == Bibliography
 
 [[Earley]] J. Earley:
-An effcient context-free parsing algorithm
+An efficient context-free parsing algorithm
 Communications of the ACM 13: 94{102 (1970)
 
 [[Grosch]] J. Grosch:
-Ecient and Comfortable Error Recovery in Recursive Descent Parsers
+Efficient and Comfortable Error Recovery in Recursive Descent Parsers
 Structured Programming 11: 129{140 (1990)
 
-[[Kröplin]] M. Kroplin:
+[[Kröplin]] M. Kröplin:
 Eta nach Epsilon (Teil II): Spezifikation eines Oberon-0-Compilers
-Vortrage im Forschungskolloquium am 5. und 18. Dezember 1996,
+Vorträge im Forschungskolloquium am 5. und 18. Dezember 1996,
 Fachgebiet PC, Fachbereich Informatik, TU Berlin
 
 [[Reiser]] M. Reiser:
@@ -3806,11 +3806,11 @@ Addison-Wesley 1991
 Programming in Oberon: Steps beyond Pascal and Modula
 Addison-Wesley 1992
 
-[[Röhrich]] J. Rohrich:
+[[Röhrich]] J. Röhrich:
 Methods for the Automatic Construction of Error Correcting Parsers
 Acta Informatica 13: 115{139 (1980)
 
-[[Schröer]] F. W. Schroer:
+[[Schröer]] F. W. Schröer:
 Eta: Ein Compiler-Generator auf der Basis zweistffiger Grammatiken
 Bericht Nr. 84-2, Fachbereich Informatik, TU Berlin, Marz 1984
 
@@ -3823,10 +3823,9 @@ Grund lagen und Techniken des Compilerbaus
 Addison-Wesley 1996
 
 [[WiGu]] N. Wirth, J. Gutknecht:
-Project Oberon { The Design of an Operating System and Compiler
+Project Oberon - The Design of an Operating System and Compiler
 Addison-Wesley 1992
 
-[[Zimmermann]] B. Zimmermann, K. Voloh:
-Compiler-Generierung II: Spezikationskalkule und Implementierungskonzepte
+[[Zimmermann]] B. Zimmermann, K. Voßloh:
+Compiler-Generierung II: Spezifikationskalkule und Implementierungskonzepte
 Skript einer Lehrveranstaltung an der TU Berlin im WS 1994/95
-
