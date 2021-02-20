@@ -475,7 +475,7 @@ void Orient(int a, int b, int X, ref BitArray New)
     }
     if (CyclicTDP)
     {
-        IO.Msg.write("\tGarmmar is not SOAG\n");
+        error!"grammar is not SOAG";
         SOAG.Error(SOAG.cyclicTDP, "eSOAGVSGen.Orient");
     }
     for (i = firstChangeBuf; i < NextChangeBuf; ++i)
@@ -491,22 +491,6 @@ void Orient(int a, int b, int X, ref BitArray New)
                 New[a1 * Seperator + b1] = true;
         }
     }
-}
-
-void WriteDS(int XmaxAff) @safe
-{
-    for (size_t i = 0; i <= XmaxAff; ++i)
-    {
-        IO.Msg.write("Zeile ");
-        IO.Msg.write(i);
-        for (size_t j = 0; j <= XmaxAff; ++j)
-        {
-            IO.Msg.write(DS[i][j]);
-            IO.Msg.write(" ");
-        }
-        IO.Msg.writeln;
-    }
-    IO.Msg.flush;
 }
 
 /**
@@ -688,7 +672,7 @@ void Compute()
     Phase = dynTopSort;
     DynTopSort;
     if (OEAG)
-        IO.Msg.write("\n\tGrammar is SOEAG\n");
+        info!"grammar is SOEAG";
     else
-        IO.Msg.write("\n\tGrammar is SOEAG (backtracked)\n");
+        info!"grammar is SOEAG (backtracked)";
 }

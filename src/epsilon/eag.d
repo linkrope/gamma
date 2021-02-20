@@ -241,6 +241,11 @@ struct HNontRecord
     int Sig;
     Rule Def;
     bool IsToken;
+
+    bool anonymous() const @nogc nothrow pure @safe
+    {
+        return Id < 0;
+    }
 }
 
 MTermRecord[] MTerm;
@@ -694,7 +699,7 @@ public string HNontRepr(size_t Nont) @safe
 {
     import std.format : format;
 
-    if (HNont[Nont].Id < 0)
+    if (HNont[Nont].anonymous)
         return format!"A%s"(-HNont[Nont].Id);
     return symbolTable.symbol(HNont[Nont].Id);
 }

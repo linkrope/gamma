@@ -15,17 +15,17 @@ import std.format;
 import std.stdio;
 import std.typecons;
 
-const nil = 0;
-const endTok = 0;
-const undefTok = 1;
-const sepTok = 2;
-const firstUserTok = 3;
-enum nElemsPerSET = size_t.sizeof * 8;
-const firstEdge = 1;
-const firstGenSet = 1;
-const firstGenSetT = 1;
+private const nil = 0;
+private const endTok = 0;
+private const undefTok = 1;
+private const sepTok = 2;
+private const firstUserTok = 3;
+private enum nElemsPerSET = size_t.sizeof * 8;
+private const firstEdge = 1;
+private const firstGenSet = 1;
+private const firstGenSetT = 1;
 
-struct NontRecord
+private struct NontRecord
 {
     BitArray First;
     BitArray Follow;
@@ -41,78 +41,162 @@ struct NontRecord
     bool Anonym;
 }
 
-struct AltRecord
+private struct AltRecord
 {
     BitArray Dir;
 }
 
-struct FactorRecord
+private struct FactorRecord
 {
     int Rec;
 }
 
-struct EdgeRecord
+private struct EdgeRecord
 {
     int Dest;
     int Next;
 }
 
-NontRecord[] Nont;
-AltRecord[] Alt;
-FactorRecord[] Factor;
-EdgeRecord[] Edge;
-int NextEdge;
-BitArray[] GenSet;
-int NextGenSet;
-BitArray[] GenSetT;
-int NextGenSetT;
-BitArray TestNonts;
-BitArray GenNonts;
-BitArray RegNonts;
-BitArray ConflictNonts;
-int nToks;
-bool Error;
-bool Warning;
-bool UseReg;
+private NontRecord[] Nont;
+private AltRecord[] Alt;
+private FactorRecord[] Factor;
+private EdgeRecord[] Edge;
+private int NextEdge;
+private BitArray[] GenSet;
+private int NextGenSet;
+private BitArray[] GenSetT;
+private int NextGenSetT;
+private BitArray TestNonts;
+private BitArray GenNonts;
+private BitArray RegNonts;
+private BitArray ConflictNonts;
+private int nToks;
+public bool Error;
+private bool Warning;
+private bool UseReg;
 
-void Expand() nothrow @safe
+public void Test(Settings settings)
+in (EAG.Performed(EAG.analysed | EAG.predicates))
 {
-    size_t ExpLen(size_t ArrayLen)
-    {
-        assert(ArrayLen <= DIV(size_t.max, 2));
-
-        return 2 * ArrayLen;
-    }
-
-    if (NextEdge >= Edge.length)
-    {
-        auto Edge1 = new EdgeRecord[ExpLen(Edge.length)];
-
-        for (size_t i = firstEdge; i < Edge.length; ++i)
-            Edge1[i] = Edge[i];
-        Edge = Edge1;
-    }
-    if (NextGenSet >= GenSet.length)
-    {
-        auto GenSet1 = new BitArray[ExpLen(GenSet.length)];
-
-        for (size_t i = firstGenSet; i < GenSet.length; ++i)
-            GenSet1[i] = GenSet[i];
-        GenSet = GenSet1;
-    }
-    if (NextGenSetT >= GenSetT.length)
-    {
-        auto GenSetT1 = new BitArray[ExpLen(GenSetT.length)];
-
-        for (size_t i = firstGenSetT; i < GenSetT.length; ++i)
-            GenSetT1[i] = GenSetT[i];
-        GenSetT = GenSetT1;
-    }
+    info!"ELL(1) testing %s"(EAG.BaseName);
+    EAG.History &= ~EAG.parsable;
+    Init(settings);
+    scope (exit)
+        Finit;
+    if (!GrammarOk)
+        return;
+    ComputeDir;
+    if (Error || Warning)
+        return;
+    info!"OK";
+    EAG.History |= EAG.parsable;
 }
+
+public void Generate(Settings settings)
+in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.isSLEAG))
+{
+    info!"ELL(1) writing %s"(EAG.BaseName);
+    EAG.History &= ~EAG.parsable;
+    Init(settings);
+    scope (exit)
+        Finit;
+    if (!GrammarOk)
+        return;
+    ComputeDir;
+    if (Error)
+        return;
+    ComputeDefaultAlts;
+    ComputeSets;
+    GenerateMod(No.parsePass, settings);
+    EAG.History |= EAG.parsable;
+}
+
+public void GenerateParser(Settings settings)
+in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.hasEvaluator))
+{
+    info!"ELL(1) writing parser of %s"(EAG.BaseName);
+    EAG.History &=  ~EAG.parsable;
+    Init(settings);
+    scope (exit)
+        Finit;
+    if (!GrammarOk)
+        return;
+    EAG.History = 0;
+    Shift.Shift;
+    ComputeDir;
+    if (Error)
+        return;
+    ComputeDefaultAlts;
+    ComputeSets;
+    GenerateMod(Yes.parsePass, settings);
+}
+
+private void Init(Settings settings)
+{
+    int i;
+
+    nToks = EAG.NextHTerm - EAG.firstHTerm + firstUserTok;
+    if (EAG.NextHNont >= 1)
+        Nont = new NontRecord[EAG.NextHNont];
+    else
+        Nont = new NontRecord[1];
+    for (i = EAG.firstHNont; i < EAG.NextHNont; ++i)
+    {
+        Nont[i].First = BitArray();
+        Nont[i].First.length = nToks + 1;
+        Nont[i].Follow = BitArray();
+        Nont[i].Follow.length = nToks + 1;
+        Nont[i].IniFollow = BitArray();
+        Nont[i].IniFollow.length = nToks + 1;
+
+        Nont[i].DefaultAlt = null;
+        Nont[i].AltRec = nil;
+        Nont[i].OptRec = nil;
+        Nont[i].AltExp = nil;
+        Nont[i].OptExp = nil;
+        Nont[i].FirstIndex = nil;
+        Nont[i].FollowIndex = nil;
+        Nont[i].Anonym = EAG.All[i] && EAG.HNont[i].anonymous;
+    }
+    if (EAG.NextHAlt >= 1)
+        Alt = new AltRecord[EAG.NextHAlt];
+    else
+        Alt = new AltRecord[1];
+    for (i = EAG.firstHAlt; i < EAG.NextHAlt; ++i)
+    {
+        Alt[i].Dir = BitArray();
+        Alt[i].Dir.length = nToks + 1;
+    }
+    if (EAG.NextHFactor >= 1)
+        Factor = new FactorRecord[EAG.NextHFactor];
+    else
+        Factor = new FactorRecord[1];
+    for (i = EAG.firstHFactor; i < EAG.NextHFactor; ++i)
+        Factor[i].Rec = nil;
+    Edge = new EdgeRecord[255];
+    NextEdge = firstEdge;
+    GenSet = new BitArray[511];
+    NextGenSet = firstGenSet;
+    GenSetT = new BitArray[255];
+    NextGenSetT = firstGenSetT;
+    TestNonts = EAG.All - EAG.Pred;
+    GenNonts = EAG.Prod & EAG.Reach;
+    GenNonts -= EAG.Pred;
+    Error = false;
+    Warning = false;
+    UseReg = !settings.p;
+    RegNonts = BitArray();
+    RegNonts.length = EAG.NextHNont + 1;
+    ConflictNonts = BitArray();
+    ConflictNonts.length = EAG.NextHNont + 1;
+    if (UseReg)
+        ComputeRegNonts;
+}
+
 /**
  * R  whole procedure
  */
-void ComputeRegNonts()
+private void ComputeRegNonts()
 {
     EAG.Alt A;
     EAG.Factor F;
@@ -193,71 +277,7 @@ void ComputeRegNonts()
     }
 }
 
-void Init(Settings settings)
-{
-    int i;
-
-    nToks = EAG.NextHTerm - EAG.firstHTerm + firstUserTok;
-    if (EAG.NextHNont >= 1)
-        Nont = new NontRecord[EAG.NextHNont];
-    else
-        Nont = new NontRecord[1];
-    for (i = EAG.firstHNont; i < EAG.NextHNont; ++i)
-    {
-        Nont[i].First = BitArray();
-        Nont[i].First.length = nToks + 1;
-        Nont[i].Follow = BitArray();
-        Nont[i].Follow.length = nToks + 1;
-        Nont[i].IniFollow = BitArray();
-        Nont[i].IniFollow.length = nToks + 1;
-
-        Nont[i].DefaultAlt = null;
-        Nont[i].AltRec = nil;
-        Nont[i].OptRec = nil;
-        Nont[i].AltExp = nil;
-        Nont[i].OptExp = nil;
-        Nont[i].FirstIndex = nil;
-        Nont[i].FollowIndex = nil;
-        Nont[i].Anonym = EAG.All[i] && EAG.HNont[i].Id < 0;
-    }
-    if (EAG.NextHAlt >= 1)
-        Alt = new AltRecord[EAG.NextHAlt];
-    else
-        Alt = new AltRecord[1];
-    for (i = EAG.firstHAlt; i < EAG.NextHAlt; ++i)
-    {
-        Alt[i].Dir = BitArray();
-        Alt[i].Dir.length = nToks + 1;
-    }
-    if (EAG.NextHFactor >= 1)
-        Factor = new FactorRecord[EAG.NextHFactor];
-    else
-        Factor = new FactorRecord[1];
-    for (i = EAG.firstHFactor; i < EAG.NextHFactor; ++i)
-        Factor[i].Rec = nil;
-    Edge = new EdgeRecord[255];
-    NextEdge = firstEdge;
-    GenSet = new BitArray[511];
-    NextGenSet = firstGenSet;
-    GenSetT = new BitArray[255];
-    NextGenSetT = firstGenSetT;
-    TestNonts = EAG.All - EAG.Pred;
-    GenNonts = EAG.Prod & EAG.Reach;
-    GenNonts -= EAG.Pred;
-    Error = false;
-    Warning = false;
-    UseReg = !settings.p;
-    RegNonts = BitArray();
-    RegNonts.length = EAG.NextHNont + 1;
-    ConflictNonts = BitArray();
-    ConflictNonts.length = EAG.NextHNont + 1;
-    if (UseReg)
-    {
-        ComputeRegNonts;
-    }
-}
-
-void Finit() @nogc nothrow @safe
+private void Finit() @nogc nothrow @safe
 {
     Nont = null;
     Alt = null;
@@ -267,31 +287,10 @@ void Finit() @nogc nothrow @safe
     GenSetT = null;
 }
 
-string TokRepr(size_t Tok) @safe
-{
-    if (Tok == endTok)
-        return "<end>";
-    else if (Tok == undefTok)
-        return "<undef>";
-    else if (Tok == sepTok)
-        return "<sep>";
-    else
-        return EAG.HTermRepr(Tok.to!int + EAG.firstHTerm - firstUserTok);
-}
-
-void NewEdge(size_t From, int To) nothrow @safe
-{
-    if (NextEdge == Edge.length)
-        Expand;
-    Edge[NextEdge].Dest = To;
-    Edge[NextEdge].Next = Nont[From].Edge;
-    Nont[From].Edge = NextEdge;
-    ++NextEdge;
-}
 /**
  * R  whole procedure
  */
-bool GrammarOk()
+private bool GrammarOk()
 {
     EAG.Alt A;
     EAG.Factor F;
@@ -353,7 +352,7 @@ bool GrammarOk()
     return Ok;
 }
 
-void ComputeDir()
+private void ComputeDir()
 {
     EAG.Alt A;
     EAG.Factor F;
@@ -390,7 +389,7 @@ void ComputeDir()
         }
         if (State[N] == n)
         {
-            string[] culprits;
+            string[] items;
 
             leftRecursion = leftRecursion || Top > n;
             do
@@ -402,12 +401,12 @@ void ComputeDir()
                 {
                     if (Nont[N1].Anonym)
                     {
-                        culprits ~= format!"EBNF expression in %s\n%s"
+                        items ~= format!"EBNF expression in %s\n%s"
                             (EAG.NamedHNontRepr(N1), EAG.HNont[N1].Def.Sub.Pos);
                     }
                     else
                     {
-                        culprits ~= EAG.NamedHNontRepr(N1);
+                        items ~= EAG.NamedHNontRepr(N1);
                     }
                 }
                 Nont[N1].First = Nont[N].First;
@@ -415,7 +414,7 @@ void ComputeDir()
             while (Top >= n);
             if (leftRecursion)
             {
-                error!"left recursion over nonterminals%-(\n%s%)"(culprits);
+                error!"left recursion over nonterminals%-(\n%s%)"(items);
                 Error = true;
             }
         }
@@ -639,7 +638,19 @@ void ComputeDir()
     }
 }
 
-void ComputeDefaultAlts()
+private string TokRepr(size_t Tok) @safe
+{
+    if (Tok == endTok)
+        return "<end>";
+    else if (Tok == undefTok)
+        return "<undef>";
+    else if (Tok == sepTok)
+        return "<sep>";
+    else
+        return EAG.HTermRepr(Tok.to!int + EAG.firstHTerm - firstUserTok);
+}
+
+private void ComputeDefaultAlts()
 {
     struct AltRecord
     {
@@ -769,7 +780,7 @@ void ComputeDefaultAlts()
     }
 }
 
-void ComputeSets()
+private void ComputeSets()
 {
     BitArray Start;
 
@@ -884,7 +895,7 @@ void ComputeSets()
     }
 }
 
-void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
+private void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
 {
     IO.TextOut Mod;
     Input Fix;
@@ -1419,58 +1430,47 @@ void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     EvalGen.FinitGen;
 }
 
-void Test(Settings settings)
-in (EAG.Performed(EAG.analysed | EAG.predicates))
+private void NewEdge(size_t From, int To) nothrow @safe
 {
-    info!"ELL(1) testing %s"(EAG.BaseName);
-    EAG.History &= ~EAG.parsable;
-    Init(settings);
-    scope (exit)
-        Finit;
-    if (!GrammarOk)
-        return;
-    ComputeDir;
-    if (Error || Warning)
-        return;
-    info!"OK";
-    EAG.History |= EAG.parsable;
+    if (NextEdge == Edge.length)
+        Expand;
+    Edge[NextEdge].Dest = To;
+    Edge[NextEdge].Next = Nont[From].Edge;
+    Nont[From].Edge = NextEdge;
+    ++NextEdge;
 }
 
-void Generate(Settings settings)
-in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.isSLEAG))
+private void Expand() nothrow @safe
 {
-    info!"ELL(1) writing %s"(EAG.BaseName);
-    EAG.History &= ~EAG.parsable;
-    Init(settings);
-    scope (exit)
-        Finit;
-    if (!GrammarOk)
-        return;
-    ComputeDir;
-    if (Error)
-        return;
-    ComputeDefaultAlts;
-    ComputeSets;
-    GenerateMod(No.parsePass, settings);
-    EAG.History |= EAG.parsable;
-}
+    size_t ExpLen(size_t ArrayLen)
+    {
+        assert(ArrayLen <= DIV(size_t.max, 2));
 
-void GenerateParser(Settings settings)
-in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.hasEvaluator))
-{
-    info!"ELL(1) writing parser of %s"(EAG.BaseName);
-    EAG.History &=  ~EAG.parsable;
-    Init(settings);
-    scope (exit)
-        Finit;
-    if (!GrammarOk)
-        return;
-    EAG.History = 0;
-    Shift.Shift;
-    ComputeDir;
-    if (Error)
-        return;
-    ComputeDefaultAlts;
-    ComputeSets;
-    GenerateMod(Yes.parsePass, settings);
+        return 2 * ArrayLen;
+    }
+
+    if (NextEdge >= Edge.length)
+    {
+        auto Edge1 = new EdgeRecord[ExpLen(Edge.length)];
+
+        for (size_t i = firstEdge; i < Edge.length; ++i)
+            Edge1[i] = Edge[i];
+        Edge = Edge1;
+    }
+    if (NextGenSet >= GenSet.length)
+    {
+        auto GenSet1 = new BitArray[ExpLen(GenSet.length)];
+
+        for (size_t i = firstGenSet; i < GenSet.length; ++i)
+            GenSet1[i] = GenSet[i];
+        GenSet = GenSet1;
+    }
+    if (NextGenSetT >= GenSetT.length)
+    {
+        auto GenSetT1 = new BitArray[ExpLen(GenSetT.length)];
+
+        for (size_t i = firstGenSetT; i < GenSetT.length; ++i)
+            GenSetT1[i] = GenSetT[i];
+        GenSetT = GenSetT1;
+    }
 }

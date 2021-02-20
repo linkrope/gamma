@@ -102,8 +102,6 @@ void compile(Input input, Settings settings)
 
     analyzer.Warnings;
     Predicates.Check;
-    if (settings.verbose)
-        Predicates.List;
 
     ELL1Gen.Test(settings);
 

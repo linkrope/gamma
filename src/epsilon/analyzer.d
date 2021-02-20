@@ -559,7 +559,7 @@ void CheckSemantics()
             if (A.Formal.Params == EAG.empty && A.Next is null && A.Sub !is null && cast(EAG.Nont) A.Sub !is null)
             {
                 F = cast(EAG.Nont) A.Sub;
-                if (EAG.HNont[F.Sym].Id < 0 && F.Actual.Params == EAG.empty && F.Next is null)
+                if (EAG.HNont[F.Sym].anonymous && F.Actual.Params == EAG.empty && F.Next is null)
                 {
                     EAG.HNont[Sym].Def = EAG.HNont[F.Sym].Def;
                     EAG.HNont[F.Sym].Def = null;
@@ -607,7 +607,7 @@ void CheckSemantics()
                     && F.Next !is null
                     && cast(EAG.Nont) F.Next !is null
                     && (cast(EAG.Nont) F.Next).Actual.Params == EAG.empty
-                    && EAG.HNont[(cast(EAG.Nont) F.Next).Sym].Id < 0)
+                    && EAG.HNont[(cast(EAG.Nont) F.Next).Sym].anonymous)
             {
                 (cast(EAG.Nont)F.Next).Actual = F.Actual;
                 F.Actual.Params = EAG.empty;
@@ -940,30 +940,28 @@ void Analyse(Input input)
 }
 
 void Warnings()
+in (EAG.Performed(EAG.analysed))
 {
-    if (EAG.Performed(EAG.analysed))
-    {
-        const Unreach = EAG.All - EAG.Reach;
-        const Unprod = EAG.All - EAG.Prod;
-        const NoWarnings = Unreach.bitsSet.empty && Unprod.bitsSet.empty;
+    const Unreach = EAG.All - EAG.Reach;
+    const Unprod = EAG.All - EAG.Prod;
+    const NoWarnings = Unreach.bitsSet.empty && Unprod.bitsSet.empty;
 
-        if (NoWarnings)
+    if (NoWarnings)
+    {
+        info!"Analyser: no warnings on %s's hyper-nonterminals"(EAG.BaseName);
+        return;
+    }
+    warn!"Analyser warnings on %s's hyper-nonterminals:"(EAG.BaseName);
+    for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
+    {
+        if (Unreach[Sym] && EAG.HNont[Sym].Id >= 0)
+            warn!"%s unreachable"(EAG.HNontRepr(Sym));
+        if (Unprod[Sym])
         {
-            info!"Analyser: no warnings on %s's hyper-nonterminals"(EAG.BaseName);
-            return;
-        }
-        warn!"Analyser warnings on %s's hyper-nonterminals:"(EAG.BaseName);
-        for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
-        {
-            if (Unreach[Sym] && EAG.HNont[Sym].Id >= 0)
-                warn!"%s unreachable"(EAG.HNontRepr(Sym));
-            if (Unprod[Sym])
-            {
-                if (EAG.HNont[Sym].Id < 0)
-                    warn!"anonymous nonterminal in %s unproductive"(EAG.NamedHNontRepr(Sym));
-                else
-                    warn!"%s unproductive"(EAG.HNontRepr(Sym));
-            }
+            if (EAG.HNont[Sym].anonymous)
+                warn!"anonymous nonterminal in %s unproductive"(EAG.NamedHNontRepr(Sym));
+            else
+                warn!"%s unproductive"(EAG.HNontRepr(Sym));
         }
     }
 }

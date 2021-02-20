@@ -13,6 +13,7 @@ bool[256] IsIdent;
 bool[256] IsSymbol;
 
 void Generate(Settings settings)
+in (EAG.Performed(EAG.analysed))
 {
     Input Fix;
     IO.TextOut Mod;
@@ -95,53 +96,50 @@ void Generate(Settings settings)
     }
 
     info!"ScanGen writing %s"(EAG.BaseName);
-    if (EAG.Performed(EAG.analysed))
+    Error = false;
+    MaxTokLen = lenOfPredefinedToken;
+    for (Term = EAG.firstHTerm; Term < EAG.NextHTerm; ++Term)
     {
-        Error = false;
-        MaxTokLen = lenOfPredefinedToken;
+        const Str = EAG.symbolTable.symbol(EAG.HTerm[Term].Id);
+
+        TestToken(Str, Len);
+        if (Len > MaxTokLen)
+            MaxTokLen = Len;
+    }
+    if (!Error)
+    {
+        Fix = read("fix/epsilon/scangen.fix.d");
+        name = EAG.BaseName ~ "Scan";
+        Mod = new IO.TextOut(settings.path(name ~ ".d"));
+        InclFix('$');
+        Mod.write(name);
+        InclFix('$');
+        Mod.write(MaxTokLen + 1);
+        InclFix('$');
+        Mod.write(EAG.NextHTerm - EAG.firstHTerm + firstUserTok);
+        InclFix('$');
         for (Term = EAG.firstHTerm; Term < EAG.NextHTerm; ++Term)
         {
-            const Str = EAG.symbolTable.symbol(EAG.HTerm[Term].Id);
-
-            TestToken(Str, Len);
-            if (Len > MaxTokLen)
-                MaxTokLen = Len;
+            Mod.write("    Enter(");
+            Mod.write(Term - EAG.firstHTerm + firstUserTok);
+            Mod.write(", ");
+            Mod.write(EAG.HTerm[Term].Id.repr);
+            Mod.write(");\n");
         }
-        if (!Error)
+        InclFix('$');
+        Mod.write(name);
+        InclFix('$');
+        Mod.flush;
+        if (settings.showMod)
         {
-            Fix = read("fix/epsilon/scangen.fix.d");
-            name = EAG.BaseName ~ "Scan";
-            Mod = new IO.TextOut(settings.path(name ~ ".d"));
-            InclFix('$');
-            Mod.write(name);
-            InclFix('$');
-            Mod.write(MaxTokLen + 1);
-            InclFix('$');
-            Mod.write(EAG.NextHTerm - EAG.firstHTerm + firstUserTok);
-            InclFix('$');
-            for (Term = EAG.firstHTerm; Term < EAG.NextHTerm; ++Term)
-            {
-                Mod.write("    Enter(");
-                Mod.write(Term - EAG.firstHTerm + firstUserTok);
-                Mod.write(", ");
-                Mod.write(EAG.HTerm[Term].Id.repr);
-                Mod.write(");\n");
-            }
-            InclFix('$');
-            Mod.write(name);
-            InclFix('$');
-            Mod.flush;
-            if (settings.showMod)
-            {
-                IO.Show(Mod);
-                IO.Msg.writeln;
-            }
-            else
-            {
-                IO.Compile(Mod);
-            }
-            IO.CloseOut(Mod);
+            IO.Show(Mod);
+            IO.Msg.writeln;
         }
+        else
+        {
+            IO.Compile(Mod);
+        }
+        IO.CloseOut(Mod);
     }
 }
 

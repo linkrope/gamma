@@ -293,7 +293,7 @@ bool TestHNont(size_t N, bool EmitErr, bool SLEAG)
             if (cast(EAG.Nont) F !is null)
             {
                 CheckApplPos((cast(EAG.Nont) F).Actual.Params);
-                if (SLEAG && EAG.HNont[(cast(EAG.Nont) F).Sym].Id < 0)
+                if (SLEAG && EAG.HNont[(cast(EAG.Nont) F).Sym].anonymous)
                     isSLEAG = isSLEAG && TestHNont((cast(EAG.Nont) F).Sym, EmitErr, SLEAG);
                 CheckDefPos((cast(EAG.Nont) F).Actual.Params);
             }
@@ -900,7 +900,7 @@ void ComputeVarNames(size_t N, Flag!"embed" embed)
                             {
                                 AffixName[P] = GetFreeVar();
                             }
-                            else if (!EAG.Pred[N] && EAG.HNont[N].Id < 0)
+                            else if (!EAG.Pred[N] && EAG.HNont[N].anonymous)
                             {
                                 AffixName[P] = VarName[V];
                                 if (FindVarName(P1, VarName[V]) != P)
@@ -1080,7 +1080,7 @@ void ComputeVarNames(size_t N, Flag!"embed" embed)
                     if (embed
                             && EAG.Prod[(cast(EAG.Nont) F).Sym]
                             && !EAG.Pred[(cast(EAG.Nont) F).Sym]
-                            && EAG.HNont[(cast(EAG.Nont) F).Sym].Id < 0)
+                            && EAG.HNont[(cast(EAG.Nont) F).Sym].anonymous)
                     {
                         Dom = EAG.HNont[(cast(EAG.Nont) F).Sym].Sig;
                         P = (cast(EAG.Nont) F).Actual.Params;
@@ -2704,7 +2704,7 @@ in (EAG.Pred[N])
     Mod.write("Check");
     Mod.write(N);
     Mod.write(`("`);
-    if (EAG.HNont[N].Id < 0)
+    if (EAG.HNont[N].anonymous)
         Mod.write("in ");
     Mod.write("'");
     Mod.write(EAG.NamedHNontRepr(N));

@@ -6,20 +6,62 @@ import IO = epsilon.io;
 import EvalGen = epsilon.sleaggen;
 import epsilon.settings;
 import io : Input, read, UndefPos;
+import log;
 import runtime;
 import std.bitmanip : BitArray;
 import std.stdio;
 import std.typecons;
 
-const nil = 0;
-const indexOfFirstAlt = 1;
-int[] FactorOffset;
-BitArray GenNonts;
-BitArray GenFactors;
-bool Error;
-bool Compiled;
+private const nil = 0;
+private const indexOfFirstAlt = 1;
+private int[] FactorOffset;
+private BitArray GenNonts;
+private BitArray GenFactors;
+private bool Error;
 
-void Init() nothrow
+public void Test(Settings settings)
+in (EAG.Performed(EAG.analysed | EAG.predicates))
+{
+    info!"single-sweep testing %s"(EAG.BaseName);
+    EAG.History &= ~EAG.isSSweep;
+    Init;
+    scope (exit)
+        Finit;
+
+    const SaveHistory = EAG.History;
+
+    EAG.History = 0;
+    GenerateMod(No.createMod, settings);
+    EAG.History = SaveHistory;
+    if (!Error)
+    {
+        info!"OK";
+        EAG.History |= EAG.isSSweep;
+    }
+}
+
+public void Generate(Settings settings)
+in (EAG.Performed(EAG.analysed | EAG.predicates))
+{
+    info!"single-sweep writing %s"(EAG.BaseName);
+    EAG.History &= ~EAG.isSSweep;
+    Init;
+    scope (exit)
+        Finit;
+
+    const SaveHistory = EAG.History;
+
+    EAG.History = 0;
+    GenerateMod(Yes.createMod, settings);
+    EAG.History = SaveHistory;
+    if (!Error)
+    {
+        EAG.History |= EAG.isSSweep;
+        EAG.History |= EAG.hasEvaluator;
+    }
+}
+
+private void Init() nothrow
 {
     FactorOffset = new int[EAG.NextHFactor + EAG.NextHAlt + 1];
     GenFactors = EAG.Prod & EAG.Reach;
@@ -27,12 +69,12 @@ void Init() nothrow
     Error = false;
 }
 
-void Finit() @nogc nothrow @safe
+private void Finit() @nogc nothrow @safe
 {
     FactorOffset = null;
 }
 
-void GenerateMod(Flag!"createMod" createMod, Settings settings)
+private void GenerateMod(Flag!"createMod" createMod, Settings settings)
 {
     const firstEdge = 1;
     const firstStack = 0;
@@ -297,12 +339,7 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
                     case appl:
                         if (!Def && !DefVars[-Node])
                         {
-                            writeln;
-                            writeln(EAG.ParamBuf[P].Pos);
-                            IO.Msg.write("  variable '");
-                            IO.Msg.write(EAG.VarRepr(-Node));
-                            IO.Msg.write("' is not defined");
-                            IO.Msg.flush;
+                            error!"variable %s is not defined\n%s"(EAG.VarRepr(-Node), EAG.ParamBuf[P].Pos);
                             Error = true;
                         }
                         break;
@@ -419,10 +456,7 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
             }
             else
             {
-                writeln;
-                writeln(A.Pos);
-                IO.Msg.write("  alternative is not single sweep");
-                IO.Msg.flush;
+                error!"alternative is not single sweep\n%s"(A.Pos);
                 Error = true;
             }
             A = A.Next;
@@ -444,7 +478,7 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
         Mod.write(")");
         Mod.write(" // ");
         Mod.write(EAG.HNontRepr(N));
-        if (EAG.HNont[N].Id < 0)
+        if (EAG.HNont[N].anonymous)
         {
             Mod.write(" in ");
             Mod.write(EAG.NamedHNontRepr(N));
@@ -481,7 +515,7 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
                     EvalGen.GenActualParams((cast(EAG.Nont) F).Actual.Params, false);
                     Mod.write("); // ");
                     Mod.write(EAG.HNontRepr((cast(EAG.Nont) F).Sym));
-                    if (EAG.HNont[(cast(EAG.Nont) F).Sym].Id < 0)
+                    if (EAG.HNont[(cast(EAG.Nont) F).Sym].anonymous)
                     {
                         Mod.write(" in ");
                         Mod.write(EAG.NamedHNontRepr((cast(EAG.Nont) F).Sym));
@@ -581,73 +615,12 @@ void GenerateMod(Flag!"createMod" createMod, Settings settings)
             InclFix('$');
             Mod.flush;
             if (settings.showMod)
-            {
                 IO.Show(Mod);
-            }
             else
-            {
                 IO.Compile(Mod);
-                Compiled = true;
-            }
         }
         EvalGen.FinitGen;
         IO.CloseOut(Mod);
     }
     EvalGen.FinitTest;
-}
-
-void Test(Settings settings)
-{
-    IO.Msg.write("SSweep testing ");
-    IO.Msg.write(EAG.BaseName);
-    IO.Msg.write("   ");
-    IO.Msg.flush;
-    if (EAG.Performed(EAG.analysed | EAG.predicates))
-    {
-        EAG.History &= ~EAG.isSSweep;
-        Init;
-
-        const SaveHistory = EAG.History;
-
-        EAG.History = 0;
-        GenerateMod(No.createMod, settings);
-        EAG.History = SaveHistory;
-        if (!Error)
-        {
-            IO.Msg.write("ok");
-            EAG.History |= EAG.isSSweep;
-        }
-        Finit;
-    }
-    IO.Msg.writeln;
-    IO.Msg.flush;
-}
-
-void Generate(Settings settings)
-{
-    IO.Msg.write("SSweep writing ");
-    IO.Msg.write(EAG.BaseName);
-    IO.Msg.write("   ");
-    IO.Msg.flush;
-    Compiled = false;
-    if (EAG.Performed(EAG.analysed | EAG.predicates))
-    {
-        EAG.History &= ~EAG.isSSweep;
-        Init;
-
-        const SaveHistory = EAG.History;
-
-        EAG.History = 0;
-        GenerateMod(Yes.createMod, settings);
-        EAG.History = SaveHistory;
-        if (!Error)
-        {
-            EAG.History |= EAG.isSSweep;
-            EAG.History |= EAG.hasEvaluator;
-        }
-        Finit;
-    }
-    if (!Compiled)
-        IO.Msg.writeln;
-    IO.Msg.flush;
 }

@@ -28,7 +28,7 @@ static foreach (eag; ["eta.eag", "eta-utf8.eag"])
         with (sandbox)
         {
             run!"./epsilon --soag -o --space example/%s --output-directory %s"(eag, directory)
-                .shouldMatch("Grammar is SOEAG");
+                .shouldMatch("grammar is SOEAG");
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Pico.Cola"))
                 .shouldMatch(`^program < \+ 'ok' : CODE > : $`);
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Mikro.Cola"))

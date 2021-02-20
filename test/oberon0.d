@@ -43,17 +43,17 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --space example/abstract-syntax.eag --output-directory %s"(directory)
-            .shouldMatch("SSweep testing OberonOa   ok");
+            .shouldMatch("single-sweep testing OberonOa[^ ]* OK");
         run!"./epsilon --space example/type-tables.eag --output-directory %s"(directory)
             .shouldMatch("SLEAG testing OberonOb[^ ]* OK");
         run!"./epsilon --space example/type-resolution.eag --output-directory %s"(directory)
-            .shouldMatch("SSweep testing OberonOc   ok");
+            .shouldMatch("single-sweep testing OberonOc[^ ]* OK");
         run!"./epsilon --space example/symbol-tables.eag --output-directory %s"(directory)
             .shouldMatch("SLEAG testing OberonOd[^ ]* OK");
         run!"./epsilon --space example/symbol-resolution.eag --output-directory %s"(directory)
             .shouldMatch("SLEAG testing OberonOe[^ ]* OK");
         run!"./epsilon --space example/type-check.eag --output-directory %s"(directory)
-            .shouldMatch("SSweep testing OberonOf   ok");
+            .shouldMatch("single-sweep testing OberonOf[^ ]* OK");
 
         run!"cd %s && ./OberonOa -w %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
             .shouldMatch("OberonOa compiler: compiling...");

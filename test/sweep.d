@@ -8,7 +8,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --sweep --space example/abc.eag --output-directory %s"(directory)
-            .shouldMatch("SSweep testing S   ok");
+            .shouldMatch("single-sweep testing S[^ ]* OK");
         run!"cd %s && echo a a a b b b c c c | ./S"(directory)
             .shouldMatch(`^\| \| \| $`);
     }
@@ -20,7 +20,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --sweep --space example/ab.eag --output-directory %s"(directory)
-            .shouldMatch("SSweep testing S   ok");
+            .shouldMatch("single-sweep testing S[^ ]* OK");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldMatch("^i i i $");
     }
@@ -32,7 +32,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --sweep --space example/ab-ebnf.eag --output-directory %s"(directory)
-            .shouldMatch("SSweep testing S   ok");
+            .shouldMatch("single-sweep testing S[^ ]* OK");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldMatch("^i i i $");
     }
@@ -44,7 +44,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --sweep --space example/w-w.eag --output-directory %s"(directory)
-            .shouldMatch("SSweep testing S   ok");
+            .shouldMatch("single-sweep testing S[^ ]* OK");
         run!"cd %s && echo a b a b c a b a b | ./S"(directory)
             .shouldMatch("^a b a b $");
     }
@@ -56,7 +56,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --sweep example/hello-world.eag --output-directory %s"(directory)
-            .shouldMatch("SSweep testing S   ok");
+            .shouldMatch("single-sweep testing S[^ ]* OK");
         run!"cd %s && echo | ./S"(directory)
             .shouldMatch("^Hello World!$");
     }
@@ -68,7 +68,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --sweep --space example/count1.eag --output-directory %s"(directory)
-            .shouldMatch("SSweep testing S   ok");
+            .shouldMatch("single-sweep testing S[^ ]* OK");
         run!"cd %s && echo i i i i i i i i i i i i i | ./S"(directory)
             .shouldMatch("^Number 1 3 $");
     }
@@ -80,7 +80,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --sweep example/count6.eag --output-directory %s"(directory)
-            .shouldMatch("SSweep testing S   ok");
+            .shouldMatch("single-sweep testing S[^ ]* OK");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldMatch("^3$");
     }
@@ -92,7 +92,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --sweep --space example/decl-appl.eag --output-directory %s"(directory)
-            .shouldMatch("SSweep testing DeclAppl   ok");
+            .shouldMatch("single-sweep testing DeclAppl[^ ]* OK");
         run!"cd %s && echo DECL ab DECL ba APPL ab | ./DeclAppl"(directory)
             .shouldMatch("^ba ; ab ; $");
     }
@@ -104,7 +104,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --sweep example/single-sweep.eag --output-directory %s"(directory)
-            .shouldMatch("SSweep testing S   ok");
+            .shouldMatch("single-sweep testing S[^ ]* OK");
         run!"cd %s && echo a b c d e | ./S"(directory)
             .shouldMatch("^$");
     }

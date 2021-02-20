@@ -1,31 +1,12 @@
 module epsilon.predicates;
 
 import EAG = epsilon.eag;
-import IO = epsilon.io;
+import log;
 import runtime;
 import std.bitmanip : BitArray;
-import std.stdio;
-
-void List()
-{
-    IO.Msg.write("Predicates in     ");
-    IO.Msg.write(EAG.BaseName);
-    IO.Msg.write(": ");
-    if (EAG.Performed(EAG.analysed | EAG.predicates))
-    {
-        foreach (N; EAG.Pred.bitsSet)
-        {
-            writeln;
-            writeln(EAG.HNont[N].Def.Sub.Pos);
-            IO.Msg.write(" :  ");
-            IO.Msg.write(EAG.HNontRepr(N));
-        }
-    }
-    IO.Msg.writeln;
-    IO.Msg.flush;
-}
 
 void Check()
+in (EAG.Performed(EAG.analysed))
 {
     struct EdgeRecord
     {
@@ -104,39 +85,40 @@ void Check()
         }
     }
 
-    IO.Msg.write("Predicates in     ");
-    IO.Msg.write(EAG.BaseName);
-    IO.Msg.flush;
-    if (EAG.Performed(EAG.analysed))
-    {
-        EAG.History &= ~EAG.predicates;
-        HNont = new int[EAG.NextHNont];
-        Edge = new  EdgeRecord[EAG.NONont + 1];
-        NextEdge = 0;
-        Stack = new size_t[EAG.NextHNont];
-        Top = 0;
-        CoPred = BitArray();
-        CoPred.length = EAG.NextHNont + 1;
-        BuiltEdge;
-        ClearStack;
-        Pred = EAG.Prod - CoPred;
-        Pred[EAG.StartSym] = false;
-        EAG.Pred = Pred;
-        EAG.History |= EAG.predicates;
+    EAG.History &= ~EAG.predicates;
+    HNont = new int[EAG.NextHNont];
+    Edge = new  EdgeRecord[EAG.NONont + 1];
+    NextEdge = 0;
+    Stack = new size_t[EAG.NextHNont];
+    Top = 0;
+    CoPred = BitArray();
+    CoPred.length = EAG.NextHNont + 1;
+    BuiltEdge;
+    ClearStack;
+    Pred = EAG.Prod - CoPred;
+    Pred[EAG.StartSym] = false;
+    EAG.Pred = Pred;
+    EAG.History |= EAG.predicates;
+    List;
+}
 
-        const NOPreds = Pred.count;
+private void List()
+in (EAG.Performed(EAG.analysed | EAG.predicates))
+{
+    import std.algorithm : map;
+    import std.format : format;
 
-        if (NOPreds > 0)
-        {
-            IO.Msg.write(":  ");
-            IO.Msg.write(NOPreds);
-            IO.Msg.write("      ePredicates.List ");
-        }
+    info!"predicates in %s: %s"(EAG.BaseName, EAG.Pred.count);
+    if (EAG.Pred.count == 0)
+        return;
+
+    string[] items;
+
+    foreach (N; EAG.Pred.bitsSet)
+        if (EAG.HNont[N].anonymous)
+            items ~= format!"EBNF expression in %s\n%s"(EAG.NamedHNontRepr(N), EAG.HNont[N].Def.Sub.Pos);
         else
-        {
-            IO.Msg.write(":  none. ");
-        }
-    }
-    IO.Msg.writeln;
-    IO.Msg.flush;
+            items ~= format!"%s\n%s"(EAG.HNontRepr(N), EAG.HNont[N].Def.Sub.Pos);
+
+    trace!"predicate occurrences in %s:%-(\n%s%)"(EAG.BaseName, items);
 }

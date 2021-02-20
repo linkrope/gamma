@@ -6,6 +6,7 @@ import IO = epsilon.io;
 import SLEAGGen = epsilon.sleaggen;
 import epsilon.settings;
 import io : Input, read;
+import log;
 import runtime;
 import optimizer = epsilon.soag.optimizer;
 import partition = epsilon.soag.partition;
@@ -14,23 +15,47 @@ import SOAG = epsilon.soag.soag;
 import VisitSeq = epsilon.soag.visitseq;
 import std.bitmanip : BitArray;
 
-const cTab = 1;
-const firstAffixOffset = 0;
-const optimizedStorage = -1;
-const notApplied = -2;
-bool UseConst;
-bool UseRefCnt;
-bool Optimize;
-int[] LocalVars;
-int[] NodeName;
-int[] AffixOffset;
-int[] AffixVarCount;
-int[] SubTreeOffset;
-int[] FirstRule;
-int[] AffixAppls;
-IO.TextOut Out;
-int Indent;
-bool Close;
+private const cTab = 1;
+private const firstAffixOffset = 0;
+private const optimizedStorage = -1;
+private const notApplied = -2;
+private bool UseConst;
+private bool UseRefCnt;
+private bool Optimize;
+private int[] LocalVars;
+private int[] NodeName;
+private int[] AffixOffset;
+private int[] AffixVarCount;
+private int[] SubTreeOffset;
+private int[] FirstRule;
+private int[] AffixAppls;
+private IO.TextOut Out;
+private int Indent;
+private bool Close;
+
+/**
+ * SEM: Steuerung der Generierung
+ */
+public void Generate(Settings settings)
+in (EAG.Performed(EAG.analysed | EAG.predicates))
+{
+    UseConst = !settings.c;
+    UseRefCnt = !settings.r;
+    Optimize = !settings.o;
+    partition.Compute;
+    VisitSeq.Generate;
+    if (Optimize)
+        optimizer.Optimize;
+    info!"SOAG writing %s"(EAG.BaseName);
+    if (Optimize)
+        info!"optimize";
+    else
+        info!"don't optimize";
+    Init;
+    GenerateModule(settings);
+    EAG.History |= EAG.isSSweep;
+    EAG.History |= EAG.hasEvaluator;
+}
 
 /**
  * IN:  Regel
@@ -39,7 +64,7 @@ bool Close;
  *      die Namen der temp. Variablen für die Baumknoten;
  *      die maximale Variablenummer der Regel wird in LocalVars[] abgelegt
  */
-void ComputeNodeNames(int R) @nogc nothrow
+private void ComputeNodeNames(int R) @nogc nothrow
 {
     int Var;
     int ProcVar;
@@ -138,39 +163,12 @@ void ComputeNodeNames(int R) @nogc nothrow
  * OUT: Affixposition
  * SEM: gibt die Affixposition zurück, zu der der Affixparameter korrespondiert
  */
-int GetCorrespondedAffPos(int AP) @nogc nothrow @safe
+private int GetCorrespondedAffPos(int AP) @nogc nothrow @safe
 {
     const SO = SOAG.AffOcc[AP].SymOccInd;
     const AN = AP - SOAG.SymOcc[SO].AffOcc.Beg;
 
     return SOAG.Sym[SOAG.SymOcc[SO].SymInd].AffPos.Beg + AN;
-}
-
-void WrAffixAppls(int R) @safe
-{
-    EAG.ScopeDesc Scope;
-    EAG.Rule EAGRule;
-    int V;
-    if (cast(SOAG.OrdRule) SOAG.Rule[R] !is null)
-    {
-        Scope = (cast(SOAG.OrdRule) SOAG.Rule[R]).Alt.Scope;
-    }
-    else
-    {
-        EAGRule = (cast(SOAG.EmptyRule) SOAG.Rule[R]).Rule;
-        if (cast(EAG.Opt) EAGRule !is null)
-            Scope = (cast(EAG.Opt) EAGRule).Scope;
-        else if (cast(EAG.Rep) EAGRule !is null)
-            Scope = (cast(EAG.Rep) EAGRule).Scope;
-    }
-    for (V = Scope.Beg; V < Scope.End; ++V)
-    {
-        IO.Msg.write(EAG.VarRepr(V));
-        IO.Msg.write(": ");
-        IO.Msg.write(AffixAppls[V]);
-        IO.Msg.writeln;
-        IO.Msg.flush;
-    }
 }
 
 /**
@@ -181,7 +179,7 @@ void WrAffixAppls(int R) @safe
  *      alle nicht-applizierten Affixvariablen (AffixAppls[]=0) werden ausgelassen
  * PRE: AffixAppls[] muss berechnet sein
  */
-void ComputeAffixOffset(int R) @nogc nothrow @safe
+private void ComputeAffixOffset(int R) @nogc nothrow @safe
 {
     EAG.ScopeDesc Scope;
     EAG.Rule EAGRule;
@@ -236,7 +234,7 @@ void ComputeAffixOffset(int R) @nogc nothrow @safe
  * SEM: liefert die echte Anzahl an Affixvariablen in der Regel;
  *      nur zur Information über die Optimierungleistung
  */
-int GetAffixCount(int R) @nogc nothrow @safe
+private int GetAffixCount(int R) @nogc nothrow @safe
 {
     EAG.ScopeDesc Scope;
     EAG.Rule EAGRule;
@@ -262,7 +260,7 @@ int GetAffixCount(int R) @nogc nothrow @safe
  *      müsste eigentlich von SLEAG geliefert werden (in SSweep wurde es auch intern definiert,
  *      deshalb wird es hier für spätere Module exportiert)
  */
-int HyperArity() nothrow
+private int HyperArity() nothrow
 {
     const Nonts = EAG.All - EAG.Pred;
     int Max = 0;
@@ -293,7 +291,7 @@ int HyperArity() nothrow
 /**
  * SEM: Initialisierung der Datenstrukturen des Moduls
  */
-void Init() nothrow
+private void Init() nothrow
 {
     int R;
     int SO;
@@ -354,23 +352,23 @@ void Init() nothrow
     }
 }
 
-void Ind() @safe
+private void Ind() @safe
 {
     for (size_t i = 1; i <= Indent; ++i)
         Out.write("    ");
 }
 
-void WrS(T)(T String)
+private void WrS(T)(T String)
 {
     Out.write(String);
 }
 
-void WrI(int Int) @safe
+private void WrI(int Int) @safe
 {
     Out.write(Int);
 }
 
-void WrSI(string String, int Int) @safe
+private void WrSI(string String, int Int) @safe
 {
     Out.write(String);
     Out.write(Int);
@@ -382,14 +380,14 @@ void WrIS(int Int, string String) @safe
     Out.write(String);
 }
 
-void WrSIS(string String1, int Int, string String2) @safe
+private void WrSIS(string String1, int Int, string String2) @safe
 {
     Out.write(String1);
     Out.write(Int);
     Out.write(String2);
 }
 
-void GenHeapInc(int n) @safe
+private void GenHeapInc(int n) @safe
 {
     if (n != 0)
     {
@@ -400,12 +398,12 @@ void GenHeapInc(int n) @safe
     }
 }
 
-void GenVar(int Var) @safe
+private void GenVar(int Var) @safe
 {
     WrSI("V", Var);
 }
 
-void GenHeap(int Var, int Offset) @safe
+private void GenHeap(int Var, int Offset) @safe
 {
     WrS("Heap[");
     if (Var > 0)
@@ -419,7 +417,7 @@ void GenHeap(int Var, int Offset) @safe
     WrS("]");
 }
 
-void GenOverflowGuard(int n) @safe
+private void GenOverflowGuard(int n) @safe
 {
     if (n > 0)
         WrSIS("if (NextHeap >= Heap.length - ", n, ") EvalExpand;\n");
@@ -430,7 +428,7 @@ void GenOverflowGuard(int n) @safe
  * OUT: -
  * SEM: Generierung eines Zugriffs auf die Instanz einer Affixposition
  */
-void GenAffPos(int S, int AN) @safe
+private void GenAffPos(int S, int AN) @safe
 {
     WrSIS("AffPos[S", S, " + ");
     WrIS(AN, "]");
@@ -441,7 +439,7 @@ void GenAffPos(int S, int AN) @safe
  * OUT: -
  * SEM: Generiert einen Zugriff auf den Inhalt eines Affixes
  */
-void GenAffix(int V) @safe
+private void GenAffix(int V) @safe
 in (AffixOffset[V] != notApplied)
 {
     int AP;
@@ -466,7 +464,7 @@ in (AffixOffset[V] != notApplied)
  * SEM: Generierung einer Zuweisung zu einer Instanz einer Affixvariable;
  *      nur in Kombination mit der Prozedur GenClose zu verwenden
  */
-void GenAffixAssign(int V) @safe
+private void GenAffixAssign(int V) @safe
 in (AffixOffset[V] != notApplied)
 {
     int AP;
@@ -492,7 +490,7 @@ in (AffixOffset[V] != notApplied)
     }
 }
 
-void GenClose() @safe
+private void GenClose() @safe
 {
     if (Close)
         WrS("); ");
@@ -506,7 +504,7 @@ void GenClose() @safe
  * SEM: Generiert eine Erhöhung des Referenzzählers des Knotens auf den das Affixes
  *      bzw. der Index verweist, im Falle eines Stacks wird globale Var. RefIncVar verwendet
  */
-void GenIncRefCnt(int Var) @safe
+private void GenIncRefCnt(int Var) @safe
 {
     WrS("Heap[");
     if (Var < 0)
@@ -522,7 +520,7 @@ void GenIncRefCnt(int Var) @safe
  * SEM: generiert die Freigabe des alloziierten Speichers,
  *      wenn die Affixvariable das letzte mal appliziert wurde (AffixAppls = 0)
  */
-void GenFreeAffix(int V) @safe
+private void GenFreeAffix(int V) @safe
 {
     if (AffixAppls[V] == 0)
     {
@@ -539,7 +537,7 @@ void GenFreeAffix(int V) @safe
  * SEM: generiert die Kellerspeicherfreigabe,
  *      wenn die Affixvariable das letzte mal appliziert wurde (AffixAppls = 0)
  */
-void GenPopAffix(int V) @safe
+private void GenPopAffix(int V) @safe
 {
     if (AffixAppls[V] == 0)
     {
@@ -566,7 +564,7 @@ void GenPopAffix(int V) @safe
  * OUT: -
  * SEM: Generierung der Syntheseaktionen eines Besuchs für die besuchsrelevanten Affixparameter eines Symbolvorkommens
  */
-void GenSynPred(int SymOccInd, int VisitNo) @safe
+private void GenSynPred(int SymOccInd, int VisitNo) @safe
 {
     int Node;
     int S;
@@ -784,7 +782,7 @@ void GenSynPred(int SymOccInd, int VisitNo) @safe
  * OUT: -
  * SEM: Generierung der Analyseaktionen eines Besuchs für die besuchsrelevanten Affixparameter eines Symbolvorkommens
  */
-void GenAnalPred(int SymOccInd, int VisitNo) @safe
+private void GenAnalPred(int SymOccInd, int VisitNo) @safe
 {
     int S;
     int AP;
@@ -1058,7 +1056,7 @@ void GenAnalPred(int SymOccInd, int VisitNo) @safe
  * OUT: -
  * SEM: Generierung eines Aufrufes der Prozedur 'Visit' für den zu generierenden Compiler
  */
-void GenVisitCall(int SO, int VisitNo) @safe
+private void GenVisitCall(int SO, int VisitNo) @safe
 {
     Ind;
     WrSIS("Visit(TreeAdr + ", SubTreeOffset[SO], ", ");
@@ -1068,7 +1066,7 @@ void GenVisitCall(int SO, int VisitNo) @safe
 /**
  * SEM: generiert nur Kommentar
  */
-void GenLeave(int VisitNo) @safe
+private void GenLeave(int VisitNo) @safe
 {
     Ind;
     WrSIS("// Leave; VisitNo: ", VisitNo, "\n");
@@ -1079,7 +1077,7 @@ void GenLeave(int VisitNo) @safe
  * OUT: -
  * SEM: Generierung des Aufrufes einer Prädikatprozedur
  */
-void GenPredCall(int SO) @safe
+private void GenPredCall(int SO) @safe
 {
     int S;
     int AP;
@@ -1195,7 +1193,7 @@ void GenPredCall(int SO) @safe
  * OUT: -
  * SEM: Generierung der Variablendeklarationen einer Regel
  */
-void GenVarDecls(int R) @safe
+private void GenVarDecls(int R) @safe
 {
     WrS("IndexType TreeAdr;\n");
     WrS("IndexType VI;\n");
@@ -1217,7 +1215,7 @@ void GenVarDecls(int R) @safe
  * SEM: Generierung der Positionszuweisung vor Prädikatprozeduraufrufen;
  *      zugewiesen wird die Position des vorhergehenden Visits
  */
-void GenPredPos(int R, int i, ref bool PosNeeded) @safe
+private void GenPredPos(int R, int i, ref bool PosNeeded) @safe
 {
     int k;
 
@@ -1241,7 +1239,7 @@ void GenPredPos(int R, int i, ref bool PosNeeded) @safe
  * OUT: -
  * SEM: Generiert Code für die Visit-Sequenzen einer Regel
  */
-void GenVisitRule(int R)
+private void GenVisitRule(int R)
 {
     int SO;
     int VN;
@@ -1448,7 +1446,7 @@ void GenVisitRule(int R)
 /**
  * SEM: Generierung der Prozedur 'Visit', die die Besuche auf die entsprechenden Regeln verteilt
  */
-void GenVisit()
+private void GenVisit()
 {
     Indent = 0;
     WrS("void Visit(long Symbol, int VisitNo)\n");
@@ -1479,7 +1477,7 @@ void GenVisit()
 /**
  * SEM: Generierung der Konstanten für den Zugriff auf AffPos[] im generierten Compiler
  */
-void GenConstDeclarations() @safe
+private void GenConstDeclarations() @safe
 {
     for (int S = SOAG.firstSym; S < SOAG.NextSym; ++S)
     {
@@ -1493,7 +1491,7 @@ void GenConstDeclarations() @safe
 /**
  * SEM: Generierung der Deklarationen der globalen Variablen und Stacks
  */
-void GenStackDeclarations() @safe
+private void GenStackDeclarations() @safe
 {
     if (optimizer.GlobalVar > 0 || optimizer.StackVar > 0)
     {
@@ -1508,7 +1506,7 @@ void GenStackDeclarations() @safe
 /**
  * SEM: Generierung der Initialisierungen der Stacks
  */
-void GenStackInit() @safe
+private void GenStackInit() @safe
 {
     if (optimizer.StackVar > 0)
     {
@@ -1520,7 +1518,7 @@ void GenStackInit() @safe
 /**
  * SEM: Generierung des Compiler-Moduls
  */
-void GenerateModule(Settings settings)
+private void GenerateModule(Settings settings)
 {
     int R;
     string name;
@@ -1609,33 +1607,4 @@ void GenerateModule(Settings settings)
         IO.Compile(Out);
     SLEAGGen.FinitGen;
     IO.CloseOut(Out);
-}
-
-/**
- * SEM: Steuerung der Generierung
- */
-void Generate(Settings settings)
-{
-    UseConst = !settings.c;
-    UseRefCnt = !settings.r;
-    Optimize = !settings.o;
-    partition.Compute;
-    VisitSeq.Generate;
-    if (Optimize)
-        optimizer.Optimize;
-    IO.Msg.write("SOAG writing ");
-    IO.Msg.write(EAG.BaseName);
-    IO.Msg.write("   ");
-    if (Optimize)
-        IO.Msg.write("+o ");
-    else
-        IO.Msg.write("-o ");
-    IO.Msg.flush;
-    if (EAG.Performed(EAG.analysed | EAG.predicates))
-    {
-        Init;
-        GenerateModule(settings);
-        EAG.History |= EAG.isSSweep;
-        EAG.History |= EAG.hasEvaluator;
-    }
 }
