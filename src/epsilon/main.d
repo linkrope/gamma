@@ -2,6 +2,7 @@ module epsilon.main;
 
 import epsilon.settings;
 import io : Input, read;
+import log;
 import runtime;
 import std.stdio;
 
@@ -11,7 +12,7 @@ void main(string[] args)
     import std.exception : ErrnoException;
     import std.getopt : defaultGetoptPrinter, getopt, GetoptResult;
     import std.range : dropOne, empty, front;
-    import std.stdio : stderr, writefln, writeln;
+    import std.stdio : writefln, writeln;
 
     GetoptResult result;
     Settings settings;
@@ -38,7 +39,7 @@ void main(string[] args)
     }
     catch (Exception exception)
     {
-        stderr.writefln!"error: %s"(exception.msg);
+        error!"%s"(exception.msg);
         exit(EXIT_FAILURE);
     }
     if (result.helpWanted)
@@ -52,11 +53,7 @@ void main(string[] args)
     }
 
     if (settings.verbose)
-    {
-        import log : Level, levels;
-
         levels |= Level.trace;
-    }
     if (!settings.outputDirectory.empty)
     {
         import std.file : mkdirRecurse;
@@ -73,7 +70,7 @@ void main(string[] args)
     }
     catch (ErrnoException exception)
     {
-        stderr.writefln!"error: %s"(exception.msg);
+        error!"%s"(exception.msg);
         exit(EXIT_FAILURE);
     }
     catch (Exception exception)
@@ -144,7 +141,7 @@ void compile(Input input, Settings settings)
         ELL1Gen.GenerateParser(settings);
         success = true;
     }
-    if (success)
+    if (success && !IO.files.empty)
     {
         build(IO.files, settings.outputDirectory);
         IO.files = null;

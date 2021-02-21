@@ -84,9 +84,8 @@ void Compile(TextOut Out) @safe
     files = Out.name ~ files;
 }
 
-void OpenFile(ref File F, string name, ref bool Error) @safe
+void OpenFile(ref File F, string name) @safe
 {
-    // TODO: error handling
     F = File(name, "r");
 }
 

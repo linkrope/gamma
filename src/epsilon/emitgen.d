@@ -162,7 +162,7 @@ void GenEmitProc(IO.TextOut Mod, Settings settings)
 
 void GenShowHeap(IO.TextOut Mod) @safe
 {
-    Mod.write("if (info)\n");
+    Mod.write("if (info_)\n");
     Mod.write("{\n");
     Mod.write("IO.Msg.write(\"    tree of \"); ");
     Mod.write("IO.Msg.write(OutputSize); \n");

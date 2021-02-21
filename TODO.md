@@ -1,3 +1,9 @@
+## compiled compiler
+
+- swap options `--info` and `--verbose`
+  - `--info` should give detailed parser error messages
+  - `--verbose` should print debug output
+
 ## eIO.d
 
 - get rid of (as much as possible of) eIO.d

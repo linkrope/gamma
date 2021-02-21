@@ -1391,8 +1391,8 @@ private void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     InclFix('$');
     if (parsePass)
     {
-        Mod.write("Eval.TraverseSyntaxTree(Heap, PosHeap, ErrorCounter, V1, arityConst, info, write);\n");
-        Mod.write("if (info)\n");
+        Mod.write("Eval.TraverseSyntaxTree(Heap, PosHeap, ErrorCounter, V1, arityConst, info_, write);\n");
+        Mod.write("if (info_)\n");
         Mod.write("{\n");
         Mod.write("IO.Msg.write(\"\\tsyntax tree uses twice \");\n");
         Mod.write("IO.Msg.write(NextHeap); IO.Msg.writeln; IO.Msg.flush;\n");

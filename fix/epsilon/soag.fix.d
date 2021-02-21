@@ -1,10 +1,10 @@
 module $;
 
-import IO = epsilon.io;
+import IO = epsilon.io : TextOut;
 import io : Position;
+import log;
 import runtime;
 import Stacks = epsilon.soag.listacks;
-import std.stdio;
 
 const nil = -1;
 const initialStorageSize = 128;
@@ -73,7 +73,7 @@ void Init()
 }
 
 void TraverseSyntaxTree(TreeType[] Tree1, Position[] PosTree1, long ErrCounter, TreeType Adr, int HyperArity,
-        bool info, bool write)
+        bool info_, bool write)
 {
     IndexType StartSymbol;
     HeapType V1;
@@ -96,27 +96,18 @@ void TraverseSyntaxTree(TreeType[] Tree1, Position[] PosTree1, long ErrCounter, 
     V1 = AffPos[$];
     if (ErrorCounter > 0)
     {
-        IO.Msg.write("  ");
-        IO.Msg.write(ErrorCounter);
-        IO.Msg.write(" errors detected\n");
-        IO.Msg.flush;
+        info!"errors detected: %s"(ErrorCounter);
     }
     else
     {
         $
     }
     $
-    if (info)
+    if (info_)
     {
-        IO.Msg.write("\tsemantic tree of ");
-        IO.Msg.write(AffixVarCount);
-        IO.Msg.write(" affixes uses ");
-        IO.Msg.write(NextVar);
-        IO.Msg.write(" affix variables, with\n\t\t");
-        IO.Msg.write($);
-        IO.Msg.write(" stacks and\n\t\t");
-        IO.Msg.write($);
-        IO.Msg.write(" global variables\n");
+        info!"semantic tree of %s affixes uses %s affix variables, with:"(AffixVarCount, NextVar);
+        info!"%s stacks"($);
+        info!"%s global variables"($);
     }
     Tree = null;
     PosTree = null;

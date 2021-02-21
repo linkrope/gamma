@@ -131,14 +131,9 @@ in (EAG.Performed(EAG.analysed))
         InclFix('$');
         Mod.flush;
         if (settings.showMod)
-        {
             IO.Show(Mod);
-            IO.Msg.writeln;
-        }
         else
-        {
             IO.Compile(Mod);
-        }
         IO.CloseOut(Mod);
     }
 }

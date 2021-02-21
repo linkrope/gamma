@@ -150,47 +150,37 @@ $ long CountHeap()
     return NextHeap;
 }
 
-$ void SetErr()
+$ void SetErr(string message)
 {
+    error!"%s\n%s"(message, $Pos);
     ++ErrorCounter;
-    writeln;
-    writeln($Pos);
 }
 
-void Error(string Msg)
+void Error(string message)
 {
-    SetErr;
-    IO.Msg.write(Msg);
-    IO.Msg.writeln;
-    IO.Msg.flush;
+    SetErr(message);
 }
 
-void PredError(string Msg)
+void PredError(string message)
 {
-    SetErr;
-    IO.Msg.write("predicate ");
-    IO.Msg.write(Msg);
-    IO.Msg.write(" failed");
-    IO.Msg.writeln;
-    IO.Msg.flush;
+    import std.format : format;
+
+    SetErr(format!"predicate %s failed"(message));
 }
 
-void AnalyseError(ref HeapType V, string Msg)
+void AnalyseError(ref HeapType V, string message)
 {
-    if (V != errVal)
-    {
-        SetErr;
-        IO.Msg.write("analysis in '");
-        IO.Msg.write(Msg);
-        IO.Msg.write("' failed");
-        IO.Msg.writeln;
-        IO.Msg.flush;
-        $
-        Heap[errVal] += refConst;
-        FreeHeap(V);
-        $
-        V = errVal;
-    }
+    import std.format : format;
+
+    if (V == errVal)
+        return;
+
+    SetErr(format!"analysis in %s failed"(message));
+    $
+    Heap[errVal] += refConst;
+    FreeHeap(V);
+    $
+    V = errVal;
 }
 
 bool Equal(HeapType Ptr1, HeapType Ptr2)
@@ -237,42 +227,42 @@ void UnEq(HeapType Ptr1, HeapType Ptr2, string ErrMsg)
 
 bool EvalInitSucceeds()
 {
+    import std.exception : ErrnoException;
+    import std.stdio : File;
+
     const magic = 1_818_326_597;
     const name = "$";
     const tabTimeStamp = $;
-    IO.File Tab;
-    bool OpenError;
+    File Tab;
     long l;
 
-    void LoadError(string Msg)
+    void LoadError(string msg)
     {
-        IO.Msg.write("  loading the evaluator table ");
-        IO.Msg.write(name);
-        IO.Msg.write(" failed\n\t");
-        IO.Msg.write(Msg);
-        IO.Msg.writeln;
-        IO.Msg.flush;
+        error!"loading evaluator table %s failed: %s"(name, msg);
     }
 
-    IO.OpenFile(Tab, name, OpenError);
-    if (OpenError)
+    try
     {
-        LoadError("it could not be opened");
+        Tab = File(name, "r");
+    }
+    catch (ErrnoException)
+    {
+        LoadError("cannot be opened");
         return false;
     }
-    IO.GetLInt(Tab, l);
+    Tab.readf!"long %s\n"(l);
     if (l != magic)
     {
         LoadError("not an evaluator table");
         return false;
     }
-    IO.GetLInt(Tab, l);
+    Tab.readf!"long %s\n"(l);
     if (l != tabTimeStamp)
     {
         LoadError("wrong time stamp");
         return false;
     }
-    IO.GetLInt(Tab, l);
+    Tab.readf!"long %s\n"(l);
     if (l != predefined)
     {
         LoadError("wrong heap size");
@@ -284,16 +274,16 @@ bool EvalInitSucceeds()
         EvalExpand;
     for (size_t i = 0; i <= predefined; ++i)
     {
-        IO.GetLInt(Tab, l);
+        Tab.readf!"long %s\n"(l);
         Heap[i] = l;
     }
-    IO.GetLInt(Tab, l);
+    Tab.readf!"long %s\n"(l);
     if (l != tabTimeStamp)
     {
         LoadError("file corrupt");
         return false;
     }
-    IO.CloseFile(Tab);
+    Tab.close;
     for (size_t i = 0; i < maxArity; ++i)
         FreeList[i] = 0;
     NextHeap = predefined + 1;

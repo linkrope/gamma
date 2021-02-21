@@ -55,17 +55,17 @@ unittest
         run!"./epsilon --space example/type-check.eag --output-directory %s"(directory)
             .shouldMatch("single-sweep testing OberonOf[^ ]* OK");
 
-        run!"cd %s && ./OberonOa -w %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
+        run!"cd %s && ./OberonOa -v -w %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
             .shouldMatch("OberonOa compiler: compiling...");
-        run!"cd %s && ./OberonOb -w OberonOa.Out"(directory)
+        run!"cd %s && ./OberonOb -v -w OberonOa.Out"(directory)
             .shouldMatch("OberonOb compiler: compiling...");
-        run!"cd %s && ./OberonOc -w OberonOb.Out"(directory)
+        run!"cd %s && ./OberonOc -v -w OberonOb.Out"(directory)
             .shouldMatch("OberonOc compiler: compiling...");
-        run!"cd %s && ./OberonOd -w OberonOc.Out"(directory)
+        run!"cd %s && ./OberonOd -v -w OberonOc.Out"(directory)
             .shouldMatch("OberonOd compiler: compiling...");
-        run!"cd %s && ./OberonOe -w OberonOd.Out"(directory)
+        run!"cd %s && ./OberonOe -v -w OberonOd.Out"(directory)
             .shouldMatch("OberonOe compiler: compiling...");
-        run!"cd %s && ./OberonOf -w OberonOe.Out"(directory)
+        run!"cd %s && ./OberonOf -v -w OberonOe.Out"(directory)
             .shouldMatch("OberonOf compiler: compiling...");
         run!"cd %s && cat OberonOf.Out"(directory)
             .shouldMatch("ID M u l t i p l y PROC");

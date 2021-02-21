@@ -1,9 +1,8 @@
 module $;
 
-import IO = epsilon.io;
 import io : Input, Position;
+import log;
 import runtime;
-import std.stdio;
 import std.uni;
 
 const eot = 0;
@@ -172,23 +171,13 @@ void Get3(ref int Tok)
 
 void Comment()
 {
-    void Error(string Txt)
-    {
-        writeln;
-        writeln(Pos);
-        IO.Msg.write("  ");
-        IO.Msg.write(Txt);
-        IO.Msg.writeln;
-        IO.Msg.flush;
-    }
-
     int Level = 1;
 
     while (true)
     {
         if (Ch == eot)
         {
-            Error("Comment not closed");
+            error!"comment not closed\n%s"(Pos);
             break;
         }
         else if (Ch == '(')
@@ -341,9 +330,11 @@ void GetPos()
         Pos = PosBuf[CurCh - 1];
 }
 
-void WriteRepr(ref IO.TextOut Out, int Tok)
+string Repr(int Tok)
 {
-    Out.write(NameTab[Tok]);
+    import std.string : fromStringz;
+
+    return fromStringz(NameTab[Tok].ptr).idup;
 }
 
 void Init(Input input)

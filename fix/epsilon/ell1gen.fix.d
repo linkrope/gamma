@@ -1,9 +1,10 @@
 module $;
 
-import IO = epsilon.io;
+import IO = epsilon.io : TextOut;
 import io : Input, Position, read;
+import log;
 import runtime;
-import std.stdio;
+// import std.stdio;
 import S = $;
 
 const nToks = $;
@@ -22,7 +23,6 @@ size_t[nToks][nSetT + 1] SetT;
 TokSet[nSet + 1] Set;
 long ErrorCounter;
 bool IsRepairMode;
-bool LongErrorMsgs;
 bool ParserTabIsLoaded;
 IO.TextOut Out;
 
@@ -55,139 +55,99 @@ void ParserExpand()
 
 void ReadParserTab(string name)
 {
+    import std.exception : ErrnoException;
+    import std.stdio : File;
+
     const magicNumber = 827_092_037;
     const tabTimeStamp = $;
-    IO.File Tab;
-    bool OpenError;
+    File Tab;
     long l;
     size_t s;
 
-    void LoadError(string Msg)
+    void LoadError(string message)
     {
-        IO.Msg.write("  loading the parser table ");
-        IO.Msg.write(name);
-        IO.Msg.write(" failed\n");
-        IO.Msg.write("  ");
-        IO.Msg.write(Msg);
-        IO.Msg.writeln;
-        IO.Msg.flush;
+        error!"loading parser table %s failed: %s"(name, message);
     }
 
-    IO.OpenFile(Tab, name, OpenError);
-    if (OpenError)
+    try
     {
-        LoadError("it could not be opened");
+        Tab = File(name, "r");
+    }
+    catch (ErrnoException)
+    {
+        LoadError("cannot be opened");
         return;
     }
-    IO.GetLInt(Tab, l);
+    Tab.readf!"long %s\n"(l);
     if (l != magicNumber)
     {
         LoadError("no or corrupt parser table");
         return;
     }
-    IO.GetLInt(Tab, l);
+    Tab.readf!"long %s\n"(l);
     if (l != tabTimeStamp)
     {
         LoadError("wrong time stamp");
         return;
     }
-    IO.GetLInt(Tab, l);
+    Tab.readf!"long %s\n"(l);
     if (l != M)
     {
         LoadError("incompatible MAX(SET) in table");
         return;
     }
-    IO.GetSet(Tab, s);
+    Tab.readf!"set %s\n"(s);
     if (s != 0b10110010_01000100_00111000_11011001)
     {
         LoadError("incompatible SET format in table");
         return;
     }
     for (size_t i = 0; i < nSetT; ++i)
-    {
         for (size_t j = 0; j < nToks; ++j)
-        {
-            IO.GetSet(Tab, SetT[i][j]);
-        }
-    }
+            Tab.readf!"set %s\n"(SetT[i][j]);
     for (size_t i = 0; i < nSet; ++i)
-    {
         for (size_t j = 0; j < tokSetLen; ++j)
-        {
-            IO.GetSet(Tab, Set[i][j]);
-        }
-    }
-    IO.GetLInt(Tab, l);
+            Tab.readf!"set %s\n"(Set[i][j]);
+    Tab.readf!"long %s\n"(l);
     if (l != magicNumber)
     {
         LoadError("corrupt parser table");
         return;
     }
     ParserTabIsLoaded = true;
+    Tab.close;
 }
 
-void ParserInit(bool verbose)
+void ParserInit()
 {
     RecTop = firstRecStack;
     ErrorCounter = 0;
     IsRepairMode = false;
-    LongErrorMsgs = verbose;
-}
-
-void WriteTokSet(TokSet Toks)
-{
-    for (int Tok1 = 0; Tok1 < nToks; ++Tok1)
-    {
-        if (Toks[DIV(Tok1, M)] & 1uL << MOD(Tok1, M))
-        {
-            S.WriteRepr(IO.Msg, Tok1);
-            IO.Msg.write(" ");
-        }
-    }
 }
 
 void ErrorMessageTok(Position Pos, int Tok1)
 {
-    writeln;
-    writeln(Pos);
-    IO.Msg.write("  syntax error, expected: ");
-    S.WriteRepr(IO.Msg, Tok1);
-    IO.Msg.writeln;
-    IO.Msg.flush;
+    error!"syntax error, expected: %s\n%s"(S.Repr(Tok1), Pos);
 }
 
 void ErrorMessageTokSet(Position Pos, ref TokSet Toks)
 {
-    writeln;
-    writeln(Pos);
-    IO.Msg.write("  syntax error, expected: ");
-    WriteTokSet(Toks);
-    IO.Msg.writeln;
-    IO.Msg.flush;
+    string[] items;
+
+    for (int Tok1 = 0; Tok1 < nToks; ++Tok1)
+        if (Toks[DIV(Tok1, M)] & 1uL << MOD(Tok1, M))
+            items ~= S.Repr(Tok1);
+    error!"syntax error, expected: %-(%s, %)\n%s"(items, Pos);
 }
 
 void RestartMessage(Position Pos)
 {
-    if (LongErrorMsgs)
-    {
-        writeln;
-        writeln(Pos);
-        IO.Msg.write("      restart point\n");
-        IO.Msg.flush;
-    }
+    trace!"restart point\n%s"(Pos);
 }
 
 void RepairMessage(Position Pos, int Tok1)
 {
-    if (LongErrorMsgs)
-    {
-        writeln;
-        writeln(Pos);
-        IO.Msg.write("      symbol inserted: ");
-        S.WriteRepr(IO.Msg, Tok1);
-        IO.Msg.writeln;
-        IO.Msg.flush;
-    }
+    trace!"symbol inserted: %s\n%s"(S.Repr(Tok1), Pos);
 }
 
 void SkipTokens(int Recover)
@@ -244,6 +204,7 @@ void main(string[] args)
     import std.exception : ErrnoException;
     import std.getopt : defaultGetoptPrinter, getopt, GetoptResult;
     import std.range : dropOne, empty, front;
+    import std.stdio : stdin, writefln, writeln;
 
     bool info;
     bool verbose;
@@ -260,7 +221,7 @@ void main(string[] args)
     }
     catch (Exception exception)
     {
-        stderr.writefln!"error: %s"(exception.msg);
+        error!"%s"(exception.msg);
         exit(EXIT_FAILURE);
     }
     if (result.helpWanted)
@@ -273,6 +234,8 @@ void main(string[] args)
         exit(EXIT_SUCCESS);
     }
 
+    if (verbose)
+        levels |= Level.trace;
     if (args.dropOne.empty)
         Compile(read("stdin", stdin), info, verbose, write);
 
@@ -283,37 +246,30 @@ void main(string[] args)
     }
     catch (ErrnoException exception)
     {
-        stderr.writefln!"error: %s"(exception.msg);
+        error!"%s"(exception.msg);
         exit(EXIT_FAILURE);
     }
 
 }
 
-void Compile(Input input, bool info, bool verbose, bool write)
+void Compile(Input input, bool info_, bool verbose, bool write)
 {
     HeapType V1;
 
     if (ParserTabIsLoaded && EvalInitSucceeds()$)
     {
-        IO.Msg.write("$ compiler: compiling...\n");
-        IO.Msg.flush;
-        ParserInit(verbose);
+        trace!"$ compiler: compiling...";
+        ParserInit;
         S.Init(input);
         S.Get(Tok);
         $(V1);
         $
     }
-    else if (!ParserTabIsLoaded)
-    {
-        IO.Msg.write("parser table is not loaded\n");
-        IO.Msg.flush;
-    }
 }
 
 static this()
 {
-    IO.Msg.write("$ compiler (generated with Epsilon)\n");
-    IO.Msg.flush;
+    info!"$ compiler (generated with epsilon)";
     RecStack = new int[500];
     ParserTabIsLoaded = false;
     ReadParserTab("$");
