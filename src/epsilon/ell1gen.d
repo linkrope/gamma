@@ -1422,10 +1422,7 @@ private void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     name = EAG.BaseName ~ ".Tab";
     WriteTab(name);
     Mod.flush;
-    if (settings.showMod)
-        IO.Show(Mod);
-    else
-        IO.Compile(Mod);
+    IO.Compile(Mod);
     IO.CloseOut(Mod);
     EvalGen.FinitGen;
 }

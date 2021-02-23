@@ -23,8 +23,7 @@ void main(string[] args)
         {
             result = getopt(args,
                     "c", "Disable collapsing constant trees.", &c,
-                    "dR", "Debug reference counting.", &dR,
-                    "m", "Modules are shown, not compiled directly.", &showMod,
+                    "g", "Generate only, do not compile.", &generate,
                     "p", "Parser ignores regular token marks at hyper-nonterminals.", &p,
                     "o", "Disable optimizing of variable storage in compiled compiler.", &o,
                     "r", "Disable reference counting in compiled compiler.", &r,
@@ -143,7 +142,10 @@ void compile(Input input, Settings settings)
     }
     if (success && !IO.files.empty)
     {
-        build(IO.files, settings.outputDirectory);
+        if (!settings.generate)
+        {
+            build(IO.files, settings.outputDirectory);
+        }
         IO.files = null;
     }
 }

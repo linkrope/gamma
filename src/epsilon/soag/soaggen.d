@@ -1601,10 +1601,7 @@ private void GenerateModule(Settings settings)
     WrS("Eval");
     InclFix('$');
     Out.flush;
-    if (settings.showMod)
-        IO.Show(Out);
-    else
-        IO.Compile(Out);
+    IO.Compile(Out);
     SLEAGGen.FinitGen;
     IO.CloseOut(Out);
 }

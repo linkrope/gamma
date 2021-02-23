@@ -5,11 +5,8 @@ struct Settings
     /// DISABLE collapsing constant trees
     bool c;
 
-    /// debug reference counting
-    bool dR;
-
-    /// show modules, don't compile
-    bool showMod;
+    /// generate only, do not compile
+    bool generate;
 
     /// DISABLE optimizing of variable storage in compiled compiler
     bool o;

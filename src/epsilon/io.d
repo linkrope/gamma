@@ -71,16 +71,9 @@ void CloseOut(ref TextOut Out) @safe
     Out = null;
 }
 
-void Show(TextOut Out) @safe
-{
-    import std.file : readText;
-
-    write(readText!(char[])(Out.name));
-}
-
 void Compile(TextOut Out) @safe
 {
-    info!"compile %s"(Out.name);
+    info!"%s generated"(Out.name);
     files = Out.name ~ files;
 }
 

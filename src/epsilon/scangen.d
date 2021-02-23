@@ -130,10 +130,7 @@ in (EAG.Performed(EAG.analysed))
         Mod.write(name);
         InclFix('$');
         Mod.flush;
-        if (settings.showMod)
-            IO.Show(Mod);
-        else
-            IO.Compile(Mod);
+        IO.Compile(Mod);
         IO.CloseOut(Mod);
     }
 }

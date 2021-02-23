@@ -614,10 +614,7 @@ private void GenerateMod(Flag!"createMod" createMod, Settings settings)
             Mod.write("Eval");
             InclFix('$');
             Mod.flush;
-            if (settings.showMod)
-                IO.Show(Mod);
-            else
-                IO.Compile(Mod);
+            IO.Compile(Mod);
         }
         EvalGen.FinitGen;
         IO.CloseOut(Mod);
