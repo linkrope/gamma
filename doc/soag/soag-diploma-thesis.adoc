@@ -3,13 +3,31 @@
 = An Evaluator Generator for Two Heuristic Subclasses of Sequentially Orientable Extended Affix Grammars
 Denis Kuniß, Diploma Thesis, March 1998
 :description: Diploma Thesis
+:revdate: March 1998
 :toc:
 
 ====
+German Title:
+
+*Ein Evaluatorgenerator für zwei heuristische Teilklassen
+Sequentiell Orientierbarer Erweiterter Affixgrammatiken*
+
+Diplomarbeit +
+März 1998 +
+Denis Kuniß +
+
 Technische Universität Berlin +
 Fachbereich Informatik +
 Institut für Angewandte Informatik +
 FG Programmiersprachen und Compiler
+====
+
+====
+This work is licensed under link:http://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1[Attribution-NonCommercial-ShareAlike 4.0 International] 
+image:https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1[cc,22,22]
+image:https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1[by,22,22]
+image:https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1[nc,22,22]
+image:https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1[sa,22,22]
 ====
 
 NOTE: This document has been automatically translated from German and was only slightly reviewed.
