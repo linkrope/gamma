@@ -93,24 +93,19 @@ With _Epsilon_, a _small_ experimental system with greater flexibility and contr
 
 === Extended Affix Grammars
 
-In the following, it is assumed that the reader is already familiar with the principle of two-eyed grammars. since the terms needed later are introduced here only informally. In the foreground stands the textual naming of essential contents for the clarification of the conceptual level as well as the introduction of a procedure model as operational semantics, which is sufficient and especially helpful for the understanding of the implementation. A formal definition of EAGs can be found for example in <<Schröer>>.
+In the following, it is assumed that the reader is already familiar with the principle of two-level grammars. since the terms needed later are introduced here only informally. In the foreground stands the textual naming of essential contents for the clarification of the conceptual level as well as the introduction of a procedure model as operational semantics, which is sufficient and especially helpful for the understanding of the implementation. A formal definition of EAGs can be found for example in <<Schröer>>.
 
 An _Extended Affix Grammar_, called _EAG_ for short, is a two-level grammar: It consists of a context-free grammar whose non-terminals are enriched by parameters (the _hyper-grammar_), and a set of context-free rules (with their own terminals and non-terminals) to describe the parameter values (the _meta-grammar_).
 
 For each parameter of a hyper-non-terminal, a direction (input, output) and by a meta-non-terminal (the _value range symbol_); the sequence of the directions and value range symbols of all parameters of a hyper-non-terminal is called its _signature_. In the hyper rules, each parameter position has an _affix form_ for the respective value range symbol. This is a record form to this meta non-terminal, in which each non-terminal occurring in it with a number possibly following it is combined to a so called _variable_.
 
-In the following, it is assumed that the reader is already familiar with the principle of two-eyed grammars.
-since the terms needed later are introduced here only informally. In the foreground stands the textual naming of essential contents for the clarification of the conceptual level as well as
-the introduction of a procedure model as operational semantics, which is sufficient and especially helpful for the understanding of the implementation. A formal definition of EAGen
-can be found for example in <<Schröer>>.
+In the following, it is assumed that the reader is already familiar with the principle of two-level grammars, since the terms needed later are introduced here only informally. In the foreground stands the textual naming of essential contents for the clarification of the conceptual level as well as the introduction of a procedure model as operational semantics, which is sufficient and especially helpful for the understanding of the implementation. A formal definition of EAGs can be found for example in <<Schröer>>.
 
 An Extended Affix Grammar, called EAG for short, is a two-level grammar: It consists of a context-free grammar whose non-terminals are enriched by parameters
 (the hyper-grammar), and a set of context-free rules (with their own terminals and
 non-terminals) to describe the parameter values (the meta-grammar).
 
-For each parameter of a hyper-non-terminal, a direction (input, output) and by
-a meta-non-terminal (the _value range symbol_); the sequence of the
-directions and value range symbols of all parameters of a hyper-non-terminal is called its _signature_. In the hyper rules, each parameter position has an _affix form_ for the respective value range symbol. This is a record form to this meta non-terminal, in which each non-terminal occurring in it with a number possibly following it is combined to a so called _variable_. 
+For each parameter of a hyper-non-terminal, a direction (input, output) and by a meta-non-terminal (the _value range symbol_); the sequence of the directions and value range symbols of all parameters of a hyper-non-terminal is called its _signature_. In the hyper rules, each parameter position has an _affix form_ for the respective value range symbol. This is a record form to this meta non-terminal, in which each non-terminal occurring in it with a number possibly following it is combined to a so called _variable_. 
 
 If one removes the parametrization from the hyper-grammar, one obtains a usual context-free grammar, the _skeleton grammar_; however, this is for EAGs usually ambiguous, since certain computations are formulated with hyper-non-terminals (the _pradicates_), which can be which are only derivable by empty (and this in general ambiguous), but which consequently contribute nothing to the context-free part of the source language. If one deletes also the pradicates, the _basic grammar_ of the EAG is obtained; if this is unambiguous, then a parser can be created according to classical methods of syntax analysis, which for correct inputs supplies the _appropriate derivation tree_ for correct input.
 
@@ -150,7 +145,11 @@ On hyper-rules such a transformation is carried over by adding the parameterizat
 
 If an EBNF operator occurs in the nontrivial context, an anonymous nonterminal is introduced, as shown in table 2.1. If in the original rule an EBNF operator occurs without context occurs in the original rule, we speak of a named EBNF operator. This is then transformed according to Table 2.2.
 
-table-2.2-transformation-of-EBNF-operators-without-context.PNG
+.Table 2.1: Transformation of EBNF operators with context
+image::images/table-2.1-transformation-of-EBNF-operators-with-context.PNG[table 2.1]
+
+.Table 2.2: Transformation of EBNF operator without context
+image::images/table-2.2-transformation-of-EBNF-operators-without-context.PNG[table 2.2]
 
 In contrast to COLA, however, the signatures for anonymous non-terminals, i.e. the directions and value range symbols of the parameters, can no longer be assigned to an identifier, which is why these properties are specified together with the parameterization within the rules. However, such formal parameter lists are only used if they are in the transformed rules belong to left pages. Thus these properties are generally specified several times. This specification is extended to all non-terminals for consistency. A special section of the specification, in which the signatures of the hyper-non-terminals is no longer necessary. Analogous to programming languages without FORWARD declarations, however, the verification of the affix forms is then is not already possible when reading in the specification.
 
@@ -195,8 +194,9 @@ The module `eIO` serves as an interface to the operating system, in order to lim
 The module provides the functions needed by Epsilon and the generated compilers for sequential reading and writing of texts and binary files as well as for accessing parameters of commands.
 
 // page 10
+[source,modula-2]
 ----
-    DEFINITION eIO;
+    DEFINITION eIO; <1>
 
         CONST eol = 0DX;
 
@@ -223,10 +223,7 @@ The module provides the functions needed by Epsilon and the generated compilers 
         PROCEDURE Write(Out : TextOut; c : CHAR);
         PROCEDURE WriteInt(Out : TextOut; i : LONGINT);
         PROCEDURE WriteIntF(Out : TextOut; i : LONGINT;
-                            Len : INTEGER);
-        PROCEDURE WriteString(Out : TextOut; Str : ARRAY OF CHAR);
-        PROCEDURE WriteText(Out : TextOut; Str : ARRAY OF CHAR);
-        PROCEDURE WriteLn(Out : TextOut);
+                src/eIO.dE WriteLn(Out : TextOut);
         PROCEDURE WritePos(Out : TextOut; Pos : Position);
         PROCEDURE Show(Out : TextOut);
         PROCEDURE Update(Out : TextOut);
@@ -251,6 +248,7 @@ The module provides the functions needed by Epsilon and the generated compilers 
     
     END eIO.
 ----
+<1> Corresponding code in D implementation: link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/eIO.d[src/eIO.d]
 // page 11
 
 For the input there are procedures for opening and closing of a text, for sequential reading of single and for the determination of positions. The encapsulation of positions requires an additional procedure for accessing the immediately preceding position as well as a (constant) variable a (constant) variable `UndefPos`, which can be used as initialization.
@@ -272,8 +270,9 @@ This module is not printed because implementations are system specific.
 The module `eSets` provides sets of natural numbers with common operations on them as an abstract data type.
 
 // page 12
+[source,modula-2]
 ----
-    DEFINITION eSets;
+    DEFINITION eSets; <1>
     
         TYPE
            OpenSet = POINTER TO ARRAY OF SET;
@@ -301,6 +300,8 @@ The module `eSets` provides sets of natural numbers with common operations on th
     
     END eSets.
 ----
+<1> Corresponding code in the D implementation: link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/eSets.d[src/eSets.d]
+
 The `New` procedure dynamically creates a new, initially empty set. In this set numbers in the range  `[0 ... MaxElem]` may be entered. The procedures which expect several sets as parameters, only sets of the same size may be passed. `Empty` deletes all elements from a set, with `Assign` the second set is copied into the first set. is copied. Also with the further procedures, which continue the operations on the basic type SET on arbitrarily the first parameter is the target of the set operation. Beside the set operations, some function procedures for querying properties are available.
 
 The procedures  `nSetsUsed` and `ConvertToSET` serve the conversion of a set of the type `OpenSet` into a sequence of sets of the basic type `SET`. The procedure `nSetsUsed` returns the number of required sets. of the required sets, the procedure `ConvertToSET` returns the set specified in the second parameter. The first set (with index zero) contains the elements of the range `[0 ... MAX(SET)]`, the second one contains the elements of `[MAX(SET) + 1 ... 2 * MAX(SET) + 1]` and so on.
@@ -350,10 +351,10 @@ Following the transformation in section 2.2, for the internal representation of 
 
 As an example for the explanation of the internal representation the following simple specification serves:
 ----
-    N = 'i' N j .
+    N = 'i' N | .
     S <+ N: N>:
-      <N> f <+ 'i' N: N> 'a' <N> g <+ : N>
-      <N> f <- 'i' N: N> 'b' <N> g <- : N>.
+      <N> { <+ 'i' N: N> 'a' <N> } <+ : N>
+      <N> { <- 'i' N: N> 'b' <N> } <- : N>.
 ----
 
 ==== Meta grammar
@@ -361,6 +362,7 @@ As an example for the explanation of the internal representation the following s
 The meta-terminals, -non-terminals as well as -rules are represented in the fields `MTerm`, `MNont` resp. `MAlt` and `MembBuf` respectively (see Figure 4.1).
 
 // page 16
+[source,modula-2]
 ----
     VAR
         MNont: POINTER TO ARRAY OF RECORD
@@ -392,6 +394,8 @@ image::images/figure-4.1-internal-representation-of-the-meta-grammar.PNG[interna
 // page 17 
 
 ==== Hyper-terminals and -non-terminals
+
+[source,modula-2]
 ----
     TYPE
         Rule = POINTER TO RuleDesc;
@@ -450,6 +454,8 @@ A hyper terminal is represented by a unique entry in the `HTerm` field. The `Id`
 The variable `StartSym` points to the start symbol of the hyper-grammar.
 
 ==== Hyper rules
+
+[source,modula-2]
 ----
     CONST
         firstHAlt = 0; firstHFactor = 0;
@@ -468,9 +474,7 @@ The variable `StartSym` points to the start symbol of the hyper-grammar.
         Ind: INTEGER;
         Prev, Next: Factor
       END;
-----
-// page 19
-----
+
     Nont = POINTER TO RECORD (FactorDesc)
         Sym: INTEGER;
         Actual: ParamsDesc;
@@ -504,9 +508,11 @@ A hyper-alternative consists of a (possibly empty) sequence of factors represent
 
 The components Ind of the alternatives and factors each contain a unique index. The variables `NextHAlt` and `NextHFacto` indicate the next index value to be assigned. The variable `NONont` contains the number of nodes of the type `Nont`. 
 
-For an EAG the sets of the reachable, productive and empty derivable hypernonterminals as well as the quantity of the pradicates are stored. Since gaps can occur in the field `HNont` for technical reasons (see page 24), the quantity of denoted entries is described by `All`.
+For an EAG the sets of the reachable, productive and empty derivable hypernonterminals as well as the quantity of the pradicates are stored. Since gaps can occur in the field `HNont` for technical reasons (see <<Second pass>>), the quantity of denoted entries is described by `All`.
 
 ==== Parameters
+
+[source,modula-2]
 ----
     TYPE
         ParamsDesc = RECORD
@@ -555,6 +561,8 @@ A variable is described by an entry in the `Var` field. A reference to this entr
 The `Scope` data type identifies the variables of a scope. They are specified in the field `Var` in the entries from `Beg` to `End - 1`.
 
 ==== Miscellaneous
+
+[source,modula-2]
 ----
     CONST
         BaseNameLen = 18;
@@ -565,6 +573,8 @@ The `Scope` data type identifies the variables of a scope. They are specified in
 
 .Figure 4.5: Explanation of the scope data type
 image::images/figure-4.5-explanation-of-the-Scope-data-type.PNG[explanation of the Scope data type]
+
+[source,modula-2]
 ----
     CONST
         analysed = 0; predicates = 1;
@@ -594,7 +604,7 @@ The procedures `WriteX` allow a uniform output of objects of the data type X.
 The analyzer internalizes the textual representation of an EAG and stores its internal representation in the base `EAG` module.
 
 // page 23 
-Since in the Epsilon specification language (see Section A) the signatures of the hyper-nonterminals and the meta-rules are not specified in their own sections separate from the hyper-rules, they are generally not known when the hyper-rules are read in. Since they must be available, for example, for the syntactic analysis of the affix forms, two passes are necessary for the internalization. In the _first_ pass the syntactic analysis is carried out as far as possible and the signatures are as well as the meta-rules are determined. In the internal representation internal representation, errors may occur, since ambiguities in the context-free grammar may cause in the context-free grammar, the current parameters cannot be assigned unambiguously without knowledge of the signature. Also it cannot be decided during the reading, whether for an operator an anonymous non-terminal must be generated or not, because the context is not yet known. Since affix forms cannot be edited, they are stored internally as a token sequence. The _second_ pass takes place over the internal representation, because in this This is because the parameters are essentially checked and the structure is corrected. Here, as described in section 4.4, the parsing of the affix forms is done according to Earley's algorithm. For error messages, position information is stored. After an error-free internalization typical properties of the context-free skeleton grammar are calculated.
+Since in the Epsilon specification language (see section <<Syntax of the Epsilon Input Language>>) the signatures of the hyper-nonterminals and the meta-rules are not specified in their own sections separate from the hyper-rules, they are generally not known when the hyper-rules are read in. Since they must be available, for example, for the syntactic analysis of the affix forms, two passes are necessary for the internalization. In the _first_ pass the syntactic analysis is carried out as far as possible and the signatures are as well as the meta-rules are determined. In the internal representation internal representation, errors may occur, since ambiguities in the context-free grammar may cause in the context-free grammar, the current parameters cannot be assigned unambiguously without knowledge of the signature. Also it cannot be decided during the reading, whether for an operator an anonymous non-terminal must be generated or not, because the context is not yet known. Since affix forms cannot be edited, they are stored internally as a token sequence. The _second_ pass takes place over the internal representation, because in this This is because the parameters are essentially checked and the structure is corrected. Here, as described in section 4.4, the parsing of the affix forms is done according to Earley's algorithm. For error messages, position information is stored. After an error-free internalization typical properties of the context-free skeleton grammar are calculated.
 
 ==== First pass
 
@@ -603,7 +613,7 @@ Syntactic analysis is performed by a recursive descending parser with a pregriss
 Due to the following ambiguities in the context-free grammar, the actual parameters indicated by < ... > in the examples cannot be unambiguously assigned.
 
 1. A: B <...> (...).
-2. A: f... B <...>g.
+2. A: {... B <...>}.
 
 In the first case, the current parameters can belong to both `B` and the subsequent EBNF operator. In the second case, they can represent the current parameters of `B` or the so-called recursion parameters of a repetition. In these cases either `B` or the non-terminal of the corresponding EBNF operator must not have any parameters. signature. However, since this is generally not available, the current parameters are assigned to the (textual) earliest position in the first pass. In the second passport a correction is made after a check if necessary. 
 
@@ -642,6 +652,8 @@ Hyper-terminals are productive, and a hyper-non-terminal is productive if it has
 === The Scanner
 
 The scanner is used for character-by-character reading of epsilon specifications. It decomposes an input text on the basis of the regular language parts used there and returns a corresponding token sequence; for strings, identifiers and numbers it abstracts from their textual representation. It provides the following interface:
+
+[source,modula-2]
 ----
     CONST
         eot = 0X; str = 22X; ide = "A"; num = "0";
@@ -656,6 +668,7 @@ The scanner is used for character-by-character reading of epsilon specifications
     PROCEDURE WriteRepr(Out : eIO.TextOut; Id : INTEGER);
     PROCEDURE GetRepr(Id : INTEGER; VAR Name : ARRAY OF CHAR);
 ----
+
 After the initialization of the scanner to an input text the procedure `Get` can be used to obtain the next token. of the next token, whose initial position is then available via the variable Pos variable. For strings, identifiers and numbers the parameter Tok is set to the token constants `str`, `ide` and `num`. The end of input is indicated by the constant `eot`   constant. All other (readable) characters are represented by themselves, except for the character "~" , which is interpreted as the end of input in strings and comments.
 
 When a number is recognized, its value is assigned to the variable `Val`, when strings and identifiers are recognized, a unique reference to their textual representation is stored there. Identical strings or identifiers receive identical references. With the help of the procedures `WriteRepr` and `GetRepr` the textual representations of the corresponding tokens can be output or of the corresponding tokens can be written or copied into a character field of sufficient length.
@@ -665,6 +678,8 @@ Spaces (blanks, tabs, line breaks, ... ) and comments separate tokens and are re
 The implementation of the `Get` procedure requires a single prefix character in a global variable `c`. After reading over the space and comments, this prefix is used to determine the token to be recognized. The recognition of strings, identifiers, numbers, 
 // page 26
 and comments is done in corresponding subprocedures. For the storage of the textual The following data structures are used to store the textual representations:
+
+[source,modula-2]
 ----
     CharBuf : POINTER TO ARRAY OF CHAR; NextChar : INTEGER;
     
@@ -676,6 +691,7 @@ and comments is done in corresponding subprocedures. For the storage of the text
     
     HashTable : ARRAY 97 OF INTEGER;
 ----
+
 In `CharBuf`, the characters of all previously recognized identifiers and character strings are stored consecutively. In the case of character strings, only the leading character is stored for easier recognition of identical entries. the opening character is stored, the closing character is appended again by the output procedures. added by the output procedures. An entry in `Ident` stands for an identifier or a string; the `Repr` component points to the beginning of the corresponding string in `CharBuf`, the length is given by the from the `Repr` component of the next entry. Both fields are expandable to avoid unnecessary restrictions.
 
 When identifiers and strings are recognized, their textual representation is placed behind the already recorded representations in `CharBuf`. For the assignment of a unique reference the recognized character string must be compared afterwards with all previous entries. If it is new, it is added to the field `Ident` and the index there is assigned to the variable `Val`. Otherwise the reference of an old entry will be used and the new string is deleted by simply resetting `NextChar` "deleted".
@@ -698,6 +714,8 @@ Syntactically correct are affix forms, if they are sentence forms to the respect
 Since the original Earley parser cannot recognize sentence forms, but only sentences, this problem was solved in Eta. problem was brought back to the word problem in Eta by extending the meta-grammar with rules in which the in which the meta-non-terminals appear as new terminals. This leads to an increased complexity and also inconsistency, because the original algorithm can be extended to the recognition of sentence forms by a trivial change in the scanner step. A second extension of the Earley parser serves not only to check the correctness of axes of affix forms, but also to build the corresponding derivation trees.
 
 The module provides the following interface:
+
+[source,modula-2]
 ----
     PROCEDURE Init;
     PROCEDURE Finit;
@@ -710,6 +728,7 @@ The module provides the following interface:
     PROCEDURE Parse(Dom, Affixform : INTEGER; VAR Tree : INTEGER;
                     Def : BOOLEAN);
 ----
+
 Initially the module can be initialized by calling `Init`, finally the dynamically created data structures can be released with Finit. the dynamically created data structures can be released.
 
 While the affix forms are being read in, they can be transferred to a buffer in this module with the procedures `StartAffixform`, `AppMSym` and `EndAffixform`. `StartAffixform` returns a unique reference to the stored affix form. The procedure `CopyAffixform` procedure is used by the analyzer when resolving the abbreviated specification of parameters on the left to duplicate affix forms.
@@ -719,6 +738,8 @@ If all meta rules are available in the `EAG` module, the procedure `Parse` can b
 or applying position. This marker is stored unseen to newly created variables and will be used later by the analyzer. As output a reference to the tree, which was built in the fields NodeBuf and Var of the module EAG.
 
 For the intermediate storage of the Afxforms and the parsing by the algorithm of Earley's algorithm, the following global data structures are used:
+
+[source,modula-2]
 ----
     CONST
         end = MIN(INTEGER);
@@ -738,6 +759,7 @@ For the intermediate storage of the Afxforms and the parsing by the algorithm of
     
     Predicted : POINTER TO ARRAY OF BOOLEAN;
 ----
+
 In `MSymBuf`, affix forms are stored in consecutive entries. Each affix form is terminated by an add`itional entry whose component `Sym` is set to `end`. Here the constant `nil` must not be used, since the Earley parser extends the meta grammar for the respective value range symbol by a new start rule, in which `end` occurs as a new terminal.
 
 In Earley's algorithm, a list of items is created for each token of an affix form; the eciency of an implementation is determined almost exclusively by the representation of these item lists. Here, item lists are realized in successive entries of the `ItemBuf` field. The end of a list is indicated by an additional entry whose component `Dot` is set to `nil`. A separate data structure for the lists themselves is not necessary, since a list can be identified by a reference to its first element. The beginning of the current and the previous item list is stored in the variables `CurList` and `PrevList`.
@@ -759,14 +781,13 @@ In this implementation, some significant optimizations have been added. So a tok
 
 Furthermore, the boolean `Predicted` field is used to perform the Predictor step at most once -- for each non-terminal per item list.
 
-A last optimization resulted from the analysis of common EAGs: Almost 90% of all affix forms consist either trivially only of the value range symbol itself or simply of a right rule page. The recognition and the construction of the associated derivation trees can be done directly much faster than with the Earley parser. This treatment of simple affix forms is described in
+A last optimization resulted from the analysis of common EAGs: Almost 90% of all affix forms consist either trivially only of the value range symbol itself or simply of a right rule page. The recognition and the construction of the associated derivation trees can be done directly much faster than with the Earley parser. This treatment of simple affix forms is implemented the procedure `SimpleParse`. The Earley parser is called only if this procedure fails.
 
 // page 30
 
 .Figure 4.9: Tree representation of items of the Earley parser
 image::images/figure-4.9-tree-representation-of-items-of-the-earley-parser.PNG[tree representation of items of the earley parser]
 
-of the procedure `SimpleParse` is implemented. The Earley parser is only called after a failure of this procedure.
 
 === The determination of the predicates
 
@@ -783,6 +804,14 @@ After the calculation of the predicates, they can be output with the `List` comm
 // page 32
 
 === Implementations
+
+Please note that the links below are targeting the actual implementation in D, the original implementation referenced in the original German version was done in Modual-2.
+
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/eEAG.d[src/eEAG.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/eAnalyser.d[src/eAnalyser.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/eScanner.d[src/eScanner.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/eEarley.d[src/eEarley.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/ePredicates.d[src/ePredicates.d]
 
 // page 55
 
@@ -820,6 +849,7 @@ On the other hand the recognition of key words must be explicitly excluded, beca
 Spacing separates regular structures. The parser, which recognizes regular structures, normally does not have this information available, because the interspace is read over by the scanner. Therefore, the parametric scanner can recognize it as a token.
 
 // page 57
+[source,modula-2]
 ----
     CONST
         nil = 0;
@@ -847,11 +877,14 @@ Spacing separates regular structures. The parser, which recognizes regular struc
     PROCEDURE Get3*(VAR Tok: INTEGER);
     PROCEDURE Init*;
 ----
+
 The decision trees are represented in the `Node` field; the `Sub` component refers to the son of a node, `Next` to the brother. So that to each character directly to the root of the tree for each character, the first entries of the field are reserved. These entries are also used for the character by character conversion into token values.
 
 The procedures `Get2` and `Get3` recognize tokens in a source text after an initialization of the scanner. source text. While `Get2` reads over intermediate space, this is supplied by `Get3` as token. A uniform call is possible by the procedure variable `Get`. As a side effect the position of the recognized token in the source text is assigned to the global variable `Pos`. The recognized token is passed in `Tok`. The token values `eot`, `undef` and `whitespace` are predefined.
 
 In the two cases described above (partial replacement for symbols or full replacementfor symbols or full reset for identifiers) the input characters are traced; otherwise the input is read Otherwise the input is read unpunished. The following data structures are available for this purpose.
+
+[source,modula-2]
 ----
     VAR
         ChBuf: ARRAY 512 OF CHAR;
@@ -863,6 +896,7 @@ In the two cases described above (partial replacement for symbols or full replac
     PROCEDURE GetBufCh(VAR Ch: CHAR);
     PROCEDURE GetPos;
 ----
+
 The buffer is represented in the `ChBuf` field. Start and end of the puer are marked by the indices `CurCh` and `NextCh`. The corresponding positions for error messages are
 
 // page 58
@@ -921,8 +955,10 @@ The two procedures RecoveryTerminal and ErrorRecovery are used to initiate error
 ===== Overview of the generated parsers 
 
 The generated parsers consist of one module. The structure can be seen in the program fragment can be seen. The essential procedures of the error handling are indicated with.
+
+[source,modula-2]
 ----
-    MODULE Parsername;
+  MODULE Parsername;
     IMPORT scanner := scanner name;
      CONST tokSetLen = ...;
            firstRecStack = ...;
@@ -976,15 +1012,15 @@ The generated parsers consist of one module. The structure can be seen in the pr
     END RecoveryTerminal;
     ...
     
-    PROCEDURE P0(VAR V1 : HeapType); (* Startsymbol *)
-    ... (* Analysiert die Eingabe, benutzt weitere Prozeduren *)
+    PROCEDURE P0(VAR V1 : HeapType); (* Start symbol *)
+    ... (* Analyses the input, uses further procedures *)
     END P0;
     
-    (* ... weitere Prozeduren für Nichtterminale: P1, P2, P3, ... *)
+    (* ... further procedures for non-terminals: P1, P2, P3, ... *)
     ...
     
     PROCEDURE Emit(Ptr : HeapType);
-    ... (* Gibt die Ubersetzung der Eingabe aus *)
+    ... (* Emits translation of the input *)
     END Emit;
     
     PROCEDURE Kompilieren*;
@@ -994,81 +1030,86 @@ The generated parsers consist of one module. The structure can be seen in the pr
         P0(V1); Emit(V1)
     END Compile;
 
-BEGIN ReadParserTab("Parsername.Tab")
+BEGIN 
+  ReadParserTab("Parsername.Tab")
 END Parsername.
 ----
+
 The required first, follow, expected and recovery sets are read from a parser table in the module body immediately from a parser table when loading the parser. Only the parameterless procedure Compile (command) is exported, which calls the procedure of the start symbol of the basic grammar after initializations. This procedure analyzes the entire input; the included evaluator code checks the static semantics by affix calculations during parsing and generates the translation of the input, which is passed to the output procedure by the variable `V1`. 
 
 ===== Code Schemes
 
 The conversion of symbol occurrences and EBNF constructs on right rule pages into Oberon statements can be described by the following code schemes:
+
+[source,modula-2]
 ----
     (* Terminal t *)
     IF Tok # t THEN RecoveryTerminal(t, lokale Recoverymenge von t)
     ELSE Scanner.Get(Tok); IsRepairMode := FALSE
     END;
 
-    (* Nichtterminal N *)
-    Synthese der Eingabeparameter zu N
+    (* Non-terminal N *)
+    Synthesis of the input parameters of N
     IF RecTop >= LEN(RecStack^) THEN ParserExpand END;
     RecStack[RecTop] := lokale Recoverymenge von N; INC(RecTop);
     N(...);
     DEC(RecTop);
-    Analyse der Ausgabeparameter zu N
+    Analysis of the the output parameters of  N
 
-    (* Prädikat N *)
-    Synthese der Eingabeparameter zu N
+    (* Predicate N *)
+    Synthesis of the input parameters of N
     IF ~ N(...) THEN Fehlerbehandlung END;
-    Analyse der Ausgabeparameter zu N
+    Analysis of the the output parameters of  N
 
-    (* Alternative A = A1 j : : : j An *)
+    (* Alternative A = A(1) | ... | A(n) *)
     LOOP
         CASE Tok OF
-        | Direktormenge von A1 :
-            Analyse der Eingabeparameter der linken Seite von A1
-            Code fur A1
-            Synthese der Ausgabeparameter der linken Seite von A1
+        | Directory set of A(1) :
+            Analysis of the input parameters of the left-hand side of A(1)
+            Code for A(1)
+            Synthesis of the output parameters of the left-hand side of A(1)
             EXIT
             .
             .
             .
-        |  Direktormenge von An :
-            Analyse der Eingabeparameter der linken Seite von An
-            Code fur An
-            Synthese der Ausgabeparameter der linken Seite von An
+        |  Directory set of A(n) :
+            Analysis of the input parameters of the left-hand side of A(n)
+            Code for A(n)
+            Synthesis of the output parameters of the left-hand side of A(n)
             EXIT
         ELSE
           IF IsRepairMode THEN
-            Analyse der Eingabeparameter der linken Seite von Adef ault
-            Code fur Adef ault
-            Synthese der Ausgabeparameter der linken Seite von Adef ault
+            Analysis of the input parameters of the left-hand side of A(default)
+            Code for A(default)
+            Synthesis of the output parameters of the left-hand side of A(default)
             EXIT
           END;
-          ErrorRecovery(Expectedmenge von A, lokale Recoverymenge von A)
+          ErrorRecovery(Expected set of A, local recovery set of A)
         END
     END;
     
-    (* Option N = [X] *)
+    (* Optional N = [X] *)
     LOOP
-      IF Tok 2 f irst(X) THEN Code fur X; EXIT
-      ELSIF Tok 2 f ollow(N) OR IsRepairMode THEN
-        Analyse der Eingabeparameter fur den Abbruch
-        Synthese der Ausgabeparameter fur den Abbruch
+      IF Tok element of first(X) THEN Code for X; EXIT
+      ELSIF Tok element of follow(N) OR IsRepairMode THEN
+        Analysis of the input parameters for the abort
+        Synthesis of the output parameters for the abort
         EXIT
       END;
-      ErrorRecovery(Expectedmenge von N, lokale Recoverymenge von N)
+      ErrorRecovery(Expected set of N, local recovery set of N)
     END;
     
-    (* Wiederholung N = fXg *)
+    (* Repeatition N = {X} *)
     LOOP
-      IF Tok 2 f irst(X) THEN Code fur X
-      ELSIF Tok 2 f ollow(N) OR IsRepairMode THEN EXIT
-      ELSE ErrorRecovery(Expectedmenge von N, lokale Recoverymenge von N)
+      IF Tok element of first(X) THEN Code for X
+      ELSIF Tok element of follow(N) OR IsRepairMode THEN EXIT
+      ELSE ErrorRecovery(Expected set of N, local receovery set of N)
       END
     END;
-    Analyse der Eingabeparameter fur den Abbruch
-    Synthese der Ausgabeparameter fur den Abbruch
+    Analysis of input parameters for the abort
+    Synthesis of the ouput parameters for the abort
 ----
+
 The LOOP statement is a real loop only in case of repetition, otherwise it only serves to avoid having to write the body twice in succession. With the standard alternatives this duplication is not avoided and can also occur nested.
 
 Occurrences of only after empty derivable non-terminals -- the so-called pradicates of an EAG omitted in the basic grammar -- on right rule pages are converted into calls of Boolean function procedures, which are generated by the evaluator generator. Pradicates do not contribute to the context-free denition of the source language; the code scheme is only given here for the sake of completeness.
@@ -1089,18 +1130,20 @@ For options and repetitions, the test whether the input token is contained in th
 ===== Saving the First and Follow Sets
 
 In the Oberon statements for options and repetitions it is tested whether the current input token is contained in the first or follow set. input token is contained in the first or follow set. For each non-terminal N these sets are usually stored in an `ARRAY OF SET`; a test for being contained in, for example, the for example the ridge set is then implemented as follows:
-----
-First : ARRAY MaxNont, MaxTok DIV 32 + 1 OF SET;
-Tok 2 f irst(N) (Tok MOD 32) IN First[N][Tok DIV 32]
-----
-This expression requires two divisions at runtime. Grosch [Grosch] remarks that since it is much more advantageous not to store for each nonterminal its ridge set, but for each token the set of nonterminals whose ridge set contains it. This corresponds to transposing the relation _first_ [0 ... _MaxNont_] [0 ... _MaxTok_]. This results in the following conversion:
-----
-First : ARRAY MaxNont DIV 32 + 1, MaxTok OF SET;
-Tok 2 f irst(N) (N MOD 32) IN First[N DIV 32][Tok]
-----
+  
+  First : ARRAY MaxNont, MaxTok DIV 32 + 1 OF SET;
+
+`Tok` ∊ _first_(_N_) ≡ `(Tok MOD 32) IN First[N][Tok DIV 32]`
+
+This expression requires two divisions at runtime. Grosch [Grosch] remarks that since it is much more advantageous not to store for each nonterminal its ridge set, but for each token the set of nonterminals whose ridge set contains it. This corresponds to transposing the relation _first_ ⊆ [0 ... _MaxNont_] × [0 ... _MaxTok_]. This results in the following conversion:
+
+  First : ARRAY MaxNont DIV 32 + 1, MaxTok OF SET;
+
+`Tok` ∊ _first_(_N_) ≡ `(N MOD 32) IN First[N DIV 32][Tok]`
+
 The two divisions are now constant and can already be performed by the generator. The storage of the follow sets is done analogously.
 
-===== The Generator
+==== The Generator
 
 The parser generator is divided into the following subtasks:
 
@@ -1118,6 +1161,8 @@ Since we do not have a suitable scanner generator, we have favored as a provisio
 ===== Data Structures
 
 The following global data structures are filled in the course of the generation and are finally used to create the parser module and table:
+
+[source,modula-2]
 ----
     Nont : POINTER TO ARRAY OF RECORD
             First, Follow, IniFollow : Sets.OpenSet;
@@ -1140,13 +1185,10 @@ The following global data structures are filled in the course of the generation 
             Dest, Next : INTEGER
           END;
     NextEdge : INTEGER;
+    GenSet : POINTER TO ARRAY OF Sets.OpenSet; NextGenSet : INTEGER;
+    GenSetT : POINTER TO ARRAY OF Sets.OpenSet; NextGenSetT : INTEGER;
 ----
 
-// page 66
-----
-GenSet : POINTER TO ARRAY OF Sets.OpenSet; NextGenSet : INTEGER;
-GenSetT : POINTER TO ARRAY OF Sets.OpenSet; NextGenSetT : INTEGER;
-----
 The `Nont`, `Alt`, and `Factor` fields contain information about each non-terminal, alternative, and factor of the base grammar. `Nont` is created as a parallel field to `EAG.HNont` for alternatives and factors, the `Ind` component of these EAG data structures is the index of the associated information.
 
 For each non-terminal, its first and follow set is stored, as well as an initial follow set, which is included in the expect set. iet. As information for the error correction a default alternative (`DefaultAlt`) and, if necessary, the indices of the first and follow sets as well as the local recovery and expected sets for the EBNF constructs alternative and option or repetition are stored. The sets required in the generated parser are stored in the generator in the fields `GenSet` and `GenSetT` and finally written into the parser table. The components `AltRec`, `OptRec`, `AltExp`, `OptExp` as well as `FirstIndex` and `FollowIndex` refer to these fields and are entered into the generated parser code as fixed numbers. in the generated parser code.
@@ -1156,11 +1198,14 @@ The `Edge` component in `Nont` is used to store outgoing edges in corresponding 
 For alternatives their director set is stored, for factors the index of the local recovery set.
 
 Furthermore, the following variables are used to control the generator:
+
+[source,modula-2]
 ----
 TestNonts, GenNonts, RegNonts, ConflictNonts : Sets.OpenSet;
 nToks : INTEGER;
 Error, Warning, ShowMod, Compiled, UseReg : BOOLEAN;
 ----
+
 The sets `TestNonts` and `GenNonts` ( `TestNonts`) contain the non-terminals for which the LL(1) tests are performed and possible conflicts are reported or for which code is generated in the parser. The background is, since the generation is based on the productive and reachable non-terminals of the basic grammar, for which in particular non-recursive alternatives are guaranteed. The variable `nToks` contains the number of tokens; all token sets are created dynamically in this size. The token numbers are assigned in ascending order starting from zero. for the special tokens "input" , "Undeniert" and "interspace" (`endTok`, `undefTok`, `sepTok`) and afterwards for the terminals of the basic grammar.
 
 `Error`, `Warning`, `ShowMod`, `Compiled` and `UseReg` control the behavior of the parser generator. Only an occurred error prevents the generation of a parser. `ShowMod` controls whether the generated parser is displayed or compiled immediately; `Compiled` is needed to coordinate the message output with the compiler used for this purpose. `UseReg` switches the modi of the generator to eliminate interspaced problems. The set `RegNonts` contains the regular non-terminals to be handled and `ConflictNonts` the subset of them, where some conflicts are underprinted at the end.
@@ -1209,13 +1254,15 @@ The low power of the LL(1) procedure can be somewhat supported by this regulariz
 
 If an alternative is to be parsed in repair mode and the input token is not contained in any director set, the parser has to select one of the alternatives for continuation arbitrarily or considering the concrete input to select one of the alternatives for continuation. As long as the expected tokens now differ from the current input token, they are reported as inserted. So that these always terminate, the alternative selected in case of an error must not lead to a cycle.
 
-For this reason, the generator determines a suitable default alternative for the repair mode for each alternative construct of the basic grammar and enters it into the generated parser. the generated parser. The grammar, which consists only of the standard alternatives, is the  so-called continuation grammar; it generates for each non-terminal exactly one word, which can be used in the repair mode for this non-terminal (for exceptions see section 5.2.2.4).
+For this reason, the generator determines a suitable default alternative for the repair mode for each alternative construct of the basic grammar and enters it into the generated parser. the generated parser. The grammar, which consists only of the standard alternatives, is the  so-called continuation grammar; it generates for each non-terminal exactly one word, which can be used in the repair mode for this non-terminal (for exceptions see section <<Calculation of Expected and Local Recovery Sets>>).
 
 In a reduced grammar, there are always suitable non-recursive alternatives, but they are not uniquely determined. Their choice, however, influences very much on the behavior of the parser in case of the parser in case of input errors. In order to give the specifier the possibility to influence this choice, the alternatives are assigned priorities in the order of their textual occurrence. are assigned to the alternatives in the order of their textual occurrence. The first alternative of a non-terminal gets the highest priority, the last the lowest. Among the continuation grammars, one is now chosen, where for each non-terminal a standard alternative with the highest possible priority is chosen. In particular the first alternative is chosen for all non-terminals, if this is possible. If in specifications the alternatives are always given in the order of increasing "complexity", then this leads with the generated parsers in case of error to the insertion of "simple" token sequences for repair.
 
 // page 69
 
 For the determination of the standard alternatives, a modification of the algorithm for the computation of empty-derivable nonterminals (cf. Section 4.2.3). The efficient execution of this procedure requires suitable extended data structures:
+
+[source,modula-2]
 ----
     Alt : POINTER TO ARRAY OF RECORD
             Nont, Deg, Prio : INTEGER;
@@ -1228,6 +1275,7 @@ For the determination of the standard alternatives, a modification of the algori
     Top : INTEGER;
     StackPos : POINTER TO ARRAY OF INTEGER;
 ----
+
 The set of non-terminals with a "solved" alternative is realized in `Stack` as a cellar. Each entry consists of a non-terminal, an associated alternative that is a candidate for the candidate for the default alternative, and its priority.
 
 The `Alt` field stores the associated non-terminal, the current grade, the priority, and a reference back to the alternative for each alternative; this information is needed in case of ; This information is needed to add the corresponding non-terminal to the `stack` in case of "deletion" of an alternative. The alternative priority controls the choice of the non-terminal that is removed from `Stack` and whose default alternative is thus determined. When non-terminals are included in the `stack`, the alternative priority is maximized.
@@ -1334,7 +1382,14 @@ but to subtoken non-terminals occurring therein.
 
 To partially solve this problem, for common tokens formed with EBNF constructs, we use messages formed with EBNF constructs are suppressed in the following way: If the choice of termination leaves a token, then for options and repetitions an overlapping of the director set for this abort (i.e. the follow set) with the director set for the choice of the option or repetition, (i.e. the union of the director sets of all alternatives) is ignored, unless, one of the alternatives is empty derivable. The choice of termination verlat a token for sure, if the nonterminal which realizes the option or repetition can be used in arbitrary set forms to all Token nonterminals occurs only at the very end. The non-terminals with this property are determined in the procedure `ComputeRegNonts` by traversing the grammar and are stored in  the set `ConflictNonts`.
 
-=== Implementierungen
+=== Implementations
+
+Please note that the links below are targeting the actual implementation in D, the original implementation referenced in the original German version was done in Modual-2.
+
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/eScanGen.d[src/eScanGen.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/fix/eScanGen.fix.d[fix/eScanGen.fix.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/eELL1Gen.d[src/eELL1Gen.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/fix/eELL1Gen.fix.d[fix/eELL1Gen.fix.d]
 
 // page 99
 
@@ -1352,7 +1407,7 @@ On the other hand, it should also be possible to use a separate evaluator, for w
 
 As an example of a separate evaluator, the single-sweep procedure is to be implemented. The corresponding grammar class is characterized by the fact that for each hyper-rule there is one
 // page 100
-permutation of the right-hand side with which the rule becomes left-denoting. In particular this is fulfilled for each LEAG. The greater power as well as the fact that axpositions can be further eciently can be realized as procedure parameters, make a generator based on the SingleSweep method appear to be an easily achievable and practically useful alternative.
+permutation of the right-hand side with which the rule becomes left-denoting. In particular this is fulfilled for each LEAG. The greater power as well as the fact that affix positions can be further eciently can be realized as procedure parameters, make a generator based on the SingleSweep method appear to be an easily achievable and practically useful alternative.
 
 ==== The Evaluation
 
@@ -1364,21 +1419,23 @@ Conversely, the values of the output parameters on the left side of the rule as 
 
 A rule is left-denoting if for each variable on an applying position there is a hyper-non-terminal occurrence of the right side to the left of it, there is a (different) hyper-non-terminal occurrence with this variable on denoting position.
 
-The basic idea for the implementation is to insert evaluator code into procedures that are traverse the derivation tree either imaginary or real. The procedure parameters represent the axpositions of the hyper-non-terminals, whose values represent sets to the value range symbols.
+The basic idea for the implementation is to insert evaluator code into procedures that are traverse the derivation tree either imaginary or real. The procedure parameters represent the affix positions of the hyper-non-terminals, whose values represent sets to the value range symbols.
 
 At the beginning of a procedure for the affix calculation of a basic non-terminal the appropriate alternative is determined. At the beginning of an alternative the input parameters of the left side are analyzed and possibly compared. Each occurrence of a basic nonterminal on the right side leads to a procedure call, before which the corresponding input parameters are synthesized and after which the parameters are synthesized and after that the corresponding output parameters are analyzed and possible comparisons are carried out. At the end of the alternative the output parameters of the left procedure, the output parameters of the left side are either synthesized or in special casesby transferring other parameter values. This reflects the following procedure scheme again:
+
+[source,modula-2]
 ----
-    PROCEDURE N (formale Parameter);
+    PROCEDURE N (formal parameters);
     ...
-        (* Beginn einer Alternative *)
-        Analyse der Eingabeparameter der linken Seite (evtl. Vergleiche)
+        (* Start of an alternative *)
+        Analysis of the input parameters of the left-hand side (possibly comparisons)
         ...
-        Synthese der Eingabeparameter zu N'
-        N' (aktuelle Parameter);
-        Analyse der Ausgabeparameter zu N' (evtl. Vergleiche)
+        Synthesis of input parameters of N'
+        N' (actual parameters);
+        Analysis of output parameters of N' (possibly comparisons)
         ...
-        Synthese der Ausgabeparameter der linken Seite (evtl. Transfer)
-        (* Ende der Alternative *)
+        Synthesis of output parameters of the left-hand side (possibly transfers)
+        (* End of the alternative *)
     ...
     END N;
 ----
@@ -1388,10 +1445,10 @@ The formal parameters of this procedure are determined by the signature of the r
 
 As parameter values, sets to the value range symbol are represented by their derivation trees, so that the required syntax analysis does not burden the runtime of the generated compiler. must load. Thus analyses and syntheses can be accomplished efficiently, comparisons can be realized simply structurally. However for this the Reprasentation must be generally unambiguous, which is ensured by the well-formedness conditions.
 
-For reasons of memory efficiency and with regard to an own free memory management a high linguistic reproduction of the memory, called `Heap`, is used. There the nodes of derivation trees are stored in successive entries: `Heap[V]` is a node identifier, `Heap[V+i]` refers to the ith subtree (an example is given in Figure 6.1). The node identifier is conceptually a pair of alternate number and digitness, i.e. the number of subtree. To save memory, we encode these pairs by numbers. The constant `arityConst` is used for the reconstruction of the components as follows :
+For reasons of memory efficiency and with regard to an own free memory management a high linguistic reproduction of the memory, called `Heap`, is used. There the nodes of derivation trees are stored in successive entries: `Heap[V]` is a node identifier, `Heap[V+i]` refers to the ith subtree (an example is given in Figure 6.1). The node identifier is conceptually a pair of alternate number and digitness, i.e. the number of subtree. To save memory, we encode these pairs by numbers. The constant `arityConst` is used for the reconstruction of the components as follows:
 ----
-Arity = node identifier DIV arityConst,
-Alternative number  = node identifier MOD arityConst.
+               Arity = node identifier DIV arityConst,
+ Alternative number  = node identifier MOD arityConst.
 ----
 
 .Figure 6.1: Saving the representation of the record a b to the value range symbol id
@@ -1423,7 +1480,7 @@ In an analysis a derivation tree is checked for the structure given by the affix
 
 The necessary verification of the node identifiers is done during a preorder traversal of the derivation tree to the affix form. The corresponding traversal of the tree to be analyzed can be done at runtime of the generated compiler. The access to the can be coded by nested indexes, which represent the respective way from the root. 
 
-As can be seen from Figure 6.3, these expressions can grow rapidly^1^. This can be by the usual use of temporary variables to eliminate common subexpressions (see Figure 6.4). (see Figure 6.4), which additionally optimizes the runtime.
+As can be seen from Figure 6.3, these expressions can grow rapidly^1^. This can be by the usual use of temporary variables to eliminate common subexpressions (see Figure 6.4), which additionally optimizes the runtime.
 
 ^1^ In particular, the Oberon compiler we used failed above nesting depth 5
 
@@ -1450,44 +1507,52 @@ Some hyper-non-terminals can only be derived to the empty word. They do not cont
 When evaluating a pradicate, a derivation of the empty word can generally be found by backtracking. word can be found in general by backtracking. The failure of an analysis or of a comparison indicates here no error but a dead end.
 
 A pradicate is implemented as a Boolean function procedure. In contrast to the procedure scheme for basic non-terminals, the selection of the appropriate alternative is essential here. For this all alternatives are tried one after the other:
+
+[source,modula-2]
 ----
-    PROCEDURE P (formale Parameter): BOOLEAN;
+    PROCEDURE P (formal parameters): BOOLEAN;
     ...
     BEGIN
         failed := TRUE;
-        Code zu Uberprufung  der ersten Alternative
+        Code for checking of the first alternative
         IF failed THEN
-            Code zu Uberprufung  der zweiten Alternative
+            Code for checking of the second alternative
             ...
         END;
         RETURN ~ failed
     END P;
 ----
+
 For an alternative, the analyses and comparisons as well as the procedure calls to the associated predicates control the further flow of control. This is appropriately formulated by nested IF statements. appropriately. The analyses not formulated in the following scheme, in particular the verification of the individual node identifier, must also be converted into nested IF-statements.
+
+[source,modula-2]
 ----
-    (* Beginn einer Alternative *)
-    IF Analyse der Eingabeparameter der linken Seite (evtl. Vergleiche)
-       erfolgreich THEN
+    (* Start of an alternative *)
+    IF Analysis of the input parameters of the left-hand side (possibly comparisons)
+       is successful THEN
      ...
-     Synthese der Eingabeparameter zu P'
-     IF P'(aktuelle Parameter) THEN
-           IF Analyse der Ausgabeparameter zu P' (evtl. Vergleiche)
-              erfolgreich THEN
+     Synthesis of input parameters of P'
+     IF P'(actual parameters) THEN
+           IF Analysis of output parameters of P' (possibly comparisons)
+              is successful THEN
              ...
-            Synthese der Ausgabeparameter der linken Seite (evtl. Transfer)
+            Synthesis of output parameters of the left hand side (possibly transfers)
             failed := FALSE;
             ...
          END
        END;
        ...
     END;
-    (* Ende der Alternative *)
+    (* End of the alternative *)
 ----
+
 Only the call of a predicate procedure from a procedure for a basic non-terminal leads to an error message in case of failure.
+
+[source,modula-2]
 ----
-    Synthese der Eingabeparameter zu P
-    IF ~ P (aktuelle Parameter) THEN Fehlerbehandlung END;
-    Analyse der Ausgabeparameter zu P (evtl. Vergleiche)
+    Synthesis of the input parameters of P
+    IF ~ P (actual parameters) THEN Error handling END;
+    Analysis of the output parameters of P (possibly comparisons)
 ----
 
 // page 105
@@ -1501,17 +1566,26 @@ Unlike in the case of failed comparisons, in the case of failed analyses the pro
 As solution it offers itself to create a special error node, which has the maximum Stelligkeit has. For each subtree, a loop is used to refer back to the error node. A reference to this node is used as error value; subsequent errors can then be recognized on the basis of this value. can be detected by this value. In the implementation the first entries of the heap form the error node. The error value is denoted by the constant `errVal` and refers to the first entry of this node.
 
 If the verification of a node identifier fails in an analysis, the reference to the node is replaced by the error value. node is replaced by the error value. If then the analysis is continued simply, then results the error value for all subtree; in particular the associated variables are set to this value. are set to this value. In this case, no subsequent error is reported if the error value is already examined:
+
+[source,modula-2]
 ----
-    IF V # errVal THEN Fehlermeldung; V := errVal END;
+    IF V # errVal THEN Error message; V := errVal END;
 ----
+
 If a predicate fails, then the output parameters are set to the error value. The underprinting of error messages, if one of the input parameters has the error value, occurs for predicate calls from procedures of the basic non-terminals.
+
+[source,modula-2]
 ----
-    IF alle Eingabeparameter ungleich errVal THEN Fehlermeldung END;
+    IF all input parameters unequal aerrVal THEN Error message END;
 ----
+
 If the comparison of two trees fails, the error message is underprinted, if for at least the error value is present:
+
+[source,modula-2]
 ----
-    IF (V1 # errVal) & (V2 # errVal) THEN Fehlermeldung END;
+    IF (V1 # errVal) & (V2 # errVal) THEN Error message END;
 ----
+
 In order to reduce the size of the generated code, the error handling in the procedures `AnalyseError`, `Eq`, `UnEq` as well as `CheckP` for a pradicate _P_ are combined.
 
 The texts of the error messages are created automatically by the generator from the identifiers occurring in the specification in the specification. Together with the error message a position in the input text is output. Analysis error messages for the hyper non-terminal N have the form "analysis in _N_ failed" . For failed comparisons, the name of the variable _M_ is compared with the name of the hyper associated hyper non-terminal in "_M_ failed in _N_". If a predicate _P_ fails, the error message "predicate _P_ failed" is output.
@@ -1527,33 +1601,36 @@ An optimized implementation of EBNF operators in pradicate rules, in particular 
 Due to the embedding of the code for anonymous basic non-terminals, there are no changes in the evaluation code schemes. With the generation is to be paid attention however, the names of the temporary variables needed for the evaluation do not overlap with those of the surrounding procedure. The formal procedure parameters omitted by the embedding of the code are procedure parameters are represented by temporary variables.
 
 Limitations arise from the optimizing treatment of the EBNF operator repetition by the parser generator, which does not use this operator as a recursive procedure as described in the following example as a recursive procedure, but by a loop.
+
+[source,modula-2]
 ----
-    (* Wiederholung *)
-    f<Parameter fur den Rumpf> ... <Rekursionsparameter>
-    g<Parameter fur den Abbruch>
+    (* Repeatition *)
+    {<Parameters for body> ... <Recursion parameters>
+    }<Parameters for abort>
     
-    (* transformierte Wiederholung *)
-    A <Parameter fur den Rumpf>: ... A <Rekursionsparameter>.
-    A <Parameter fur den Abbruch>: .
+    (* transformed repeatition *)
+    A <Parameters for body>: ... A <Recursion parameters>.
+    A <Parameters for abort>: .
     
-    (* rekursive Implementierung *)
-    PROCEDURE A (formale Parameter);
+    (* recursive implementation *)
+    PROCEDURE A (formal parameters);
     ...
-      (* Begin des Rumpfes *)
-      Analyse der Eingabeparameter fur den Rumpf (evtl. Vergleiche)
+      (* Start of the body *)
+      Analysis of input parameters for the body (possibly comparisons)
       ...
-      Synthese der Rekursionsparameter
-      A (aktuelle Parameter)
-      Analyse der Rekursionsparameter (evtl. Vergleiche)
-      Synthese der Ausgabeparameter fur den Rumpf (evtl. Transfer)
-      (* Ende des Rumpfes *)
+      Synthesis of recursion parameters
+      A (actual parameters)
+      Analysis of recursive parameters (possibly comparisons)
+      Synthesis of output parameters for the body (possibly transfers)
+      (* End of the body *)
       ...
-      (* Abbruch *)
-      Analyse der Eingabeparameter fur den Abbruch (evtl. Vergleiche)
-      Synthese der Ausgabeparameter fur den Abbruch (evtl. Transfer)
+      (* Abort *)
+      Analysis of input parameters for the abort (possibly comparisons)
+      Synthesis of output parameters for the abort (possibly transfers)
       ...
     END A;
 ----
+
 Since the recursion is implemented by a loop, the possibility of the computation during the recursion. The values of the recursion parameters are therefore not known in a loop pass and can be determined only in the following step. These parameters are therefore not available for analyses, comparisons and syntheses carried out according to the LEAG method.
 
 Well-formedness constraints therefore restrict specifications in such a way that neither analyses for recursion parameters nor comparisons are required and an efficient implementability of the syntheses of the output parameters is guaranteed.
@@ -1578,46 +1655,51 @@ In the implementation, the construction of a derivation tree is done by "indirec
 
 The following example shows the Oberon source code generated for a repetition:
 ----
-    N = 'i' N j .
-    f<+ 'i' N: N> 'a' <N>g<+ : N>
-    
+    N = 'i' N | .
+    {<+ 'i' N: N> 'a' <N>}<+ : N>
+----
+
+[source,modula-2]
+----
     V1 := NextHeap; INC(NextHeap); V2 := V1; (* N *)
     WHILE Tok = 'a' DO Get(Tok);
-      Heap[V2] := NextHeap; Heap[NextHeap] := "N = 'i' N.\;
+      Heap[V2] := NextHeap; Heap[NextHeap] := "N = 'i' N.";
       V2 := NextHeap + 1; INC(NextHeap, 2)
     END;
-    Heap[V2] := NextHeap; Heap[NextHeap] := "
-    N = .\; INC(NextHeap);
+    Heap[V2] := NextHeap; Heap[NextHeap] := "N = ."; INC(NextHeap);
     V1 := Heap[V1];
 ----
+
 As can be seen in the example, only with `"Heap[V2] := NextHeap;"` the reference to the subtree and with `"V2 := NextHeap + 1;"` in the following synthesis the still undenated entry in the tree is noted. The run variable V2 is overwritten with a new value.
 
 The reference is entered separately from syntheses for all run variables, so that the value of a run variable is not value of a run variable is not overwritten prematurely in a synthesis, as would otherwise be the case in the following example.
 ----
-    N = 'i' N j .
-    f<+ 'i' N2: N, + 'i' N1: N> 'a' <N1, N2>g<+ : N, + : N>
+    N = 'i' N | .
+    {<+ 'i' N2: N, + 'i' N1: N> 'a' <N1, N2>}<+ : N, + : N>
+----
     
+[source,modula-2]
+----
     V1 := NextHeap; INC(NextHeap); V2 := V1; (* N1 *)
     V3 := NextHeap; INC(NextHeap); V4 := V3; (* N2 *)
-----
-// page 108
-----
+
     WHILE Tok = 'a' DO Get(Tok);
       Heap[V2] := NextHeap; Heap[V4] := NextHeap + 2;
-      Heap[NextHeap] := "
-      N = 'i' N.\; V4 := NextHeap + 1;
-      Heap[NextHeap + 3] := "
-      N = 'i' N.\; V2 := NextHeap + 3;
+      Heap[NextHeap] := "N = 'i' N."; V4 := NextHeap + 1;
+      Heap[NextHeap + 3] := "N = 'i' N."; V2 := NextHeap + 3;
       INC(NextHeap, 4)
     END;
     ...
 ----
+
 Furthermore, it can happen that the variable on the defining position of a recursion parameter is not applied in one alternative, but is applied in others. At runtime then after evaluation of this alternative the corresponding run variable has no denoted value; in a subsequent iteration step no reference to a subtree may be entered in this case. may be entered in a subsequent iteration step.
 
 As a solution, in the code of an alternative in which this variable is not applied, the value undef is assigned to the variable is assigned the value `undef`. Therefore, before hooking a subtree in all alternatives the run variable must be checked for this value in all alternatives before a subtree is hooked. Since this is very complex this treatment is omitted, if the appropriate variable is applied in all alternatives, which can be checked by the generator. The code scheme for this case is shown by example below. It is to be noted here, since the hooking takes place as described above independently of the synthesis.
+
+[source,modula-2]
 ----
-    N = 'i' N j .
-    f<+ 'i' N: N> 'a' <N> j <+ : N> 'b' <N>g<+ : N>
+    N = 'i' N | .
+    {<+ 'i' N: N> 'a' <N> | <+ : N> 'b' <N>}<+ : N>
     
     V1 := NextHeap; INC(NextHeap); V2 := V1; (* N *)
     WHILE ... DO Get(Tok);
@@ -1626,7 +1708,7 @@ As a solution, in the code of an alternative in which this variable is not appli
           Heap[V2] := NextHeap
         END;
         IF V2 # undef THEN
-          Heap[NextHeap] := "N = 'i' N.\; V2 := NextHeap + 1;
+          Heap[NextHeap] := "N = 'i' N."; V2 := NextHeap + 1;
           INC(NextHeap, 2)
         END
       ELSIF Tok = 'b' THEN
@@ -1634,12 +1716,13 @@ As a solution, in the code of an alternative in which this variable is not appli
           Heap[V2] := NextHeap
         END;
         IF V2 # undef THEN
-          Heap[NextHeap] := "N = .\; INC(NextHeap)
+          Heap[NextHeap] := "N = ."; INC(NextHeap)
         END
       END
     END;
     ...
 ----
+
 ===== Optimization of Terminal Affix Forms
 
 Terminal affix forms are constant in the sense that they are represented in the evaluator by always identical trees in the evaluator. In principle, a synthesis has to be done only once; later it is enough to provide a reference to the tree. it is sufficient to provide a reference to the tree. Likewise, for each final rule (without non-terminals) a leaf must exist only once in the heap. By such a constant folding the memory memory requirements can be reduced, and naturally a shorter and faster program results.
@@ -1652,21 +1735,27 @@ The generation of such an optimized evaluation is optional, since it is not suit
 image::images/figure-6.5-explanation-of-the-memory-structure-in-the-generated-evaluators.PNG[explanation of the memory structure in the generated evaluators]
 
 changes as a result:
+
+[source,modula-2]
 ----
-    (* Synthese von id 'b' zum Wertebereichssymbol id *)
+    (* Synthesis of id 'b' for value range symbol id *)
     IF Next >= LEN(Heap^) - 3 THEN EvalExpand END;
     V1 := Next; Heap[Next] := 10; Heap[Next + 1] := V2;
-    Heap[Next + 2] := 42; (* Verweis auf Blatt *)
+    Heap[Next + 2] := 42; (* Reference to leaf *)
     INC(Next, 3);
 ----
+
 In analyses, terminal affix forms cannot generally be used, since the trees to be analyzed may have arisen in many different ways. However, since leaves are present exactly once in the heap, the check of the node identifier can be abbreviated by a check of the reference. The example from Figure 6.4 thus changes to:
+
+[source,modula-2]
 ----
-    (* Analyse des Satzes 'a' x zum Wertebereichssymbol id *)
-    IF Heap[V1] # 10 THEN Fehlerbehandlung END; V3 := Heap[V1 + 1];
-    IF Heap[V3] # 5 THEN Fehlerbehandlung END;
-    IF Heap[V3 + 1] # 43 (* Verweis auf Blatt *) THEN Fehlerbehandlung END;
+    (* Analysis of the sentence 'a' x for value range symbol id *)
+    IF Heap[V1] # 10 THEN Error handling END; V3 := Heap[V1 + 1];
+    IF Heap[V3] # 5 THEN Error handling END;
+    IF Heap[V3 + 1] # 43 (* Reference to leaf *) THEN Fehlerbehandlung END;
     V2 := Heap[V1 + 2];
 ----
+
 ===== Free Memory Management
 
 Since memory for nodes is explicitly requested during syntheses, but never explicitly released and since potentially a large part of the heap is used for the representation of intermediate results with a temporary meaning, the evaluator shall be optionally extended by a free space management.
@@ -1694,8 +1783,9 @@ In the implementation the node identifier is conceptually extended by the refere
 ----
        Reference counter = node identifier DIV refConst,
                    Arity = (node identifier MOD refConst) DIV arityConst,
-      Alternative Number = node identifier MOD arityConst.
+      Alternative number = node identifier MOD arityConst.
 ----
+
 In the reference counter, only the number of additional references to a node is counted.
 
 A separate free list is created for each node location. Shared nodes are managed according to their position in these lists. The entries of the `FreeList` field point to the first node of such a list. The chaining is as shown in figure 6.7, in the first entry of the free nodes.
@@ -1708,24 +1798,30 @@ image::images/figure-6.7-example-of-a-free-space-list.PNG[example of a free spac
 In syntheses, memory is now requested node by node using the procedure `GetHeap` procedure. The deletion of a reference as well as a possible release of the memory is carried out by the procedure `FreeHeap`.
 
 By application of the reference number procedure and under the condition, since no optimization of terminal affix forms takes place and the synthesis occurs in a Pradikatprozedur, the example of the synthesis changes from figure 6.2 to:
+
+[source,modula-2]
 ----
-    (* Synthese von id 'b' zum Wertebereichssymbol id *)
+    (* Synthesis of id 'b' for value range symbol id *)
     GetHeap(V1, 2); Heap[V1] := 10; Heap[V1 + 1] := V2;
     INC(Heap[V2], refConst);
     GetHeap(V3, 1); Heap[V1 + 2] := V3; Heap[V3] := 2;
 ----
+
 The example in Figure 6.4 changes under the condition that no optimization of terminal affix forms and the analysis occurs in the procedure for a basic non-terminal:
+
+[source,modula-2]
 ----
-    (* Analyse des Satzes 'a' x zum Wertebereichssymbol id *)
-    IF Heap[V1] # 10 THEN Fehlerbehandlung END; V3 := Heap[V1 + 1];
-    IF Heap[V3] # 5 THEN Fehlerbehandlung END;
-    IF Heap[Heap[V3] + 1] # 1 THEN Fehlerbehandlung END;
+    (* Analysis for sentence 'a' x for value range symbol  id *)
+    IF Heap[V1] # 10 THEN Error handling END; V3 := Heap[V1 + 1];
+    IF Heap[V3] # 5 THEN Error handling END;
+    IF Heap[Heap[V3] + 1] # 1 THEN Error handling END;
     V2 := Heap[V1 + 2]; INC(Heap[V2], 3 * refconst);
-FreeHeap(V1);
+    FreeHeap(V1);
 ----
+
 ===== Storage of Position Information
 
-For error messages in a separate evaluator, the derivation tree built by the "One-Pass-Compiler" is enriched with position information (see chapter 7). For this purpose the derivation tree for each possible error location. For the structure statements are inserted into the evaluation code of the one-pass compiler.
+For error messages in a separate evaluator, the derivation tree built by the "One-Pass-Compiler" is enriched with position information (see chapter <<Compiler With More Powerful Evaluation Methods>>). For this purpose the derivation tree for each possible error location. For the structure statements are inserted into the evaluation code of the one-pass compiler.
 
 In the implementation, the positions are represented in parallel to the heap in the `PosHeap` field. For the correct entry of the positions they are cached in the cellar `PosStack` cellar. By calling the procedure `PushPos` after the evaluation of a denoting position a position is stored on the cellar; before the synthesis of the output parameter of a procedure, these entries are transferred from the cellar to the field `PosHeap` by calling the procedure `PopPos`.
 
@@ -1742,6 +1838,8 @@ In the generated code optionally an optimization of terminal affix forms can tak
 ===== Evaluability Checking 
 
 The evaluability check is carried out independently of the actual generation.
+
+[source,modula-2]
 ----
     PROCEDURE Test*;
     PROCEDURE InitTest*;
@@ -1749,6 +1847,7 @@ The evaluability check is carried out independently of the actual generation.
     PROCEDURE IsSLEAG* (N: INTEGER; EmitErr: BOOLEAN): BOOLEAN;
     PROCEDURE FinitTest*;
 ----
+
 After initialization, the rule-local condition of left-deniability for a non-terminal is checked by calling `IsLEAG`. `IsSLEAG` checks the SLEAG condition for a non-terminal and the anonymous non-terminal and the anonymous non-terminals resulting from the transformation of its rules. The switch `EmitErr` switch controls the output of error messages.
 
 Briefly, the SLEAG condition for the entire grammar can be checked with the `Test` command. 
@@ -1758,6 +1857,8 @@ The verification of the left-denieredness is done by a traversal of the transfor
 ===== Interface
 
 The generation of an evaluation procedure is divided into the generation of global parts and the generation of procedurally local parts.
+
+[source,modula-2]
 ----
     CONST
         parsePass = 0; onePass = 1; sSweepPass = 2;
@@ -1774,6 +1875,8 @@ With the initialization, the generated evaluation procedure is defined via the p
 The procedure `GenGlobalDef` inserts global data structures and procedures into the module to be generated and creates the module to be generated and creates the evaluator table. The global data structures such as the heap and the global procedures such as the error output procedures are copied from a text file to the from a text file into the module to be generated. Thereby markers "$" are used, in order to insert special parts or to read over not needed parts of the text file. The evaluator table contains the pre-initialized heap entries and is created as a permanent file. 
 
 The procedure `GenPredProcs` codes the predicates. For each predicate two procedures are generated: One evaluates the predicate, in the second the error handling described in section 6.1.1.6 takes place. Since pradicates can call each other in a concatenated manner, FORWARD declarations are generated.
+
+[source,modula-2]
 ----
     PROCEDURE ComputeVarNames (N: INTEGER; Embed: BOOLEAN);
     PROCEDURE InitScope (Scope: eEAG.ScopeDesc);
@@ -1788,6 +1891,7 @@ The procedure `GenPredProcs` codes the predicates. For each predicate two proced
     PROCEDURE GenRepEnd (N: INTEGER);
     PROCEDURE PosNeeded (P: INTEGER): BOOLEAN;
 ----
+
 In order to know the number and names of temporary variables for the declaration, the variable assignment by the procedure `ComputeVarNames` before the generation of procedurally local program fragments. Before the generation the variables of an alternative are marked by call of `InitScope` as undeniered. `GenAnalPred` summarizes the generation of analyses and comparisons, `GenSynPred` that of syntheses and transfers. The generation of evaluation code for loops requires the special handling described in section 6.1.1.7 and consists of an initialization, of the treatment of the affix positions of the recusion parameters as well as the applying positions of the left side and finally from the evaluation for the loop termination.
 
 Since in the Oberon language the formal parameters of a procedure and its FORWARD declaration must be identical, their names are assigned according to a fixed scheme, so that for their generation no complete variable is required. no complete variable assignment is necessary for their generation.
@@ -1796,15 +1900,17 @@ Since in the Oberon language the formal parameters of a procedure and its FORWAR
 
 Affix positions and variables are represented in the procedures of the generated program by temporary variables. The affix positions of the left rule side of a non-terminal are represented by are represented by the same Oberon variables, i.e. by the formal procedure parameters. If a variable occurs as trivial affix form on applying position, the variable and the corresponding position are represented by the same temporal variable. This succeeds not in the case that a variable occurs several times as a trivial affix form on applying positions
 // page 114
-is on the left side. In this case a transfer is necessary. If a variable occurs as a trivial affiform on defining position, this optimization may only be done for the denition position of the variable, otherwise the value of the temporary variable is overwritten.
+is on the left side. In this case a transfer is necessary. If a variable occurs as a trivial affix form on defining position, this optimization may only be done for the denition position of the variable, otherwise the value of the temporary variable is overwritten.
 
-The evaluation of repetitions requires in addition to the temporary variables for the applying positions of the formal parameters in each case a run variable (see section 6.1.1.7).
+The evaluation of repetitions requires in addition to the temporary variables for the applying positions of the formal parameters in each case a run variable (see section <<EBNF Operators>>).
 
 Furthermore, for traversal in analyses (and for evaluation with free space management in syntheses) temporary variables are needed for each traversed node of the tree.
 
 In the case, since the code for anonymous non-terminals is embedded into procedures, a parameter transfer takes place by parameter passing because the temporary variables for the affix positions of the call are identical to the temporary variables of the affix forms of the left-hand rule pages of the anonymous non-terminal. It is important to note that the values of temporary variables for the evaluation of a non-terminal are not overwritten by the evaluation of the embedded anonymous non-terminal. This problem is solved by choosing disjoint temporal variables. For this purpose, two Oberon variables are used here for a trivial affix form in the call. one for the variable on the position and one for the position.
 
 The temporary variables computed for the generation are represented in the following data structures represented:
+
+[source,modula-2]
 ----
     VAR
         HNontVars: POINTER TO ARRAY OF INTEGER;
@@ -1813,6 +1919,7 @@ The temporary variables computed for the generation are represented in the follo
         VarName: POINTER TO ARRAY OF INTEGER;
         NodeName: POINTER TO ARRAY OF INTEGER;
 ----
+
 A temporary variable is represented by a number. The temporary variables are assigned in ascending order. Therefore, for their declaration the knowledge of the number of variables occurring in the procedure is sufficient. However, in this number represented in `HNontVars` are the names for the formal procedure parameters are included.
 
 The Oberon variables for variables and affix forms are stored in the fields `VarName` and `AffixName`. fields, temporary variables for analyses and syntheses are stored in the `NodeName` field.
@@ -1826,6 +1933,7 @@ To keep the number of temporary variables as low as possible, a lifetime analysi
 To determine the lifetime of a temporary variable for a variable `M`, its dependencies in the validity domain are symbolically decremented. These consist of the number of variable occurrences, increased by 1, if the variable `#M` occurs in the validity range, since in this case the life time is prolonged until the necessary comparison. These dependencies are represented in the `VarDeps` field and "local" to `ComputeVarNames`.
 
 // page 115
+[source,modula-2]
 ----
     VAR
         VarDeps: POINTER TO ARRAY OF INTEGER;
@@ -1834,19 +1942,27 @@ To determine the lifetime of a temporary variable for a variable `M`, its depend
 ===== Data Structures for Generation
 
 The following data structures are also required for generation:
+
+[source,modula-2]
 ----
     VAR
         SavePos, UseConst, UseRefCnt, TraversePass: BOOLEAN;
         VarCnt, VarAppls: POINTER TO ARRAY OF INTEGER;
 ----
+
 The switches control the generation. The fields `VarCnt` and `VarAppls` contain statistical  information about the variables of an alternative. `VarCnt` indicates the number of variable occurrences, `VarAppls`, how often the variable occurs on applying position.
+
+[source,modula-2]
 ----
     VAR
         NodeIdent: POINTER TO ARRAY OF INTEGER;
         MaxMAlt: INTEGER;
         RefConst: LONGINT;
 ----
+
 In the `NodeIdent` field, a node identifier is assigned to each meta rule. The entries are calculated in the procedure `ComputeNodeIdent`. Thereby the values `ArityConst` and `RefConst` are used to determine the components.
+
+[source,modula-2]
 ----
     VAR
         Leaf: POINTER TO ARRAY OF INTEGER;
@@ -1854,13 +1970,19 @@ In the `NodeIdent` field, a node identifier is assigned to each meta rule. The e
         AffixSpace: POINTER TO ARRAY OF INTEGER;
         FirstHeap: INTEGER;
 ----
+
 When generating with optimization of terminal affix forms, references to an already synthesized leaf or a constant tree directly into the generated code. These references are calculated in the procedure `ComputeConstDat` and entered into the fields `Leaf` and `AffixPlace`. For each affix position the size of a tree to be synthesized is determined; this size stored in the `AffixSpace` field is used in syntheses for overflow checking. overflow verification.  The variable `FirstHeap` denotes the first free entry in the heap of the generated heap of the generated compiler. This value is used for correct initialization.
+
+[source,modula-2]
 ----
     VAR
         VarRefCnt: POINTER TO ARRAY OF INTEGER;
         VarDepPos: POINTER TO ARRAY OF INTEGER;
 ----
-The VarRefCnt and VarDepPos fields are used to store information for optimizing free space management in the procedures of the basic non-terminals. An entry of the field VarRefCnt assigns to a variable the value by which the reference numerator must be increased when denoting the variable. A positive entry in VarDepPos denotes the axposition at which affix position at which the release of the subtree can take place after a comparison.
+
+The `VarRefCnt` and `VarDepPos` fields are used to store information for optimizing free space management in the procedures of the basic non-terminals. An entry of the field `VarRefCnt` assigns to a variable the value by which the reference numerator must be increased when denoting the variable. A positive entry in `VarDepPos` denotes the affix position at which affix position at which the release of the subtree can take place after a comparison.
+
+[source,modula-2]
 ----
     VAR
         RepAppls: POINTER TO ARRAY OF BOOLEAN;
@@ -1868,11 +1990,11 @@ The VarRefCnt and VarDepPos fields are used to store information for optimizing 
 ----
 // page 116
 
-The set `RepVar` contains those variables which occur on defining positions of recursion parameters. This set is needed for the syntheses in repetitions. The set `EmptySet` represents the empty set and is used for synthesis in all other cases. In the  `RepAppls` field for each variable on the defining position of the recursion parameter the information whether it is applied in all alternatives of repetition is stored in the field RepAppls.
+The set `RepVar` contains those variables which occur on defining positions of recursion parameters. This set is needed for the syntheses in repetitions. The set `EmptySet` represents the empty set and is used for synthesis in all other cases. In the  `RepAppls` field for each variable on the defining position of the recursion parameter the information whether it is applied in all alternatives of repetition is stored in the field `RepAppls`.
 
 === The Output of the Translation 
 
-In the generated compiler the values of the output parameters of the start symbol calculated by the evaluator represent the start symbol represent the translation. The `EmitGen` module generates code that outputs this translation.  output. Internally, the translation is represented by the evaluator through a derivation tree to the MetaGrammar. The output is therefore a traversal of this derivation tree.
+In the generated compiler the values of the output parameters of the start symbol calculated by the evaluator represent the start symbol represent the translation. The `EmitGen` module generates code that outputs this translation.  output. Internally, the translation is represented by the evaluator through a derivation tree to the meta grammar. The output is therefore a traversal of this derivation tree.
 
 It is to be noted, since the output of alternatives of a non-terminal, which is provided with a token marking (a so-called token) as well as their subtree is to take place bundled i.e. without the output of a separator between the individual terminals; in the other case, however, a separator after each case, however, a separator is to be output after each terminal. This results in the situation, because a non-terminal can be a subtoken, i.e. it can be used in a subtree of a token as well as in a subtree not originating from a token. Thus, when outputting alternatives of a subtoken, separators must be output or not output depending on the context in the derivation tree.
 
@@ -1881,24 +2003,26 @@ The meta non-terminals can now be divided into two sets according to this output
 The output takes place in the implementation by procedures, in which a case distinction is made. over alternatives of a non-terminal. For the output with and without separator separate procedures are generated. For subtokens in particular two procedures are generated. In the procedures additionally the size of the output tree is computed, i.e. the number of required heap entries for a non-collapsed storage mode.
 
 The generated procedures can be represented by the following code scheme:
+
+[source,modula-2]
 ----
-    (* Meta-Nichtterminal M *)
-    PROCEDURE EmitM Type2/3 (Ptr: HeapType);
+    (* Meta non-terminal M *)
+    PROCEDURE EmitMType2/3 (Ptr: HeapType);
     BEGIN
       INC(OutputSize, Heap[Ptr] DIV arityConst + 1);
       CASE Heap[Ptr] MOD arityConst OF
-      | 1: Code fur erste Alternative
+      | 1: Code for first alternative
          .
          .
          .
-      | n: Code fur n-te Alternative
+      | n: Code for n-th alternative
       END
     END EmitM Type2/3;
     
-    (* Ausgabe von Meta-Terminal T *)
+    (* Output for meta terminal T *)
     IO.WriteText(Out, T); (evtl. IO.Write(Trennzeichen); )
     
-    (* Prozeduraufruf fur Meta-Nichtterminal N *)
+    (* Procedure call for meta non-terminal N *)
     EmitN Type2/3(Heap[Ptr + i]);
 ----
 // page 117
@@ -1908,6 +2032,12 @@ The generation of the output procedures is done by the procedure `GenEmitProc`, 
 // page 118
 
 === Implementations
+
+Please note that the links below are targeting the actual implementation in D, the original implementation referenced in the original German version was done in Modual-2.
+
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/eSLEAGGen.d[src/eSLEAGGen.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/fix/eSLEAGGen.fix.d[fix/eSLEAGGen.fix.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/eEmitGen.d[src/eEmitGen.d]
 
 // page 145
 
@@ -1919,7 +2049,7 @@ As example of a more powerful evaluation procedure and thus at the same time as 
 
 === The Creation of Static Derivation Trees
 
-Instead of enriching a generated parser for the creation of static derivation trees with appropriate constructor instructions, it is generated as a special one-pass compiler, whose specification is automatically generated by the `Shift` module (see Section 7.3). This compiler has no output procedures, but passes the "translation" of its input, namely the tree in `Heap`, to the traversal procedure `TraverseSyntaxTree` of a separate evaluator.
+Instead of enriching a generated parser for the creation of static derivation trees with appropriate constructor instructions, it is generated as a special one-pass compiler, whose specification is automatically generated by the `Shift` module (see section <<The Shift Module>>). This compiler has no output procedures, but passes the "translation" of its input, namely the tree in `Heap`, to the traversal procedure `TraverseSyntaxTree` of a separate evaluator.
 
 The coding of the derivation tree corresponds to the usual scheme presented on page 101 in the context of the evaluator generator, and shall only be briefly repeated here: A node stands for a rule application and is realized by a sequence of entries in the `Heap` field. The first entry identifies the applied rule by the number of the corresponding alternative. In the further heap entries the references to the corresponding subtree are stored in the other `heap` entries; their number is given by the position of the alternative (without pradicates).
 
@@ -1936,26 +2066,26 @@ A generated evaluator is an independent module, which is imported by an upstream
 ==== Overview of the Single Sweep Svaluators
 
 A generated evaluator consists of a module, the rough structure of which is shown in the following simplified program fragment:
+
+[source,modula-2]
 ----
-    MODULE Evaluatorname;
-    
+  MODULE Evaluatorname;
+  
     TYPE TreeType* = LONGINT;
-         OpenTree* = POINTER TO ARRAY OF TreeType;
-         OpenPos*  = POINTER TO ARRAY OF eIO.Position;
+        OpenTree* = POINTER TO ARRAY OF TreeType;
+        OpenPos*  = POINTER TO ARRAY OF eIO.Position;
         ...
     VAR Tree : OpenTree;
-     PosTree : OpenPos;
-         Pos : eIO.Position;
+    PosTree : OpenPos;
+        Pos : eIO.Position;
     
-    PROCEDURE P0(Adr : TreeType; VAR V1 : HeapType); (* Startsymbol *)
-    ... (* Berechnet die Ubersetzung des Ableitungsbaums *)
-    END P0;
-    (* ... weitere Prozeduren fur die Nichtterminale: P1, P2,... *)
-----
-// page 147
-----
+    PROCEDURE P0(Adr : TreeType; VAR V1 : HeapType); (* Start symbol *)
+    ... (* Computes the Translation of the derivation tree *)
+    END P0;s
+    (* ... further procedures for non-terminals: P1, P2,... *)
+
     PROCEDURE Emit(Ptr : HeapType);
-    ... (* Gibt die Ubersetzung aus *)
+    ... (* Emits the translation *)
     END Emit;
     
     PROCEDURE TraverseSyntaxTree*(Tree1 : OpenTree;
@@ -1965,14 +2095,17 @@ A generated evaluator consists of a module, the rough structure of which is show
       Tree := Tree1; PosTree := PosTree1;
       P0(Adr, V1); Emit(V1)
     END TraverseSyntaxTree;
-    
-    END Evaluatorname.
+  
+  END Evaluatorname.
 ----
-The strict type calling of the programming language Oberon makes it necessary to export the types `TreeType`, `OpenTree` and `OpenPos`, so that the upstream compiler can store the derivation tree and the positions in such typed fields and pass them to the also exported procedure `TraverseSyntaxTree` together with the root of the derivation tree. procedure `TraverseSyntaxTree` together with the root of the derivation tree. The latter procedure makes the passed fields generally accessible by copying the pointers to global variables and then calls the procedure generated for the start symbol for evaluation. There, the static semantics are checked and the translation of the input - is generated in a field `Heap` -, which is not listed here, which is passed to the output procedure by the variable V1. output procedure.
+
+The strict type calling of the programming language Oberon makes it necessary to export the types `TreeType`, `OpenTree` and `OpenPos`, so that the upstream compiler can store the derivation tree and the positions in such typed fields and pass them to the also exported procedure `TraverseSyntaxTree` together with the root of the derivation tree. procedure `TraverseSyntaxTree` together with the root of the derivation tree. The latter procedure makes the passed fields generally accessible by copying the pointers to global variables and then calls the procedure generated for the start symbol for evaluation. There, the static semantics are checked and the translation of the input - is generated in a field `Heap` -, which is not listed here, which is passed to the output procedure by the variable `V1`.
 
 ==== Code Schemes for the Evaluation Procedures
 
 The structure of the procedures generated for the basic non-terminals is similar to the procedures of a one-pass compiler and can be described by the following code scheme:
+
+[source,modula-2]
 ----
     PROCEDURE N(Adr : TreeType; ...);
     ...
@@ -1981,28 +2114,32 @@ The structure of the procedures generated for the basic non-terminals is similar
         | 1 : ...
         ...
         | k : Pos := PosTree[Adr];
-               Analyse der Eingabeparameter der linken Seite der k-ten Alt.
-               Code fur die k-te Alternative
-               Synthese der Ausgabeparameter der linken Seite der k-ten Alt.
+               Analysis of input parameters of the left-hand side of the k-th alternative.
+               Code for the k-th alternative
+               Synthesis of output parameters of the left-hand side of the k-th alternative.
         ...
         | n : ...
       END
     END N;
 ----
+
 In the `Adr` parameter, the root of the subtree to be evaluated is passed to each procedure. Within the CASE statement, the rule applied to this node is determined and the code of the corresponding alternative is executed. This consists of the calls of the procedures for the basic non-terminals or pradicates occurring in this alternative together with the associated the corresponding analyses and syntheses of parameters. The calls take place thereby in a The calls are made in a permutation of the textual order determined by the generator according to the following scheme:
+
+[source,modula-2]
 ----
-    (* Aufruf eines Grundnichtterminals N *)
-    Synthese der Eingabeparameter zu N
-    N(Tree[Adr + Offset des Verweises auf den Unterbaum], ...);
-    Pos := PosTree[Adr + Offset des Verweises auf den Unterbaum];
-    Analyse der Ausgabeparameter zu N
+    (* Call to base non-terminal N *)
+    Synthesis of input parameters for N
+    N(Tree[Adr + Offset of the reference to the sub tree ], ...);
+    Pos := PosTree[Adr + Offset of the reference to the sub tree];
+    Analysis of the output parameters of N
     
-    (* Aufruf eines Pradikats N *)
-    Synthese der Eingabeparameter zu N
-    Pos := PosTree[Adr + vorheriger Offset];
+    (* Call of predikate N *)
+    Synthesis of input parameters for N
+    Pos := PosTree[Adr + previous Offset];
     N(...);
-    Analyse der Ausgabeparameter zu N
+    Analysis of the output parameters of N
 ----
+
 Contextual errors can be detected during evaluation only in analyses (and comparisons) and pradicates in analyses (and comparisons) as well as in predicates; in order to be able to easily output the corresponding position in the code generated for analyses together with a message, the global variable Pos is set accordingly before each analysis. However, this is only necessary if analyses are actually performed at the corresponding positions. Pradicates do not process any parts of the derivation tree, therefore, no reference to it is passed to the corresponding procedures. In case of failure, however, a meaningful error position should be reported. For this the position of the immediately before visited subtree is used; if in an alternative first a procedure is called first in an alternative, then there is no such previously visited subtree and the position stored for the first heap entry of a node is reported.
 
 === The Shift Module
@@ -2064,6 +2201,8 @@ In general, there are many possible evaluation sequences for an alternative. Her
 The determination of permutations can be done efficiently again with a modification of the algorithm for the computation of empty derivable non-terminals (cf. Section 4.2.3). The essential
 // page 151
 idea is to show the dependencies of factors not on other factors, but on variables. The following data structures are used for this purpose:
+
+[source,modula-2]
 ----
     Var : POINTER TO ARRAY OF RECORD Factors : INTEGER END;
     Factor : POINTER TO ARRAY OF RECORD
@@ -2077,6 +2216,7 @@ idea is to show the dependencies of factors not on other factors, but on variabl
     
     DefVars : Sets.OpenSet;
 ----
+
 Initially, for each factor of an alternative, a list of the variables in the defining position, the number of the number of applications of not yet defined variables, its priority (analogously to the (analogous to the determination of the continuation grammar in section 5.2.2.3) and a reference to the factor. the factor is stored. For each variable of an alternative a list of those factors is for which it is in the applying position. In order to avoid linear search multiple applications or definitions of a variable for a factor lead to multiple entries in all lists. All lists are realized in the `Edge` field.
 
 In `Stack`, the set of those factors is stored whose application count has fallen to zero, i.e. which only apply variables that have already been denoted. In `DefVars` during the already defined variables are successively added to the sorting of the factors. this set is initialized with the variables defined on the left side of the rule. The dotted slopes in Figure 7.1 dependencies between factors and the left side of the rule must be included in the initial assignment of the data structures, as shown in figure 7.2.
@@ -2095,6 +2235,12 @@ If `Stack` is finally completely emptied, then all factors must have been remove
 // page 153
 
 === Implementations
+
+Please note that the links below are targeting the actual implementation in D, the original implementation referenced in the original German version was done in Modual-2.
+
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/eSSweep.d[src/eSSweep.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/fix/eSSweep.fix.d[fix/eSSweep.fix.d]
+- link:https://github.com/linkrope/epsilon/blob/v0.2.1/src/eShift.d[src/eShift.d]
 
 // page 163
 
@@ -2137,16 +2283,16 @@ In formal parameters the value range symbol may be omitted if the affix form con
 
 // page 166
 ----
-    letter: "a" j ... j "z" j "A" j ... j "Z".
-    digit: "0" j ... j "9".
+    letter: "a" | ... | "z" | "A" | ... | "Z".
+    digit: "0" | ... | "9".
     ident: letter fletterg.
     number: digit fdigitg.
-    string: " ' " char fcharg " ' " j " " " char fcharg " " ".
+    string: " ' " char fcharg " ' " | " " " char fcharg " " ".
     
     MetaTerm:
       {ident| string}.
     MetaExpr:
-      MetaTerm f"j" MetaTermg.
+      MetaTerm {"|" MetaTerm}.
     MetaRule:
       ident ["*"] "=" MetaExpr ".".
     AffixForm:
@@ -2159,11 +2305,11 @@ In formal parameters the value range symbol may be omitted if the affix form con
     HyperTerm:
       {ident [ActualParams] | string
       | [ActualParams]
-         ( "(" | "[" | "f" ) HyperExpr ( ")" | "]" | "}" )
+         ( "(" | "[" | "{" ) HyperExpr ( ")" | "]" | "}" )
          [FormalParams] }.
     HyperExpr:
       [FormalParams] HyperTerm [ActualParams]
-      {"|" [FormalParams] HyperTerm [ActualParams] ].
+      {"|" [FormalParams] HyperTerm [ActualParams] }.
     HyperRule:
       ident ["*"] ":" HyperExpr "." .
     Specification:
@@ -3556,7 +3702,7 @@ The names of the individual commands as well as the respective options can be ta
       -w: toggle default value for opening window
   
   Commands of the Epsilon compiler generator:
-  eAnalyser.Analyse ( * j @ j ^ j filename )
+  eAnalyser.Analyse ( * | @ | ^ | filename )
     internalizes an Epsilon specification. All further commands use this
     internalized version. Errors are reported. eAnalyser.Warnings shows
     warnings.
@@ -3582,7 +3728,7 @@ The names of the individual commands as well as the respective options can be ta
     This command must be executed before eELL1Gen.GenerateParser
     (restriction of implementation).
   
-  eSplit.Split [-num] [-m] ( * j @ j ^ j filename )
+  eSplit.Split [-num] [-m] ( * | @ | ^ | filename )
     splits generated module into num MOD 100 smaller modules plus
     num DIV 100 basemodules. Needed for large modules, that can't 
     be compiled with the standard Oberon compiler (error 210).
@@ -3602,7 +3748,7 @@ The names of the individual commands as well as the respective options can be ta
     eErrorElems inserted. Requires compiler option -v (verbose).
   
   Commands of the generated compilers:
-  Name.Compile [-ivw ] ( * j @ j ^ j filename )
+  Name.Compile [-ivw ] ( * | @ | ^ | filename )
     compiles the specified input.
   Name.Reset
     frees allocated heap space.
@@ -3730,6 +3876,8 @@ In order to show the goodness of error detection, restart behavior, and repair, 
     25 errors detected
 ----
 The erroneous program was transformed during parsing into the following syntactically correct  program to which the reported context errors refer:
+
+[source,modula-2]
 ----
   MODULE Error;
   CONST M = 10 ; N = 100 ; X = 10;
