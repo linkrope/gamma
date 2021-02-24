@@ -1,30 +1,33 @@
 = True Compiler Generation
 Efficient Implementation of a Closed Theory
-:figure-caption!:
+Jochen Demuth | Stephan Weber | Sönke Kannapinn | Mario Kröplin
+:revnumber: Report 1997 / 6
+:version-label!:
+:revremark: Recommended for publication by Prof. Dr. Bleicke Eggers
 :toc:
 :toclevels: 5
-
-Jochen Demuth, Stephan Weber,
-Sönke Kannapinn, Mario Kröplin
-
-Report 1997 / 6
-
-Recommended for publication by Prof. Dr. Bleicke Eggers
-
-
-
+:figure-caption!:
 
 German Title:
 
 Echte Compilergenerierung +
 Effiziente Implementierung einer abgeschlossenen Theorie
 
-Jochen Demuth, Stephan Weber,
-Sönke Kannapinn, Mario Kröplin
+Jochen Demuth, Stephan Weber, Sönke Kannapinn, Mario Kröplin
 
 Bericht 1997 / 6
 
 Zur Veröffentlichung empfohlen von Prof. Dr. Bleicke Eggers
+
+====
+This work is licensed under link:http://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1[Attribution-NonCommercial-ShareAlike 4.0 International] 
+image:https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1[cc,22,22]
+image:https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1[by,22,22]
+image:https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1[nc,22,22]
+image:https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1[sa,22,22]
+====
+
+NOTE: This document has been automatically translated from German and was only slightly reviewed.
 
 // page i
 
