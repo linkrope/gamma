@@ -2,7 +2,6 @@ module epsilon.soag.soaggen;
 
 import EAG = epsilon.eag;
 import EmitGen = epsilon.emitgen;
-import IO = epsilon.io;
 import SLEAGGen = epsilon.sleaggen;
 import epsilon.settings;
 import io : Input, read;
@@ -14,6 +13,7 @@ import Protocol = epsilon.soag.protocol;
 import SOAG = epsilon.soag.soag;
 import VisitSeq = epsilon.soag.visitseq;
 import std.bitmanip : BitArray;
+import std.stdio;
 
 private const cTab = 1;
 private const firstAffixOffset = 0;
@@ -29,14 +29,14 @@ private int[] AffixVarCount;
 private int[] SubTreeOffset;
 private int[] FirstRule;
 private int[] AffixAppls;
-private IO.TextOut Out;
+private File Out;
 private int Indent;
 private bool Close;
 
 /**
  * SEM: Steuerung der Generierung
  */
-public void Generate(Settings settings)
+public string Generate(Settings settings)
 in (EAG.Performed(EAG.analysed | EAG.predicates))
 {
     UseConst = !settings.c;
@@ -52,9 +52,12 @@ in (EAG.Performed(EAG.analysed | EAG.predicates))
     else
         info!"don't optimize";
     Init;
-    GenerateModule(settings);
+
+    const fileName = GenerateModule(settings);
+
     EAG.History |= EAG.isSSweep;
     EAG.History |= EAG.hasEvaluator;
+    return fileName;
 }
 
 /**
@@ -564,7 +567,7 @@ private void GenPopAffix(int V) @safe
  * OUT: -
  * SEM: Generierung der Syntheseaktionen eines Besuchs für die besuchsrelevanten Affixparameter eines Symbolvorkommens
  */
-private void GenSynPred(int SymOccInd, int VisitNo) @safe
+private void GenSynPred(int SymOccInd, int VisitNo)
 {
     int Node;
     int S;
@@ -1258,7 +1261,7 @@ private void GenVisitRule(int R)
     WrS(" * ");
     Protocol.WriteRule(R);
     WrS(" */\n");
-    Protocol.Out = IO.Msg;
+    Protocol.Out = stdout;
     WrS("{\n");
     GenVarDecls(R);
     Indent += cTab;
@@ -1518,10 +1521,9 @@ private void GenStackInit() @safe
 /**
  * SEM: Generierung des Compiler-Moduls
  */
-private void GenerateModule(Settings settings)
+private string GenerateModule(Settings settings)
 {
     int R;
-    string name;
     Input Fix;
     int StartRule;
 
@@ -1544,9 +1546,11 @@ private void GenerateModule(Settings settings)
         Fix.popFront;
     }
 
+    const name = EAG.BaseName ~ "Eval";
+    const fileName = settings.path(name ~ ".d");
+
     Fix = read("fix/epsilon/soag.fix.d");
-    name = EAG.BaseName ~ "Eval";
-    Out = new IO.TextOut(settings.path(name ~ ".d"));
+    Out = File(fileName, "w");
     SLEAGGen.InitGen(Out, SLEAGGen.sSweepPass, settings);
     InclFix('$');
     WrS(name);
@@ -1601,7 +1605,7 @@ private void GenerateModule(Settings settings)
     WrS("Eval");
     InclFix('$');
     Out.flush;
-    IO.Compile(Out);
     SLEAGGen.FinitGen;
-    IO.CloseOut(Out);
+    Out.close;
+    return fileName;
 }

@@ -2,7 +2,6 @@ module epsilon.ssweep;
 
 import EAG = epsilon.eag;
 import EmitGen = epsilon.emitgen;
-import IO = epsilon.io;
 import EvalGen = epsilon.sleaggen;
 import epsilon.settings;
 import io : Input, read, UndefPos;
@@ -40,7 +39,7 @@ in (EAG.Performed(EAG.analysed | EAG.predicates))
     }
 }
 
-public void Generate(Settings settings)
+public string Generate(Settings settings)
 in (EAG.Performed(EAG.analysed | EAG.predicates))
 {
     info!"single-sweep writing %s"(EAG.BaseName);
@@ -52,13 +51,16 @@ in (EAG.Performed(EAG.analysed | EAG.predicates))
     const SaveHistory = EAG.History;
 
     EAG.History = 0;
-    GenerateMod(Yes.createMod, settings);
+
+    const fileName = GenerateMod(Yes.createMod, settings);
+
     EAG.History = SaveHistory;
     if (!Error)
     {
         EAG.History |= EAG.isSSweep;
         EAG.History |= EAG.hasEvaluator;
     }
+    return fileName;
 }
 
 private void Init() nothrow
@@ -74,7 +76,7 @@ private void Finit() @nogc nothrow @safe
     FactorOffset = null;
 }
 
-private void GenerateMod(Flag!"createMod" createMod, Settings settings)
+private string GenerateMod(Flag!"createMod" createMod, Settings settings)
 {
     const firstEdge = 1;
     const firstStack = 0;
@@ -99,9 +101,8 @@ private void GenerateMod(Flag!"createMod" createMod, Settings settings)
     }
 
     int V;
-    IO.TextOut Mod;
+    File Mod;
     Input Fix;
-    string name;
     EAG.Rule SavedNontDef;
     int SavedNextHFactor;
     int SavedNextHAlt;
@@ -557,13 +558,15 @@ private void GenerateMod(Flag!"createMod" createMod, Settings settings)
         Mod.write("}\n\n");
     }
 
+    const name = EAG.BaseName ~ "Eval";
+    const fileName = settings.path(name ~ ".d");
+
     EvalGen.InitTest;
     Error = Error || !EvalGen.PredsOK();
     if (createMod)
     {
         Fix = read("fix/epsilon/ssweep.fix.d");
-        name = EAG.BaseName ~ "Eval";
-        Mod = new IO.TextOut(settings.path(name ~ ".d"));
+        Mod = File(fileName, "w");
         if (!Error)
         {
             EvalGen.InitGen(Mod, EvalGen.sSweepPass, settings);
@@ -613,11 +616,10 @@ private void GenerateMod(Flag!"createMod" createMod, Settings settings)
             Mod.write(EAG.BaseName);
             Mod.write("Eval");
             InclFix('$');
-            Mod.flush;
-            IO.Compile(Mod);
+            Mod.close;
         }
         EvalGen.FinitGen;
-        IO.CloseOut(Mod);
     }
     EvalGen.FinitTest;
+    return fileName;
 }

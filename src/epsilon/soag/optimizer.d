@@ -1,12 +1,12 @@
 module epsilon.soag.optimizer;
 
 import EAG = epsilon.eag;
-import IO = epsilon.io;
 import runtime;
 import ALists = epsilon.soag.alists;
 import SOAG = epsilon.soag.soag;
 import Protocol = epsilon.soag.protocol;
 import VisitSeq = epsilon.soag.visitseq;
+import std.stdio;
 
 const firstGlobalVar = 1;
 const firstStackVar = 1;
@@ -42,18 +42,17 @@ void IncludeVDS(int S, int VN1, int VN2) nothrow @safe
     }
 }
 
-void WriteVDS() @safe
+void WriteVDS()
 {
-    IO.Msg.write("Inhalt VDS:\n");
+    stdout.write("Inhalt VDS:\n");
     for (size_t i = ALists.firstIndex; i <= VDS.Last; i += 3)
     {
-        IO.Msg.write(EAG.HNontRepr(VDS.Elem[i]));
-        IO.Msg.write(", ");
-        IO.Msg.write(VDS.Elem[i + 1]);
-        IO.Msg.write(", ");
-        IO.Msg.write(VDS.Elem[i + 2]);
-        IO.Msg.writeln;
-        IO.Msg.flush;
+        stdout.write(EAG.HNontRepr(VDS.Elem[i]));
+        stdout.write(", ");
+        stdout.write(VDS.Elem[i + 1]);
+        stdout.write(", ");
+        stdout.write(VDS.Elem[i + 2]);
+        stdout.writeln;
     }
 }
 
@@ -80,16 +79,15 @@ void IncludeVS(int S, int VN) nothrow @safe
     }
 }
 
-void WriteVS() @safe
+void WriteVS()
 {
-    IO.Msg.write("Inhalt VS:\n");
+    stdout.write("Inhalt VS:\n");
     for (size_t i = ALists.firstIndex; i <= VS.Last; i += 2)
     {
-        IO.Msg.write(EAG.HNontRepr(VS.Elem[i]));
-        IO.Msg.write(", ");
-        IO.Msg.write(VS.Elem[i + 1]);
-        IO.Msg.writeln;
-        IO.Msg.flush;
+        stdout.write(EAG.HNontRepr(VS.Elem[i]));
+        stdout.write(", ");
+        stdout.write(VS.Elem[i + 1]);
+        stdout.writeln;
     }
 }
 

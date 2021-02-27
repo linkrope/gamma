@@ -1,8 +1,8 @@
 module epsilon.ell1gen;
 
+import core.time : MonoTime;
 import EAG = epsilon.eag;
 import EmitGen = epsilon.emitgen;
-import IO = epsilon.io;
 import Shift = epsilon.shift;
 import EvalGen = epsilon.sleaggen;
 import epsilon.settings;
@@ -92,7 +92,7 @@ in (EAG.Performed(EAG.analysed | EAG.predicates))
     EAG.History |= EAG.parsable;
 }
 
-public void Generate(Settings settings)
+public string Generate(Settings settings)
 in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.isSLEAG))
 {
     info!"ELL(1) writing %s"(EAG.BaseName);
@@ -101,17 +101,20 @@ in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.isSLEAG))
     scope (exit)
         Finit;
     if (!GrammarOk)
-        return;
+        assert(0, "TODO: error handling for parser generator");
     ComputeDir;
     if (Error)
-        return;
+        assert(0, "TODO: error handling for parser generator");
     ComputeDefaultAlts;
     ComputeSets;
-    GenerateMod(No.parsePass, settings);
+
+    const fileName = GenerateMod(No.parsePass, settings);
+
     EAG.History |= EAG.parsable;
+    return fileName;
 }
 
-public void GenerateParser(Settings settings)
+public string GenerateParser(Settings settings)
 in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.hasEvaluator))
 {
     info!"ELL(1) writing parser of %s"(EAG.BaseName);
@@ -120,15 +123,15 @@ in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.hasEvaluator))
     scope (exit)
         Finit;
     if (!GrammarOk)
-        return;
+        assert(0, "TODO: error handling for parser generator");
     EAG.History = 0;
     Shift.Shift;
     ComputeDir;
     if (Error)
-        return;
+        assert(0, "TODO: error handling for parser generator");
     ComputeDefaultAlts;
     ComputeSets;
-    GenerateMod(Yes.parsePass, settings);
+    return GenerateMod(Yes.parsePass, settings);
 }
 
 private void Init(Settings settings)
@@ -895,9 +898,9 @@ private void ComputeSets()
     }
 }
 
-private void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
+private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
 {
-    IO.TextOut Mod;
+    File Mod;
     Input Fix;
     int Tok;
     BitArray AllToks;
@@ -1270,14 +1273,13 @@ private void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     void WriteTab(string name)
     {
         const magicNumber = 827_092_037;
-        IO.File Tab;
         size_t m;
+        File Tab = File(settings.path(name), "w");
 
-        IO.CreateFile(Tab, settings.path(name));
-        IO.PutLInt(Tab, magicNumber);
-        IO.PutLInt(Tab, TabTimeStamp);
-        IO.PutLInt(Tab, nElemsPerSET);
-        IO.PutSet(Tab, 0b10110010_01000100_00111000_11011001);
+        Tab.writefln!"long %s"(magicNumber);
+        Tab.writefln!"long %s"(TabTimeStamp);
+        Tab.writefln!"long %s"(nElemsPerSET);
+        Tab.writefln!"set %s"(0b10110010_01000100_00111000_11011001);
         for (size_t i = firstGenSetT; i < NextGenSetT; i += nElemsPerSET)
         {
             if (nElemsPerSET <= NextGenSetT - i)
@@ -1291,7 +1293,7 @@ private void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                 for (size_t j = 0; j < m; ++j)
                     if (GenSetT[i + j][Tok])
                         s |= 1uL << j;
-                IO.PutSet(Tab, s);
+                Tab.writefln!"set %s"(s);
             }
         }
         for (size_t i = firstGenSet; i < NextGenSet; ++i)
@@ -1299,10 +1301,9 @@ private void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
             const data = cast(size_t[]) GenSet[i];
 
             for (int j = 0; j < GenSet[i].dim; ++j)
-                IO.PutSet(Tab, data[j]);
+                Tab.writefln!"set %s"(data[j]);
         }
-        IO.PutLInt(Tab, magicNumber);
-        IO.CloseFile(Tab);
+        Tab.writefln!"long %s"(magicNumber);
     }
 
     void InclFix(char Term)
@@ -1323,10 +1324,12 @@ private void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
         Fix.popFront;
     }
 
+    const fileName = settings.path(EAG.BaseName ~ ".d");
+
     AllToks = BitArray();
     AllToks.length = nToks + 1;
     Fix = read("fix/epsilon/ell1gen.fix.d");
-    Mod = new IO.TextOut(settings.path(EAG.BaseName ~ ".d"));
+    Mod = File(fileName, "w");
     if (parsePass)
         EvalGen.InitGen(Mod, EvalGen.parsePass, settings);
     else
@@ -1354,7 +1357,7 @@ private void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     EvalGen.GenDeclarations(settings);
     EvalGen.GenPredProcs;
     InclFix('$');
-    TabTimeStamp = IO.TimeStamp();
+    TabTimeStamp = MonoTime.currTime.ticks;
     Mod.write(TabTimeStamp);
     InclFix('$');
     AllToks[] = false;
@@ -1394,16 +1397,16 @@ private void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
         Mod.write("Eval.TraverseSyntaxTree(Heap, PosHeap, ErrorCounter, V1, arityConst, info_, write);\n");
         Mod.write("if (info_)\n");
         Mod.write("{\n");
-        Mod.write("IO.Msg.write(\"\\tsyntax tree uses twice \");\n");
-        Mod.write("IO.Msg.write(NextHeap); IO.Msg.writeln; IO.Msg.flush;\n");
+        Mod.write("stdout.write(\"\\tsyntax tree uses twice \");\n");
+        Mod.write("stdout.write(NextHeap); stdout.writeln;\n");
         Mod.write("}");
     }
     else
     {
         Mod.write("if (ErrorCounter > 0)\n");
         Mod.write("{\n");
-        Mod.write("IO.Msg.write(\"  \"); IO.Msg.write(ErrorCounter);\n");
-        Mod.write("IO.Msg.write(\" errors detected\\n\"); IO.Msg.flush;\n");
+        Mod.write("stdout.write(\"  \"); stdout.write(ErrorCounter);\n");
+        Mod.write("stdout.write(\" errors detected\\n\");\n");
         Mod.write("}\n");
         Mod.write("else\n");
         Mod.write("{\n");
@@ -1421,10 +1424,9 @@ private void GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     InclFix('$');
     name = EAG.BaseName ~ ".Tab";
     WriteTab(name);
-    Mod.flush;
-    IO.Compile(Mod);
-    IO.CloseOut(Mod);
     EvalGen.FinitGen;
+    Mod.close;
+    return fileName;
 }
 
 private void NewEdge(size_t From, int To) nothrow @safe

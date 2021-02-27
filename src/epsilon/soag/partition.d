@@ -1,7 +1,6 @@
 module epsilon.soag.partition;
 
 import EAG = epsilon.eag;
-import IO = epsilon.io;
 import log;
 import runtime;
 import ALists = epsilon.soag.alists;
@@ -241,7 +240,7 @@ void SetAffOccforVars(int AO, int Affixform, bool isDef) nothrow @safe
  *      und speichert  diesen in DefAffOcc[]
  * SEF: Zugriffe auf VarBuf[]
  */
-void ComputeDefAffOcc(int R) @safe
+void ComputeDefAffOcc(int R)
 {
     EAG.ScopeDesc Scope;
     EAG.Rule EAGRule;

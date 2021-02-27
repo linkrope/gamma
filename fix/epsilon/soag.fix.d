@@ -1,10 +1,10 @@
 module $;
 
-import IO = epsilon.io : TextOut;
 import io : Position;
 import log;
 import runtime;
 import Stacks = epsilon.soag.listacks;
+import std.stdio;
 
 const nil = -1;
 const initialStorageSize = 128;
@@ -20,7 +20,7 @@ Position[] PosTree;
 long ErrorCounter;
 int AffixVarCount;
 Position Pos;
-IO.TextOut Out;
+File Out;
 HeapType RefIncVar;
 
 class SemTreeEntry
@@ -79,9 +79,7 @@ void TraverseSyntaxTree(TreeType[] Tree1, Position[] PosTree1, long ErrCounter, 
     HeapType V1;
 
     if (HyperArity != hyperArityConst)
-    {
         throw new Exception("internal error: 'arityConst' is wrong");
-    }
     Tree = Tree1;
     PosTree = PosTree1;
     ErrorCounter = ErrCounter;

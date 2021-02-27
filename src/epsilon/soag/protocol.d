@@ -1,16 +1,16 @@
 module epsilon.soag.protocol;
 
 import EAG = epsilon.eag;
-import IO = epsilon.io;
 import runtime;
 import SOAG = epsilon.soag.soag;
+import std.stdio;
 
 const standardLevel = 1;
 const outRuleData = 2;
 const outSymOccData = 3;
 const outAffOccData = 4;
 int Level;
-IO.TextOut Out;
+File Out;
 
 void WriteAffixVariables(int i) @safe
 {
@@ -435,8 +435,8 @@ void WriteSyms() @safe
         WriteSym(i);
 }
 
-static this() @nogc nothrow @safe
+static this() nothrow
 {
-    Out = IO.Msg;
+    Out = stdout;
     Level = standardLevel;
 }

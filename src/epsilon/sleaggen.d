@@ -1,7 +1,7 @@
 module epsilon.sleaggen;
 
+import core.time : MonoTime;
 import EAG = epsilon.eag;
-import IO = epsilon.io;
 import epsilon.settings;
 import io : Input, Position, read;
 import log;
@@ -18,7 +18,7 @@ public int[] Leaf;
 public int[] AffixPlace;
 public int[] AffixSpace;
 
-private IO.TextOut Mod;
+private File Mod;
 private bool SavePos;
 private bool UseConst;
 private bool UseRefCnt;
@@ -356,7 +356,7 @@ private void Prepare(size_t N) @nogc nothrow
     }
 }
 
-public void InitGen(IO.TextOut MOut, int Treatment, Settings settings)
+public void InitGen(File MOut, int Treatment, Settings settings)
 {
     void SetFlags(int Treatment)
     {
@@ -709,7 +709,6 @@ public void GenDeclarations(Settings settings)
         int i;
         int P;
         int Next;
-        IO.File Tab;
         int[] Heap;
 
         void SynTree(int Node, ref int Next)
@@ -736,10 +735,11 @@ public void GenDeclarations(Settings settings)
             }
         }
 
-        IO.CreateFile(Tab, settings.path(name));
-        IO.PutLInt(Tab, magic);
-        IO.PutLInt(Tab, TabTimeStamp);
-        IO.PutLInt(Tab, FirstHeap - 1);
+        File Tab = File(settings.path(name), "w");
+
+        Tab.writefln!"long %s"(magic);
+        Tab.writefln!"long %s"(TabTimeStamp);
+        Tab.writefln!"long %s"(FirstHeap - 1);
         Heap = new int[FirstHeap];
         Heap[errVal] = 0;
         for (i = 1; i <= EAG.MaxMArity; ++i)
@@ -761,16 +761,15 @@ public void GenDeclarations(Settings settings)
             }
         }
         for (i = 0; i < FirstHeap; ++i)
-            IO.PutLInt(Tab, Heap[i]);
-        IO.PutLInt(Tab, TabTimeStamp);
-        IO.CloseFile(Tab);
+            Tab.writefln!"long %s"(Heap[i]);
+        Tab.writefln!"long %s"(TabTimeStamp);
     }
 
     if (TraversePass)
         name = EAG.BaseName ~ "Eval.EvalTab";
     else
         name = EAG.BaseName ~ ".EvalTab";
-    TabTimeStamp = IO.TimeStamp();
+    TabTimeStamp = MonoTime.currTime.ticks;
     Fix = read("fix/epsilon/sleaggen.fix.d");
     InclFix('$');
     Mod.write(FirstHeap - 1);

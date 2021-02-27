@@ -1,11 +1,10 @@
 module $;
 
-import IO = epsilon.io : TextOut;
 import io : Input, Position, read;
 import log;
 import runtime;
-// import std.stdio;
 import S = $;
+import std.stdio;
 
 const nToks = $;
 const tokSetLen = $;
@@ -24,21 +23,16 @@ TokSet[nSet + 1] Set;
 long ErrorCounter;
 bool IsRepairMode;
 bool ParserTabIsLoaded;
-IO.TextOut Out;
+File Out;
 
 $
 void ParserExpand()
 {
     long ExpLen(long ArrayLen)
     {
-        if (ArrayLen <= DIV(int.max, 2))
-        {
-            return 2 * ArrayLen;
-        }
-        else
-        {
-            assert(0);
-        }
+        assert(ArrayLen <= DIV(int.max, 2));
+
+        return 2 * ArrayLen;
     }
 
     if (RecTop >= RecStack.length)
@@ -46,9 +40,7 @@ void ParserExpand()
         auto RecStack1 = new int[ExpLen(RecStack.length)];
 
         for (size_t i = firstRecStack; i < RecStack.length; ++i)
-        {
             RecStack1[i] = RecStack[i];
-        }
         RecStack = RecStack1;
     }
 }
@@ -190,9 +182,7 @@ void RecoveryTerminal(int ExpectedTok, int Recover)
     else
     {
         if (Tok != endTok)
-        {
             S.Get(Tok);
-        }
         IsRepairMode = false;
     }
 }

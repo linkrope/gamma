@@ -88,9 +88,7 @@ out (; DIV(Heap[Node], refConst) == 0)
     {
         Node = NextHeap;
         if (NextHeap >= Heap.length - Arity - 1)
-        {
             EvalExpand;
-        }
         Heap[NextHeap] = 0;
         NextHeap += Arity + 1;
     }
@@ -112,9 +110,7 @@ in (Node >= 0)
     {
         RArity = DIV(MOD(Heap[Node], refConst), arityConst);
         for (i = Node + 1; i <= Node + RArity; ++i)
-        {
             FreeHeap(Heap[i]);
-        }
 
         assert(DIV(Heap[Node], refConst) == 0);
         assert(Node > 0);
@@ -194,9 +190,7 @@ bool Equal(HeapType Ptr1, HeapType Ptr2)
         for (size_t i = 1; i <= DIV(MOD(Heap[Ptr1], refConst), arityConst); ++i)
         {
             if (!Equal(Heap[Ptr1 + i], Heap[Ptr2 + i]))
-            {
                 return false;
-            }
         }
         return true;
     }
@@ -208,9 +202,7 @@ void Eq(HeapType Ptr1, HeapType Ptr2, string ErrMsg)
     if (!Equal(Ptr1, Ptr2))
     {
         if (Ptr1 != errVal && Ptr2 != errVal)
-        {
             Error(ErrMsg);
-        }
     }
 }
 
@@ -219,9 +211,7 @@ void UnEq(HeapType Ptr1, HeapType Ptr2, string ErrMsg)
     if (Equal(Ptr1, Ptr2))
     {
         if (Ptr1 != errVal && Ptr2 != errVal)
-        {
             Error(ErrMsg);
-        }
     }
 }
 

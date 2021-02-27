@@ -1,26 +1,25 @@
 module epsilon.scangen;
 
 import EAG = epsilon.eag;
-import IO = epsilon.io;
 import epsilon.settings;
 import io : Input, read;
 import log;
 import runtime;
+import std.stdio;
 
 const firstUserTok = 3;
 const lenOfPredefinedToken = 8;
 bool[256] IsIdent;
 bool[256] IsSymbol;
 
-void Generate(Settings settings)
+string Generate(Settings settings)
 in (EAG.Performed(EAG.analysed))
 {
     Input Fix;
-    IO.TextOut Mod;
+    File Mod;
     int Term;
     int MaxTokLen;
     int Len;
-    string name;
     bool Error;
 
     void TestToken(string Str, ref int Len)
@@ -106,33 +105,34 @@ in (EAG.Performed(EAG.analysed))
         if (Len > MaxTokLen)
             MaxTokLen = Len;
     }
-    if (!Error)
+    if (Error)
+        assert(0, "TODO: error handling for lexer generator");
+
+    const name = EAG.BaseName ~ "Scan";
+    const fileName = settings.path(name ~ ".d");
+
+    Fix = read("fix/epsilon/scangen.fix.d");
+    Mod = File(fileName, "w");
+    InclFix('$');
+    Mod.write(name);
+    InclFix('$');
+    Mod.write(MaxTokLen + 1);
+    InclFix('$');
+    Mod.write(EAG.NextHTerm - EAG.firstHTerm + firstUserTok);
+    InclFix('$');
+    for (Term = EAG.firstHTerm; Term < EAG.NextHTerm; ++Term)
     {
-        Fix = read("fix/epsilon/scangen.fix.d");
-        name = EAG.BaseName ~ "Scan";
-        Mod = new IO.TextOut(settings.path(name ~ ".d"));
-        InclFix('$');
-        Mod.write(name);
-        InclFix('$');
-        Mod.write(MaxTokLen + 1);
-        InclFix('$');
-        Mod.write(EAG.NextHTerm - EAG.firstHTerm + firstUserTok);
-        InclFix('$');
-        for (Term = EAG.firstHTerm; Term < EAG.NextHTerm; ++Term)
-        {
-            Mod.write("    Enter(");
-            Mod.write(Term - EAG.firstHTerm + firstUserTok);
-            Mod.write(", ");
-            Mod.write(EAG.HTerm[Term].Id.repr);
-            Mod.write(");\n");
-        }
-        InclFix('$');
-        Mod.write(name);
-        InclFix('$');
-        Mod.flush;
-        IO.Compile(Mod);
-        IO.CloseOut(Mod);
+        Mod.write("    Enter(");
+        Mod.write(Term - EAG.firstHTerm + firstUserTok);
+        Mod.write(", ");
+        Mod.write(EAG.HTerm[Term].Id.repr);
+        Mod.write(");\n");
     }
+    InclFix('$');
+    Mod.write(name);
+    InclFix('$');
+    Mod.close;
+    return fileName;
 }
 
 private string repr(int id)

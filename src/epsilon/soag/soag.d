@@ -1,10 +1,10 @@
 module epsilon.soag.soag;
 
 import EAG = epsilon.eag;
-import IO = epsilon.io;
 import Predicates = epsilon.predicates;
 import runtime;
 import std.bitmanip : BitArray;
+import std.stdio;
 
 const firstSym = EAG.firstHNont;
 const firstRule = 0;
@@ -165,31 +165,29 @@ const notEnoughMemory = 99;
 
 void Error(T)(int ErrorType, T Proc)
 {
-    IO.Msg.write("ERROR: ");
+    stdout.write("ERROR: ");
     switch (ErrorType)
     {
     case abnormalError:
-        IO.Msg.write("abnormal error ");
+        stdout.write("abnormal error ");
         break;
     case notEnoughMemory:
-        IO.Msg.write("memory allocation failed ");
+        stdout.write("memory allocation failed ");
         break;
     case cyclicTDP:
-        IO.Msg.write("TDP is cyclic...aborted\n");
+        stdout.write("TDP is cyclic...aborted\n");
         break;
     case notLeftDefined:
-        IO.Msg.write("Grammar are not left defined\n");
+        stdout.write("Grammar are not left defined\n");
         break;
     default:
         assert(0);
     }
     if (ErrorType == abnormalError || ErrorType == notEnoughMemory)
     {
-        IO.Msg.write("in procedure ");
-        IO.Msg.write(Proc);
-        IO.Msg.writeln;
+        stdout.write("in procedure ");
+        stdout.writeln(Proc);
     }
-    IO.Msg.flush;
     throw new Exception("TODO");
 }
 

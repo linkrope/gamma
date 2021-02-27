@@ -1,9 +1,9 @@
 module $;
 
-import IO = epsilon.io : TextOut;
 import io : Position;
 import log;
 import runtime;
+import std.stdio;
 
 const hyperArityConst = $;
 alias TreeType = long;
@@ -13,7 +13,7 @@ TreeType[] Tree;
 Position[] PosTree;
 long ErrorCounter;
 Position Pos;
-IO.TextOut Out;
+File Out;
 
 $
 

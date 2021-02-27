@@ -1,17 +1,17 @@
 module epsilon.emitgen;
 
 import EAG = epsilon.eag;
-import IO = epsilon.io;
 import epsilon.settings;
 import runtime;
 import std.bitmanip : BitArray;
+import std.stdio;
 
 const CaseLabels = 127;
 BitArray Type3;
 BitArray Type2;
 int StartMNont;
 
-void GenEmitProc(IO.TextOut Mod, Settings settings)
+void GenEmitProc(File Mod, Settings settings)
 {
     void CalcSets(int Nont)
     in (EAG.firstMNont <= Nont)
@@ -87,10 +87,9 @@ void GenEmitProc(IO.TextOut Mod, Settings settings)
             {
                 if (ANum > CaseLabels)
                 {
-                    IO.Msg.write("internal error: Too many meta alts in ");
-                    IO.Msg.write(EAG.symbolTable.symbol(EAG.MTerm[N].Id));
-                    IO.Msg.writeln;
-                    IO.Msg.flush;
+                    stdout.write("internal error: Too many meta alts in ");
+                    stdout.write(EAG.symbolTable.symbol(EAG.MTerm[N].Id));
+                    stdout.writeln;
                     assert(0);
                 }
                 F = EAG.MAlt[A].Right;
@@ -160,31 +159,31 @@ void GenEmitProc(IO.TextOut Mod, Settings settings)
         GenEmitProcs(Type2);
 }
 
-void GenShowHeap(IO.TextOut Mod) @safe
+void GenShowHeap(File Mod) @safe
 {
     Mod.write("if (info_)\n");
     Mod.write("{\n");
-    Mod.write("IO.Msg.write(\"    tree of \"); ");
-    Mod.write("IO.Msg.write(OutputSize); \n");
-    Mod.write("IO.Msg.write(\" uses \"); IO.Msg.write(CountHeap());");
-    Mod.write("IO.Msg.write(\" of \"); \n");
-    Mod.write("IO.Msg.write(NextHeap);  IO.Msg.write(\" allocated, with \"); ");
-    Mod.write("IO.Msg.write(predefined + 1);\n");
-    Mod.write("IO.Msg.write(\" predefined\\n\"); IO.Msg.flush;\n");
+    Mod.write("stdout.write(\"    tree of \"); ");
+    Mod.write("stdout.write(OutputSize); \n");
+    Mod.write("stdout.write(\" uses \"); stdout.write(CountHeap());");
+    Mod.write("stdout.write(\" of \"); \n");
+    Mod.write("stdout.write(NextHeap);  stdout.write(\" allocated, with \"); ");
+    Mod.write("stdout.write(predefined + 1);\n");
+    Mod.write("stdout.write(\" predefined\\n\");\n");
     Mod.write("}\n");
 }
 
-void GenEmitCall(IO.TextOut Mod, Settings settings)
+void GenEmitCall(File Mod, Settings settings)
 {
     Mod.write("if (");
     if (settings.write)
         Mod.write("!");
     Mod.write("write)\n");
-    Mod.write("Out = new IO.TextOut(\"");
+    Mod.write(`Out = File("`);
     Mod.write(EAG.BaseName);
-    Mod.write(".Out\");\n");
-    Mod.write("else\n");
-    Mod.write("Out = IO.Msg;\n");
+    Mod.write(`.Out", "w");`);
+    Mod.write("\nelse\n");
+    Mod.write("Out = stdout;\n");
     Mod.write("Emit");
     Mod.write(StartMNont);
     Mod.write("Type");

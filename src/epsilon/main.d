@@ -83,7 +83,6 @@ void compile(Input input, Settings settings)
     import analyzer = epsilon.analyzer;
     import EAG = epsilon.eag;
     import ELL1Gen = epsilon.ell1gen;
-    import IO = epsilon.io;
     import Predicates = epsilon.predicates;
     import ScanGen = epsilon.scangen;
     import SLEAGGen = epsilon.sleaggen;
@@ -103,6 +102,7 @@ void compile(Input input, Settings settings)
 
     enforce(!ELL1Gen.Error);
 
+    string[] fileNames;
     bool success = false;
 
     if (!(settings.sweep || settings.soag))
@@ -110,8 +110,8 @@ void compile(Input input, Settings settings)
         SLEAGGen.Test;
         if (EAG.History & EAG.isSLEAG)
         {
-            ScanGen.Generate(settings);
-            ELL1Gen.Generate(settings);
+            fileNames = ScanGen.Generate(settings) ~ fileNames;
+            fileNames = ELL1Gen.Generate(settings) ~ fileNames;
             success = true;
         }
     }
@@ -120,16 +120,16 @@ void compile(Input input, Settings settings)
         SSweep.Test(settings);
         if (EAG.History & EAG.isSSweep)
         {
-            ScanGen.Generate(settings);
-            SSweep.Generate(settings);
-            ELL1Gen.GenerateParser(settings);
+            fileNames = ScanGen.Generate(settings) ~ fileNames;
+            fileNames = SSweep.Generate(settings) ~ fileNames;
+            fileNames = ELL1Gen.GenerateParser(settings) ~ fileNames;
             success = true;
         }
     }
     if (!success)
     {
-        ScanGen.Generate(settings);
-        SOAGGen.Generate(settings);
+        fileNames = ScanGen.Generate(settings) ~ fileNames;
+        fileNames = SOAGGen.Generate(settings) ~ fileNames;
         if (settings.verbose)
         {
             import protocol = epsilon.soag.protocol;
@@ -137,20 +137,19 @@ void compile(Input input, Settings settings)
             protocol.WriteRulesL4;
             protocol.WriteSyms;
         }
-        ELL1Gen.GenerateParser(settings);
+        fileNames = ELL1Gen.GenerateParser(settings) ~ fileNames;
         success = true;
     }
-    if (success && !IO.files.empty)
+    if (success && !fileNames.empty)
     {
         if (!settings.generate)
         {
-            build(IO.files, settings.outputDirectory);
+            build(fileNames, settings.outputDirectory);
         }
-        IO.files = null;
     }
 }
 
-void build(string[] files, string outputDirectory)
+void build(string[] fileNames, string outputDirectory)
 {
     import core.stdc.stdlib : exit;
     import std.format : format;
@@ -159,13 +158,13 @@ void build(string[] files, string outputDirectory)
     import std.range : empty, front;
     import std.string : join;
 
-    auto args = "dmd" ~ files ~ "-g" ~ "include/runtime.d"
-        ~ "src/epsilon/io.d" ~ "src/io.d" ~ "src/log.d" ~ "src/epsilon/soag/listacks.d";
+    auto args = "dmd" ~ fileNames ~ "-g" ~ "include/runtime.d"
+        ~ "src/io.d" ~ "src/log.d" ~ "src/epsilon/soag/listacks.d";
 
     if (!outputDirectory.empty)
     {
         args ~= format!"-od=%s"(outputDirectory);
-        args ~= format!"-of=%s"(files.front.stripExtension);
+        args ~= format!"-of=%s"(fileNames.front.stripExtension);
     }
     writefln!"%s"(args.join(' '));
 
