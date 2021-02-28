@@ -26,7 +26,6 @@
 
 ## Code Generation
 
-- no indent (use dfmt)
 - create intermediate language nodes
 
 ## History Set

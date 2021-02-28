@@ -179,19 +179,18 @@ void AddTDPTrans(int R, int AO1, int AO2)
             {
                 if (Phase == computeDPandIDP)
                 {
-                    Protocol.Out.write("...a cyclic affix dependence was found!\n");
+                    Protocol.output.write("...a cyclic affix dependence was found!\n");
                     Protocol.WriteRule(R);
-                    Protocol.Out.writeln;
+                    Protocol.output.writeln;
                     Protocol.WriteAffOcc(AO3);
-                    Protocol.Out.writeln;
-                    Protocol.Out.write("Preorder  of ");
+                    Protocol.output.writeln;
+                    Protocol.output.write("Preorder  of ");
                     Protocol.WriteAffOcc(AO1);
-                    Protocol.Out.writeln;
-                    Protocol.Out.write("Postorder of ");
+                    Protocol.output.writeln;
+                    Protocol.output.write("Postorder of ");
                     Protocol.WriteAffOcc(AO2);
-                    Protocol.Out.writeln;
-                    Protocol.Out.writeln;
-                    Protocol.Out.flush;
+                    Protocol.output.writeln;
+                    Protocol.output.writeln;
                     SOAG.Error(SOAG.cyclicTDP, "eSOAGVSGen.AddTDPTrans");
                 }
                 else if (Phase == dynTopSort)

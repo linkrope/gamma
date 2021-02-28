@@ -44,16 +44,10 @@ void IncludeVDS(int S, int VN1, int VN2) nothrow @safe
 
 void WriteVDS()
 {
-    stdout.write("Inhalt VDS:\n");
+    stdout.writeln("Inhalt VDS:");
     for (size_t i = ALists.firstIndex; i <= VDS.Last; i += 3)
-    {
-        stdout.write(EAG.HNontRepr(VDS.Elem[i]));
-        stdout.write(", ");
-        stdout.write(VDS.Elem[i + 1]);
-        stdout.write(", ");
-        stdout.write(VDS.Elem[i + 2]);
+        stdout.writeln(EAG.HNontRepr(VDS.Elem[i]), ", ", VDS.Elem[i + 1], ", ", VDS.Elem[i + 2]);
         stdout.writeln;
-    }
 }
 
 /**
@@ -81,14 +75,10 @@ void IncludeVS(int S, int VN) nothrow @safe
 
 void WriteVS()
 {
-    stdout.write("Inhalt VS:\n");
+    stdout.writeln("Inhalt VS:");
     for (size_t i = ALists.firstIndex; i <= VS.Last; i += 2)
-    {
-        stdout.write(EAG.HNontRepr(VS.Elem[i]));
-        stdout.write(", ");
-        stdout.write(VS.Elem[i + 1]);
+        stdout.writeln(EAG.HNontRepr(VS.Elem[i]), ", ", VS.Elem[i + 1]);
         stdout.writeln;
-    }
 }
 
 /**

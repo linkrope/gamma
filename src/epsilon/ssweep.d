@@ -101,7 +101,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
     }
 
     int V;
-    File Mod;
+    File output;
     Input Fix;
     EAG.Rule SavedNontDef;
     int SavedNextHFactor;
@@ -140,7 +140,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
             enforce(c != 0,
                     "error: unexpected end of eSSweep.fix.d");
 
-            Mod.write(c);
+            output.write(c);
             Fix.popFront;
             c = Fix.front.to!char;
         }
@@ -472,35 +472,24 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
         EAG.Factor F1;
         int AltIndex;
         EvalGen.ComputeVarNames(N, No.embed);
-        Mod.write("void P");
-        Mod.write(N);
-        Mod.write("(TreeType Adr");
+        output.write("void P", N, "(TreeType Adr");
         EvalGen.GenFormalParams(N, No.parNeeded);
-        Mod.write(")");
-        Mod.write(" // ");
-        Mod.write(EAG.HNontRepr(N));
+        output.write(") // ", EAG.HNontRepr(N));
         if (EAG.HNont[N].anonymous)
-        {
-            Mod.write(" in ");
-            Mod.write(EAG.NamedHNontRepr(N));
-        }
-        Mod.write("\n");
-        Mod.write("{\n");
+            output.write(" in ", EAG.NamedHNontRepr(N));
+        output.writeln;
+        output.writeln("{");
         EvalGen.GenVarDecl(N);
-        Mod.write("switch (MOD(Tree[Adr], hyperArityConst))\n");
-        Mod.write("{\n");
+        output.writeln("switch (MOD(Tree[Adr], hyperArityConst))");
+        output.writeln("{");
         A = EAG.HNont[N].Def.Sub;
         AltIndex = indexOfFirstAlt;
         do
         {
-            Mod.write("case ");
-            Mod.write(AltIndex);
-            Mod.write(":\n");
+            output.writeln("case ", AltIndex, ":");
             EvalGen.InitScope(A.Scope);
             if (EvalGen.PosNeeded(A.Formal.Params))
-            {
-                Mod.write("Pos = PosTree[Adr];\n");
-            }
+                output.writeln("Pos = PosTree[Adr];");
             EvalGen.GenAnalPred(N, A.Formal.Params);
             F = A.Sub;
             while (F !is null)
@@ -508,54 +497,42 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
                 if (!EAG.Pred[(cast(EAG.Nont) F).Sym])
                 {
                     EvalGen.GenSynPred(N, (cast(EAG.Nont) F).Actual.Params);
-                    Mod.write("P");
-                    Mod.write((cast(EAG.Nont) F).Sym);
-                    Mod.write("(Tree[Adr + ");
-                    Mod.write(FactorOffset[F.Ind]);
-                    Mod.write("]");
+                    output.write("P", (cast(EAG.Nont) F).Sym, "(Tree[Adr + ", FactorOffset[F.Ind], "]");
                     EvalGen.GenActualParams((cast(EAG.Nont) F).Actual.Params, false);
-                    Mod.write("); // ");
-                    Mod.write(EAG.HNontRepr((cast(EAG.Nont) F).Sym));
+                    output.write("); // ", EAG.HNontRepr((cast(EAG.Nont) F).Sym));
                     if (EAG.HNont[(cast(EAG.Nont) F).Sym].anonymous)
-                    {
-                        Mod.write(" in ");
-                        Mod.write(EAG.NamedHNontRepr((cast(EAG.Nont) F).Sym));
-                    }
-                    Mod.write("\n");
+                        output.write(" in ", EAG.NamedHNontRepr((cast(EAG.Nont) F).Sym));
+                    output.writeln;
                     if (EvalGen.PosNeeded((cast(EAG.Nont) F).Actual.Params))
-                    {
-                        Mod.write("Pos = PosTree[Adr + ");
-                        Mod.write(FactorOffset[F.Ind]);
-                        Mod.write("];\n");
-                    }
+                        output.writeln("Pos = PosTree[Adr + ", FactorOffset[F.Ind], "];");
                     EvalGen.GenAnalPred(N, (cast(EAG.Nont) F).Actual.Params);
                 }
                 else
                 {
                     EvalGen.GenSynPred(N, (cast(EAG.Nont) F).Actual.Params);
-                    Mod.write("Pos = PosTree[Adr + ");
+                    output.write("Pos = PosTree[Adr");
                     F1 = F.Prev;
                     while (F1 !is null && EAG.Pred[(cast(EAG.Nont) F1).Sym])
                         F1 = F1.Prev;
-                    if (F1 is null)
-                        Mod.write(0L);
-                    else
-                        Mod.write(FactorOffset[F1.Ind]);
-                    Mod.write("];\n");
+                    if (F1 !is null)
+                        output.write(" + ", FactorOffset[F1.Ind]);
+                    output.writeln("];");
                     EvalGen.GenPredCall((cast(EAG.Nont) F).Sym, (cast(EAG.Nont) F).Actual.Params);
                     EvalGen.GenAnalPred(N, (cast(EAG.Nont) F).Actual.Params);
                 }
                 F = F.Next;
             }
             EvalGen.GenSynPred(N, A.Formal.Params);
-            Mod.write("break;\n");
+            output.writeln("break;");
             A = A.Next;
             ++AltIndex;
         }
         while (A !is null);
-        Mod.write("default: assert(0);\n");
-        Mod.write("}\n");
-        Mod.write("}\n\n");
+        output.writeln("default:");
+        output.writeln("assert(0);");
+        output.writeln("}");
+        output.writeln("}");
+        output.writeln;
     }
 
     const name = EAG.BaseName ~ "Eval";
@@ -566,18 +543,18 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
     if (createMod)
     {
         Fix = read("fix/epsilon/ssweep.fix.d");
-        Mod = File(fileName, "w");
+        output = File(fileName, "w");
         if (!Error)
         {
-            EvalGen.InitGen(Mod, EvalGen.sSweepPass, settings);
+            EvalGen.InitGen(output, EvalGen.sSweepPass, settings);
             InclFix('$');
-            Mod.write(name);
+            output.write(name);
             InclFix('$');
-            Mod.write(HyperArity());
+            output.write(HyperArity());
             InclFix('$');
             EvalGen.GenDeclarations(settings);
             EvalGen.GenPredProcs;
-            Mod.writeln;
+            output.writeln;
         }
     }
     Factor = new FactorRecord[EAG.NextHFactor + EAG.NextHAlt + 1];
@@ -604,19 +581,17 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
     {
         if (!Error)
         {
-            EmitGen.GenEmitProc(Mod, settings);
+            EmitGen.GenEmitProc(output, settings);
             InclFix('$');
-            Mod.write("P");
-            Mod.write(EAG.StartSym);
+            output.write("P", EAG.StartSym);
             InclFix('$');
-            EmitGen.GenEmitCall(Mod, settings);
+            EmitGen.GenEmitCall(output, settings);
             InclFix('$');
-            EmitGen.GenShowHeap(Mod);
+            EmitGen.GenShowHeap(output);
             InclFix('$');
-            Mod.write(EAG.BaseName);
-            Mod.write("Eval");
+            output.write(EAG.BaseName, "Eval");
             InclFix('$');
-            Mod.close;
+            output.close;
         }
         EvalGen.FinitGen;
     }

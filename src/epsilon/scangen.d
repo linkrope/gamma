@@ -7,16 +7,16 @@ import log;
 import runtime;
 import std.stdio;
 
-const firstUserTok = 3;
-const lenOfPredefinedToken = 8;
-bool[256] IsIdent;
-bool[256] IsSymbol;
+private const firstUserTok = 3;
+private const lenOfPredefinedToken = 8;
+private bool[256] IsIdent;
+private bool[256] IsSymbol;
 
-string Generate(Settings settings)
+public string Generate(Settings settings)
 in (EAG.Performed(EAG.analysed))
 {
     Input Fix;
-    File Mod;
+    File output;
     int Term;
     int MaxTokLen;
     int Len;
@@ -87,7 +87,7 @@ in (EAG.Performed(EAG.analysed))
             enforce(c != 0,
                     "error: unexpected end of eScanGen.fix.d");
 
-            Mod.write(c);
+            output.write(c);
             Fix.popFront;
             c = Fix.front.to!char;
         }
@@ -112,26 +112,20 @@ in (EAG.Performed(EAG.analysed))
     const fileName = settings.path(name ~ ".d");
 
     Fix = read("fix/epsilon/scangen.fix.d");
-    Mod = File(fileName, "w");
+    output = File(fileName, "w");
     InclFix('$');
-    Mod.write(name);
+    output.write(name);
     InclFix('$');
-    Mod.write(MaxTokLen + 1);
+    output.write(MaxTokLen + 1);
     InclFix('$');
-    Mod.write(EAG.NextHTerm - EAG.firstHTerm + firstUserTok);
+    output.write(EAG.NextHTerm - EAG.firstHTerm + firstUserTok);
     InclFix('$');
     for (Term = EAG.firstHTerm; Term < EAG.NextHTerm; ++Term)
-    {
-        Mod.write("    Enter(");
-        Mod.write(Term - EAG.firstHTerm + firstUserTok);
-        Mod.write(", ");
-        Mod.write(EAG.HTerm[Term].Id.repr);
-        Mod.write(");\n");
-    }
+        output.writeln("Enter(", Term - EAG.firstHTerm + firstUserTok, ", ", EAG.HTerm[Term].Id.repr, ");");
     InclFix('$');
-    Mod.write(name);
+    output.write(name);
     InclFix('$');
-    Mod.close;
+    output.close;
     return fileName;
 }
 

@@ -6,9 +6,9 @@ import runtime;
 import std.bitmanip : BitArray;
 import std.conv : to;
 
-const nil = EAG.nil;
+private const nil = EAG.nil;
 
-void Shift()
+public void Shift()
 {
     int HT;
     EAG.Alt HA;

@@ -6,12 +6,12 @@ import runtime;
 import std.bitmanip : BitArray;
 import std.stdio;
 
-const CaseLabels = 127;
-BitArray Type3;
-BitArray Type2;
-int StartMNont;
+private const CaseLabels = 127;
+private BitArray Type3;
+private BitArray Type2;
+private int StartMNont;
 
-void GenEmitProc(File Mod, Settings settings)
+public void GenEmitProc(File output, Settings settings)
 {
     void CalcSets(int Nont)
     in (EAG.firstMNont <= Nont)
@@ -54,13 +54,7 @@ void GenEmitProc(File Mod, Settings settings)
     {
         void GenProcName(size_t N, BitArray Type)
         {
-            Mod.write("Emit");
-            Mod.write(N);
-            Mod.write("Type");
-            if (Type == Type2)
-                Mod.write('2');
-            else
-                Mod.write('3');
+            output.write("Emit", N, "Type", (Type == Type2) ? "2" : "3");
         }
 
         void GenAlts(size_t N)
@@ -74,15 +68,15 @@ void GenEmitProc(File Mod, Settings settings)
             void WhiteSpace()
             {
                 if (settings.space)
-                    Mod.write("Out.write(' '); ");
+                    output.write("Out.write(' '); ");
                 else
-                    Mod.write("Out.writeln; ");
+                    output.write("Out.writeln; ");
             }
 
             A = EAG.MNont[N].MRule;
             ANum = 1;
-            Mod.write("switch (MOD(Heap[Ptr], arityConst))\n");
-            Mod.write("{\n");
+            output.writeln("switch (MOD(Heap[Ptr], arityConst))");
+            output.writeln("{");
             while (A != EAG.nil)
             {
                 if (ANum > CaseLabels)
@@ -94,17 +88,15 @@ void GenEmitProc(File Mod, Settings settings)
                 }
                 F = EAG.MAlt[A].Right;
                 arity = 0;
-                Mod.write("case ");
-                Mod.write(ANum);
-                Mod.write(":\n");
+                output.writeln("case ", ANum, ":");
                 while (EAG.MembBuf[F] != EAG.nil)
                 {
                     M = EAG.MembBuf[F];
                     if (M < 0)
                     {
-                        Mod.write("Out.write(");
-                        Mod.write(EAG.symbolTable.symbol(EAG.MTerm[-M].Id));
-                        Mod.write("); ");
+                        output.write("Out.write(");
+                        output.write(EAG.symbolTable.symbol(EAG.MTerm[-M].Id));
+                        output.write("); ");
                         if (MNonts == Type2)
                             WhiteSpace;
                     }
@@ -115,33 +107,34 @@ void GenEmitProc(File Mod, Settings settings)
                         else
                             GenProcName(M, Type2);
                         ++arity;
-                        Mod.write("(Heap[Ptr + ");
-                        Mod.write(arity);
-                        Mod.write("]); ");
+                        output.write("(Heap[Ptr + ");
+                        output.write(arity);
+                        output.write("]); ");
                         if (EAG.MNont[M].IsToken && MNonts == Type2)
                             WhiteSpace;
                     }
                     ++F;
-                    Mod.writeln;
+                    output.writeln;
                 }
-                Mod.write("break;\n");
+                output.writeln("break;");
                 A = EAG.MAlt[A].Next;
                 ++ANum;
             }
-            Mod.write("default:\n");
-            Mod.write("Out.write(Heap[Ptr]);\n");
-            Mod.write("}\n");
+            output.writeln("default:");
+            output.writeln("Out.write(Heap[Ptr]);");
+            output.writeln("}");
         }
 
         foreach (N; MNonts.bitsSet)
         {
-            Mod.write("void ");
+            output.write("void ");
             GenProcName(N, MNonts);
-            Mod.write("(HeapType Ptr)\n");
-            Mod.write("{\n");
-            Mod.write("OutputSize += DIV(MOD(Heap[Ptr], refConst), arityConst) + 1;\n");
+            output.writeln("(HeapType Ptr)");
+            output.writeln("{");
+            output.writeln("OutputSize += DIV(MOD(Heap[Ptr], refConst), arityConst) + 1;");
             GenAlts(N);
-            Mod.write("}\n\n");
+            output.writeln("}");
+            output.writeln;
         }
     }
 
@@ -159,37 +152,32 @@ void GenEmitProc(File Mod, Settings settings)
         GenEmitProcs(Type2);
 }
 
-void GenShowHeap(File Mod) @safe
+public void GenShowHeap(File output) @safe
 {
-    Mod.write("if (info_)\n");
-    Mod.write("{\n");
-    Mod.write("stdout.write(\"    tree of \"); ");
-    Mod.write("stdout.write(OutputSize); \n");
-    Mod.write("stdout.write(\" uses \"); stdout.write(CountHeap());");
-    Mod.write("stdout.write(\" of \"); \n");
-    Mod.write("stdout.write(NextHeap);  stdout.write(\" allocated, with \"); ");
-    Mod.write("stdout.write(predefined + 1);\n");
-    Mod.write("stdout.write(\" predefined\\n\");\n");
-    Mod.write("}\n");
+    output.writeln("if (info_)");
+    output.writeln("{");
+    output.write(`stdout.write("    tree of "); `);
+    output.writeln("stdout.write(OutputSize);");
+    output.writeln(`stdout.write(" uses ");`);
+    output.writeln(`stdout.write(CountHeap());`);
+    output.writeln(`stdout.write(" of ");`);
+    output.writeln(`stdout.write(NextHeap);`);
+    output.writeln(`stdout.write(" allocated, with ");`);
+    output.writeln("stdout.write(predefined + 1);");
+    output.writeln(`stdout.writeln(" predefined");`);
+    output.writeln("}");
 }
 
-void GenEmitCall(File Mod, Settings settings)
+public void GenEmitCall(File output, Settings settings)
 {
-    Mod.write("if (");
+    output.write("if (");
     if (settings.write)
-        Mod.write("!");
-    Mod.write("write)\n");
-    Mod.write(`Out = File("`);
-    Mod.write(EAG.BaseName);
-    Mod.write(`.Out", "w");`);
-    Mod.write("\nelse\n");
-    Mod.write("Out = stdout;\n");
-    Mod.write("Emit");
-    Mod.write(StartMNont);
-    Mod.write("Type");
-    if (Type2[StartMNont])
-        Mod.write('2');
-    else
-        Mod.write('3');
-    Mod.write("(V1); Out.writeln; Out.flush;\n");
+        output.write("!");
+    output.writeln("write)");
+    output.writeln(`Out = File("`, EAG.BaseName, `.Out", "w");`);
+    output.writeln("else");
+    output.writeln("Out = stdout;");
+    output.writeln("Emit", StartMNont, "Type",  Type2[StartMNont] ? "2" : "3", "(V1);");
+    output.writeln("Out.writeln;");
+    output.writeln("Out.flush;");
 }

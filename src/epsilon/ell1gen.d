@@ -900,7 +900,7 @@ private void ComputeSets()
 
 private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
 {
-    File Mod;
+    File output;
     Input Fix;
     int Tok;
     BitArray AllToks;
@@ -933,31 +933,33 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                             Poss1[(cast(EAG.Term) F).Sym - EAG.firstHTerm + firstUserTok] = false;
                             if (Poss1.bitsSet.empty)
                             {
-                                Mod.write("S.Get(Tok); IsRepairMode = false;\n");
+                                output.writeln("S.Get(Tok);");
+                                output.writeln("IsRepairMode = false;");
                             }
                             else
                             {
-                                Mod.write("if (Tok != ");
-                                Mod.write((cast(EAG.Term) F).Sym - EAG.firstHTerm + firstUserTok);
-                                Mod.write(")\n");
-                                Mod.write("RecoveryTerminal(");
-                                Mod.write((cast(EAG.Term) F).Sym - EAG.firstHTerm + firstUserTok);
-                                Mod.write(", ");
-                                Mod.write(Factor[F.Ind].Rec - firstGenSet);
-                                Mod.write(");\n");
-                                Mod.write("else\n");
-                                Mod.write("{\n");
-                                Mod.write("S.Get(Tok); IsRepairMode = false;\n");
-                                Mod.write("}\n");
+                                output.write("if (Tok != ");
+                                output.write((cast(EAG.Term) F).Sym - EAG.firstHTerm + firstUserTok);
+                                output.writeln(")");
+                                output.write("RecoveryTerminal(");
+                                output.write((cast(EAG.Term) F).Sym - EAG.firstHTerm + firstUserTok);
+                                output.write(", ");
+                                output.write(Factor[F.Ind].Rec - firstGenSet);
+                                output.writeln(");");
+                                output.writeln("else");
+                                output.writeln("{");
+                                output.writeln("S.Get(Tok);");
+                                output.writeln("IsRepairMode = false;");
+                                output.writeln("}");
                             }
                         }
                         else
                         {
-                            Mod.write("RecoveryTerminal(");
-                            Mod.write((cast(EAG.Term) F).Sym - EAG.firstHTerm + firstUserTok);
-                            Mod.write(", ");
-                            Mod.write(Factor[F.Ind].Rec - firstGenSet);
-                            Mod.write(");\n");
+                            output.write("RecoveryTerminal(");
+                            output.write((cast(EAG.Term) F).Sym - EAG.firstHTerm + firstUserTok);
+                            output.write(", ");
+                            output.write(Factor[F.Ind].Rec - firstGenSet);
+                            output.writeln(");");
                         }
                         Poss1 = AllToks.dup;
                     }
@@ -970,35 +972,29 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                             {
                                 if (FirstNontCall)
                                 {
-                                    Mod.write("if (RecTop >= RecStack.length) ParserExpand;\n");
+                                    output.writeln("if (RecTop >= RecStack.length) ParserExpand;");
                                     FirstNontCall = false;
                                 }
                                 if (TwoCalls)
-                                    Mod.write("RecStack[RecTop - 1] = ");
+                                    output.write("RecStack[RecTop - 1] = ");
                                 else
-                                    Mod.write("RecStack[RecTop] = ");
-                                Mod.write(Factor[F.Ind].Rec - firstGenSet);
-                                if (TwoCalls)
-                                    Mod.write(";\n");
-                                else
-                                    Mod.write("; ++RecTop;\n");
+                                    output.write("RecStack[RecTop] = ");
+                                output.write(Factor[F.Ind].Rec - firstGenSet, ";");
+                                if (!TwoCalls)
+                                    output.writeln("++RecTop;");
                                 if (UseReg && !RegNonts[N] && RegNonts[(cast(EAG.Nont) F).Sym])
-                                    Mod.write("S.Get = &S.Get3;\n");
-                                Mod.write("P");
-                                Mod.write((cast(EAG.Nont) F).Sym);
+                                    output.writeln("S.Get = &S.Get3;");
+                                output.write("P", (cast(EAG.Nont) F).Sym);
                                 EvalGen.GenActualParams((cast(EAG.Nont) F).Actual.Params, true);
-                                Mod.write(";");
-                                Mod.write(" // ");
-                                Mod.write(EAG.HNontRepr((cast(EAG.Nont) F).Sym));
-                                Mod.write("\n");
+                                output.writeln("; // ", EAG.HNontRepr((cast(EAG.Nont) F).Sym));
                                 if (UseReg && !RegNonts[N] && RegNonts[(cast(EAG.Nont) F).Sym])
                                 {
-                                    Mod.write("if (Tok == sepTok)\n");
-                                    Mod.write("{\n");
-                                    Mod.write("S.Get(Tok);\n");
-                                    Mod.write("IsRepairMode = false;\n");
-                                    Mod.write("}\n");
-                                    Mod.write("S.Get = &S.Get2;\n");
+                                    output.writeln("if (Tok == sepTok)");
+                                    output.writeln("{");
+                                    output.writeln("S.Get(Tok);");
+                                    output.writeln("IsRepairMode = false;");
+                                    output.writeln("}");
+                                    output.writeln("S.Get = &S.Get2;");
                                 }
                                 if (F.Next !is null && cast(EAG.Nont) F.Next !is null
                                         && GenNonts[(cast(EAG.Nont) F.Next).Sym]
@@ -1007,7 +1003,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                                 else
                                     TwoCalls = false;
                                 if (!TwoCalls)
-                                    Mod.write("--RecTop;\n");
+                                    output.writeln("--RecTop;");
                             }
                             else
                             {
@@ -1024,7 +1020,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                         }
                         else
                         {
-                            Mod.write("throw new Exception(\"runtime error: call of nonproductive nonterminal!\");\n");
+                            output.writeln(`throw new Exception("runtime error: call of nonproductive nonterminal!");`);
                             warn!"generated compiler contains corrupt code for non-productive nonterminals";
                             Warning = true;
                         }
@@ -1056,11 +1052,11 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                 if (LoopNeeded)
                 {
                     ++loopCount;
-                    Mod.write(format!"%s: while (1)\n"(label));
-                    Mod.write("{\n");
+                    output.writeln(label, ": while (1)");
+                    output.writeln("{");
                 }
-                Mod.write("switch (Tok)\n");
-                Mod.write("{\n");
+                output.writeln("switch (Tok)");
+                output.writeln("{");
                 do
                 {
                     if (!LoopNeeded && (Alt[A.Ind].Dir & Poss).bitsSet.empty)
@@ -1068,7 +1064,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                         warn!"dead alternative in %s\n%s"(EAG.NamedHNontRepr(N), A.Pos);
                         Warning = true;
                     }
-                    Mod.write("case ");
+                    output.write("case ");
                     FirstTok = true;
                     // foreach (Tok; Alt[A.Ind].Dir)
                     for (Tok = 0; Tok < nToks; ++Tok)
@@ -1077,14 +1073,14 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                         {
                             if (!FirstTok)
                             {
-                                Mod.write(":\n");
-                                Mod.write("case ");
+                                output.writeln(":");
+                                output.write("case ");
                             }
-                            Mod.write(Tok);
+                            output.write(Tok);
                             FirstTok = false;
                         }
                     }
-                    Mod.write(":\n");
+                    output.writeln(":");
                     EvalGen.InitScope(A.Scope);
                     EvalGen.GenAnalPred(N, A.Formal.Params);
                     TraverseFactors(A.Sub, FirstNontCall, Alt[A.Ind].Dir);
@@ -1093,18 +1089,18 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                     else
                         EvalGen.GenSynPred(N, A.Formal.Params);
                     if (LoopNeeded)
-                        Mod.write(format!"break %s;\n"(label));
+                        output.writeln("break ", label, ";");
                     else
-                        Mod.write("break;\n");
+                        output.writeln("break;");
                     A = A.Next;
                 }
                 while (A !is null);
                 if (LoopNeeded)
                 {
                     A = Nont[N].DefaultAlt;
-                    Mod.write("default:\n");
-                    Mod.write("if (IsRepairMode)\n");
-                    Mod.write("{\n");
+                    output.writeln("default:");
+                    output.writeln("if (IsRepairMode)");
+                    output.writeln("{");
                     Toks = AllToks - Toks;
                     EvalGen.InitScope(A.Scope);
                     EvalGen.GenAnalPred(N, A.Formal.Params);
@@ -1113,21 +1109,22 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                         EvalGen.GenRepAlt(N.to!int, A);
                     else
                         EvalGen.GenSynPred(N, A.Formal.Params);
-                    Mod.write(format!"break %s;\n"(label));
-                    Mod.write("}\n");
-                    Mod.write("ErrorRecovery(");
-                    Mod.write(Nont[N].AltExp - firstGenSet);
-                    Mod.write(", ");
-                    Mod.write(Nont[N].AltRec - firstGenSet);
-                    Mod.write(");\n");
+                    output.writeln("break ", label, ";");
+                    output.writeln("}");
+                    output.write("ErrorRecovery(");
+                    output.write(Nont[N].AltExp - firstGenSet);
+                    output.write(", ");
+                    output.write(Nont[N].AltRec - firstGenSet);
+                    output.writeln(");");
                 }
                 else
                 {
-                    Mod.write("default: assert(0);\n");
+                    output.writeln("default:");
+                    output.writeln("assert(0);");
                 }
-                Mod.write("}\n");
+                output.writeln("}");
                 if (LoopNeeded)
-                    Mod.write("}\n");
+                    output.writeln("}");
             }
         }
 
@@ -1164,54 +1161,52 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                 warn!"useless brackets in %s\n%s"(EAG.NamedHNontRepr(N), EAG.HNont[N].Def.Sub.Pos);
                 Warning = true;
             }
-            Mod.write("while (1)\n");
-            Mod.write("{");
-            Mod.write("if (");
+            output.writeln("while (1)");
+            output.writeln("{");
+            output.write("if (");
             TestOneToken(Nont[N].First, ExactOneToken, TheOneToken);
             if (ExactOneToken)
             {
-                Mod.write("Tok == ");
-                Mod.write(TheOneToken);
+                output.write("Tok == ", TheOneToken);
             }
             else
             {
-                Mod.write("SetT[");
-                Mod.write(DIV(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
-                Mod.write("][Tok] & 1uL << ");
-                Mod.write(MOD(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
+                output.write("SetT[");
+                output.write(DIV(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
+                output.write("][Tok] & 1uL << ");
+                output.write(MOD(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
             }
-            Mod.write(")\n");
-            Mod.write("{\n");
+            output.writeln(")");
+            output.writeln("{");
             TraverseAlts(EAG.HNont[N].Def.Sub, FirstNontCall, Nont[N].First);
-            Mod.write("break;\n");
-            Mod.write("}\n");
-            Mod.write("else if (");
+            output.writeln("break;");
+            output.writeln("}");
+            output.write("else if (");
             TestOneToken(Nont[N].Follow, ExactOneToken, TheOneToken);
             if (ExactOneToken)
             {
-                Mod.write("Tok == ");
-                Mod.write(TheOneToken);
+                output.write("Tok == ", TheOneToken);
             }
             else
             {
-                Mod.write("SetT[");
-                Mod.write(DIV(Nont[N].FollowIndex - firstGenSetT, nElemsPerSET));
-                Mod.write("][Tok] & 1uL << ");
-                Mod.write(MOD(Nont[N].FollowIndex - firstGenSetT, nElemsPerSET));
+                output.write("SetT[");
+                output.write(DIV(Nont[N].FollowIndex - firstGenSetT, nElemsPerSET));
+                output.write("][Tok] & 1uL << ");
+                output.write(MOD(Nont[N].FollowIndex - firstGenSetT, nElemsPerSET));
             }
-            Mod.write(" || IsRepairMode)\n");
-            Mod.write("{\n");
+            output.writeln(" || IsRepairMode)");
+            output.writeln("{");
             EvalGen.InitScope((cast(EAG.Opt) EAG.HNont[N].Def).Scope);
             EvalGen.GenAnalPred(N, (cast(EAG.Opt) EAG.HNont[N].Def).Formal.Params);
             EvalGen.GenSynPred(N, (cast(EAG.Opt) EAG.HNont[N].Def).Formal.Params);
-            Mod.write("break;\n");
-            Mod.write("}\n");
-            Mod.write("ErrorRecovery(");
-            Mod.write(Nont[N].OptExp - firstGenSet);
-            Mod.write(", ");
-            Mod.write(Nont[N].OptRec - firstGenSet);
-            Mod.write(");\n");
-            Mod.write("}\n");
+            output.writeln("break;");
+            output.writeln("}");
+            output.write("ErrorRecovery(");
+            output.write(Nont[N].OptExp - firstGenSet);
+            output.write(", ");
+            output.write(Nont[N].OptRec - firstGenSet);
+            output.writeln(");");
+            output.writeln("}");
         }
         else if (cast(EAG.Rep) EAG.HNont[N].Def !is null)
         {
@@ -1221,47 +1216,43 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                 Warning = true;
             }
             EvalGen.GenRepStart(N.to!int);
-            Mod.write("while (1)\n");
-            Mod.write("{\n");
-            Mod.write("if (");
+            output.writeln("while (1)");
+            output.writeln("{");
+            output.write("if (");
             TestOneToken(Nont[N].First, ExactOneToken, TheOneToken);
             if (ExactOneToken)
             {
-                Mod.write("Tok == ");
-                Mod.write(TheOneToken);
+                output.write("Tok == ", TheOneToken);
             }
             else
             {
-                Mod.write("SetT[");
-                Mod.write(DIV(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
-                Mod.write("][Tok] & 1uL << ");
-                Mod.write(MOD(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
+                output.write("SetT[");
+                output.write(DIV(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
+                output.write("][Tok] & 1uL << ");
+                output.write(MOD(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
            }
-            Mod.write(")\n");
-            Mod.write("{\n");
+            output.writeln(")");
+            output.writeln("{");
             TraverseAlts(EAG.HNont[N].Def.Sub, FirstNontCall, Nont[N].First);
-            Mod.write("}\n");
-            Mod.write("else if (");
+            output.writeln("}");
+            output.write("else if (");
             TestOneToken(Nont[N].Follow, ExactOneToken, TheOneToken);
             if (ExactOneToken)
             {
-                Mod.write("Tok == ");
-                Mod.write(TheOneToken);
+                output.write("Tok == ", TheOneToken);
             }
             else
             {
-                Mod.write("SetT[");
-                Mod.write(DIV(Nont[N].FollowIndex - firstGenSetT, nElemsPerSET));
-                Mod.write("][Tok] & 1uL << ");
-                Mod.write(MOD(Nont[N].FollowIndex - firstGenSetT, nElemsPerSET));
+                output.write("SetT[");
+                output.write(DIV(Nont[N].FollowIndex - firstGenSetT, nElemsPerSET));
+                output.write("][Tok] & 1uL << ");
+                output.write(MOD(Nont[N].FollowIndex - firstGenSetT, nElemsPerSET));
             }
-            Mod.write(" || IsRepairMode) break;\n");
-            Mod.write("else ErrorRecovery(");
-            Mod.write(Nont[N].OptExp - firstGenSet);
-            Mod.write(", ");
-            Mod.write(Nont[N].OptRec - firstGenSet);
-            Mod.write(");\n");
-            Mod.write("}\n");
+            output.writeln(" || IsRepairMode)");
+            output.writeln("break;");
+            output.writeln("else");
+            output.writeln("ErrorRecovery(", Nont[N].OptExp - firstGenSet, ", ", Nont[N].OptRec - firstGenSet, ");");
+            output.writeln("}");
             EvalGen.GenRepEnd(N.to!int);
         }
         else
@@ -1317,7 +1308,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
             enforce(c != 0,
                     "error: unexpected end of eELL1Gen.fix.d");
 
-            Mod.write(c);
+            output.write(c);
             Fix.popFront;
             c = Fix.front.to!char;
         }
@@ -1329,36 +1320,36 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     AllToks = BitArray();
     AllToks.length = nToks + 1;
     Fix = read("fix/epsilon/ell1gen.fix.d");
-    Mod = File(fileName, "w");
+    output = File(fileName, "w");
     if (parsePass)
-        EvalGen.InitGen(Mod, EvalGen.parsePass, settings);
+        EvalGen.InitGen(output, EvalGen.parsePass, settings);
     else
-        EvalGen.InitGen(Mod, EvalGen.onePass, settings);
+        EvalGen.InitGen(output, EvalGen.onePass, settings);
     InclFix('$');
-    Mod.write(EAG.BaseName);
+    output.write(EAG.BaseName);
     InclFix('$');
     name = EAG.BaseName ~ "Scan";
-    Mod.write(name);
+    output.write(name);
     if (parsePass)
     {
-        Mod.write(", Eval = ");
-        Mod.write(EAG.BaseName);
-        Mod.write("Eval");
+        output.write(", Eval = ");
+        output.write(EAG.BaseName);
+        output.write("Eval");
     }
     InclFix('$');
-    Mod.write(nToks);
+    output.write(nToks);
     InclFix('$');
-    Mod.write(AllToks.dim);
+    output.write(AllToks.dim);
     InclFix('$');
-    Mod.write(DIV(NextGenSetT - firstGenSetT - 1, nElemsPerSET) + 1);
+    output.write(DIV(NextGenSetT - firstGenSetT - 1, nElemsPerSET) + 1);
     InclFix('$');
-    Mod.write(NextGenSet - firstGenSet);
+    output.write(NextGenSet - firstGenSet);
     InclFix('$');
     EvalGen.GenDeclarations(settings);
     EvalGen.GenPredProcs;
     InclFix('$');
     TabTimeStamp = MonoTime.currTime.ticks;
-    Mod.write(TabTimeStamp);
+    output.write(TabTimeStamp);
     InclFix('$');
     AllToks[] = false;
     for (Tok = 0; Tok < nToks; ++Tok)
@@ -1369,63 +1360,63 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
         {
             loopCount = 0;
             EvalGen.ComputeVarNames(N, Yes.embed);
-            Mod.write("void P");
-            Mod.write(N);
+            output.write("void P", N);
             EvalGen.GenFormalParams(N, Yes.parNeeded);
-            Mod.write(" // ");
-            Mod.write(EAG.HNontRepr(N));
-            Mod.write("\n");
-            Mod.write("{\n");
+            output.writeln(" // ", EAG.HNontRepr(N));
+            output.writeln("{");
             EvalGen.GenVarDecl(N);
             TraverseNont(N, true, AllToks);
-            Mod.write("}\n\n");
+            output.writeln("}");
+            output.writeln;
         }
     }
     if (!parsePass)
-        EmitGen.GenEmitProc(Mod, settings);
+        EmitGen.GenEmitProc(output, settings);
     InclFix('$');
     if (parsePass)
-        Mod.write("& Eval.EvalInitSucceeds()");
+        output.write("& Eval.EvalInitSucceeds()");
     InclFix('$');
-    Mod.write(EAG.BaseName);
+    output.write(EAG.BaseName);
     InclFix('$');
-    Mod.write("P");
-    Mod.write(EAG.StartSym);
+    output.write("P");
+    output.write(EAG.StartSym);
     InclFix('$');
     if (parsePass)
     {
-        Mod.write("Eval.TraverseSyntaxTree(Heap, PosHeap, ErrorCounter, V1, arityConst, info_, write);\n");
-        Mod.write("if (info_)\n");
-        Mod.write("{\n");
-        Mod.write("stdout.write(\"\\tsyntax tree uses twice \");\n");
-        Mod.write("stdout.write(NextHeap); stdout.writeln;\n");
-        Mod.write("}");
+        output.writeln("Eval.TraverseSyntaxTree(Heap, PosHeap, ErrorCounter, V1, arityConst, info_, write);");
+        output.writeln("if (info_)");
+        output.writeln("{");
+        output.writeln(`stdout.write("    syntax tree uses twice ");`);
+        output.writeln("stdout.write(NextHeap);");
+        output.writeln("stdout.writeln;");
+        output.write("}");
     }
     else
     {
-        Mod.write("if (ErrorCounter > 0)\n");
-        Mod.write("{\n");
-        Mod.write("stdout.write(\"  \"); stdout.write(ErrorCounter);\n");
-        Mod.write("stdout.write(\" errors detected\\n\");\n");
-        Mod.write("}\n");
-        Mod.write("else\n");
-        Mod.write("{\n");
-        EmitGen.GenEmitCall(Mod, settings);
-        Mod.write("}\n");
-        EmitGen.GenShowHeap(Mod);
+        output.writeln("if (ErrorCounter > 0)");
+        output.writeln("{");
+        output.writeln(`stdout.write("  ");`);
+        output.writeln("stdout.write(ErrorCounter);");
+        output.writeln(`stdout.writeln(" errors detected");`);
+        output.writeln("}");
+        output.writeln("else");
+        output.writeln("{");
+        EmitGen.GenEmitCall(output, settings);
+        output.writeln("}");
+        EmitGen.GenShowHeap(output);
     }
     InclFix('$');
-    Mod.write(EAG.BaseName);
+    output.write(EAG.BaseName);
     InclFix('$');
     name = EAG.BaseName ~ ".Tab";
-    Mod.write(name);
+    output.write(name);
     InclFix('$');
-    Mod.write(EAG.BaseName);
+    output.write(EAG.BaseName);
     InclFix('$');
     name = EAG.BaseName ~ ".Tab";
     WriteTab(name);
     EvalGen.FinitGen;
-    Mod.close;
+    output.close;
     return fileName;
 }
 
