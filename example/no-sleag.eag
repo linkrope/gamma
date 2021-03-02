@@ -1,0 +1,17 @@
+// left-defining grammar that is no strong LEAG
+
+X = "a" | "b".
+
+S <+  X>: A <X> | B <X> | C <X> | D <X>.
+
+// cannot analyze bottom up
+A <+ X>: "a" <X> { <+ "b": X> "a" <"a"> } <+ "a": X>.
+
+// cannot synthesize multiple times bottom up
+B <+ X1>: "b" <X1, X2> { <+ X1, + X1> "b" <X1, X2> } <+ "a": X, + "b": X>.
+
+// cannot check for equality bottom up
+C <+ X1>: "c" <X1, X2> { <+ X, + "b": X> "c" <X, X> } <+ "a": X, + "a": X>.
+
+// cannot check for unequality bottom up
+D <+ X1>: "d" <X1, X2> { <+ X, + "a": X> "d" <X, !X> } <+ "a": X, + "b": X>.
