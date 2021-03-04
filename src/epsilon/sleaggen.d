@@ -131,25 +131,21 @@ private bool TestHNont(size_t N, bool EmitErr, bool SLEAG)
             error!"%s\n%s"(Msg, Pos);
     }
 
+    void DefPos(int Node)
+    {
+        if (Node < 0)
+        {
+            EAG.Var[-Node].Def = true;
+        }
+        else
+        {
+            foreach (n; 0 .. EAG.MAlt[EAG.NodeBuf[Node]].Arity)
+                DefPos(EAG.NodeBuf[Node + n + 1]);
+        }
+    }
+
     void CheckDefPos(int P)
     {
-        void DefPos(int Node)
-        {
-            int n;
-            int V;
-            if (Node < 0)
-            {
-                V = -Node;
-                if (!EAG.Var[V].Def)
-                    EAG.Var[V].Def = true;
-            }
-            else
-            {
-                for (n = 1; n <= EAG.MAlt[EAG.NodeBuf[Node]].Arity; ++n)
-                    DefPos(EAG.NodeBuf[Node + n]);
-            }
-        }
-
         while (EAG.ParamBuf[P].Affixform != EAG.nil)
         {
             if (EAG.ParamBuf[P].isDef)
@@ -190,6 +186,8 @@ private bool TestHNont(size_t N, bool EmitErr, bool SLEAG)
 
     void CheckSLEAGCond(int P)
     {
+        import std.format : format;
+
         while (EAG.ParamBuf[P].Affixform != EAG.nil)
         {
             const Node = EAG.ParamBuf[P].Affixform;
@@ -197,13 +195,16 @@ private bool TestHNont(size_t N, bool EmitErr, bool SLEAG)
             if (EAG.ParamBuf[P].isDef)
             {
                 if (Node >= 0)
-                    Error(EAG.ParamBuf[P].Pos, "Can't generate anal-predicate here");
+                    Error(EAG.ParamBuf[P].Pos, "cannot analyze bottom up");
                 else if (EAG.Var[-Node].Def)
-                    Error(EAG.ParamBuf[P].Pos, "Can't generate equal-predicate here");
+                    Error(EAG.ParamBuf[P].Pos, "cannot check for equality bottom up");
                 else if (EAG.Var[EAG.Var[-Node].Neg].Def)
-                    Error(EAG.ParamBuf[P].Pos, "Can't generate unequal-predicate here");
+                    Error(EAG.ParamBuf[P].Pos, "cannot check for unequality bottom up");
                 else if (VarAppls[-Node] > 1)
-                    Error(EAG.ParamBuf[P].Pos, "Can't synthesize this variable several times");
+                    Error(EAG.ParamBuf[P].Pos, format!"cannot synthesize %s times bottom up"(VarAppls[-Node]));
+
+                // do what CheckDefPos does, but for every single parameter
+                DefPos(EAG.ParamBuf[P].Affixform);
             }
             ++P;
         }
@@ -249,7 +250,8 @@ private bool TestHNont(size_t N, bool EmitErr, bool SLEAG)
             CheckApplPos(A.Actual.Params);
             if (SLEAG)
                 CheckSLEAGCond(A.Actual.Params);
-            CheckDefPos(A.Actual.Params);
+            else
+                CheckDefPos(A.Actual.Params);
         }
         CheckApplPos(A.Formal.Params);
         A = A.Next;

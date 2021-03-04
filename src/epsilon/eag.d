@@ -76,6 +76,13 @@ struct VarRecord
     int Neg;
     Position Pos;
     bool Def;
+
+    public string toString() const @safe
+    {
+        import std.format : format;
+
+        return format!"Variable(Sym=%s, Num=%s, Neg=%s, Def=%s)\n%s"(Sym, Num, Neg, Def, Pos);
+    }
 }
 
 int[] NodeBuf;
