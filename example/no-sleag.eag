@@ -4,6 +4,12 @@ X = "a" | "b".
 
 S <+  X>: A <X> | B <X> | C <X> | D <X>.
 
+/*
+An LEAG is a strong LEAG if the actual parameters of the closing braces
+of a repetition meet certain conditions. These conditions allow for a simple
+implementation of the repetition by a loop instead of a recursive descent.
+*/
+
 // cannot analyze bottom up
 A <+ X>: "a" <X> { <+ "b": X> "a" <"a"> } <+ "a": X>.
 
@@ -13,5 +19,5 @@ B <+ X1>: "b" <X1, X2> { <+ X1, + X1> "b" <X1, X2> } <+ "a": X, + "b": X>.
 // cannot check for equality bottom up
 C <+ X1>: "c" <X1, X2> { <+ X, + "b": X> "c" <X, X> } <+ "a": X, + "a": X>.
 
-// cannot check for unequality bottom up
+// cannot check for inequality bottom up
 D <+ X1>: "d" <X1, X2> { <+ X, + "a": X> "d" <X, !X> } <+ "a": X, + "b": X>.

@@ -50,19 +50,17 @@ private BitArray EmptySet;
 public void Test()
 in (EAG.Performed(EAG.analysed | EAG.predicates))
 {
-    bool isSLEAG;
-    bool isLEAG;
+    bool isSLEAG = true;
+    bool isLEAG = true;
 
     info!"SLEAG testing %s"(EAG.BaseName);
     EAG.History &= ~EAG.isSLEAG;
     InitTest;
     scope (exit)
         FinitTest;
-    isSLEAG = true;
-    isLEAG = true;
     foreach (N; EAG.Prod.bitsSet)
     {
-        if (isSLEAG && EAG.HNont[N].Id >= 0)
+        if (EAG.HNont[N].Id >= 0)
         {
             if (!TestHNont(N, true, true))
             {
@@ -116,6 +114,7 @@ public bool IsLEAG(size_t N, bool EmitErr)
 }
 
 private bool TestHNont(size_t N, bool EmitErr, bool SLEAG)
+in (EAG.Prod[N])
 {
     EAG.Rule Node;
     EAG.Alt A;
@@ -158,11 +157,10 @@ private bool TestHNont(size_t N, bool EmitErr, bool SLEAG)
     {
         void ApplPos(int Node)
         {
-            int V;
-
             if (Node < 0)
             {
-                V = -Node;
+                const V = -Node;
+
                 if (!EAG.Var[V].Def)
                 {
                     Error(EAG.Var[V].Pos, "not left-defining");
@@ -199,18 +197,16 @@ private bool TestHNont(size_t N, bool EmitErr, bool SLEAG)
                 else if (EAG.Var[-Node].Def)
                     Error(EAG.ParamBuf[P].Pos, "cannot check for equality bottom up");
                 else if (EAG.Var[EAG.Var[-Node].Neg].Def)
-                    Error(EAG.ParamBuf[P].Pos, "cannot check for unequality bottom up");
+                    Error(EAG.ParamBuf[P].Pos, "cannot check for inequality bottom up");
                 else if (VarAppls[-Node] > 1)
                     Error(EAG.ParamBuf[P].Pos, format!"cannot synthesize %s times bottom up"(VarAppls[-Node]));
 
-                // do what CheckDefPos does, but for every single parameter
+                // do what CheckDefPos does, but for each parameter checked
                 DefPos(EAG.ParamBuf[P].Affixform);
             }
             ++P;
         }
     }
-
-    assert(EAG.Prod[N]);
 
     isSLEAG = true;
     isLEAG = true;

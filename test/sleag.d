@@ -121,3 +121,17 @@ unittest
             .shouldMatch("^α α β β \n α α β β $");
     }
 }
+
+@("compile no-sleag.eag")
+unittest
+{
+    with (sandbox)
+    {
+        run!"./epsilon example/no-sleag.eag --output-directory %s"(directory)
+            .shouldMatch("cannot analyze bottom up")
+            .shouldMatch("cannot synthesize 2 times bottom up")
+            .shouldMatch("cannot check for equality bottom up")
+            .shouldMatch("cannot check for inequality bottom up")
+            .shouldMatch("no SLEAG but LEAG");
+    }
+}
