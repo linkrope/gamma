@@ -2,6 +2,7 @@ module epsilon.eag;
 
 import io : Position;
 import runtime;
+import std.algorithm;
 import std.bitmanip;
 import symbols : SymbolTable;
 
@@ -27,11 +28,20 @@ struct ParamsDesc
     int Params;
     Position Pos;
 
-    public string toString() const pure @safe
+    public string toString() const @safe
     {
         import std.format : format;
 
-        return format!"ParamsDesc(Params=%s)"(Params);
+        return format!"%s"(params);
+    }
+
+    ParamRecord[] params() const nothrow @safe
+    {
+        const length = ParamBuf[Params .. $]
+            .map!"a.Affixform"
+            .countUntil(nil);
+
+        return ParamBuf[Params .. Params + length];
     }
 }
 
@@ -47,7 +57,7 @@ struct ParamRecord
 
         if (Affixform == nil)
             return "Param()";
-        return format!"Param(%s %s)"(isDef ? "def" : "app", Affixform);
+        return format!"Param(%s, %s)"(isDef ? "def" : "app", Affixform);
     }
 }
 
@@ -108,7 +118,7 @@ class Alt
     ScopeDesc Scope;
     Position Pos;
 
-    public override string toString() const pure @safe
+    public override string toString() const @safe
     {
         import std.format : format;
 

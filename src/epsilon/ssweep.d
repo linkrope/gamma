@@ -571,7 +571,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
         ComputePermutation(N);
         if (!Error)
         {
-            Error = !EvalGen.IsLEAG(N, true);
+            Error = !EvalGen.IsLEAG(N);
             if (!Error && createMod)
                 GenerateNont(N);
         }
