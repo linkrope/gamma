@@ -73,19 +73,19 @@ int GetNextVisit(int V, int R, int SO, int VN) @nogc nothrow @safe
 {
     while (V <= SOAG.Rule[R].VS.End)
     {
-        if (cast(SOAG.Visit) SOAG.VS[V] !is null)
+        if (auto visit = cast(SOAG.Visit) SOAG.VS[V])
         {
-            if ((cast(SOAG.Visit) SOAG.VS[V]).SymOcc == SO && (cast(SOAG.Visit) SOAG.VS[V]).VisitNo == VN)
+            if (visit.SymOcc == SO && visit.VisitNo == VN)
                 return V;
         }
-        else if (cast(SOAG.Call) SOAG.VS[V] !is null)
+        else if (auto call = cast(SOAG.Call) SOAG.VS[V])
         {
-            if ((cast(SOAG.Call) SOAG.VS[V]).SymOcc == SO)
+            if (call.SymOcc == SO)
                 return V;
         }
-        else if (cast(SOAG.Leave) SOAG.VS[V] !is null)
+        else if (auto leave = cast(SOAG.Leave) SOAG.VS[V])
         {
-            if ((cast(SOAG.Leave) SOAG.VS[V]).VisitNo == VN && SOAG.Rule[R].SymOcc.Beg == SO)
+            if (leave.VisitNo == VN && SOAG.Rule[R].SymOcc.Beg == SO)
                 return V;
         }
         ++V;

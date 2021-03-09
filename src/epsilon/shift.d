@@ -59,9 +59,9 @@ public void Shift()
                 Num = 2;
                 while (HF !is null)
                 {
-                    if (cast(EAG.Term) HF !is null)
+                    if (auto term = cast(EAG.Term) HF)
                     {
-                        EAG.AppMemb(-((cast(EAG.Term) HF).Sym - EAG.firstHTerm + EAG.firstMTerm));
+                        EAG.AppMemb(-(term.Sym - EAG.firstHTerm + EAG.firstMTerm));
                     }
                     else if (GenNonts[(cast(EAG.Nont) HF).Sym])
                     {
@@ -92,7 +92,7 @@ public void Shift()
                     }
                     HF = HF.Next;
                 }
-                if (cast(EAG.Rep) EAG.HNont[HN].Def !is null)
+                if (cast(EAG.Rep) EAG.HNont[HN].Def)
                 {
                     EAG.AppMemb(HN - EAG.firstHNont + EAG.firstMNont);
                     Var = EAG.FindVar(HN - EAG.firstHNont + EAG.firstMNont, Num, UndefPos, true);
@@ -112,21 +112,21 @@ public void Shift()
                 HA = HA.Next;
             }
             while (HA !is null);
-            if (cast(EAG.Opt) EAG.HNont[HN].Def !is null || cast(EAG.Rep) EAG.HNont[HN].Def !is null)
+            if (cast(EAG.Opt) EAG.HNont[HN].Def || cast(EAG.Rep) EAG.HNont[HN].Def)
             {
-                if (cast(EAG.Opt) EAG.HNont[HN].Def !is null)
+                if (auto opt = cast(EAG.Opt) EAG.HNont[HN].Def)
                 {
-                    (cast(EAG.Opt) EAG.HNont[HN].Def).Formal.Pos = UndefPos;
-                    (cast(EAG.Opt) EAG.HNont[HN].Def).Formal.Params = EAG.NextParam;
-                    (cast(EAG.Opt) EAG.HNont[HN].Def).Scope.Beg = EAG.NextVar;
-                    (cast(EAG.Opt) EAG.HNont[HN].Def).Scope.End = EAG.NextVar;
+                    opt.Formal.Pos = UndefPos;
+                    opt.Formal.Params = EAG.NextParam;
+                    opt.Scope.Beg = EAG.NextVar;
+                    opt.Scope.End = EAG.NextVar;
                 }
-                else
+                else if (auto rep = cast(EAG.Rep) EAG.HNont[HN].Def)
                 {
-                    (cast(EAG.Rep) EAG.HNont[HN].Def).Formal.Pos = UndefPos;
-                    (cast(EAG.Rep) EAG.HNont[HN].Def).Formal.Params = EAG.NextParam;
-                    (cast(EAG.Rep) EAG.HNont[HN].Def).Scope.Beg = EAG.NextVar;
-                    (cast(EAG.Rep) EAG.HNont[HN].Def).Scope.End = EAG.NextVar;
+                    rep.Formal.Pos = UndefPos;
+                    rep.Formal.Params = EAG.NextParam;
+                    rep.Scope.Beg = EAG.NextVar;
+                    rep.Scope.End = EAG.NextVar;
                 }
                 EAG.AppParam(EAG.NextNode, UndefPos);
                 EAG.ParamBuf[EAG.NextParam - 1].isDef = false;

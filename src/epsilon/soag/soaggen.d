@@ -183,30 +183,31 @@ private int GetCorrespondedAffPos(int AP) @nogc nothrow @safe
 private void ComputeAffixOffset(int R) @nogc nothrow @safe
 {
     EAG.ScopeDesc Scope;
-    EAG.Rule EAGRule;
-    int A;
-    int AP;
-    int Offset;
-    if (cast(SOAG.OrdRule) SOAG.Rule[R] !is null)
+
+    if (auto ordRule = cast(SOAG.OrdRule) SOAG.Rule[R])
     {
-        Scope = (cast(SOAG.OrdRule) SOAG.Rule[R]).Alt.Scope;
+        Scope = ordRule.Alt.Scope;
     }
-    else
+    else if (auto emptyRule = cast(SOAG.EmptyRule) SOAG.Rule[R])
     {
-        EAGRule = (cast(SOAG.EmptyRule) SOAG.Rule[R]).Rule;
-        if (cast(EAG.Opt) EAGRule !is null)
-            Scope = (cast(EAG.Opt) EAGRule).Scope;
-        else if (cast(EAG.Rep) EAGRule !is null)
-            Scope = (cast(EAG.Rep) EAGRule).Scope;
+        EAG.Rule EAGRule = emptyRule.Rule;
+
+        if (auto opt = cast(EAG.Opt) EAGRule)
+            Scope = opt.Scope;
+        else if (auto rep = cast(EAG.Rep) EAGRule)
+            Scope = rep.Scope;
     }
-    Offset = firstAffixOffset;
-    for (A = Scope.Beg; A < Scope.End; ++A)
+
+    int Offset = firstAffixOffset;
+
+    foreach (A; Scope.Beg .. Scope.End)
     {
         if (AffixAppls[A] > 0)
         {
             if (Optimize)
             {
-                AP = GetCorrespondedAffPos(SOAG.DefAffOcc[A]);
+                const AP = GetCorrespondedAffPos(SOAG.DefAffOcc[A]);
+
                 if (SOAG.StorageName[AP] == 0)
                 {
                     AffixOffset[A] = Offset;
@@ -238,18 +239,19 @@ private void ComputeAffixOffset(int R) @nogc nothrow @safe
 private int GetAffixCount(int R) @nogc nothrow @safe
 {
     EAG.ScopeDesc Scope;
-    EAG.Rule EAGRule;
-    if (cast(SOAG.OrdRule) SOAG.Rule[R] !is null)
+
+    if (auto ordRule = cast(SOAG.OrdRule) SOAG.Rule[R])
     {
-        Scope = (cast(SOAG.OrdRule) SOAG.Rule[R]).Alt.Scope;
+        Scope = ordRule.Alt.Scope;
     }
-    else
+    else if (auto emptyRule = cast(SOAG.EmptyRule) SOAG.Rule[R])
     {
-        EAGRule = (cast(SOAG.EmptyRule) SOAG.Rule[R]).Rule;
-        if (cast(EAG.Opt) EAGRule !is null)
-            Scope = (cast(EAG.Opt) EAGRule).Scope;
-        else if (cast(EAG.Rep) EAGRule !is null)
-            Scope = (cast(EAG.Rep) EAGRule).Scope;
+        EAG.Rule EAGRule = emptyRule.Rule;
+
+        if (auto opt = cast(EAG.Opt) EAGRule)
+            Scope = opt.Scope;
+        else if (auto rep = cast(EAG.Rep) EAGRule)
+            Scope = rep.Scope;
     }
     return Scope.End - Scope.Beg;
 }
@@ -278,7 +280,7 @@ private int HyperArity() nothrow
             A = A.Next;
         }
         while (A !is null);
-        if (cast(EAG.Opt) EAG.HNont[N].Def !is null || cast(EAG.Rep) EAG.HNont[N].Def !is null)
+        if (cast(EAG.Opt) EAG.HNont[N].Def || cast(EAG.Rep) EAG.HNont[N].Def)
             ++i;
         if (i > Max)
             Max = i;
@@ -1150,8 +1152,8 @@ private void GenPredPos(int R, int i, ref bool PosNeeded) @safe
         --i;
         while (cast(SOAG.Visit) SOAG.VS[i] is null && cast(SOAG.Leave) SOAG.VS[i] is null && i > SOAG.Rule[R].VS.Beg)
             --i;
-        if (cast(SOAG.Visit) SOAG.VS[i] !is null)
-            k = SubTreeOffset[(cast(SOAG.Visit) SOAG.VS[i]).SymOcc];
+        if (auto visit = cast(SOAG.Visit) SOAG.VS[i])
+            k = SubTreeOffset[visit.SymOcc];
         else
             k = SOAG.Rule[R].SymOcc.Beg;
         output.writeln("Pos = SemTree[TreeAdr + ", k, "].Pos;");
@@ -1254,11 +1256,11 @@ private void GenVisitRule(int R)
     GenAnalPred(SOAG.Rule[R].SymOcc.Beg, VisitNo);
     for (i = SOAG.Rule[R].VS.Beg; i <= SOAG.Rule[R].VS.End; ++i)
     {
-        if (cast(SOAG.Visit) SOAG.VS[i] !is null)
+        if (auto visit = cast(SOAG.Visit) SOAG.VS[i])
         {
-            SO = (cast(SOAG.Visit) SOAG.VS[i]).SymOcc;
+            SO = visit.SymOcc;
             S = SOAG.SymOcc[SO].SymInd;
-            VN = (cast(SOAG.Visit) SOAG.VS[i]).VisitNo;
+            VN = visit.VisitNo;
             output.writeln("// Synthese");
             GenSynPred(SO, VN);
             GenVisitCall(SO, VN);
@@ -1267,9 +1269,9 @@ private void GenVisitRule(int R)
             output.writeln;
             PosNeeded = true;
         }
-        else if (cast(SOAG.Call) SOAG.VS[i] !is null)
+        else if (auto call = cast(SOAG.Call) SOAG.VS[i])
         {
-            SO = (cast(SOAG.Call) SOAG.VS[i]).SymOcc;
+            SO = call.SymOcc;
             output.writeln("// Synthese");
             GenSynPred(SO, -1);
             GenPredPos(R, i, PosNeeded);
@@ -1278,10 +1280,10 @@ private void GenVisitRule(int R)
             GenAnalPred(SO, -1);
             output.writeln;
         }
-        else if (cast(SOAG.Leave) SOAG.VS[i] !is null)
+        else if (auto leave = cast(SOAG.Leave) SOAG.VS[i])
         {
             SO = SOAG.Rule[R].SymOcc.Beg;
-            VN = (cast(SOAG.Leave) SOAG.VS[i]).VisitNo;
+            VN = leave.VisitNo;
 
             assert(VN == VisitNo);
 

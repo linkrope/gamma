@@ -256,16 +256,16 @@ void AppSymOccs(EAG.Factor Factor) nothrow @safe
 {
     while (Factor !is null)
     {
-        if (cast(EAG.Nont) Factor !is null)
+        if (auto nont = cast(EAG.Nont) Factor)
         {
-            SymOcc[NextSymOcc].SymInd = (cast(EAG.Nont) Factor).Sym;
+            SymOcc[NextSymOcc].SymInd = nont.Sym;
             SymOcc[NextSymOcc].RuleInd = NextRule;
-            SymOcc[NextSymOcc].Nont = cast(EAG.Nont) Factor;
+            SymOcc[NextSymOcc].Nont = nont;
             SymOcc[NextSymOcc].AffOcc.Beg = NextAffOcc;
-            AppAffOcc((cast(EAG.Nont) Factor).Actual.Params);
+            AppAffOcc(nont.Actual.Params);
             SymOcc[NextSymOcc].AffOcc.End = NextAffOcc - 1;
-            SymOcc[NextSymOcc].Next = Sym[(cast(EAG.Nont) Factor).Sym].FirstOcc;
-            Sym[(cast(EAG.Nont) Factor).Sym].FirstOcc = NextSymOcc;
+            SymOcc[NextSymOcc].Next = Sym[nont.Sym].FirstOcc;
+            Sym[nont.Sym].FirstOcc = NextSymOcc;
             ++NextSymOcc;
             if (NextSymOcc >= SymOcc.length)
                 Expand;
@@ -299,10 +299,10 @@ void AppEmptyRule(size_t leftSym, EAG.Rule EAGRule) @safe
     A.Rule = EAGRule;
     A.SymOcc.Beg = NextSymOcc;
     A.AffOcc.Beg = NextAffOcc;
-    if (cast(EAG.Opt) EAGRule !is null)
-        AppLeftSymOcc(leftSym, (cast(EAG.Opt) EAGRule).Formal.Params);
-    else if (cast(EAG.Rep) EAGRule !is null)
-        AppLeftSymOcc(leftSym, (cast(EAG.Rep) EAGRule).Formal.Params);
+    if (auto opt = cast(EAG.Opt) EAGRule)
+        AppLeftSymOcc(leftSym, opt.Formal.Params);
+    else if (auto rep = cast(EAG.Rep) EAGRule)
+        AppLeftSymOcc(leftSym, rep.Formal.Params);
     A.SymOcc.End = NextSymOcc - 1;
     A.AffOcc.End = NextAffOcc - 1;
     ++NextRule;
@@ -463,7 +463,7 @@ void Init()
         Sym[i].FirstOcc = nil;
     foreach (i; EAG.All.bitsSet)
     {
-        if (cast(EAG.Rep) EAG.HNont[i].Def !is null)
+        if (cast(EAG.Rep) EAG.HNont[i].Def)
         {
             A = EAG.HNont[i].Def.Sub;
             while (A !is null)
@@ -481,10 +481,8 @@ void Init()
                 A = A.Next;
             }
         }
-        if (cast(EAG.Rep) EAG.HNont[i].Def !is null || cast(EAG.Opt) EAG.HNont[i].Def !is null)
-        {
+        if (cast(EAG.Rep) EAG.HNont[i].Def || cast(EAG.Opt) EAG.HNont[i].Def)
             AppEmptyRule(i, EAG.HNont[i].Def);
-        }
     }
     MaxAffNumInRule = 0;
     for (size_t i = firstRule; i < NextRule; ++i)

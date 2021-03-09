@@ -522,7 +522,7 @@ private void ComputeConstDat() nothrow
                     CheckParams(nont.Actual.Params, ConstPtr);
                 F = F.Next;
             }
-            if (cast(EAG.Rep) Node !is null)
+            if (cast(EAG.Rep) Node)
                 CheckParams(A.Actual.Params, ConstPtr);
             A = A.Next;
         }
@@ -1179,7 +1179,7 @@ public void GenPredProcs()
             }
             else
             {
-                if (cast(EAG.Rep) Node !is null)
+                if (cast(EAG.Rep) Node)
                 {
                     GenSynPred(N, A.Actual.Params);
                     output.write("if (Pred", N);
@@ -1209,7 +1209,7 @@ public void GenPredProcs()
         int P;
 
         output.writeln("Failed = true;");
-        if (cast(EAG.Rep) Node !is null || cast(EAG.Opt) Node !is null)
+        if (cast(EAG.Rep) Node || cast(EAG.Opt) Node)
         {
             EAG.ScopeDesc Scope;
 
@@ -1546,7 +1546,7 @@ in (!HNontDef[N])
 
         void GetFormalParamNames(size_t N, int P)
         {
-            const Repetition = !EAG.Pred[N] && cast(EAG.Rep) EAG.HNont[N].Def !is null;
+            const Repetition = !EAG.Pred[N] && cast(EAG.Rep) EAG.HNont[N].Def;
             int Dom = EAG.HNont[N].Sig;
             int Tree;
             int V;
@@ -1582,7 +1582,7 @@ in (!HNontDef[N])
                 return P;
             }
 
-            const Repetition = !EAG.Pred[N] && cast(EAG.Rep) EAG.HNont[N].Def !is null;
+            const Repetition = !EAG.Pred[N] && cast(EAG.Rep) EAG.HNont[N].Def;
             int P1 = P;
             int Tree;
             int V;
@@ -1661,7 +1661,7 @@ in (!HNontDef[N])
                     FreeVarNames(nont.Actual.Params);
                 F = F.Next;
             }
-            if (cast(EAG.Rep) Node !is null)
+            if (cast(EAG.Rep) Node)
                 FreeVarNames(A.Actual.Params);
         }
 
@@ -1696,7 +1696,7 @@ in (!HNontDef[N])
         Node = EAG.HNont[N].Def;
         isPred = EAG.Pred[N];
 
-        const Repetition = !isPred && cast(EAG.Rep) Node !is null;
+        const Repetition = !isPred && cast(EAG.Rep) Node;
         int Dom = EAG.HNont[N].Sig;
 
         while (EAG.DomBuf[Dom] != EAG.nil)
@@ -1772,7 +1772,7 @@ in (!HNontDef[N])
                 }
                 F = F.Next;
             }
-            if (cast(EAG.Rep) Node !is null)
+            if (cast(EAG.Rep) Node)
             {
                 GetActualParamNames(N, A.Actual.Params);
                 CheckApplPos(A.Actual.Params, false);
@@ -1823,7 +1823,7 @@ in (!HNontDef[N])
 
     void ComputeRepAppls(size_t N)
     {
-        if (cast(EAG.Rep) EAG.HNont[N].Def !is null)
+        if (cast(EAG.Rep) EAG.HNont[N].Def)
         {
             EAG.Alt A = EAG.HNont[N].Def.Sub;
 

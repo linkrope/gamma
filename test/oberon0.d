@@ -43,17 +43,17 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --space example/abstract-syntax.eag --output-directory %s"(directory)
-            .shouldMatch("single-sweep testing OberonOa[^ ]* OK");
+            .shouldMatch("OberonOa grammar is single sweep");
         run!"./epsilon --space example/type-tables.eag --output-directory %s"(directory)
             .shouldMatch("OberonOb grammar is SLEAG");
         run!"./epsilon --space example/type-resolution.eag --output-directory %s"(directory)
-            .shouldMatch("single-sweep testing OberonOc[^ ]* OK");
+            .shouldMatch("OberonOc grammar is single sweep");
         run!"./epsilon --space example/symbol-tables.eag --output-directory %s"(directory)
             .shouldMatch("OberonOd grammar is SLEAG");
         run!"./epsilon --space example/symbol-resolution.eag --output-directory %s"(directory)
             .shouldMatch("OberonOe grammar is SLEAG");
         run!"./epsilon --space example/type-check.eag --output-directory %s"(directory)
-            .shouldMatch("single-sweep testing OberonOf[^ ]* OK");
+            .shouldMatch("OberonOf grammar is single sweep");
 
         run!"cd %s && ./OberonOa -v -w %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
             .shouldMatch("OberonOa compiler: compiling...");

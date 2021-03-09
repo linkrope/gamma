@@ -26,6 +26,9 @@ struct Settings
     /// write compilation output as default
     bool write;
 
+    /// compile SLEAG evaluator
+    bool sleag;
+
     /// compile single-sweep evaluator
     bool sweep;
 

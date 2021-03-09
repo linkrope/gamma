@@ -250,31 +250,29 @@ void WriteTDPs()
 
 void WriteVSRule(int R) @safe
 {
-    SOAG.Instruction I;
-
     if (SOAG.Rule[R].VS.Beg > SOAG.Rule[R].VS.End)
     {
         output.write("keine Visit-Sequenzen; Regel: ", R);
     }
     else
     {
-        for (int i = SOAG.Rule[R].VS.Beg; i <= SOAG.Rule[R].VS.End; ++i)
+        foreach (i; SOAG.Rule[R].VS.Beg .. SOAG.Rule[R].VS.End + 1)
         {
-            I = SOAG.VS[i];
+            SOAG.Instruction I = SOAG.VS[i];
 
-            if (cast(SOAG.Visit) I !is null)
+            if (auto visit = cast(SOAG.Visit) I)
             {
-                output.write("Visit;   SymOcc: ", (cast(SOAG.Visit) I).SymOcc);
-                output.write(" VisitNo: ", (cast(SOAG.Visit) I).VisitNo);
+                output.write("Visit;   SymOcc: ", visit.SymOcc);
+                output.write(" VisitNo: ", visit.VisitNo);
             }
-            else if (cast(SOAG.Leave) I !is null)
+            else if (auto leave = cast(SOAG.Leave) I)
             {
                 output.write("Leave; SymOcc: ");
-                output.write(" VisitNo: ", (cast(SOAG.Leave) I).VisitNo);
+                output.write(" VisitNo: ", leave.VisitNo);
             }
-            else if (cast(SOAG.Call) I !is null)
+            else if (auto call = cast(SOAG.Call) I)
             {
-                output.write("Call; SymOcc: ", (cast(SOAG.Call) I).SymOcc);
+                output.write("Call; SymOcc: ", call.SymOcc);
             }
             else
             {
@@ -288,7 +286,7 @@ void WriteVSRule(int R) @safe
 
 void WriteVS() @safe
 {
-    for (int r = SOAG.firstRule; r < SOAG.NextRule; ++r)
+    foreach (r; SOAG.firstRule .. SOAG.NextRule)
     {
         WriteVSRule(r);
         output.writeln;
@@ -300,11 +298,11 @@ void CheckVS() @safe
 {
     bool found = false;
 
-    for (int r = SOAG.firstRule; r < SOAG.NextRule; ++r)
+    foreach (r; SOAG.firstRule .. SOAG.NextRule)
     {
-        for (int i = SOAG.Rule[r].VS.Beg; i <= SOAG.Rule[r].VS.End; ++i)
+        foreach (i; SOAG.Rule[r].VS.Beg .. SOAG.Rule[r].VS.End + 1)
         {
-            for (int j = SOAG.Rule[r].VS.Beg; j <= SOAG.Rule[r].VS.End; ++j)
+            foreach (j; SOAG.Rule[r].VS.Beg .. SOAG.Rule[r].VS.End + 1)
             {
                 if (i != j)
                 {
@@ -353,7 +351,7 @@ void WriteSym(int S) @safe
 
 void WriteSyms() @safe
 {
-    for (int i = SOAG.firstSym; i < SOAG.NextSym; ++i)
+    foreach (i; SOAG.firstSym .. SOAG.NextSym)
         WriteSym(i);
 }
 

@@ -53,16 +53,11 @@ in (EAG.Performed(EAG.analysed))
 
             do
             {
-                EAG.Factor F = A.Sub;
-
-                while (F !is null)
-                {
-                    if (cast(EAG.Term) F !is null)
+                for (EAG.Factor F = A.Sub; F !is null; F = F.Next)
+                    if (cast(EAG.Term) F)
                         PutCoPred(N);
-                    else
-                        NewEdge((cast(EAG.Nont) F).Sym, N);
-                    F = F.Next;
-                }
+                    else if (auto nont = cast(EAG.Nont) F)
+                        NewEdge(nont.Sym, N);
                 A = A.Next;
             }
             while (A !is null);

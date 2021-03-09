@@ -242,32 +242,31 @@ void SetAffOccforVars(int AO, int Affixform, bool isDef) nothrow @safe
 void ComputeDefAffOcc(int R)
 {
     EAG.ScopeDesc Scope;
-    EAG.Rule EAGRule;
-    int V;
-    int i;
-    bool Found;
 
-    if (cast(SOAG.OrdRule) SOAG.Rule[R] !is null)
+    if (auto ordRule = cast(SOAG.OrdRule) SOAG.Rule[R])
     {
-        Scope = (cast(SOAG.OrdRule) SOAG.Rule[R]).Alt.Scope;
+        Scope = ordRule.Alt.Scope;
     }
-    else
+    else if (auto emptyRule = cast(SOAG.EmptyRule) SOAG.Rule[R])
     {
-        EAGRule = (cast(SOAG.EmptyRule) SOAG.Rule[R]).Rule;
-        if (cast(EAG.Opt) EAGRule !is null)
-            Scope = (cast(EAG.Opt) EAGRule).Scope;
-        else if (cast(EAG.Rep) EAGRule !is null)
-            Scope = (cast(EAG.Rep) EAGRule).Scope;
+        EAG.Rule EAGRule = emptyRule.Rule;
+
+        if (auto opt = cast(EAG.Opt) EAGRule)
+            Scope = opt.Scope;
+        else if (auto rep = cast(EAG.Rep) EAGRule)
+            Scope = rep.Scope;
     }
-    for (V = Scope.Beg; V < Scope.End; ++V)
+    foreach (V; Scope.Beg .. Scope.End)
     {
-        i = firstVarBuf - 1;
+        bool Found;
+        int i = firstVarBuf - 1;
+
         do
         {
             ++i;
             Found = EAG.Var[V].Sym == -VarBuf[i].Sym && EAG.Var[V].Num == VarBuf[i].Num;
         }
-        while (!(Found || i >= NextVarBuf - 1));
+        while (!Found && i < NextVarBuf - 1);
         if (Found)
         {
             SOAG.DefAffOcc[V] = VarBuf[i].AffOcc;
@@ -290,34 +289,33 @@ void ComputeDefAffOcc(int R)
 void ComputeAffixApplCnt(int R) @nogc nothrow
 {
     EAG.ScopeDesc Scope;
-    EAG.Rule EAGRule;
-    int A;
-    int AN;
-    int DAN;
-    int i;
-    if (cast(SOAG.OrdRule) SOAG.Rule[R] !is null)
+
+    if (auto ordRule = cast(SOAG.OrdRule) SOAG.Rule[R])
     {
-        Scope = (cast(SOAG.OrdRule) SOAG.Rule[R]).Alt.Scope;
+        Scope = ordRule.Alt.Scope;
     }
-    else
+    else if (auto emptyRule = cast(SOAG.EmptyRule) SOAG.Rule[R])
     {
-        EAGRule = (cast(SOAG.EmptyRule) SOAG.Rule[R]).Rule;
-        if (cast(EAG.Opt) EAGRule !is null)
-            Scope = (cast(EAG.Opt) EAGRule).Scope;
-        else if (cast(EAG.Rep) EAGRule !is null)
-            Scope = (cast(EAG.Rep) EAGRule).Scope;
+        EAG.Rule EAGRule = emptyRule.Rule;
+
+        if (auto opt = cast(EAG.Opt) EAGRule)
+            Scope = opt.Scope;
+        else if (auto rep = cast(EAG.Rep) EAGRule)
+            Scope = rep.Scope;
     }
-    for (A = Scope.Beg; A < Scope.End; ++A)
+    foreach (A; Scope.Beg .. Scope.End)
     {
-        i = firstVarBuf;
+        int i = firstVarBuf;
+
         while (i < NextVarBuf)
         {
             if (EAG.Var[A].Sym == -VarBuf[i].Sym
                     && (EAG.Var[A].Num == VarBuf[i].Num && SOAG.DefAffOcc[A] != VarBuf[i].AffOcc
                         || EAG.Var[A].Num == -VarBuf[i].Num && SOAG.DefAffOcc[VarBuf[i].VarInd] == VarBuf[i].AffOcc))
             {
-                AN = VarBuf[i].AffOcc - SOAG.Rule[R].AffOcc.Beg;
-                DAN = SOAG.DefAffOcc[A] - SOAG.Rule[R].AffOcc.Beg;
+                const AN = VarBuf[i].AffOcc - SOAG.Rule[R].AffOcc.Beg;
+                const DAN = SOAG.DefAffOcc[A] - SOAG.Rule[R].AffOcc.Beg;
+
                 SOAG.Rule[R].DP[DAN][AN] = true;
                 ++SOAG.AffixApplCnt[A];
             }

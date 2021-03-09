@@ -140,29 +140,22 @@ int GetEVSPosforVisit(int R, int SO, int VN) @nogc nothrow @safe
  */
 void Init() nothrow @safe
 {
-    int R;
-    int V;
-    int PlanNo;
-
     PN = new int[SOAG.NextVS];
-    for (R = SOAG.firstRule; R < SOAG.NextRule; ++R)
+    foreach (R; SOAG.firstRule .. SOAG.NextRule)
     {
-        PlanNo = 1;
-        for (V = SOAG.Rule[R].VS.Beg; V <= SOAG.Rule[R].VS.End; ++V)
+        int PlanNo = 1;
+
+        foreach (V; SOAG.Rule[R].VS.Beg .. SOAG.Rule[R].VS.End + 1)
         {
             PN[V] = PlanNo;
-            if (cast(SOAG.Leave) SOAG.VS[V] !is null)
-            {
+            if (cast(SOAG.Leave) SOAG.VS[V])
                 ++PlanNo;
-            }
         }
     }
     SOAG.StorageName = new int[SOAG.NextPartNum];
     SOAG.NextStorageName = SOAG.NextPartNum;
-    for (V = SOAG.firstStorageName; V < SOAG.NextStorageName; ++V)
-    {
+    foreach (V; SOAG.firstStorageName .. SOAG.NextStorageName)
         SOAG.StorageName[V] = 0;
-    }
     ALists.New(VDS, 16);
     ALists.New(VS, 16);
 }

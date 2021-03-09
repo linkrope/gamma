@@ -30,6 +30,7 @@ void main(string[] args)
                     "space|s", "Compiled compiler uses space instead of newline as separator.", &space,
                     "verbose|v", "Print debug output.", &verbose,
                     "write|w", "Write compilation output as default.", &write,
+                    "sleag", "Compile SLEAG evaluator.", &sleag,
                     "sweep", "Compile single-sweep evaluator.", &sweep,
                     "soag", "Compile SOAG evaluator.", &soag,
                     "output-directory", "Write compiled compiler to directory.", &outputDirectory,
@@ -51,13 +52,23 @@ void main(string[] args)
         exit(EXIT_SUCCESS);
     }
 
-    if (settings.verbose)
-        levels |= Level.trace;
-    if (!settings.outputDirectory.empty)
+    with (settings)
     {
-        import std.file : mkdirRecurse;
+        if (verbose)
+            levels |= Level.trace;
+        if (!sleag && !sweep && !soag)
+        {
+            // try all evaluators until one fits
+            sleag = true;
+            sweep = true;
+            soag = true;
+        }
+        if (!outputDirectory.empty)
+        {
+            import std.file : mkdirRecurse;
 
-        mkdirRecurse(settings.outputDirectory);
+            mkdirRecurse(outputDirectory);
+        }
     }
     try
     {
@@ -105,7 +116,7 @@ void compile(Input input, Settings settings)
     string[] fileNames;
     bool success = false;
 
-    if (!(settings.sweep || settings.soag))
+    if (settings.sleag)
     {
         SLEAGGen.Test;
         if (EAG.History & EAG.isSLEAG)
@@ -115,7 +126,7 @@ void compile(Input input, Settings settings)
             success = true;
         }
     }
-    if (!(success || settings.soag))
+    if (!success && settings.sweep)
     {
         SSweep.Test(settings);
         if (EAG.History & EAG.isSSweep)
@@ -126,7 +137,7 @@ void compile(Input input, Settings settings)
             success = true;
         }
     }
-    if (!success)
+    if (!success && settings.soag)
     {
         fileNames = ScanGen.Generate(settings) ~ fileNames;
         fileNames = SOAGGen.Generate(settings) ~ fileNames;
@@ -140,13 +151,11 @@ void compile(Input input, Settings settings)
         fileNames = ELL1Gen.GenerateParser(settings) ~ fileNames;
         success = true;
     }
-    if (success && !fileNames.empty)
-    {
-        if (!settings.generate)
-        {
-            build(fileNames, settings.outputDirectory);
-        }
-    }
+
+    enforce(success);
+
+    if (!fileNames.empty && !settings.generate)
+        build(fileNames, settings.outputDirectory);
 }
 
 void build(string[] fileNames, string outputDirectory)

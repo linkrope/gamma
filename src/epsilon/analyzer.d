@@ -551,14 +551,14 @@ void CheckSemantics()
 {
     void Shrink(int Sym)
     {
-        EAG.Alt A;
-        EAG.Nont F;
-        if (EAG.HNont[Sym].Id >= 0 && cast(EAG.Grp) EAG.HNont[Sym].Def !is null)
+        if (EAG.HNont[Sym].Id >= 0 && cast(EAG.Grp) EAG.HNont[Sym].Def)
         {
-            A = (cast(EAG.Grp) EAG.HNont[Sym].Def).Sub;
-            if (A.Formal.Params == EAG.empty && A.Next is null && A.Sub !is null && cast(EAG.Nont) A.Sub !is null)
+            EAG.Alt A = (cast(EAG.Grp) EAG.HNont[Sym].Def).Sub;
+
+            if (A.Formal.Params == EAG.empty && A.Next is null && A.Sub !is null && cast(EAG.Nont) A.Sub)
             {
-                F = cast(EAG.Nont) A.Sub;
+                EAG.Nont F = cast(EAG.Nont) A.Sub;
+
                 if (EAG.HNont[F.Sym].anonymous && F.Actual.Params == EAG.empty && F.Next is null)
                 {
                     EAG.HNont[Sym].Def = EAG.HNont[F.Sym].Def;
@@ -605,7 +605,7 @@ void CheckSemantics()
             if (EAG.WellMatched(EAG.HNont[F.Sym].Sig, EAG.empty)
                     && F.Actual.Params != EAG.empty
                     && F.Next !is null
-                    && cast(EAG.Nont) F.Next !is null
+                    && cast(EAG.Nont) F.Next
                     && (cast(EAG.Nont) F.Next).Actual.Params == EAG.empty
                     && EAG.HNont[(cast(EAG.Nont) F.Next).Sym].anonymous)
             {
@@ -616,18 +616,17 @@ void CheckSemantics()
 
         void CheckRep(EAG.Alt A)
         {
-            if (A.Last !is null && cast(EAG.Nont) A.Last !is null)
-            {
-                EAG.Nont F = cast(EAG.Nont) A.Last;
-
-                if (EAG.WellMatched(EAG.HNont[F.Sym].Sig, EAG.empty)
-                        && F.Actual.Params != EAG.empty
-                        && A.Actual.Params == EAG.empty)
+            if (A.Last !is null)
+                if (auto F = cast(EAG.Nont) A.Last)
                 {
-                    A.Actual = F.Actual;
-                    F.Actual.Params = EAG.empty;
+                    if (EAG.WellMatched(EAG.HNont[F.Sym].Sig, EAG.empty)
+                            && F.Actual.Params != EAG.empty
+                            && A.Actual.Params == EAG.empty)
+                    {
+                        A.Actual = F.Actual;
+                        F.Actual.Params = EAG.empty;
+                    }
                 }
-            }
         }
 
         EAG.Rule Node = EAG.HNont[Sym].Def;
@@ -635,19 +634,19 @@ void CheckSemantics()
 
         if (Node !is null)
         {
-            if (cast(EAG.Rep) Node !is null)
+            if (auto rep = cast(EAG.Rep) Node)
             {
                 EAG.Scope = EAG.NextVar;
-                (cast(EAG.Rep) Node).Scope.Beg = EAG.NextVar;
-                CheckParamList(Sig, (cast(EAG.Rep) Node).Formal, true);
-                (cast(EAG.Rep) Node).Scope.End = EAG.NextVar;
+                rep.Scope.Beg = EAG.NextVar;
+                CheckParamList(Sig, rep.Formal, true);
+                rep.Scope.End = EAG.NextVar;
             }
-            else if (cast(EAG.Opt) Node !is null)
+            else if (auto opt = cast(EAG.Opt) Node)
             {
                 EAG.Scope = EAG.NextVar;
-                (cast(EAG.Opt) Node).Scope.Beg = EAG.NextVar;
-                CheckParamList(Sig, (cast(EAG.Opt) Node).Formal, true);
-                (cast(EAG.Opt) Node).Scope.End = EAG.NextVar;
+                opt.Scope.Beg = EAG.NextVar;
+                CheckParamList(Sig, opt.Formal, true);
+                opt.Scope.End = EAG.NextVar;
             }
 
             EAG.Alt A = Node.Sub;
@@ -657,7 +656,7 @@ void CheckSemantics()
                 EAG.Scope = EAG.NextVar;
                 A.Scope.Beg = EAG.NextVar;
                 CheckParamList(Sig, A.Formal, true);
-                if (cast(EAG.Rep) Node !is null)
+                if (cast(EAG.Rep) Node)
                 {
                     CheckRep(A);
                     CheckParamList(Sig, A.Actual, false);
@@ -667,10 +666,10 @@ void CheckSemantics()
 
                 while (F !is null)
                 {
-                    if (cast(EAG.Nont) F !is null)
+                    if (auto nont = cast(EAG.Nont) F)
                     {
-                        CheckActual(cast(EAG.Nont) F);
-                        CheckParamList(EAG.HNont[(cast(EAG.Nont) F).Sym].Sig, (cast(EAG.Nont) F).Actual, false);
+                        CheckActual(nont);
+                        CheckParamList(EAG.HNont[nont.Sym].Sig, nont.Actual, false);
                     }
                     F = F.Next;
                 }
@@ -765,14 +764,10 @@ void ComputeEAGSets()
         EAG.Reach[Sym] = true;
         do
         {
-            EAG.Factor F = A.Sub;
-
-            while (F !is null)
-            {
-                if (cast(EAG.Nont) F !is null && !EAG.Reach[(cast(EAG.Nont) F).Sym])
-                    ComputeReach((cast(EAG.Nont) F).Sym);
-                F = F.Next;
-            }
+            for (EAG.Factor F = A.Sub; F !is null; F = F.Next)
+                if (auto nont = cast(EAG.Nont) F)
+                    if (!EAG.Reach[nont.Sym])
+                        ComputeReach(nont.Sym);
             A = A.Next;
         }
         while (A !is null);
@@ -841,7 +836,7 @@ void ComputeEAGSets()
     {
         if (EAG.HNont[Sym].Def !is null)
         {
-            if (cast(EAG.Opt) EAG.HNont[Sym].Def !is null || cast(EAG.Rep) EAG.HNont[Sym].Def !is null)
+            if (cast(EAG.Opt) EAG.HNont[Sym].Def || cast(EAG.Rep) EAG.HNont[Sym].Def)
             {
                 Prod[Sym] = true;
                 Stack[Top] = Sym;
@@ -860,14 +855,14 @@ void ComputeEAGSets()
 
                 while (F !is null)
                 {
-                    if (cast(EAG.Term) F !is null)
+                    if (cast(EAG.Term) F)
                     {
                         TermFound = true;
                     }
-                    else
+                    else if (auto nont = cast(EAG.Nont) F)
                     {
                         ++Deg[A.Ind];
-                        NewEdge((cast(EAG.Nont) F).Sym, A);
+                        NewEdge(nont.Sym, A);
                     }
                     F = F.Next;
                 }
@@ -927,7 +922,7 @@ void Analyse(Input input)
     if (ErrorCounter == 0)
     {
         EAG.History |= EAG.analysed;
-        info!"OK";
+        info!"%s grammar is valid"(EAG.BaseName);
     }
     else
     {

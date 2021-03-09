@@ -70,12 +70,12 @@ int HashIndex(ref SOAG.Instruction I) @safe
 
         int Index;
 
-        if (cast(SOAG.Visit) I !is null)
-            Index = 100 + V4711 * (cast(SOAG.Visit) I).SymOcc + V711 * (cast(SOAG.Visit) I).VisitNo;
-        else if (cast(SOAG.Leave) I)
-            Index = 200 + V4711 * (cast(SOAG.Leave) I).VisitNo;
-        else if (cast(SOAG.Call) I !is null)
-            Index = 300 + V4711 * (cast(SOAG.Call)I).SymOcc;
+        if (auto visit = cast(SOAG.Visit) I)
+            Index = 100 + V4711 * visit.SymOcc + V711 * visit.VisitNo;
+        else if (auto leave = cast(SOAG.Leave) I)
+            Index = 200 + V4711 * leave.VisitNo;
+        else if (auto call = cast(SOAG.Call) I)
+            Index = 300 + V4711 * call.SymOcc;
         else
             Index = 0;
         return MOD(Index, MaxHashTabIndex).to!int;

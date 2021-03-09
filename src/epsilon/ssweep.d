@@ -34,7 +34,7 @@ in (EAG.Performed(EAG.analysed | EAG.predicates))
     EAG.History = SaveHistory;
     if (!Error)
     {
-        info!"OK";
+        info!"%s grammar is single sweep"(EAG.BaseName);
         EAG.History |= EAG.isSSweep;
     }
 }
@@ -164,7 +164,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
                 A = A.Next;
             }
             while (A !is null);
-            if (cast(EAG.Opt) EAG.HNont[N].Def !is null || cast(EAG.Rep) EAG.HNont[N].Def !is null)
+            if (cast(EAG.Opt) EAG.HNont[N].Def || cast(EAG.Rep) EAG.HNont[N].Def)
                 ++i;
             if (i > Max)
                 Max = i;
@@ -210,22 +210,23 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
             F2 = null;
             while (F !is null)
             {
-                if (cast(EAG.Nont) F !is null && GenFactors[(cast(EAG.Nont) F).Sym])
-                {
-                    F1 = new EAG.Nont;
-                    EAG.assign(F1, cast(EAG.Nont) F);
-                    F1.Prev = F2;
-                    F1.Next = null;
-                    A1.Last = F1;
-                    if (F2 !is null)
-                        F2.Next = F1;
-                    else
-                        A1.Sub = F1;
-                    F2 = F1;
-                }
+                if (auto nont = cast(EAG.Nont) F)
+                    if (GenFactors[nont.Sym])
+                    {
+                        F1 = new EAG.Nont;
+                        EAG.assign(F1, nont);
+                        F1.Prev = F2;
+                        F1.Next = null;
+                        A1.Last = F1;
+                        if (F2 !is null)
+                            F2.Next = F1;
+                        else
+                            A1.Sub = F1;
+                        F2 = F1;
+                    }
                 F = F.Next;
             }
-            if (cast(EAG.Rep) EAG.HNont[N].Def !is null)
+            if (cast(EAG.Rep) EAG.HNont[N].Def)
             {
                 F1 = new EAG.Nont;
                 F1.Ind = EAG.NextHFactor;
@@ -246,7 +247,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
             A = A.Next;
         }
         while (A !is null);
-        if (cast(EAG.Opt) EAG.HNont[N].Def !is null || cast(EAG.Rep) EAG.HNont[N].Def !is null)
+        if (cast(EAG.Opt) EAG.HNont[N].Def || cast(EAG.Rep) EAG.HNont[N].Def)
         {
             A1 = new EAG.Alt;
             A1.Ind = EAG.NextHAlt;
@@ -255,17 +256,17 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
             A1.Next = null;
             A1.Sub = null;
             A1.Last = null;
-            if (cast(EAG.Opt) EAG.HNont[N].Def !is null)
+            if (auto opt = cast(EAG.Opt) EAG.HNont[N].Def)
             {
-                A1.Scope = (cast(EAG.Opt) EAG.HNont[N].Def).Scope;
-                A1.Formal = (cast(EAG.Opt) EAG.HNont[N].Def).Formal;
-                A1.Pos = (cast(EAG.Opt) EAG.HNont[N].Def).EmptyAltPos;
+                A1.Scope = opt.Scope;
+                A1.Formal = opt.Formal;
+                A1.Pos = opt.EmptyAltPos;
             }
-            else
+            else if (auto rep = cast(EAG.Rep) EAG.HNont[N].Def)
             {
-                A1.Scope = (cast(EAG.Rep) EAG.HNont[N].Def).Scope;
-                A1.Formal = (cast(EAG.Rep) EAG.HNont[N].Def).Formal;
-                A1.Pos = (cast(EAG.Rep) EAG.HNont[N].Def).EmptyAltPos;
+                A1.Scope = rep.Scope;
+                A1.Formal = rep.Formal;
+                A1.Pos = rep.EmptyAltPos;
             }
             A1.Actual.Params = EAG.empty;
             A1.Actual.Pos = UndefPos;
@@ -494,31 +495,34 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
             F = A.Sub;
             while (F !is null)
             {
-                if (!EAG.Pred[(cast(EAG.Nont) F).Sym])
+                if (auto nont = cast(EAG.Nont) F)
                 {
-                    EvalGen.GenSynPred(N, (cast(EAG.Nont) F).Actual.Params);
-                    output.write("P", (cast(EAG.Nont) F).Sym, "(Tree[Adr + ", FactorOffset[F.Ind], "]");
-                    EvalGen.GenActualParams((cast(EAG.Nont) F).Actual.Params, false);
-                    output.write("); // ", EAG.HNontRepr((cast(EAG.Nont) F).Sym));
-                    if (EAG.HNont[(cast(EAG.Nont) F).Sym].anonymous)
-                        output.write(" in ", EAG.NamedHNontRepr((cast(EAG.Nont) F).Sym));
-                    output.writeln;
-                    if (EvalGen.PosNeeded((cast(EAG.Nont) F).Actual.Params))
-                        output.writeln("Pos = PosTree[Adr + ", FactorOffset[F.Ind], "];");
-                    EvalGen.GenAnalPred(N, (cast(EAG.Nont) F).Actual.Params);
-                }
-                else
-                {
-                    EvalGen.GenSynPred(N, (cast(EAG.Nont) F).Actual.Params);
-                    output.write("Pos = PosTree[Adr");
-                    F1 = F.Prev;
-                    while (F1 !is null && EAG.Pred[(cast(EAG.Nont) F1).Sym])
-                        F1 = F1.Prev;
-                    if (F1 !is null)
-                        output.write(" + ", FactorOffset[F1.Ind]);
-                    output.writeln("];");
-                    EvalGen.GenPredCall((cast(EAG.Nont) F).Sym, (cast(EAG.Nont) F).Actual.Params);
-                    EvalGen.GenAnalPred(N, (cast(EAG.Nont) F).Actual.Params);
+                    if (!EAG.Pred[nont.Sym])
+                    {
+                        EvalGen.GenSynPred(N, nont.Actual.Params);
+                        output.write("P", nont.Sym, "(Tree[Adr + ", FactorOffset[F.Ind], "]");
+                        EvalGen.GenActualParams(nont.Actual.Params, false);
+                        output.write("); // ", EAG.HNontRepr(nont.Sym));
+                        if (EAG.HNont[nont.Sym].anonymous)
+                            output.write(" in ", EAG.NamedHNontRepr(nont.Sym));
+                        output.writeln;
+                        if (EvalGen.PosNeeded(nont.Actual.Params))
+                            output.writeln("Pos = PosTree[Adr + ", FactorOffset[F.Ind], "];");
+                        EvalGen.GenAnalPred(N, nont.Actual.Params);
+                    }
+                    else
+                    {
+                        EvalGen.GenSynPred(N, nont.Actual.Params);
+                        output.write("Pos = PosTree[Adr");
+                        F1 = F.Prev;
+                        while (F1 !is null && EAG.Pred[(cast(EAG.Nont) F1).Sym])
+                            F1 = F1.Prev;
+                        if (F1 !is null)
+                            output.write(" + ", FactorOffset[F1.Ind]);
+                        output.writeln("];");
+                        EvalGen.GenPredCall(nont.Sym, nont.Actual.Params);
+                        EvalGen.GenAnalPred(N, nont.Actual.Params);
+                    }
                 }
                 F = F.Next;
             }
