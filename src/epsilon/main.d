@@ -30,9 +30,9 @@ void main(string[] args)
                     "space|s", "Compiled compiler uses space instead of newline as separator.", &space,
                     "verbose|v", "Print debug output.", &verbose,
                     "write|w", "Write compilation output as default.", &write,
-                    "sleag", "Compile SLEAG evaluator.", &sleag,
-                    "sweep", "Compile single-sweep evaluator.", &sweep,
-                    "soag", "Compile SOAG evaluator.", &soag,
+                    "slag", "Generate SLAG evaluator.", &slag,
+                    "sweep", "Generate single-sweep evaluator.", &sweep,
+                    "soag", "Generate SOAG evaluator.", &soag,
                     "output-directory", "Write compiled compiler to directory.", &outputDirectory,
             );
         }
@@ -56,10 +56,10 @@ void main(string[] args)
     {
         if (verbose)
             levels |= Level.trace;
-        if (!sleag && !sweep && !soag)
+        if (!slag && !sweep && !soag)
         {
             // try all evaluators until one fits
-            sleag = true;
+            slag = true;
             sweep = true;
             soag = true;
         }
@@ -94,11 +94,11 @@ void compile(Input input, Settings settings)
     import analyzer = epsilon.analyzer;
     import EAG = epsilon.eag;
     import ELL1Gen = epsilon.ell1gen;
+    import LexGen = epsilon.lexgen;
     import Predicates = epsilon.predicates;
-    import ScanGen = epsilon.scangen;
-    import SLEAGGen = epsilon.sleaggen;
-    import SSweep = epsilon.ssweep;
+    import SLAGGen = epsilon.slaggen;
     import SOAGGen = epsilon.soag.soaggen;
+    import Sweep = epsilon.sweep;
     import std.exception : enforce;
     import std.range : empty;
 
@@ -116,30 +116,30 @@ void compile(Input input, Settings settings)
     string[] fileNames;
     bool success = false;
 
-    if (settings.sleag)
+    if (settings.slag)
     {
-        SLEAGGen.Test;
-        if (EAG.History & EAG.isSLEAG)
+        SLAGGen.Test;
+        if (EAG.History & EAG.isSLAG)
         {
-            fileNames = ScanGen.Generate(settings) ~ fileNames;
+            fileNames = LexGen.Generate(settings) ~ fileNames;
             fileNames = ELL1Gen.Generate(settings) ~ fileNames;
             success = true;
         }
     }
     if (!success && settings.sweep)
     {
-        SSweep.Test(settings);
-        if (EAG.History & EAG.isSSweep)
+        Sweep.Test(settings);
+        if (EAG.History & EAG.isSweep)
         {
-            fileNames = ScanGen.Generate(settings) ~ fileNames;
-            fileNames = SSweep.Generate(settings) ~ fileNames;
+            fileNames = LexGen.Generate(settings) ~ fileNames;
+            fileNames = Sweep.Generate(settings) ~ fileNames;
             fileNames = ELL1Gen.GenerateParser(settings) ~ fileNames;
             success = true;
         }
     }
     if (!success && settings.soag)
     {
-        fileNames = ScanGen.Generate(settings) ~ fileNames;
+        fileNames = LexGen.Generate(settings) ~ fileNames;
         fileNames = SOAGGen.Generate(settings) ~ fileNames;
         if (settings.verbose)
         {

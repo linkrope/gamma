@@ -1,4 +1,4 @@
-module epsilon.scangen;
+module epsilon.lexgen;
 
 import EAG = epsilon.eag;
 import epsilon.settings;
@@ -85,7 +85,7 @@ in (EAG.Performed(EAG.analysed))
         while (c != Term)
         {
             enforce(c != 0,
-                    "error: unexpected end of eScanGen.fix.d");
+                    "error: unexpected end of lexgen.fix.d");
 
             output.write(c);
             Fix.popFront;
@@ -94,7 +94,7 @@ in (EAG.Performed(EAG.analysed))
         Fix.popFront;
     }
 
-    info!"ScanGen writing %s"(EAG.BaseName);
+    info!"LexGen writing %s"(EAG.BaseName);
     Error = false;
     MaxTokLen = lenOfPredefinedToken;
     for (Term = EAG.firstHTerm; Term < EAG.NextHTerm; ++Term)
@@ -108,10 +108,10 @@ in (EAG.Performed(EAG.analysed))
     if (Error)
         assert(0, "TODO: error handling for lexer generator");
 
-    const name = EAG.BaseName ~ "Scan";
+    const name = EAG.BaseName ~ "Lex";
     const fileName = settings.path(name ~ ".d");
 
-    Fix = read("fix/epsilon/scangen.fix.d");
+    Fix = read("fix/epsilon/lexgen.fix.d");
     output = File(fileName, "w");
     InclFix('$');
     output.write(name);

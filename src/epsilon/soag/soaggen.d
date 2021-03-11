@@ -2,7 +2,7 @@ module epsilon.soag.soaggen;
 
 import EAG = epsilon.eag;
 import EmitGen = epsilon.emitgen;
-import SLEAGGen = epsilon.sleaggen;
+import SLAGGen = epsilon.slaggen;
 import epsilon.settings;
 import io : Input, read;
 import log;
@@ -53,7 +53,7 @@ in (EAG.Performed(EAG.analysed | EAG.predicates))
 
     const fileName = GenerateModule(settings);
 
-    EAG.History |= EAG.isSSweep;
+    EAG.History |= EAG.isSweep;
     EAG.History |= EAG.hasEvaluator;
     return fileName;
 }
@@ -260,7 +260,7 @@ private int GetAffixCount(int R) @nogc nothrow @safe
  * IN:  -
  * OUT: Hyper-Arity-Konstante
  * SEM: Liefert die Arity-Konstante für den Ableitungsbaum, der durch den Parser erzeugt wird;
- *      müsste eigentlich von SLEAG geliefert werden (in SSweep wurde es auch intern definiert,
+ *      müsste eigentlich von SLAG geliefert werden (in Sweep wurde es auch intern definiert,
  *      deshalb wird es hier für spätere Module exportiert)
  */
 private int HyperArity() nothrow
@@ -550,7 +550,7 @@ private void GenSynPred(int SymOccInd, int VisitNo)
         const Alt = EAG.NodeBuf[Node];
 
         GenHeap(-1, Offset);
-        output.writeln(" = ", SLEAGGen.NodeIdent[Alt], ";");
+        output.writeln(" = ", SLAGGen.NodeIdent[Alt], ";");
         Offset1 = Offset;
         Offset += 1 + EAG.MAlt[Alt].Arity;
         for (n = 1; n <= EAG.MAlt[Alt].Arity; ++n)
@@ -582,7 +582,7 @@ private void GenSynPred(int SymOccInd, int VisitNo)
                 output.write(" = ");
                 if (UseConst && EAG.MAlt[EAG.NodeBuf[Node1]].Arity == 0)
                 {
-                    output.writeln(SLEAGGen.Leaf[EAG.NodeBuf[Node1]], ";");
+                    output.writeln(SLAGGen.Leaf[EAG.NodeBuf[Node1]], ";");
                 }
                 else
                 {
@@ -607,7 +607,7 @@ private void GenSynPred(int SymOccInd, int VisitNo)
         const Alt = EAG.NodeBuf[Node];
 
         GenHeap(NodeName[Node], 0);
-        output.writeln(" = ", SLEAGGen.NodeIdent[Alt], ";");
+        output.writeln(" = ", SLAGGen.NodeIdent[Alt], ";");
         for (n = 1; n <= EAG.MAlt[Alt].Arity; ++n)
         {
             Node1 = EAG.NodeBuf[Node + n];
@@ -638,8 +638,8 @@ private void GenSynPred(int SymOccInd, int VisitNo)
                 if (UseConst && EAG.MAlt[EAG.NodeBuf[Node1]].Arity == 0)
                 {
                     GenHeap(NodeName[Node], n);
-                    output.write(" = ", SLEAGGen.Leaf[EAG.NodeBuf[Node1]], "; ");
-                    output.writeln("Heap[", SLEAGGen.Leaf[EAG.NodeBuf[Node1]], "] += refConst;");
+                    output.write(" = ", SLAGGen.Leaf[EAG.NodeBuf[Node1]], "; ");
+                    output.writeln("Heap[", SLAGGen.Leaf[EAG.NodeBuf[Node1]], "] += refConst;");
                 }
                 else
                 {
@@ -692,12 +692,12 @@ private void GenSynPred(int SymOccInd, int VisitNo)
             }
             else
             {
-                if (UseConst && SLEAGGen.AffixPlace[P] >= 0)
+                if (UseConst && SLAGGen.AffixPlace[P] >= 0)
                 {
                     GenAffPos(S, AN);
-                    output.write(" = ", SLEAGGen.AffixPlace[P]);
+                    output.write(" = ", SLAGGen.AffixPlace[P]);
                     if (UseRefCnt)
-                        output.write("; Heap[", SLEAGGen.AffixPlace[P], "] += refConst");
+                        output.write("; Heap[", SLAGGen.AffixPlace[P], "] += refConst");
                     output.writeln(";");
                 }
                 else if (UseRefCnt)
@@ -713,7 +713,7 @@ private void GenSynPred(int SymOccInd, int VisitNo)
                 }
                 else
                 {
-                    GenOverflowGuard(SLEAGGen.AffixSpace[P]);
+                    GenOverflowGuard(SLAGGen.AffixSpace[P]);
                     GenAffPos(S, AN);
                     output.writeln(" = NextHeap;");
                     Offset = 0;
@@ -820,14 +820,14 @@ private void GenAnalPred(int SymOccInd, int VisitNo) @safe
         if (UseConst && EAG.MAlt[Alt].Arity == 0)
         {
             GenVar(NodeName[Node]);
-            output.write(" != ", SLEAGGen.Leaf[Alt]);
+            output.write(" != ", SLAGGen.Leaf[Alt]);
         }
         else
         {
             GenHeap(NodeName[Node], 0);
             if (UseRefCnt)
                 output.write(".MOD(refConst)");
-            output.write(" != ", SLEAGGen.NodeIdent[Alt]);
+            output.write(" != ", SLAGGen.NodeIdent[Alt]);
         }
         output.write(") AnalyseError(");
         GenVar(NodeName[Node]);
@@ -1415,7 +1415,7 @@ private string GenerateModule(Settings settings)
 
     Fix = read("fix/epsilon/soag.fix.d");
     output = File(fileName, "w");
-    SLEAGGen.InitGen(output, SLEAGGen.sSweepPass, settings);
+    SLAGGen.InitGen(output, SLAGGen.sweepPass, settings);
     InclFix('$');
     output.write(name);
     InclFix('$');
@@ -1425,9 +1425,9 @@ private string GenerateModule(Settings settings)
     InclFix('$');
     if (Optimize)
         GenStackDeclarations;
-    SLEAGGen.GenDeclarations(settings);
+    SLAGGen.GenDeclarations(settings);
     InclFix('$');
-    SLEAGGen.GenPredProcs;
+    SLAGGen.GenPredProcs;
     for (R = SOAG.firstRule; R < SOAG.NextRule; ++R)
     {
         if (SOAG.IsEvaluatorRule(R))
@@ -1469,7 +1469,7 @@ private string GenerateModule(Settings settings)
     output.write("Eval");
     InclFix('$');
     output.flush;
-    SLEAGGen.FinitGen;
+    SLAGGen.FinitGen;
     output.close;
     return fileName;
 }

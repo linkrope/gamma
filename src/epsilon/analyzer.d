@@ -850,10 +850,7 @@ void ComputeEAGSets()
                 bool TermFound = false;
 
                 Deg[A.Ind] = 0;
-
-                EAG.Factor F = A.Sub;
-
-                while (F !is null)
+                for (EAG.Factor F = A.Sub; F !is null; F = F.Next)
                 {
                     if (cast(EAG.Term) F)
                     {
@@ -864,7 +861,6 @@ void ComputeEAGSets()
                         ++Deg[A.Ind];
                         NewEdge(nont.Sym, A);
                     }
-                    F = F.Next;
                 }
                 if (TermFound)
                     Deg[A.Ind] += int.min;

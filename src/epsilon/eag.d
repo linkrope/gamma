@@ -18,8 +18,8 @@ enum
     analysed = 1 << 0,
     predicates = 1 << 1,
     parsable = 1 << 2,
-    isSLEAG = 1 << 3,
-    isSSweep = 1 << 4,
+    isSLAG = 1 << 3,
+    isSweep = 1 << 4,
     hasEvaluator = 1 << 5,
 }
 
@@ -753,10 +753,10 @@ bool Performed(size_t Needed) @safe
         error!"check for predicates first";
     if (Needed & parsable)
         error!"test for ELL1 attribute first";
-    if (Needed & isSLEAG)
-        error!"test for SLEAG attribute first";
-    if (Needed & isSSweep)
-        error!"test for single sweep attribute first";
+    if (Needed & isSLAG)
+        error!"test for SLAG attribute first";
+    if (Needed & isSweep)
+        error!"test for single-sweep attribute first";
     if (Needed & hasEvaluator)
         error!"generate an evaluator first";
     return false;

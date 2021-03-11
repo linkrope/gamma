@@ -5,13 +5,13 @@ import std.path;
 import test.helper;
 
 static foreach (eag; ["eta.eag", "eta-utf8.eag"])
-    @(format!"compile %s as SLEAG and run compiler"(eag))
+    @(format!"compile %s as SLAG and run compiler"(eag))
     unittest
     {
         with (sandbox)
         {
             run!"./epsilon --space example/%s --output-directory %s"(eag, directory)
-                .shouldMatch("Eta grammar is SLEAG");
+                .shouldMatch("Eta grammar is SLAG");
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Pico.Cola"))
                 .shouldMatch(`^program < \+ 'ok' : CODE > : $`);
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Mikro.Cola"))
@@ -28,7 +28,7 @@ static foreach (eag; ["eta.eag", "eta-utf8.eag"])
         with (sandbox)
         {
             run!"./epsilon --soag -o --space example/%s --output-directory %s"(eag, directory)
-                .shouldMatch("grammar is SOEAG");
+                .shouldMatch("grammar is SOAG");
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Pico.Cola"))
                 .shouldMatch(`^program < \+ 'ok' : CODE > : $`);
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Mikro.Cola"))

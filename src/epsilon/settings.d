@@ -26,13 +26,13 @@ struct Settings
     /// write compilation output as default
     bool write;
 
-    /// compile SLEAG evaluator
-    bool sleag;
+    /// generate SLAG evaluator
+    bool slag;
 
-    /// compile single-sweep evaluator
+    /// generate single-sweep evaluator
     bool sweep;
 
-    /// compile SOAG evaluator
+    /// generate SOAG evaluator
     bool soag;
 
     string outputDirectory;

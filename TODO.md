@@ -41,3 +41,15 @@
 ## RISC Assembler
 
 - revive RISC assembler
+
+## Lexer Generation
+
+```
+WhiteSpaces:
+    "WHITESPACES" "ARE" char { "," char } ";" .
+
+Comments:
+    Comment { ";" Comment } ";" .
+Comment:
+    "COMMENTS" "FROM" char [ char ] "TO" char [ char ] ["NESTED"] .
+```

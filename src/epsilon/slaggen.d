@@ -1,4 +1,4 @@
-module epsilon.sleaggen;
+module epsilon.slaggen;
 
 import core.time : MonoTime;
 import EAG = epsilon.eag;
@@ -13,7 +13,7 @@ import std.typecons;
 
 public const parsePass = 0;
 public const onePass = 1;
-public const sSweepPass = 2;
+public const sweepPass = 2;
 public int[] NodeIdent;
 public int[] Leaf;
 public int[] AffixPlace;
@@ -51,10 +51,10 @@ private BitArray EmptySet;
 public void Test()
 in (EAG.Performed(EAG.analysed | EAG.predicates))
 {
-    auto type = Type.sleag;
+    auto type = Type.slag;
 
-    info!"SLEAG testing %s"(EAG.BaseName);
-    EAG.History &= ~EAG.isSLEAG;
+    info!"SLAG testing %s"(EAG.BaseName);
+    EAG.History &= ~EAG.isSLAG;
 
     InitTest;
     scope (exit)
@@ -62,19 +62,19 @@ in (EAG.Performed(EAG.analysed | EAG.predicates))
 
     foreach (N; EAG.Prod.bitsSet)
         if (EAG.HNont[N].Id >= 0)
-            type = min(type, TestHNont(N, Yes.checkSLEAG));
+            type = min(type, TestHNont(N, Yes.checkSLAG));
 
     final switch (type) with (Type)
     {
         case neither:
-            info!"%s grammar is no LEAG"(EAG.BaseName);
+            info!"%s grammar is no LAG"(EAG.BaseName);
             break;
-        case leag:
-            info!"%s grammar is no SLEAG but LEAG"(EAG.BaseName);
+        case lag:
+            info!"%s grammar is no SLAG but LAG"(EAG.BaseName);
             break;
-        case sleag:
-            info!"%s grammar is SLEAG"(EAG.BaseName);
-            EAG.History |= EAG.isSLEAG;
+        case slag:
+            info!"%s grammar is SLAG"(EAG.BaseName);
+            EAG.History |= EAG.isSLAG;
             break;
     }
 }
@@ -96,19 +96,19 @@ public void FinitTest() nothrow
 public bool PredsOK()
 {
     return EAG.Pred.bitsSet
-        .map!(N => IsLEAG(N))
+        .map!(N => IsLAG(N))
         .all;
 }
 
-public bool IsLEAG(size_t N)
+public bool IsLAG(size_t N)
 {
     return TestHNont(N) != Type.neither;
 }
 
-private Type TestHNont(size_t N, Flag!"checkSLEAG" checkSLEAG = No.checkSLEAG)
+private Type TestHNont(size_t N, Flag!"checkSLAG" checkSLAG = No.checkSLAG)
 in (EAG.Prod[N])
 {
-    auto type = Type.sleag;
+    auto type = Type.slag;
 
     void CheckDefPos(EAG.ParamRecord param)
     {
@@ -154,7 +154,7 @@ in (EAG.Prod[N])
             ApplPos(param.Affixform);
     }
 
-    void CheckSLEAGCond(EAG.ParamRecord param)
+    void CheckSLAGCond(EAG.ParamRecord param)
     {
         const Node = param.Affixform;
 
@@ -163,22 +163,22 @@ in (EAG.Prod[N])
             if (Node >= 0)
             {
                 error!"cannot analyze bottom up\n%s"(param.Pos);
-                type = min(type, Type.leag);
+                type = min(type, Type.lag);
             }
             else if (EAG.Var[-Node].Def)
             {
                 error!"cannot check for equality bottom up\n%s"(param.Pos);
-                type = min(type, Type.leag);
+                type = min(type, Type.lag);
             }
             else if (EAG.Var[EAG.Var[-Node].Neg].Def)
             {
                 error!"cannot check for inequality bottom up\n%s"(param.Pos);
-                type = min(type, Type.leag);
+                type = min(type, Type.lag);
             }
             else if (VarAppls[-Node] > 1)
             {
                 error!"cannot synthesize %s times bottom up\n%s"(VarAppls[-Node], param.Pos);
-                type = min(type, Type.leag);
+                type = min(type, Type.lag);
             }
         }
     }
@@ -214,8 +214,8 @@ in (EAG.Prod[N])
             if (auto nont = cast(EAG.Nont) F)
             {
                 nont.Actual.params.each!(param => CheckApplPos(param));
-                if (checkSLEAG && EAG.HNont[nont.Sym].anonymous)
-                    type = min(type, TestHNont(nont.Sym, checkSLEAG));
+                if (checkSLAG && EAG.HNont[nont.Sym].anonymous)
+                    type = min(type, TestHNont(nont.Sym, checkSLAG));
                 nont.Actual.params.each!(param => CheckDefPos(param));
             }
             F = F.Next;
@@ -225,8 +225,8 @@ in (EAG.Prod[N])
             A.Actual.params.each!(param => CheckApplPos(param));
             foreach (param; A.Actual.params)
             {
-                if (checkSLEAG)
-                    CheckSLEAGCond(param);
+                if (checkSLAG)
+                    CheckSLAGCond(param);
                 CheckDefPos(param);
             }
         }
@@ -240,8 +240,8 @@ in (EAG.Prod[N])
 private enum Type
 {
     neither,
-    leag,
-    sleag,
+    lag,
+    slag,
 }
 
 private void Prepare(size_t N) nothrow
@@ -348,7 +348,7 @@ public void InitGen(File MOut, int Treatment, Settings settings)
             break;
         case onePass:
             break;
-        case sSweepPass:
+        case sweepPass:
             TraversePass = true;
             break;
         default:
@@ -357,7 +357,7 @@ public void InitGen(File MOut, int Treatment, Settings settings)
     }
 
     if (Generating)
-        trace!"resetting SLEAG";
+        trace!"resetting SLAG";
     output = MOut;
     SavePos = false;
     TraversePass = false;
@@ -645,7 +645,7 @@ public void GenDeclarations(Settings settings)
         while (c != Term)
         {
             enforce(c != 0,
-                    "error: unexpected end of eSLEAGGen.fix.d");
+                    "error: unexpected end of eSLAGGen.fix.d");
 
             output.write(c);
             Fix.popFront;
@@ -664,7 +664,7 @@ public void GenDeclarations(Settings settings)
         while (c != Term)
         {
             enforce(c != 0,
-                    "error: unexpected end of eSLEAGGen.fix.d");
+                    "error: unexpected end of eSLAGGen.fix.d");
 
             Fix.popFront;
             c = Fix.front.to!char;
@@ -734,7 +734,7 @@ public void GenDeclarations(Settings settings)
     const name = EAG.BaseName ~ (TraversePass ? "Eval.EvalTab" : ".EvalTab");
     const TabTimeStamp = MonoTime.currTime.ticks;
 
-    Fix = read("fix/epsilon/sleaggen.fix.d");
+    Fix = read("fix/epsilon/slaggen.fix.d");
     InclFix('$');
     output.write(FirstHeap - 1);
     InclFix('$');

@@ -40,7 +40,7 @@ int[][] DS;
 int[] Deg;
 int Phase;
 bool CyclicTDP;
-bool OEAG;
+bool OAG;
 ALists.AList NUV;
 ALists.AList MarkedEdges;
 ALists.AList LastCur;
@@ -462,7 +462,7 @@ void Orient(int a, int b, int X, ref BitArray New)
     if (CyclicTDP)
     {
         CyclicTDP = false;
-        OEAG = false;
+        OAG = false;
         ResetTDPChanges(NextChangeBuf - 1);
         NextChangeBuf = firstChangeBuf;
         AddTDPTrans(SOAG.SymOcc[SO].RuleInd, SOAG.SymOcc[SO].AffOcc.Beg + a,
@@ -661,14 +661,14 @@ void Compute()
     ChangeBuf = new ChangeBufDesc[64];
     NextVarBuf = firstVarBuf;
     NextChangeBuf = firstChangeBuf;
-    OEAG = true;
+    OAG = true;
     Phase = computeDPandIDP;
     ComputeDP;
     ComputeIDPTrans;
     Phase = dynTopSort;
     DynTopSort;
-    if (OEAG)
-        info!"grammar is SOEAG";
+    if (OAG)
+        info!"grammar is SOAG";
     else
-        info!"grammar is SOEAG (backtracked)";
+        info!"grammar is SOAG (backtracked)";
 }

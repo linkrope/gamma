@@ -11,7 +11,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --soag --space example/abc.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo a a a b b b c c c | ./S"(directory)
             .shouldMatch(`^\| \| \| $`);
     }
@@ -23,7 +23,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --soag --space example/ab.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldMatch("^i i i $");
     }
@@ -35,7 +35,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --soag --space example/ab-ebnf.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldMatch("^i i i $");
     }
@@ -47,7 +47,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --soag --space example/w-w.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo a b a b c a b a b | ./S"(directory)
             .shouldMatch("^a b a b $");
     }
@@ -59,7 +59,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --soag --space example/w-w-soag.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo a b a b c a b a b | ./S"(directory)
             .shouldMatch("^a b a b $");
     }
@@ -71,7 +71,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --soag example/hello-world.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo | ./S"(directory)
             .shouldMatch("^Hello World!$");
     }
@@ -83,7 +83,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --soag --space example/count1.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo i i i i i i i i i i i i i | ./S"(directory)
             .shouldMatch("^Number 1 3 $");
     }
@@ -95,7 +95,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon example/count2.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo a a a a a a a a a a a a a | ./S"(directory)
             .shouldMatch("^13$");
     }
@@ -107,7 +107,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon example/count3.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo | ./S"(directory)
             .shouldMatch("^0$");
     }
@@ -119,7 +119,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon example/count4.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo a a a | ./S"(directory)
             .shouldMatch("^3$");
     }
@@ -131,7 +131,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --soag example/count5.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo a a a | ./S"(directory)
             .shouldMatch("^3$");
     }
@@ -143,7 +143,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --soag example/count6.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldMatch("^3$");
     }
@@ -155,7 +155,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --soag --space example/decl-appl.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo DECL ab DECL ba APPL ab | ./DeclAppl"(directory)
             .shouldMatch("^ba ; ab ; $");
     }
@@ -167,7 +167,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --soag example/example.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo a b e i | ./P"(directory)
             .shouldMatch("^i$");
     }
@@ -179,7 +179,7 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --soag example/single-sweep.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo a b c d e | ./S"(directory)
             .shouldMatch("^$");
     }
@@ -191,55 +191,55 @@ unittest
     with (sandbox)
     {
         run!"./epsilon --soag -o example/single-sweep.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo a b c d e | ./S"(directory)
             .shouldMatch("^$");
     }
 }
 
-@("compile not-oeag1.eag as SOAG and run compiler")
+@("compile non-oag1.eag as SOAG and run compiler")
 unittest
 {
     with (sandbox)
     {
-        run!"./epsilon example/not-oeag1.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+        run!"./epsilon example/non-oag1.eag --output-directory %s"(directory)
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo b c | ./S"(directory)
             .shouldMatch("^0$");
     }
 }
 
-@("compile not-oeag2.eag as SOAG and run compiler")
+@("compile non-oag2.eag as SOAG and run compiler")
 unittest
 {
     with (sandbox)
     {
-        run!"./epsilon example/not-oeag2.eag --output-directory %s"(directory)
-            .shouldMatch(`grammar is SOEAG \(backtracked\)`);
+        run!"./epsilon example/non-oag2.eag --output-directory %s"(directory)
+            .shouldMatch(`grammar is SOAG \(backtracked\)`);
         run!"cd %s && echo b c c | ./S"(directory)
             .shouldMatch("^0$");
     }
 }
 
-@("compile not-oeag3.eag as SOAG and run compiler")
+@("compile non-oag3.eag as SOAG and run compiler")
 unittest
 {
     with (sandbox)
     {
-        run!"./epsilon example/not-oeag3.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+        run!"./epsilon example/non-oag3.eag --output-directory %s"(directory)
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo b a a | ./S"(directory)
             .shouldMatch("^0$");
     }
 }
 
-@("compile not-oeag4.eag as SOAG and run compiler")
+@("compile non-oag4.eag as SOAG and run compiler")
 unittest
 {
     with (sandbox)
     {
-        run!"./epsilon example/not-oeag4.eag --output-directory %s"(directory)
-            .shouldMatch("grammar is SOEAG");
+        run!"./epsilon example/non-oag4.eag --output-directory %s"(directory)
+            .shouldMatch("grammar is SOAG");
         run!"cd %s && echo b a a | ./S"(directory)
             .shouldMatch("^0$");
     }

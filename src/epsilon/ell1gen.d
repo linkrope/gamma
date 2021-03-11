@@ -4,7 +4,7 @@ import core.time : MonoTime;
 import EAG = epsilon.eag;
 import EmitGen = epsilon.emitgen;
 import Shift = epsilon.shift;
-import EvalGen = epsilon.sleaggen;
+import EvalGen = epsilon.slaggen;
 import epsilon.settings;
 import io : Input, Position, read;
 import log;
@@ -93,7 +93,7 @@ in (EAG.Performed(EAG.analysed | EAG.predicates))
 }
 
 public string Generate(Settings settings)
-in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.isSLEAG))
+in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.isSLAG))
 {
     info!"ELL(1) writing %s"(EAG.BaseName);
     EAG.History &= ~EAG.parsable;
@@ -1322,7 +1322,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     InclFix('$');
     output.write(EAG.BaseName);
     InclFix('$');
-    name = EAG.BaseName ~ "Scan";
+    name = EAG.BaseName ~ "Lex";
     output.write(name);
     if (parsePass)
     {

@@ -1,11 +1,11 @@
-// left-defining grammar that is no strong LEAG
+// left-defining grammar that is no strong LAG
 
 X = "a" | "b".
 
 S <+  X>: A <X> | B <X> | C <X> | D <X>.
 
 /*
-An LEAG is a strong LEAG if the actual parameters of the closing braces
+An LAG is a strong LAG if the actual parameters of the closing braces
 of a repetition meet certain conditions. These conditions allow for a simple
 implementation of the repetition by a loop instead of a recursive descent.
 */

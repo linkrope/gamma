@@ -1,8 +1,8 @@
-module epsilon.ssweep;
+module epsilon.sweep;
 
 import EAG = epsilon.eag;
 import EmitGen = epsilon.emitgen;
-import EvalGen = epsilon.sleaggen;
+import EvalGen = epsilon.slaggen;
 import epsilon.settings;
 import io : Input, read, UndefPos;
 import log;
@@ -22,7 +22,7 @@ public void Test(Settings settings)
 in (EAG.Performed(EAG.analysed | EAG.predicates))
 {
     info!"single-sweep testing %s"(EAG.BaseName);
-    EAG.History &= ~EAG.isSSweep;
+    EAG.History &= ~EAG.isSweep;
     Init;
     scope (exit)
         Finit;
@@ -35,7 +35,7 @@ in (EAG.Performed(EAG.analysed | EAG.predicates))
     if (!Error)
     {
         info!"%s grammar is single sweep"(EAG.BaseName);
-        EAG.History |= EAG.isSSweep;
+        EAG.History |= EAG.isSweep;
     }
 }
 
@@ -43,7 +43,7 @@ public string Generate(Settings settings)
 in (EAG.Performed(EAG.analysed | EAG.predicates))
 {
     info!"single-sweep writing %s"(EAG.BaseName);
-    EAG.History &= ~EAG.isSSweep;
+    EAG.History &= ~EAG.isSweep;
     Init;
     scope (exit)
         Finit;
@@ -57,7 +57,7 @@ in (EAG.Performed(EAG.analysed | EAG.predicates))
     EAG.History = SaveHistory;
     if (!Error)
     {
-        EAG.History |= EAG.isSSweep;
+        EAG.History |= EAG.isSweep;
         EAG.History |= EAG.hasEvaluator;
     }
     return fileName;
@@ -546,11 +546,11 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
     Error = Error || !EvalGen.PredsOK();
     if (createMod)
     {
-        Fix = read("fix/epsilon/ssweep.fix.d");
+        Fix = read("fix/epsilon/sweep.fix.d");
         output = File(fileName, "w");
         if (!Error)
         {
-            EvalGen.InitGen(output, EvalGen.sSweepPass, settings);
+            EvalGen.InitGen(output, EvalGen.sweepPass, settings);
             InclFix('$');
             output.write(name);
             InclFix('$');
@@ -575,7 +575,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
         ComputePermutation(N);
         if (!Error)
         {
-            Error = !EvalGen.IsLEAG(N);
+            Error = !EvalGen.IsLAG(N);
             if (!Error && createMod)
                 GenerateNont(N);
         }
