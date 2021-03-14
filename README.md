@@ -1,8 +1,8 @@
 # Extended Affix Grammar Compiler Compiler
 
-![D](https://github.com/linkrope/epsilon/workflows/D/badge.svg)
+![D](https://github.com/linkrope/gamma/workflows/D/badge.svg)
 
-_epsilon_ is a compiler compiler for the [Extended Affix Grammar] formalism.
+_gamma_ is a compiler compiler for the [Extended Affix Grammar] formalism.
 
 ## Usage
 

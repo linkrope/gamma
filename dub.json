@@ -1,14 +1,14 @@
 {
-    "name": "epsilon",
+    "name": "gamma",
     "description": "Extended Affix Grammar compiler compiler",
     "authors": ["Mario Kröplin"],
-    "copyright": "Copyright © 2020, Mario Kröplin",
+    "copyright": "Copyright © 2021, Mario Kröplin",
     "sourcePaths": ["include", "src"],
     "importPaths": ["include", "src"],
     "mainSourceFile": "src/epsilon/main.d",
     "configurations": [
         {
-            "name": "epsilon",
+            "name": "gamma",
             "targetType": "executable"
         },
         {

@@ -10,7 +10,7 @@ static foreach (eag; ["eta.eag", "eta-utf8.eag"])
     {
         with (sandbox)
         {
-            run!"./epsilon --space example/%s --output-directory %s"(eag, directory)
+            run!"./gamma --space example/%s --output-directory %s"(eag, directory)
                 .shouldMatch("Eta grammar is SLAG");
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Pico.Cola"))
                 .shouldMatch(`^program < \+ 'ok' : CODE > : $`);
@@ -27,7 +27,7 @@ static foreach (eag; ["eta.eag", "eta-utf8.eag"])
     {
         with (sandbox)
         {
-            run!"./epsilon --soag -o --space example/%s --output-directory %s"(eag, directory)
+            run!"./gamma --soag -o --space example/%s --output-directory %s"(eag, directory)
                 .shouldMatch("grammar is SOAG");
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Pico.Cola"))
                 .shouldMatch(`^program < \+ 'ok' : CODE > : $`);

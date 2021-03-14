@@ -4,7 +4,7 @@
   - `--info` should give detailed parser error messages
   - `--verbose` should print debug output
 
-## epsilon.eag
+## epsilang.eag
 
 - specify the lowering for EBNF and various abbreviations as an EAG
 

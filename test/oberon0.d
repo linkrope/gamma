@@ -9,7 +9,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./epsilon example/frontend.eag --output-directory %s"(directory)
+        run!"./gamma example/frontend.eag --output-directory %s"(directory)
             .shouldMatch("OberonO grammar is SLAG");
         run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
             .shouldMatch("^done$");
@@ -26,7 +26,7 @@ static foreach (eag; ["oberon0.eag", "unequal.eag"])
     {
         with (sandbox)
         {
-            run!"./epsilon --space example/%s --output-directory %s"(eag, directory)
+            run!"./gamma --space example/%s --output-directory %s"(eag, directory)
                 .shouldMatch("OberonO grammar is SLAG");
             run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
                 .shouldMatch("^L1 .* RET 0 $");
@@ -42,17 +42,17 @@ unittest
 {
     with (sandbox)
     {
-        run!"./epsilon --space example/abstract-syntax.eag --output-directory %s"(directory)
+        run!"./gamma --space example/abstract-syntax.eag --output-directory %s"(directory)
             .shouldMatch("OberonOa grammar is single sweep");
-        run!"./epsilon --space example/type-tables.eag --output-directory %s"(directory)
+        run!"./gamma --space example/type-tables.eag --output-directory %s"(directory)
             .shouldMatch("OberonOb grammar is SLAG");
-        run!"./epsilon --space example/type-resolution.eag --output-directory %s"(directory)
+        run!"./gamma --space example/type-resolution.eag --output-directory %s"(directory)
             .shouldMatch("OberonOc grammar is single sweep");
-        run!"./epsilon --space example/symbol-tables.eag --output-directory %s"(directory)
+        run!"./gamma --space example/symbol-tables.eag --output-directory %s"(directory)
             .shouldMatch("OberonOd grammar is SLAG");
-        run!"./epsilon --space example/symbol-resolution.eag --output-directory %s"(directory)
+        run!"./gamma --space example/symbol-resolution.eag --output-directory %s"(directory)
             .shouldMatch("OberonOe grammar is SLAG");
-        run!"./epsilon --space example/type-check.eag --output-directory %s"(directory)
+        run!"./gamma --space example/type-check.eag --output-directory %s"(directory)
             .shouldMatch("OberonOf grammar is single sweep");
 
         run!"cd %s && ./OberonOa -v -w %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
