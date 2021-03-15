@@ -106,7 +106,7 @@ struct Position
         auto writer = appender!string;
 
         toString(writer);
-        return writer.data;
+        return writer[];
     }
 
     void toString(W)(ref W writer) const

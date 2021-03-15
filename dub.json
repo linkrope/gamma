@@ -13,6 +13,7 @@
         },
         {
             "name": "unittest",
+            "dflags": ["-checkaction=context"],
 			"dependencies": {
 				"silly": "~>1.0.2"
 			}

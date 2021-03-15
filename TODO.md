@@ -16,10 +16,6 @@
 
 - create abstract syntax tree instead of writing code fragments
 
-## String Representation
-
-- add toString functions to simplify debugging
-
 ## Table Files
 
 - include .Tab and .EvalTab files in executable
@@ -53,3 +49,7 @@ Comments:
 Comment:
     "COMMENTS" "FROM" char [ char ] "TO" char [ char ] ["NESTED"] .
 ```
+
+## Replace Subtyping with Sum Type
+
+- https://github.com/pbackus/sumtype
