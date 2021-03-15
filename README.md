@@ -1,6 +1,7 @@
 # Extended Affix Grammar Compiler Compiler
 
-![D](https://github.com/linkrope/gamma/workflows/D/badge.svg)
+[![D](https://github.com/linkrope/gamma/actions/workflows/d.yml/badge.svg)](https://github.com/linkrope/gamma/actions/workflows/d.yml)
+
 
 _gamma_ is a compiler compiler for the [Extended Affix Grammar] formalism.
 
