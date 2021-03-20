@@ -6,6 +6,7 @@
     "sourcePaths": ["include", "src"],
     "importPaths": ["include", "src"],
     "mainSourceFile": "src/epsilon/main.d",
+    "excludedSourceFiles": ["src/gamma/main.d"],
     "configurations": [
         {
             "name": "gamma",
@@ -14,18 +15,29 @@
         {
             "name": "unittest",
             "dflags": ["-checkaction=context"],
-			"dependencies": {
-				"silly": "~>1.0.2"
-			}
+            "dependencies": {
+                "silly": "~>1.0.2"
+            }
         },
         {
             "name": "example",
             "sourcePaths": ["test"],
             "importPaths": ["test"],
-			"preBuildCommands": ["$DUB build"],
-			"dependencies": {
-				"silly": "~>1.0.2"
-			}
+            "preBuildCommands": ["$DUB build"],
+            "dependencies": {
+                "silly": "~>1.0.2"
+            }
+        }
+    ],
+    "subPackages": [
+        {
+            "name": "experimental",
+            "targetType": "executable",
+            "sourcePaths": ["include", "src"],
+            "importPaths": ["include", "src"],
+            "mainSourceFile": "src/gamma/main.d",
+            "excludedSourceFiles": ["src/epsilon/main.d"]
         }
     ]
+
 }

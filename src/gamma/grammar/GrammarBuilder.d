@@ -57,7 +57,7 @@ public struct GrammarBuilder
         auto nonterminal = new GeneratedNonterminal(index);
         Nonterminal userNont = this.nonterminalMap.get(nonterminal.toString, null);
 
-        enforce(userNont !is null,
+        enforce(userNont is null,
                 format!"generated nonterminal name already defined by the user: %s"(nonterminal));
 
         this.nonterminalMap[nonterminal.toString] = nonterminal;
@@ -145,11 +145,15 @@ public struct GrammarBuilder
             {
                 foreach (node; alternative.rhs)
                 {
-                    Symbol symbol = (cast(SymbolNode) node).symbol;
+                    if (cast(SymbolNode) node) // FIXME: else
+                    {
+                        Symbol symbol = (cast(SymbolNode) node).symbol;
 
-                    if (cast(Nonterminal) symbol
-                            && cast(Nonterminal) symbol in this.undefinedNonterminals)
-                        node.position.markError(format!"%s is undefined (not on left hand side)"(symbol));
+                        if (cast(Nonterminal) symbol && cast(Nonterminal) symbol in this.undefinedNonterminals)
+                        {
+                            node.position.markError(format!"%s is undefined (not on left hand side)"(symbol));
+                        }
+                    }
                 }
             }
         }
