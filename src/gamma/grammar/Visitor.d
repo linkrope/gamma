@@ -7,11 +7,11 @@ import gamma.grammar.SymbolNode;
 
 public interface Visitor
 {
-	public void visit(Grammar grammar);
+    public void visit(Grammar grammar);
 
-	public void visit(Alternative alternative);
+    public void visit(Alternative alternative);
 
-	public void visit(SymbolNode symbolNode);
+    public void visit(SymbolNode symbolNode);
 
-	public void visit(Rule rule);
+    public void visit(Rule rule);
 }

@@ -98,6 +98,18 @@ unittest
     }
 }
 
+@("compile expr.eag as SLAG and run compiler")
+unittest
+{
+    with (sandbox)
+    {
+        run!"./gamma --space example/expr.eag --output-directory %s"(directory)
+            .shouldMatch("Expr grammar is SLAG");
+        run!"cd %s && echo 1 + 0 + 1 | ./Expr"(directory)
+            .shouldMatch("^1 ENTER 0 ENTER ADD 1 ENTER ADD $");
+    }
+}
+
 @("compile ident-list.eag as SLAG and run compiler")
 unittest
 {

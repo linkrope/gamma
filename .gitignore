@@ -1,13 +1,7 @@
 .dub
 dub.selections.json
 core
-/gamma
-gamma.a
-gamma.dll
-gamma.dylib
-gamma.lib
-gamma.so
-gamma-test-*
+/gamma*
 tmp
 *.exe
 *.lst

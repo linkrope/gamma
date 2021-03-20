@@ -3,14 +3,14 @@
 Tab = | id ";" Tab.
 
 DeclAppl <+ Tab: Tab>:
-	<, Tab>
-		{ <- Tab: Tab, + Tab1: Tab>
-			"DECL" id<id> Find<id, Tab, "FALSE">
-			<id ";" Tab, Tab1>
-		| <- Tab: Tab, + Tab1: Tab>
-			"APPL" id<id> Find<id, Tab, "TRUE">
-			<Tab, Tab1>
-		} <- Tab: Tab, + Tab: Tab>.
+    <, Tab>
+        { <- Tab: Tab, + Tab1: Tab>
+            "DECL" id<id> Find<id, Tab, "FALSE">
+            <id ";" Tab, Tab1>
+        | <- Tab: Tab, + Tab1: Tab>
+            "APPL" id<id> Find<id, Tab, "TRUE">
+            <Tab, Tab1>
+        } <- Tab: Tab, + Tab: Tab>.
 
 x = "a" | "b".
 id* = x | id x.
@@ -19,15 +19,15 @@ x<+ "a": x>: "a".
 x<+ "b": x>: "b".
 
 id*<+ id: id>:
-	x<x>
-	<x, id>
-		{ <- id: id, + id1: id>
-			x<x> <id x, id1>
-		} <- id: id, + id: id>.
+    x<x>
+    <x, id>
+        { <- id: id, + id1: id>
+            x<x> <id x, id1>
+        } <- id: id, + id: id>.
 
 Bool = "TRUE" | "FALSE".
 
 Find<- id: id, - : Tab, + "FALSE": Bool>: .
 Find<- id: id, - id ";" Tab: Tab, + "TRUE": Bool>: .
 Find<- id: id, - !id ";" Tab: Tab, + Bool: Bool>:
-	Find<id, Tab, Bool>.
+    Find<id, Tab, Bool>.

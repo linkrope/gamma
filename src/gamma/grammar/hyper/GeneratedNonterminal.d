@@ -4,14 +4,14 @@ import gamma.grammar.Nonterminal;
 
 public class GeneratedNonterminal : Nonterminal
 {
-	/**
-	 * @param index
-	 *            the index of the generated nonterminal
-	 */
-	public this(size_t index)
-	{
-		import std.format : format;
+    /**
+     * @param index
+     *            the index of the generated nonterminal
+     */
+    public this(size_t index)
+    {
+        import std.format : format;
 
-		super(format!"YYNont%s"(index), index);
-	}
+        super(format!"YYNont%s"(index), index);
+    }
 }

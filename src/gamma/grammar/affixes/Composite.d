@@ -5,23 +5,23 @@ import gamma.grammar.Alternative;
 
 public class Composite : Term
 {
-	private Alternative alternative_;
+    private Alternative alternative_;
 
-	private Term[] terms_;
+    private Term[] terms_;
 
-	public this(Alternative alternative, Term[] terms)
-	{
-		this.alternative_ = alternative;
-		this.terms_ = terms.dup;
-	}
+    public this(Alternative alternative, Term[] terms)
+    {
+        this.alternative_ = alternative;
+        this.terms_ = terms.dup;
+    }
 
-	public Alternative alternative()
-	{
-		return this.alternative_;
-	}
+    public Alternative alternative()
+    {
+        return this.alternative_;
+    }
 
-	public Term[] terms()
-	{
-		return this.terms_;
-	}
+    public Term[] terms()
+    {
+        return this.terms_;
+    }
 }

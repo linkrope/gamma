@@ -5,7 +5,7 @@ import gamma.util.Indexed;
 
 public class Nonterminal : Symbol, Indexed
 {
-	  private const size_t index_;
+    private const size_t index_;
 
     /**
      * Creates a grammar nonterminal with the given name.
@@ -17,8 +17,8 @@ public class Nonterminal : Symbol, Indexed
      */
     public this(string representation, size_t index)
     {
-      super(representation);
-      this.index_ = index;
+        super(representation);
+        this.index_ = index;
     }
 
     /**
@@ -28,7 +28,7 @@ public class Nonterminal : Symbol, Indexed
      * @return the unique index of the nonterminal
      */
     public size_t index() const
-      {
-      return this.index_;
+    {
+        return this.index_;
     }
 }

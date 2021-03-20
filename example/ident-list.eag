@@ -1,4 +1,4 @@
-S<+ IdentList>: IdentList< , IdentList>.
+S <+ IdentList>: IdentList < , IdentList>.
 
 letter = "a" | "b".
 
@@ -11,21 +11,20 @@ digit: <+ "0": digit> "0" | <+ "1": digit> "1" .
 ident* = letter | ident letter | ident digit.
 
 ident* <+ ident>:
-  letter <letter>
-  <letter, ident>
-    { <- ident, + ident1>
-        letter <letter>  <ident letter, ident1>
-    | <- ident, + ident1>
-        digit <digit>  <ident digit, ident1>
-    } <- ident, + ident>.
+    letter <letter>
+    <letter, ident>
+        { <- ident, + ident1>
+            letter <letter>  <ident letter, ident1>
+        | <- ident, + ident1>
+            digit <digit>  <ident digit, ident1>
+        } <- ident, + ident>.
 
 IdentList = | IdentList ident.
 
 IdentList:
-  { <- IdentList, +  IdentList1>
-    ident <ident> FindObject <IdentList, ident, "NIL">
-    <IdentList ident, IdentList1>
-  } <- IdentList, + IdentList>.
+    { <- IdentList, +  IdentList1>
+        ident <ident> FindObject <IdentList, ident, "NIL"> <IdentList ident, IdentList1>
+    } <- IdentList, + IdentList>.
 
 IdentNil = ident | "NIL".
 

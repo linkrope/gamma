@@ -70,8 +70,8 @@ ALPHANUMS:      ALPHANUM ALPHANUMS; .
 ART:            konstante; variable.
 
 BEFEHL:         'ft1';
-		'fd1';
-		'ft2';
+                'fd1';
+                'ft2';
                 'fd2';
                 jmp;
                 jpc.
@@ -216,7 +216,7 @@ bedingung(TABELLE, N21, CODE3, N25):
         ausdruck(TABELLE, N21, boolean, CODE1, N22)
         'THEN'
         saetze(TABELLE, N22, CODE2, N23)
-	erhoehe(N23, N24)
+        erhoehe(N23, N24)
         sonstteil(TABELLE, N24, CODE1 jpc N24 ';' CODE2, CODE3, N25)
         'END'.
 
@@ -261,7 +261,7 @@ zaehlschleife(TABELLE, N21, CODE1 sto '0' ',' N4 ';' CODE2
         erhoehe(N29, N210)
         erhoehe(N210, N211)
         erhoehe(N211, N212)
-	erhoehe(N212, N213)
+        erhoehe(N212, N213)
         'END'.
 
 richtung('ft1', 'ft2', '2'):
@@ -289,7 +289,7 @@ terme(TABELLE, N21, kein, ret ';', N21):.
 terme(TABELLE, N21, TYP1, CODE3, N24):
         additionsop(TYP1, N5)
         term(TABELLE, N21, TYP1, CODE1, N22)
-	erhoehe(N22, N23)
+        erhoehe(N22, N23)
         terme(TABELLE, N23, TYP2, CODE2, N24)
         pruefe_typ(TYP1, CODE1 opr N5 ';', TYP2, CODE2, CODE3).
 
@@ -319,7 +319,7 @@ ersterfaktor(TABELLE, N21, TYP2, CODE3, N23):
 faktor(TABELLE, N21, boolean, CODE opr '8' ';', N23):
         'NOT'
         faktor(TABELLE, N21, boolean, CODE, N22)
-	erhoehe(N22, N23).
+        erhoehe(N22, N23).
 faktor(TABELLE, N21, TYP, CODE, N22):
         '('
         ausdruck(TABELLE, N21, TYP, CODE, N22)
@@ -331,35 +331,35 @@ faktor(TABELLE, N21, TYP, lit N1 ';', N22):
         erhoehe(N21, N22).
 
 additionsop(integer, '2'):
-	'+'.
+        '+'.
 additionsop(integer, '3'):
-	'-'.
+        '-'.
 additionsop(boolean, '6'):
-	'OR'.
+        'OR'.
 
 mulop(integer, '4'):
-	'*'.
+        '*'.
 mulop(integer, '5'):
-	'DIV'.
+        'DIV'.
 mulop(boolean, '7'):
-	'AND'.
+        'AND'.
 
 relation('9'):
-	'='.
+        '='.
 relation('1' '0'):
-	'<>'.
+        '<>'.
 relation('1' '1'):
-	'<'.
+        '<'.
 relation('1' '2'):
-	'>='.
+        '>='.
 relation('1' '3'):
-	'>'.
+        '>'.
 relation('1' '4'):
-	'<='.
+        '<='.
 
 signum(N2, kein, ret ';', N2): .
 signum(N2, kein, ret ';', N2):
-	'+'.
+        '+'.
 signum(N21, integer, opr '1' ';', N22):
         '-'
         erhoehe(N21, N22).
