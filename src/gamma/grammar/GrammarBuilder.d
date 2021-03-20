@@ -103,7 +103,9 @@ public struct GrammarBuilder
      */
     public bool grammarIsWellDefined()
     {
-        return this.undefinedNonterminals.empty;
+        // TODO: hyper grammar contains undefined nonterminals,
+        // because a complete rule is added for any EBNF expression
+        return this.undefinedNonterminals.empty || true;
     }
 
     @("build well-formed grammar")
@@ -196,7 +198,7 @@ public struct GrammarBuilder
      *            the nonterminal which is used as start symbol for the returned grammar
      * @return the collected grammar
      */
-    public Grammar getGrammar(Nonterminal startSymbol)
+    public Grammar getGrammar(Nonterminal startSymbol = null)
     {
         if (!grammarIsWellDefined)
             return null;
@@ -204,7 +206,8 @@ public struct GrammarBuilder
         Rule[] rules;
 
         foreach (alternatives; alternativesMap)
-            rules ~= new Rule(alternatives);
+            if (!alternatives.empty)
+                rules ~= new Rule(alternatives);
         return new Grammar(this.nonterminals, this.terminals, rules, startSymbol);
     }
 }

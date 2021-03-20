@@ -8,6 +8,7 @@ void main(string[] args)
 {
     import core.stdc.stdlib : exit, EXIT_FAILURE, EXIT_SUCCESS;
     import gamma.grammar.hyper.PrintingHyperVisitor : printingHyperVisitor;
+    import gamma.grammar.PrintingVisitor : printingVisitor;
     import gamma.input.epsilang.Analyzer : Analyzer;
     import std.datetime.stopwatch : AutoStart, StopWatch;
     import std.exception : ErrnoException;
@@ -48,6 +49,7 @@ void main(string[] args)
             auto input = File(arg);
             auto analyzer = new Analyzer(input);
 
+            info!"compiling %s"(arg);
             analyzer.parseSpecification;
 
             const errorCount = analyzer.getErrorCount;
@@ -55,14 +57,23 @@ void main(string[] args)
             switch (errorCount)
             {
                 case 0:
+                    if (auto grammar = analyzer.yieldMetaGrammar)
+                    {
+                        auto visitor = printingVisitor(stdout.lockingTextWriter);
+
+                        visitor.visit(grammar);
+                        stdout.writeln;
+                    }
+                    else
+                        stderr.writeln("meta grammar not well defined");
                     if (auto grammar = analyzer.yieldHyperGrammar)
                     {
                         auto visitor = printingHyperVisitor(stdout.lockingTextWriter);
 
-                        visitor.visit(analyzer.yieldHyperGrammar);
+                        visitor.visit(grammar);
                     }
                     else
-                        stderr.writeln("grammar not well defined");
+                        stderr.writeln("hyper grammar not well defined");
                     break;
                 case 1:
                     stderr.writeln("1 error");

@@ -123,6 +123,9 @@ class Scanner
                         readComment;
                     else
                         break;
+                else if (c == '*')
+                    // skip unsupported lexical-variable marker
+                    ++this.pos;
                 else
                     break;
             }

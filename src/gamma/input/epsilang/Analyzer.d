@@ -165,7 +165,7 @@ public class Analyzer
         if (this.token == '.')
             this.token = this.scanner.read;
         else
-            markError("symbol \".\" expected");
+            markError(`symbol "." expected`);
     }
 
     /**
@@ -216,7 +216,7 @@ public class Analyzer
         if (this.token == '.')
             this.token = this.scanner.read;
         else
-            markError("symbol \".\" expected");
+            markError(`symbol "." expected`);
     }
 
     /**
@@ -314,7 +314,7 @@ public class Analyzer
             position = this.scanner.getPosition;
             this.token = this.scanner.read;
         } else
-            markError("symbol \":\" expected");
+            markError(`symbol ":" expected`);
 
         Alternative[] alternatives = parseHyperExpr(lhs,
             formalParams ? No.formalParamsAllowed : Yes.formalParamsAllowed, No.repetition,
@@ -329,7 +329,7 @@ public class Analyzer
         if (this.token == '.')
             this.token = this.scanner.read;
         else
-            markError("symbol \".\" expected");
+            markError(`symbol "." expected`);
     }
 
     /**
@@ -499,19 +499,19 @@ public class Analyzer
                 if (open == '(')
                 {
                     if (this.token != ')')
-                        markError("symbol \")\" expected");
+                        markError(`symbol ")" expected`);
                     operator = new Group(null, rule, position);
                 }
                 else if (open == '[')
                 {
                     if (this.token != ']')
-                        markError("symbol \"]\" expected");
+                        markError(`symbol "]" expected`);
                     operator = new Option(null, rule, null, position);
                 }
                 else if (open == '{')
                 {
                     if (this.token != '}')
-                        markError("symbol \"}\" expected");
+                        markError(`symbol "}" expected`);
                     operator = new Repetition(null, rule, null, position);
                 }
                 nodes ~= operator;
@@ -530,7 +530,8 @@ public class Analyzer
                 }
                 if (this.formalParams)
                 {
-                    if (!undecidedActualParams && !spareActualParams)
+                    // FIXME: also OK for EBNF expression at beginning when LHS has no formal parameter
+                    if (!undecidedActualParams && !spareActualParams && false)
                         position.markError("actual parameters expected");
                 }
                 else
@@ -569,7 +570,7 @@ public class Analyzer
         {
             if (this.token == '+' || this.token == '-')
             {
-                markError("symbol \"+\" or \"-\" not allowed in actual parameters");
+                markError(`symbol "+" or "-" not allowed in actual parameters`);
                 this.token = this.scanner.read;
             }
             parseAffixForm;
@@ -593,7 +594,7 @@ public class Analyzer
         if (this.token == '>')
             this.token = this.scanner.read;
         else
-            markError("symbol \">\" expected");
+            markError(`symbol ">" expected`);
     }
 
     /**
@@ -610,7 +611,7 @@ public class Analyzer
                 this.token = this.scanner.read;
             }
             else
-                markError("symbol \"+\" or \"-\" expected");
+                markError(`symbol "+" or "-" expected`);
 
             const isVariable = parseAffixForm;
 
@@ -630,7 +631,7 @@ public class Analyzer
                     markError("meta-nonterminal expected");
             }
             else if (!isVariable)
-                markError("symbol \":\" expected");
+                markError(`symbol ":" expected`);
             if (this.token != ',' && this.token != '>'
                 && this.token != '.' && this.token != Scanner.END)
             {  // sync
@@ -648,7 +649,7 @@ public class Analyzer
         if (this.token == '>')
             this.token = this.scanner.read;
         else
-            markError("symbol \">\" expected");
+            markError(`symbol ">" expected`);
     }
 
     /**
@@ -701,6 +702,20 @@ public class Analyzer
     public int getErrorCount() const
     {
         return this.scanner.getErrorCount;
+    }
+
+    public Grammar yieldMetaGrammar()
+    {
+        if (this.scanner.getErrorCount == 0
+            && this.metaGrammarBuilder.grammarIsWellDefined)
+        {
+            return this.metaGrammarBuilder.getGrammar;
+        }
+        else
+        {
+            this.metaGrammarBuilder.markErrors;
+            return null;
+        }
     }
 
     public Grammar yieldHyperGrammar()
