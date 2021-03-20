@@ -120,17 +120,6 @@ public struct GrammarBuilder
         }
     }
 
-    @("build not well-formed grammar")
-    unittest
-    {
-        with (TestGrammarBuilder())
-        {
-            rule("A: B");
-
-            assert(!grammarIsWellDefined);
-        }
-    }
-
     /**
      * Marks all positions for which the grammar is not well defined.
      * If the grammar is well defined no positions are marked.
