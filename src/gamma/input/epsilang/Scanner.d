@@ -116,10 +116,10 @@ class Scanner
                     skipLine;
                 else if (isWhite(c))
                     ++this.pos;
-                else if (c == '!')
-                    skipLine;
-                else if (c == '(')
-                    if (this.source[this.pos + 1] == '*')
+                else if (c == '/')
+                    if (this.source[this.pos + 1] == '/')
+                        skipLine;
+                    else if (this.source[this.pos + 1] == '*')
                         readComment;
                     else
                         break;
@@ -186,7 +186,7 @@ class Scanner
     }
 
     private void readComment()
-    in (this.source[this.pos] == '(' && this.source[this.pos + 1] == '*')
+    in (this.source[this.pos] == '/' && this.source[this.pos + 1] == '*')
     {
         const pos = this.pos;
         int level = 1;
@@ -197,13 +197,13 @@ class Scanner
         for (;;)
         {
             c2 = this.source[++this.pos];
-            if (c1 == '(' && c2 == '*')
+            if (c1 == '/' && c2 == '*')
             {
                 ++this.pos;
                 ++level;
                 c1 = this.source[this.pos];
             }
-            else if (c1 == '*' && c2 == ')')
+            else if (c1 == '*' && c2 == '/')
             {
                 ++this.pos;
                 if (--level == 0)
@@ -212,7 +212,7 @@ class Scanner
             }
             else
                 c1 = c2;
-            while (c1 == '\n' || c1 == '\r' || c1 == '!')
+            while (c1 == '\n' || c1 == '\r')
             {
                 skipLine;
                 c1 = this.source[this.pos];

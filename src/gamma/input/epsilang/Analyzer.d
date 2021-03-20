@@ -666,7 +666,7 @@ public class Analyzer
                 this.token = this.scanner.read;
                 isVariable = false;
             }
-            else if (this.token == '#'
+            else if (this.token == '!'
                 || this.token == Scanner.SYNTACTIC_VARIABLE || this.token == Scanner.LEXICAL_VARIABLE)
             {
                 parseVariable;
@@ -680,13 +680,13 @@ public class Analyzer
 
     /**
      * Variable:
-     *     [ "#" ] ident [ number ].
+     *     [ "!" ] ident [ number ].
      */
     private void parseVariable()
-    in (this.token == '#'
+    in (this.token == '!'
         || this.token == Scanner.SYNTACTIC_VARIABLE || this.token == Scanner.LEXICAL_VARIABLE)
     {
-        if (this.token == '#')
+        if (this.token == '!')
             this.token = this.scanner.read;
         if (this.token == Scanner.SYNTACTIC_VARIABLE || this.token == Scanner.LEXICAL_VARIABLE)
         {

@@ -61,6 +61,8 @@ void main(string[] args)
 
                         visitor.visit(analyzer.yieldHyperGrammar);
                     }
+                    else
+                        stderr.writeln("grammar not well defined");
                     break;
                 case 1:
                     stderr.writeln("1 error");
@@ -77,6 +79,6 @@ void main(string[] args)
     catch (ErrnoException exception)
     {
         stderr.writeln(exception.msg);
-        assert(0);
+        exit(EXIT_FAILURE);
     }
 }
