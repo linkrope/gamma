@@ -1389,9 +1389,9 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     {
         output.writeln("if (ErrorCounter > 0)");
         output.writeln("{");
-        output.writeln(`stdout.write("  ");`);
-        output.writeln("stdout.write(ErrorCounter);");
-        output.writeln(`stdout.writeln(" errors detected");`);
+        output.writeln("import core.stdc.stdlib : exit, EXIT_FAILURE;");
+        output.writeln(`info!"errors detected: %s"(ErrorCounter);`);
+        output.writeln("exit(EXIT_FAILURE);");
         output.writeln("}");
         output.writeln("else");
         output.writeln("{");

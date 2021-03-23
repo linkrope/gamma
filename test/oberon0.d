@@ -16,7 +16,7 @@ unittest
         run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/BigSample.Mod"))
             .shouldMatch("^done$");
         run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/Error.Mod"))
-            .shouldMatch("^  31 errors detected$");
+            .shouldFail("^info: errors detected: 31$");
     }
 }
 
@@ -33,7 +33,7 @@ static foreach (eag; ["oberon0.eag", "unequal.eag"])
             run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/BigSample.Mod"))
                 .shouldMatch("^^L1 .* RET 0 $$");
             run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/Error.Mod"))
-                .shouldMatch("^  31 errors detected$");
+                .shouldFail("^info: errors detected: 31$");
         }
     }
 

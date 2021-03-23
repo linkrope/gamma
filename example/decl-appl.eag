@@ -2,32 +2,44 @@
 
 Tab = | id ";" Tab.
 
-DeclAppl <+ Tab: Tab>:
+DeclAppl <+ Tab>:
     <, Tab>
-        { <- Tab: Tab, + Tab1: Tab>
-            "DECL" id<id> Find<id, Tab, "FALSE">
+        { <- Tab, + Tab1>
+            "DECL" id< id>
+            NotAlreadyDeclared <id, Tab>
             <id ";" Tab, Tab1>
-        | <- Tab: Tab, + Tab1: Tab>
-            "APPL" id<id> Find<id, Tab, "TRUE">
+        | <- Tab, + Tab1>
+            "APPL" id< id>
+            Declared <id, Tab>
             <Tab, Tab1>
-        } <- Tab: Tab, + Tab: Tab>.
+        } <- Tab, + Tab>.
 
-x = "a" | "b".
-id* = x | id x.
+letter = "a" | "b".
+id* = letter | id letter.
 
-x<+ "a": x>: "a".
-x<+ "b": x>: "b".
+letter:
+    <+ "a": letter> "a"
+  | <+ "b": letter> "b".
 
-id*<+ id: id>:
-    x<x>
-    <x, id>
-        { <- id: id, + id1: id>
-            x<x> <id x, id1>
-        } <- id: id, + id: id>.
+id *<+ id>:
+    letter <letter>
+    <letter, id>
+        { <- id, + id1>
+            letter <letter>
+            <id letter, id1>
+        } <- id, + id>.
+
+// helper predicate for better error messages
+NotAlreadyDeclared <-id, -Tab>:
+    Find <id, Tab, "FALSE">.
+
+// helper predicate for better error messages
+Declared <-id, -Tab>:
+    Find <id, Tab, "TRUE">.
 
 Bool = "TRUE" | "FALSE".
 
-Find<- id: id, - : Tab, + "FALSE": Bool>: .
-Find<- id: id, - id ";" Tab: Tab, + "TRUE": Bool>: .
-Find<- id: id, - !id ";" Tab: Tab, + Bool: Bool>:
-    Find<id, Tab, Bool>.
+Find <- id, - : Tab, + "FALSE": Bool>: .
+Find <- id, - id ";" Tab: Tab, + "TRUE": Bool>: .
+Find <- id, - !id ";" Tab: Tab, + Bool>:
+    Find <id, Tab, Bool>.

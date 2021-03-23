@@ -94,7 +94,10 @@ void TraverseSyntaxTree(TreeType[] Tree1, Position[] PosTree1, long ErrCounter, 
     V1 = AffPos[$];
     if (ErrorCounter > 0)
     {
+        import core.stdc.stdlib : exit, EXIT_FAILURE;
+
         info!"errors detected: %s"(ErrorCounter);
+        exit(EXIT_FAILURE);
     }
     else
     {

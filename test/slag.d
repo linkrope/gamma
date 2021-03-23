@@ -95,6 +95,10 @@ unittest
             .shouldMatch("DeclAppl grammar is SLAG");
         run!"cd %s && echo DECL ab DECL ba APPL ab | ./DeclAppl"(directory)
             .shouldMatch("^ba ; ab ; $");
+        run!"cd %s && echo DECL ab DECL ab | ./DeclAppl"(directory)
+            .shouldFail("^error: predicate 'NotAlreadyDeclared' failed$");
+        run!"cd %s && echo DECL ba APPL ab | ./DeclAppl"(directory)
+            .shouldFail("^error: predicate 'Declared' failed$");
     }
 }
 
