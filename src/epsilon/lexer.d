@@ -79,10 +79,10 @@ struct Lexer
             token = Token.string_;
             readString;
         }
-        else if (input.front == '\'')
+        else if (input.front == '`')
         {
             token = Token.string_;
-            readSingleQuotedString;
+            readRawString;
         }
         else if (input.front.isAlpha || input.front == '_')
         {
@@ -300,10 +300,10 @@ struct Lexer
     }
 
     /**
-     * string: "'" { character } "'".
+     * string: "`" { character } "`".
      */
-    private void readSingleQuotedString()
-    in (input.next == '\'')
+    private void readRawString()
+    in (input.next == '`')
     {
         const begin = input.index;
 
@@ -318,17 +318,17 @@ struct Lexer
                 return;
             }
         }
-        while (input.front != '\'');
+        while (input.front != '`');
         input.popFront;
     }
 
-    @("read single-quoted string")
+    @("read raw string")
     unittest
     {
-        with (fixture(`'\n'`))
+        with (fixture("`\\`"))
         {
             assert(lexer.front == Token.string_);
-            assert(symbolTable.symbol(lexer.value) == `'\n'`);
+            assert(symbolTable.symbol(lexer.value) == "`\\`");
             assert(lexer.ok);
         }
     }

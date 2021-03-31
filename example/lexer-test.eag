@@ -5,10 +5,10 @@
 // not a line comment */
 
  ε <+ word 1 "\n" word 2: _output>:
-    // double-quoted string: "\n" represents newline
+    // string: "\n" represents newline
     word <word /* left-hand side */ 01>
-    '\n'
-    // single-quoted string: '\n' represents backslash, followed by "n"
+    `\` "n"
+    // raw string: `\` represents backslash
     word <word /* right-hand side */ 02>
 
     π <word 01, /* empty */, word 1>
