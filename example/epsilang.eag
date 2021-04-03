@@ -1,44 +1,76 @@
 // epsilon lowering
 
-Result = "OK".
+MetaRules = | MetaRule | MetaRules MetaRules.
 
-Specification <+ "OK": Result>:
-    Rule { Rule } .
+Specification <+ MetaRules1 MetaRules2: MetaRules>:
+    Rule <MetaRules1>
+    <MetaRules2>
+        { <+ MetaRules1 MetaRules2: MetaRules>
+            Rule <MetaRules1>
+            <MetaRules2>
+        } <+ : MetaRules>.
+
+LeftHandSide = name | name '*'.
 
 /*
  * Rule: MetaRule | HyperRule.
- * MetaRule: name [ "*" ] "=" MetaExpression ".".
- * HyperRule: name [ "*" ] [ FormalParameters ] ":" HyperExpression ".".
+ * MetaRule: name [ '*' ] '=' MetaExpression '.'.
+ * HyperRule: name [ '*' ] [ FormalParameters ] ':' HyperExpression '.'.
  */
-Rule:
-    name <name> [ "*" ]
-    ( "=" MetaExpression "."
-    | [ "<" FormalParameters ">" ] ":" HyperExpression "."
-    ).
+Rule <+ MetaRules>:
+    name <name>
+    <name, LeftHandSide>
+        [ <- name, + name '*': LeftHandSide>
+            '*'
+        ] <- name, + name: LeftHandSide>
+    <LeftHandSide, MetaRules>
+        ( <-LeftHandSide, + MetaRules>
+            '='
+            MetaExpression <LeftHandSide, MetaRules>
+            '.'
+        | <- LeftHandSide, + : MetaRules>
+            [ '<' FormalParameters '>' ]':' HyperExpression '.'
+        ).
 
-MetaExpression:
-    MetaTerm { "|" MetaTerm} .
+MetaRule = LeftHandSide '=' MetaTerm '.'.
+
+MetaExpression <- LeftHandSide, + LeftHandSide '=' MetaTerm '.' MetaRules: MetaRules>:
+    MetaTerm <MetaTerm>
+        <LeftHandSide, MetaRules>
+        { <- LeftHandSide, + LeftHandSide '=' MetaTerm '.' MetaRules: MetaRules>
+            '|'
+            MetaTerm <MetaTerm>
+            <LeftHandSide, MetaRules>
+        } <- LeftHandSide, + : MetaRules>.
+
+MetaTerm = | name MetaTerm | string MetaTerm.
 
 MetaTerm:
-    { name <name> | string <string> }.
+    { <+ name MetaTerm : MetaTerm>
+        name <name>
+        <MetaTerm>
+    | <+ string MetaTerm : MetaTerm>
+        string <string>
+        <MetaTerm>
+    } <+ : MetaTerm>.
 
 /*
  * HyperExpression:
  *     [ FormalParameters ] HyperTerm [ ActualParameters ]
- *     { "|" [ FormalParameters ] HyperTerm [ ActualParameters ] }.
+ *     { '|' [ FormalParameters ] HyperTerm [ ActualParameters ] }.
  */
 HyperExpression:
     HyperTerm
-    { "|" HyperTerm }.
+    { '|' HyperTerm }.
 
 /*
  * HyperTerm:
  *     { name [ ActualParameters ]
  *     | string
  *     | [ ActualParameters ]
- *         ( "(" HyperExpression ")"
- *         | "[" HyperExpression "]" [ FormalParameters ]
- *         | "{" HyperExpression "}" [ FormalParameters ]
+ *         ( '(' HyperExpression ')'
+ *         | '[' HyperExpression ']' [ FormalParameters ]
+ *         | '{' HyperExpression '}' [ FormalParameters ]
  *         )
  *     }.
  */
@@ -48,30 +80,30 @@ HyperTerm:
 HyperFactor:
     name <name>
   | string <string>
-  | ( "(" HyperExpression ")"
-    | "[" HyperExpression "]"
-    | "{" HyperExpression "}"
+  | ( '(' HyperExpression ')'
+    | '[' HyperExpression ']'
+    | '{' HyperExpression '}'
     ).
 
 /*
  * FormalParameters:
- *     "<" ( "+" | "-" ) AffixForm [ ":" name ]
- *     { "," ( "+" | "-" ) AffixForm [ ":" name ] } ">".
+ *     '<' ( '+' | '-' ) AffixForm [ ':' name ]
+ *     { ',' ( '+' | '-' ) AffixForm [ ':' name ] } '>'.
  * ActualParameters:
- *     "<" AffixForm { "," AffixForm } ">".
+ *     '<' AffixForm { ',' AffixForm } '>'.
  */
 FormalParameters:
-    ( "+" | "-" ) AffixForm [ ":" name <name> ]
-    { "," ( "+" | "-" ) AffixForm [ ":" name <name> ] }.
+    ( '+' | '-' ) AffixForm [ ':' name <name> ]
+    { ',' ( '+' | '-' ) AffixForm [ ':' name <name> ] }.
 
 ActualParameters:
-    AffixForm { "," AffixForm }.
+    AffixForm { ',' AffixForm }.
 
 Parameters:
-    "<" ( FormalParameters | ActualParameters ) ">".
+    '<' ( FormalParameters | ActualParameters ) '>'.
 
 AffixForm:
-    { string <string> | [ "!" ] name <name> [ number <number> ]}.
+    { string <string> | [ '!' ] name <name> [ number <number> ]}.
 
 name* = nameChar | name nameChar.
 
@@ -83,13 +115,13 @@ name* <+ name>:
             <name nameChar, name1>
         } <- name, + name>.
 
-nameChar = letter | "_".
+nameChar = letter | '_'.
 
 nameChar:
     <+ letter: nameChar>
         letter <letter>
-  | <+ "_": nameChar>
-        "_".
+  | <+ '_': nameChar>
+        '_'.
 
 number* = digit | number digit.
 
@@ -101,116 +133,150 @@ number* <+ number>:
             <number digit, number1>
         } <-number, + number>.
 
-string = `"` stringLiteral `"` | "`" rawStringLiteral "`".
+string* =
+    `'` singleQuotedString `'`
+  | '"' doubleQuotedString '"'
+  | '`' backQuotedString '`'.
 
 string*:
-    <+ `"` stringLiteral `"`: string>
-        `"` stringLiteral <stringLiteral> `"`
-  | <+ "`" rawStringLiteral "`": string>
-        "`" rawStringLiteral <rawStringLiteral> "`".
+    <+ `'` singleQuotedString `'`: string>
+        `'` singleQuotedString <singleQuotedString> `'`
+  | <+ '"' doubleQuotedString '"': string>
+        '"' doubleQuotedString <doubleQuotedString> '"'
+  | <+ '`' backQuotedString '`': string>
+        '`' backQuotedString <backQuotedString> '`'.
 
-// string literal with backslash escapes interpreted
-stringLiteral =
-    | char stringLiteral
-    | "`" stringLiteral
-    | backslashEscape stringLiteral.
+singleQuotedString = | singleQuotedChar singleQuotedString.
 
-stringLiteral:
-    { <+ char stringLiteral: stringLiteral>
+singleQuotedString:
+    { <+ singleQuotedChar singleQuotedString: singleQuotedString>
+        singleQuotedChar <singleQuotedChar>
+        <singleQuotedString>
+    } <+ : singleQuotedString>.
+
+singleQuotedChar = char | '"' | '`' | backslashEscape.
+
+singleQuotedChar:
+    <+ char: singleQuotedChar>
         char <char>
-        <stringLiteral>
-    | <+ "`" stringLiteral: stringLiteral>
-        "`"
-        <stringLiteral>
-    | <+ backslashEscape stringLiteral : stringLiteral>
-        backslashEscape <backslashEscape>
-        <stringLiteral>
-    } <+ : stringLiteral>.
+  | <+ '"': singleQuotedChar>
+        '"'
+  | <+ '`': singleQuotedChar>
+        '`'
+  | <+ backslashEscape: singleQuotedChar>
+        backslashEscape <backslashEscape>.
+
+doubleQuotedString = | doubleQuotedChar doubleQuotedString.
+
+doubleQuotedString:
+    { <+ doubleQuotedChar doubleQuotedString: doubleQuotedString>
+        doubleQuotedChar <doubleQuotedChar>
+        <doubleQuotedString>
+    } <+ : doubleQuotedString>.
+
+doubleQuotedChar = char | `'` | '`' | backslashEscape.
+
+doubleQuotedChar:
+    <+ char: doubleQuotedChar>
+        char <char>
+  | <+ `'`: doubleQuotedChar>
+        `'`
+  | <+ '`': doubleQuotedChar>
+        '`'
+  | <+ backslashEscape: doubleQuotedChar>
+        backslashEscape <backslashEscape>.
 
 // backslash escape modeled just enough to escape a quote or a backslash
 backslashEscape =
     `\` char
-  | `\` `"`
+  | `\` `'`
+  | `\` '"'
   | `\` `\`
-  | `\` "`".
+  | `\` '`'.
 
 backslashEscape <+ backslashEscape>:
     `\`
     <backslashEscape>
         ( <+ `\` char: backslashEscape>
             char <char>
-        | <+ `\` `"`: backslashEscape>
-            `"`
+        | <+ `\` `'`: backslashEscape>
+            `'`
+        | <+ `\` '"': backslashEscape>
+            '"'
         | <+ `\` `\`: backslashEscape>
             `\`
-        | <+ `\` "`": backslashEscape>
-            "`"
+        | <+ `\` '`': backslashEscape>
+            '`'
         ).
 
-rawStringLiteral =
-    | char rawStringLiteral
-    | `"` rawStringLiteral
-    | `\` rawStringLiteral.
+// raw string literal without backslash escapes
+backQuotedString = | backQuotedChar backQuotedString.
 
-rawStringLiteral:
-    { <+ char rawStringLiteral: rawStringLiteral>
+backQuotedString:
+    { <+ backQuotedChar backQuotedString: backQuotedString>
+        backQuotedChar <backQuotedChar>
+        <backQuotedString>
+    } <+ : backQuotedString>.
+
+backQuotedChar = char | `'` | '"' | `\`.
+
+backQuotedChar:
+    <+ char: backQuotedChar>
         char <char>
-        <rawStringLiteral>
-    | <+ `"` rawStringLiteral: rawStringLiteral>
-        `"`
-        <rawStringLiteral>
-    | <+ `\` rawStringLiteral: rawStringLiteral>
-        `\`
-        <rawStringLiteral>
-    } <+ : rawStringLiteral>.
+  | <+ `'`: backQuotedChar>
+        `'`
+  | <+ '"': backQuotedChar>
+        '"'
+  | <+ `\`: backQuotedChar>
+        `\`.
 
-// any character except double quote, backslash, and backquote
+// any character except single quote, double quote, backslash, and backquote
 char =
     letter
   | digit
-  | " " | "!" | "#" | "$" | "%" | "&" | "'" | "(" | ")" | "*" | "+" | "," | "-"
-  | "." | "/" | ":" | ";" | "<" | "=" | ">" | "?" | "@" | "[" | "]" | "^" | "_"
-  | "{" | "|" | "}" | "~".
+  | ' ' | '!' | '#' | '$' | '%' | '&' | '(' | ')' | '*' | '+' | ',' | '-'
+  | '.' | '/' | ':' | ';' | '<' | '=' | '>' | '?' | '@' | '[' | ']' | '^'
+  | '_' | '{' | '|' | '}' | '~'.
 
 char:
     <+ letter: char>
         letter <letter>
   | <+ digit: char>
         digit <digit>
-  | <+ " ": char> " " | <+ "!": char> "!" | <+ "#": char> "#" | <+ "$": char> "$"
-  | <+ "%": char> "%" | <+ "&": char> "&" | <+ "'": char> "'" | <+ "(": char> "("
-  | <+ ")": char> ")" | <+ "*": char> "*" | <+ "+": char> "+" | <+ ",": char> ","
-  | <+ "-": char> "-" | <+ ".": char> "." | <+ "/": char> "/" | <+ ":": char> ":"
-  | <+ ";": char> ";" | <+ "<": char> "<" | <+ "=": char> "=" | <+ ">": char> ">"
-  | <+ "?": char> "?" | <+ "@": char> "@" | <+ "[": char> "[" | <+ "]": char> "]"
-  | <+ "^": char> "^" | <+ "_": char> "_" | <+ "{": char> "{" | <+ "|": char> "|"
-  | <+ "}": char> "}" | <+ "~": char> "~".
+  | <+ ' ': char> ' ' | <+ '!': char> '!' | <+ '#': char> '#' | <+ '$': char> '$'
+  | <+ '%': char> '%' | <+ '&': char> '&' | <+ '(': char> '(' | <+ ')': char> ')'
+  | <+ '*': char> '*' | <+ '+': char> '+' | <+ ',': char> ',' | <+ '-': char> '-'
+  | <+ '.': char> '.' | <+ '/': char> '/' | <+ ':': char> ':' | <+ ';': char> ';'
+  | <+ '<': char> '<' | <+ '=': char> '=' | <+ '>': char> '>' | <+ '?': char> '?'
+  | <+ '@': char> '@' | <+ '[': char> '[' | <+ ']': char> ']' | <+ '^': char> '^'
+  | <+ '_': char> '_' | <+ '{': char> '{' | <+ '|': char> '|' | <+ '}': char> '}'
+  | <+ '~': char> '~'.
 
 letter =
-    "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m"
-  | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
-  | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M"
-  | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z".
+    'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm'
+  | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z'
+  | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M'
+  | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z'.
 
 letter:
-    <+ "a": letter> "a" | <+ "b": letter> "b" | <+ "c": letter> "c" | <+ "d": letter> "d"
-  | <+ "e": letter> "e" | <+ "f": letter> "f" | <+ "g": letter> "g" | <+ "h": letter> "h"
-  | <+ "i": letter> "i" | <+ "j": letter> "j" | <+ "k": letter> "k" | <+ "l": letter> "l"
-  | <+ "m": letter> "m" | <+ "n": letter> "n" | <+ "o": letter> "o" | <+ "p": letter> "p"
-  | <+ "q": letter> "q" | <+ "r": letter> "r" | <+ "s": letter> "s" | <+ "t": letter> "t"
-  | <+ "u": letter> "u" | <+ "v": letter> "v" | <+ "w": letter> "w" | <+ "x": letter> "x"
-  | <+ "y": letter> "y" | <+ "z": letter> "z"
-  | <+ "A": letter> "A" | <+ "B": letter> "B" | <+ "C": letter> "C" | <+ "D": letter> "D"
-  | <+ "E": letter> "E" | <+ "F": letter> "F" | <+ "G": letter> "G" | <+ "H": letter> "H"
-  | <+ "I": letter> "I" | <+ "J": letter> "J" | <+ "K": letter> "K" | <+ "L": letter> "L"
-  | <+ "M": letter> "M" | <+ "N": letter> "N" | <+ "O": letter> "O" | <+ "P": letter> "P"
-  | <+ "Q": letter> "Q" | <+ "R": letter> "R" | <+ "S": letter> "S" | <+ "T": letter> "T"
-  | <+ "U": letter> "U" | <+ "V": letter> "V" | <+ "W": letter> "W" | <+ "X": letter> "X"
-  | <+ "Y": letter> "Y" | <+ "Z": letter> "Z".
+    <+ 'a': letter> 'a' | <+ 'b': letter> 'b' | <+ 'c': letter> 'c' | <+ 'd': letter> 'd'
+  | <+ 'e': letter> 'e' | <+ 'f': letter> 'f' | <+ 'g': letter> 'g' | <+ 'h': letter> 'h'
+  | <+ 'i': letter> 'i' | <+ 'j': letter> 'j' | <+ 'k': letter> 'k' | <+ 'l': letter> 'l'
+  | <+ 'm': letter> 'm' | <+ 'n': letter> 'n' | <+ 'o': letter> 'o' | <+ 'p': letter> 'p'
+  | <+ 'q': letter> 'q' | <+ 'r': letter> 'r' | <+ 's': letter> 's' | <+ 't': letter> 't'
+  | <+ 'u': letter> 'u' | <+ 'v': letter> 'v' | <+ 'w': letter> 'w' | <+ 'x': letter> 'x'
+  | <+ 'y': letter> 'y' | <+ 'z': letter> 'z'
+  | <+ 'A': letter> 'A' | <+ 'B': letter> 'B' | <+ 'C': letter> 'C' | <+ 'D': letter> 'D'
+  | <+ 'E': letter> 'E' | <+ 'F': letter> 'F' | <+ 'G': letter> 'G' | <+ 'H': letter> 'H'
+  | <+ 'I': letter> 'I' | <+ 'J': letter> 'J' | <+ 'K': letter> 'K' | <+ 'L': letter> 'L'
+  | <+ 'M': letter> 'M' | <+ 'N': letter> 'N' | <+ 'O': letter> 'O' | <+ 'P': letter> 'P'
+  | <+ 'Q': letter> 'Q' | <+ 'R': letter> 'R' | <+ 'S': letter> 'S' | <+ 'T': letter> 'T'
+  | <+ 'U': letter> 'U' | <+ 'V': letter> 'V' | <+ 'W': letter> 'W' | <+ 'X': letter> 'X'
+  | <+ 'Y': letter> 'Y' | <+ 'Z': letter> 'Z'.
 
-digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9".
+digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'.
 
 digit:
-    <+ "0": digit> "0" | <+ "1": digit> "1" | <+ "2": digit> "2" | <+ "3": digit> "3"
-  | <+ "4": digit> "4" | <+ "5": digit> "5" | <+ "6": digit> "6" | <+ "7": digit> "7"
-  | <+ "8": digit> "8" | <+ "9": digit> "9".
+    <+ '0': digit> '0' | <+ '1': digit> '1' | <+ '2': digit> '2' | <+ '3': digit> '3'
+  | <+ '4': digit> '4' | <+ '5': digit> '5' | <+ '6': digit> '6' | <+ '7': digit> '7'
+  | <+ '8': digit> '8' | <+ '9': digit> '9'.

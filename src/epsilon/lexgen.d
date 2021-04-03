@@ -37,22 +37,22 @@ in (EAG.Performed(EAG.analysed))
         const s = Str.toStringz;
 
         Len = 0;
-        if (s[0] != '`' && s[0] != '"' || s[1] == 0 || s[1] == s[0])
+        if (s[0] != '\'' && s[0] != '"'  && s[0] != '`' || s[1] == 0 || s[1] == s[0])
         {
             Err("must be non empty string");
             return;
         }
-        if (s[1] == '`' || s[1] == '"' || s[1] == ' ')
+        if (s[1] == '\'' || s[1] == '"' || s[1] == '`' || s[1] == ' ')
         {
             i = 2;
+        }
+        else if ((s[0] == '\'' || s[0] == '"') && s[1] == '\\')
+        {
+            i = 3;
         }
         else if (s[0] == '`' && s[1] == '\\')
         {
             i = 2;
-        }
-        else if (s[0] == '"' && s[1] == '\\')
-        {
-            i = 3;
         }
         else if (IsIdent[s[1]])
         {
@@ -135,7 +135,16 @@ in (EAG.Performed(EAG.analysed))
 
 private string repr(int id)
 {
-    return EAG.symbolTable.symbol(id);
+    import std.range : dropBackOne, dropOne, front, only;
+    import std.format : format;
+
+    const value = EAG.symbolTable.symbol(id);
+
+    if (value.front == '\'')
+    {
+        return format!"%(%s%)"(only(value.dropOne.dropBackOne));
+    }
+    return value;
 
 }
 
@@ -153,6 +162,7 @@ static this() @nogc nothrow @safe
         IsSymbol[i] = false;
     for (int i = ' ' + 1; i < IsSymbol.length; ++i)
         IsSymbol[i] = !IsIdent[i];
-    IsSymbol['`'] = false;
+    IsSymbol['\''] = false;
     IsSymbol['"'] = false;
+    IsSymbol['`'] = false;
 }

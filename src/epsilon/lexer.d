@@ -74,7 +74,7 @@ struct Lexer
             }
 
         }
-        if (input.front == '"')
+        if (input.front == '"' || input.front == '\'')
         {
             token = Token.string_;
             readString;
@@ -227,11 +227,14 @@ struct Lexer
     }
 
     /**
-     * string: '"' { character | '\' character } '"'.
+     * string:
+     *     "'" { character | '\' character } "'"
+     *   | '"' { character | '\' character } '"'.
      */
     private void readString()
-    in (input.next == '"')
+    in (input.next == '"' || input.next == '\'')
     {
+        const quote = input.next;
         const begin = input.index;
 
         scope (exit)
@@ -251,11 +254,22 @@ struct Lexer
                 return;
             }
         }
-        while (input.front != '"');
+        while (input.front != quote);
         input.popFront;
     }
 
-    @("read string")
+    @("read single-quoted string")
+    unittest
+    {
+        with (fixture("'foo'"))
+        {
+            assert(lexer.front == Token.string_);
+            assert(symbolTable.symbol(lexer.value) == "'foo'");
+            assert(lexer.ok);
+        }
+    }
+
+    @("read double-quoted string")
     unittest
     {
         with (fixture(`"foo"`))
@@ -269,10 +283,10 @@ struct Lexer
     @("read empty string")
     unittest
     {
-        with (fixture(`""`))
+        with (fixture(`''`))
         {
             assert(lexer.front == Token.string_);
-            assert(symbolTable.symbol(lexer.value) == `""`);
+            assert(symbolTable.symbol(lexer.value) == `''`);
             assert(lexer.ok);
         }
     }
@@ -280,10 +294,10 @@ struct Lexer
     @("read string with escape sequence")
     unittest
     {
-        with (fixture(`"\""`))
+        with (fixture(`'\''`))
         {
             assert(lexer.front == Token.string_);
-            assert(symbolTable.symbol(lexer.value) == `"\""`);
+            assert(symbolTable.symbol(lexer.value) == `'\''`);
             assert(lexer.ok);
         }
     }
@@ -291,10 +305,10 @@ struct Lexer
     @("read invalid string")
     unittest
     {
-        with (fixture(`"foo`))
+        with (fixture(`'foo`))
         {
             assert(lexer.front == Token.string_);
-            assert(symbolTable.symbol(lexer.value) == `"foo`);
+            assert(symbolTable.symbol(lexer.value) == `'foo`);
             assert(!lexer.ok);
         }
     }

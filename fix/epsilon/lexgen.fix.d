@@ -54,7 +54,7 @@ void Get2(ref int Tok)
             {
                 Keyword(Tok);
             }
-            else if (Ch == '"' || Ch == '\'')
+            else if (Ch == '\'' || Ch == '"' || Ch == '`')
             {
                 StringCh = Ch;
                 mode = string_;
@@ -122,7 +122,7 @@ void Get3(ref int Tok)
             {
                 Keyword(Tok);
             }
-            else if (Ch == '"' || Ch == '\'')
+            else if (Ch == '\'' || Ch == '"' || Ch == '`')
             {
                 StringCh = Ch;
                 mode = string_;
