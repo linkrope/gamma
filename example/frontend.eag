@@ -1,38 +1,38 @@
 // Oberon-0 (frontend)  MK 04.96
 
-Msg = "done".
+Msg = 'done'.
 
-OberonO <+ "done": Msg>:
+OberonO <+ 'done': Msg>:
   Module.
 
 letter =
-    "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m"
-  | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
-  | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M"
-  | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z".
+    'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm'
+  | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z'
+  | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M'
+  | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z'.
 
 letter:
-    <+ "a": letter> "a" | <+ "b": letter> "b" | <+ "c": letter> "c" | <+ "d": letter> "d"
-  | <+ "e": letter> "e" | <+ "f": letter> "f" | <+ "g": letter> "g" | <+ "h": letter> "h"
-  | <+ "i": letter> "i" | <+ "j": letter> "j" | <+ "k": letter> "k" | <+ "l": letter> "l"
-  | <+ "m": letter> "m" | <+ "n": letter> "n" | <+ "o": letter> "o" | <+ "p": letter> "p"
-  | <+ "q": letter> "q" | <+ "r": letter> "r" | <+ "s": letter> "s" | <+ "t": letter> "t"
-  | <+ "u": letter> "u" | <+ "v": letter> "v" | <+ "w": letter> "w" | <+ "x": letter> "x"
-  | <+ "y": letter> "y" | <+ "z": letter> "z"
-  | <+ "A": letter> "A" | <+ "B": letter> "B" | <+ "C": letter> "C" | <+ "D": letter> "D"
-  | <+ "E": letter> "E" | <+ "F": letter> "F" | <+ "G": letter> "G" | <+ "H": letter> "H"
-  | <+ "I": letter> "I" | <+ "J": letter> "J" | <+ "K": letter> "K" | <+ "L": letter> "L"
-  | <+ "M": letter> "M" | <+ "N": letter> "N" | <+ "O": letter> "O" | <+ "P": letter> "P"
-  | <+ "Q": letter> "Q" | <+ "R": letter> "R" | <+ "S": letter> "S" | <+ "T": letter> "T"
-  | <+ "U": letter> "U" | <+ "V": letter> "V" | <+ "W": letter> "W" | <+ "X": letter> "X"
-  | <+ "Y": letter> "Y" | <+ "Z": letter> "Z".
+    <+ 'a': letter> 'a' | <+ 'b': letter> 'b' | <+ 'c': letter> 'c' | <+ 'd': letter> 'd'
+  | <+ 'e': letter> 'e' | <+ 'f': letter> 'f' | <+ 'g': letter> 'g' | <+ 'h': letter> 'h'
+  | <+ 'i': letter> 'i' | <+ 'j': letter> 'j' | <+ 'k': letter> 'k' | <+ 'l': letter> 'l'
+  | <+ 'm': letter> 'm' | <+ 'n': letter> 'n' | <+ 'o': letter> 'o' | <+ 'p': letter> 'p'
+  | <+ 'q': letter> 'q' | <+ 'r': letter> 'r' | <+ 's': letter> 's' | <+ 't': letter> 't'
+  | <+ 'u': letter> 'u' | <+ 'v': letter> 'v' | <+ 'w': letter> 'w' | <+ 'x': letter> 'x'
+  | <+ 'y': letter> 'y' | <+ 'z': letter> 'z'
+  | <+ 'A': letter> 'A' | <+ 'B': letter> 'B' | <+ 'C': letter> 'C' | <+ 'D': letter> 'D'
+  | <+ 'E': letter> 'E' | <+ 'F': letter> 'F' | <+ 'G': letter> 'G' | <+ 'H': letter> 'H'
+  | <+ 'I': letter> 'I' | <+ 'J': letter> 'J' | <+ 'K': letter> 'K' | <+ 'L': letter> 'L'
+  | <+ 'M': letter> 'M' | <+ 'N': letter> 'N' | <+ 'O': letter> 'O' | <+ 'P': letter> 'P'
+  | <+ 'Q': letter> 'Q' | <+ 'R': letter> 'R' | <+ 'S': letter> 'S' | <+ 'T': letter> 'T'
+  | <+ 'U': letter> 'U' | <+ 'V': letter> 'V' | <+ 'W': letter> 'W' | <+ 'X': letter> 'X'
+  | <+ 'Y': letter> 'Y' | <+ 'Z': letter> 'Z'.
 
-digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9".
+digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'.
 
 digit:
-    <+ "0": digit> "0" | <+ "1": digit> "1" | <+ "2": digit> "2" | <+ "3": digit> "3"
-  | <+ "4": digit> "4" | <+ "5": digit> "5" | <+ "6": digit> "6" | <+ "7": digit> "7"
-  | <+ "8": digit> "8" | <+ "9": digit> "9".
+    <+ '0': digit> '0' | <+ '1': digit> '1' | <+ '2': digit> '2' | <+ '3': digit> '3'
+  | <+ '4': digit> '4' | <+ '5': digit> '5' | <+ '6': digit> '6' | <+ '7': digit> '7'
+  | <+ '8': digit> '8' | <+ '9': digit> '9'.
 
 letgits = | letter letgits | digit letgits.
 ident* = letter letgits.
@@ -50,65 +50,65 @@ integer*:
   digit <digit> {digit <digit>}.
 
 Selector:
-  { <- Table: Table, - "RECORD" Scope: Type, + Type: Type>
-      "." ident <ident> FindObject <Scope, ident, "FIELD" Type1>
+  { <- Table: Table, - 'RECORD' Scope: Type, + Type: Type>
+      '.' ident <ident> FindObject <Scope, ident, 'FIELD' Type1>
       <Table, Type1, Type>
-  | <- Table: Table, - "ARRAY" Type1: Type, + Type: Type>
-      "[" Expression <Table, "RVAL", "INT"> "]"
+  | <- Table: Table, - 'ARRAY' Type1: Type, + Type: Type>
+      '[' Expression <Table, 'RVAL', 'INT'> ']'
       <Table, Type1, Type>
   } <- Table: Table, - Type: Type, + Type: Type>.
 
-Val = "LVAL" | RVal.
-RVal = "RVAL" | "CONST".
+Val = 'LVAL' | RVal.
+RVal = 'RVAL' | 'CONST'.
 
 Factor:
     <- Table: Table, - Val: Val, + Type: Type>
       ident <ident> Find <Table, ident, Object>
 
       <Object, Val, Type1>
-        ( <- "CONST" Type: Object, - RVal: Val, + Type: Type>
-        | <- "VAR" Type: Object, - "LVAL": Val, + Type: Type>
-        | <- "VAR" Type: Object, - "RVAL": Val, + Type: Type>
-        | <- "REF" Type: Object, - "LVAL": Val, + Type: Type>
-        | <- "REF" Type: Object, - "RVAL": Val, + Type: Type>
+        ( <- 'CONST' Type: Object, - RVal: Val, + Type: Type>
+        | <- 'VAR' Type: Object, - 'LVAL': Val, + Type: Type>
+        | <- 'VAR' Type: Object, - 'RVAL': Val, + Type: Type>
+        | <- 'REF' Type: Object, - 'LVAL': Val, + Type: Type>
+        | <- 'REF' Type: Object, - 'RVAL': Val, + Type: Type>
         )
       Selector <Table, Type1, Type>
-  | <- Table: Table, - RVal: Val, + "INT": Type>
+  | <- Table: Table, - RVal: Val, + 'INT': Type>
       integer
   | <- Table: Table, - RVal: Val, + Type: Type>
-      "(" Expression <Table, RVal, Type> ")"
-  | <- Table: Table, - RVal: Val, + "BOOL": Type>
-      "~" Factor <Table, RVal, "BOOL">.
+      '(' Expression <Table, RVal, Type> ')'
+  | <- Table: Table, - RVal: Val, + 'BOOL': Type>
+      '~' Factor <Table, RVal, 'BOOL'>.
 
 Term <- Table: Table, - Val: Val, + Type: Type>:
   Factor <Table, Val, Type>
   <Table, Val, Type>
     { <- Table: Table, - RVal: Val, - Type: Type>
         <Type>
-          ( <- "INT": Type> ("*" | "DIV" | "MOD")
-          | <- "BOOL": Type> "&"
+          ( <- 'INT': Type> ('*' | 'DIV' | 'MOD')
+          | <- 'BOOL': Type> '&'
           )
         Factor <Table, RVal, Type>
         <Table, RVal, Type>
     } <- Table: Table, - Val: Val, - Type: Type>.
 
-Sign = "+" | "-" | "NIL".
+Sign = '+' | '-' | 'NIL'.
 
 SimpleExpression <- Table: Table, - Val: Val, + Type: Type>:
   <Val, Sign>
-    [ <- RVal: Val, + "+": Sign> "+"
-    | <- RVal: Val, + "-": Sign> "-"
-    ] <- Val: Val, + "NIL": Sign>
+    [ <- RVal: Val, + '+': Sign> '+'
+    | <- RVal: Val, + '-': Sign> '-'
+    ] <- Val: Val, + 'NIL': Sign>
   Term <Table, Val, Type>
   <Sign, Type>
-    [ <- "+": Sign, - "INT": Type>
-    | <- "-": Sign, - "INT": Type>
-    ] <- "NIL": Sign, - Type: Type>
+    [ <- '+': Sign, - 'INT': Type>
+    | <- '-': Sign, - 'INT': Type>
+    ] <- 'NIL': Sign, - Type: Type>
   <Table, Val, Type>
     { <- Table: Table, - RVal: Val, - Type: Type>
         <Type>
-          ( <- "INT": Type> ("+" | "-")
-          | <- "BOOL": Type> "OR"
+          ( <- 'INT': Type> ('+' | '-')
+          | <- 'BOOL': Type> 'OR'
           )
         Term <Table, RVal, Type>
         <Table, RVal, Type>
@@ -117,57 +117,57 @@ SimpleExpression <- Table: Table, - Val: Val, + Type: Type>:
 Expression <- Table: Table, - Val: Val, + Type: Type>:
   SimpleExpression <Table, Val, Type1>
   <Table, Val, Type1, Type>
-    [ <- Table: Table, - RVal: Val, - Type: Type, + "BOOL": Type>
+    [ <- Table: Table, - RVal: Val, - Type: Type, + 'BOOL': Type>
         <Type>
-          ( <- BasicType: Type> ("=" | "#")
-          | <- "INT": Type> ("<" | "<=" | ">" | ">=")
+          ( <- BasicType: Type> ('=' | '#')
+          | <- 'INT': Type> ('<' | '<=' | '>' | '>=')
           )
         SimpleExpression <Table, RVal, Type>
     ] <- Table: Table, - Val: Val, - Type: Type, + Type: Type>.
 
 ActualParameters <- Table: Table, - Parameters: Parameters>:
-  "("
+  '('
   <Table, Parameters>
     [ <- Table: Table, - Val Type Parameters: Parameters>
         Expression <Table, Val, Type>
 
         <Table, Parameters>
           { <- Table: Table, - Val Type Parameters: Parameters>
-              "," Expression <Table, Val, Type>  <Table, Parameters>
-          } <- Table: Table, - "NIL": Parameters>
-    ] <- Table: Table, - "NIL": Parameters>
-  ")".
+              ',' Expression <Table, Val, Type>  <Table, Parameters>
+          } <- Table: Table, - 'NIL': Parameters>
+    ] <- Table: Table, - 'NIL': Parameters>
+  ')'.
 
 AssignmentOrProcedureCall:
     <- Table: Table, - Object: Object>
       <Object, Type1>
-        ( <- "VAR" Type: Object, + Type: Type>
-        | <- "REF" Type: Object, + Type: Type>
+        ( <- 'VAR' Type: Object, + Type: Type>
+        | <- 'REF' Type: Object, + Type: Type>
         )
-      Selector <Table, Type1, BasicType> ":=" Expression <Table, "RVAL", BasicType>
-  | <- Table: Table, - "PROC" Parameters: Object>
+      Selector <Table, Type1, BasicType> ':=' Expression <Table, 'RVAL', BasicType>
+  | <- Table: Table, - 'PROC' Parameters: Object>
       <Table, Parameters>
         [ <- Table: Table, - Parameters: Parameters>
             ActualParameters <Table, Parameters>
-        ] <- Table: Table, - "NIL": Parameters>.
+        ] <- Table: Table, - 'NIL': Parameters>.
 
 IfStatement <- Table: Table>:
-  "IF" Expression <Table, "RVAL", "BOOL"> "THEN" StatementSequence <Table>
+  'IF' Expression <Table, 'RVAL', 'BOOL'> 'THEN' StatementSequence <Table>
   <Table>
     { <- Table: Table>
-        "ELSIF" Expression <Table, "RVAL", "BOOL"> "THEN" StatementSequence <Table>  <Table>
+        'ELSIF' Expression <Table, 'RVAL', 'BOOL'> 'THEN' StatementSequence <Table>  <Table>
     } <- Table: Table>
   <Table>
     [ <- Table: Table>
-        "ELSE" StatementSequence <Table>
+        'ELSE' StatementSequence <Table>
     ] <- Table: Table>
-  "END".
+  'END'.
 
 WhileStatement <- Table: Table>:
-  "WHILE" Expression <Table, "RVAL", "BOOL"> "DO" StatementSequence <Table> "END".
+  'WHILE' Expression <Table, 'RVAL', 'BOOL'> 'DO' StatementSequence <Table> 'END'.
 
 RepeatStatement <- Table: Table>:
-  "REPEAT" StatementSequence <Table> "UNTIL" Expression <Table, "RVAL", "BOOL">.
+  'REPEAT' StatementSequence <Table> 'UNTIL' Expression <Table, 'RVAL', 'BOOL'>.
 
 Statement:
   [ <- Table: Table>
@@ -185,178 +185,178 @@ StatementSequence <- Table: Table>:
   Statement <Table>
   <Table>
     { <- Table: Table>
-        ";" Statement <Table>  <Table>
+        ';' Statement <Table>  <Table>
     } <- Table: Table>.
 
-IdentList = "NIL" | ident ";" IdentList.
+IdentList = 'NIL' | ident ';' IdentList.
 
-IdentList <+ ident ";" IdentList: IdentList>:
+IdentList <+ ident ';' IdentList: IdentList>:
   ident <ident>
   <IdentList>
-    { <+ ident ";" IdentList: IdentList>
-        "," ident <ident>  <IdentList>
-    } <+ "NIL": IdentList>.
+    { <+ ident ';' IdentList: IdentList>
+        ',' ident <ident>  <IdentList>
+    } <+ 'NIL': IdentList>.
 
 
-BasicType = "INT" | "BOOL".
-Type = BasicType | "ARRAY" Type | "RECORD" Scope.
+BasicType = 'INT' | 'BOOL'.
+Type = BasicType | 'ARRAY' Type | 'RECORD' Scope.
 
-ArrayType <- Table: Table, + "ARRAY" Type: Type>:
-  "ARRAY" Expression <Table, "CONST", "INT"> "OF" Type <Table, Type>.
+ArrayType <- Table: Table, + 'ARRAY' Type: Type>:
+  'ARRAY' Expression <Table, 'CONST', 'INT'> 'OF' Type <Table, Type>.
 
 FieldList:
   [ <- Table: Table, - Scope1: Scope, + Scope: Scope>
-      IdentList <IdentList> Insert <Scope1, IdentList, "UNDEF", Scope2>
-      ":" Type <Table Scope2, Type>
-      Insert <Scope1, IdentList, "FIELD" Type, Scope>
+      IdentList <IdentList> Insert <Scope1, IdentList, 'UNDEF', Scope2>
+      ':' Type <Table Scope2, Type>
+      Insert <Scope1, IdentList, 'FIELD' Type, Scope>
   ] <- Table: Table, - Scope: Scope, + Scope: Scope>.
 
-RecordType <- Table: Table, + "RECORD" Scope: Type>:
-  "RECORD" FieldList <Table, "HEAD", Scope1>
+RecordType <- Table: Table, + 'RECORD' Scope: Type>:
+  'RECORD' FieldList <Table, 'HEAD', Scope1>
   <Table, Scope1, Scope>
     { <- Table: Table, - Scope1: Scope, + Scope: Scope>
-        ";" FieldList <Table, Scope1, Scope2>  <Table, Scope2, Scope>
+        ';' FieldList <Table, Scope1, Scope2>  <Table, Scope2, Scope>
     } <- Table: Table, - Scope: Scope, + Scope: Scope>
-  "END".
+  'END'.
 
 Type:
     <- Table: Table, + Type: Type>
-      ident <ident> Find <Table, ident, "TYPE" Type>
+      ident <ident> Find <Table, ident, 'TYPE' Type>
   | <- Table: Table, + Type: Type>
       ArrayType <Table, Type>
   | <- Table: Table, + Type: Type>
       RecordType <Table, Type>.
 
 Object =
-    "UNDEF"
-  | "CONST" Type | "TYPE" Type | "FIELD" Type | "VAR" Type | "REF" Type | "PROC" Parameters.
-Scope = "HEAD" | Scope ident Object.
+    'UNDEF'
+  | 'CONST' Type | 'TYPE' Type | 'FIELD' Type | 'VAR' Type | 'REF' Type | 'PROC' Parameters.
+Scope = 'HEAD' | Scope ident Object.
 
-ObjNil = Object | "NIL".
+ObjNil = Object | 'NIL'.
 
 FindObject:
-    <- "HEAD": Scope, - ident: ident, + "NIL": ObjNil>
+    <- 'HEAD': Scope, - ident: ident, + 'NIL': ObjNil>
   | <- Scope ident Object: Scope, - ident: ident, + Object: ObjNil>
   | <- Scope !ident Object: Scope, - ident: ident, + ObjNil: ObjNil>
       FindObject <Scope, ident, ObjNil>.
 
 Insert:
-  { <- Scope1: Scope, - ident ";" IdentList: IdentList, - Object: Object, + Scope: Scope>
-      FindObject <Scope1, ident, "NIL">
+  { <- Scope1: Scope, - ident ';' IdentList: IdentList, - Object: Object, + Scope: Scope>
+      FindObject <Scope1, ident, 'NIL'>
       <Scope1 ident Object, IdentList, Object, Scope>
-  } <- Scope: Scope, - "NIL": IdentList, - Object: Object, + Scope: Scope>.
+  } <- Scope: Scope, - 'NIL': IdentList, - Object: Object, + Scope: Scope>.
 
 Table = | Table Scope.
 
 Find <- Table: Table, - ident: ident, + Object: Object>:
-  <Table, ident, "NIL", Object>
-    { <- Table Scope: Table, - ident: ident, - "NIL": ObjNil, + Object: Object>
+  <Table, ident, 'NIL', Object>
+    { <- Table Scope: Table, - ident: ident, - 'NIL': ObjNil, + Object: Object>
         FindObject <Scope, ident, ObjNil>
         <Table, ident, ObjNil, Object>
     } <- Table: Table, - ident: ident, - Object: ObjNil, + Object: Object>.
 
-Kind = "VAR" | "VAL".
+Kind = 'VAR' | 'VAL'.
 
 FPSection <- Table: Table, - Scope1: Scope, + Scope: Scope>:
   <Kind>
-    [ <+ "VAR": Kind> "VAR"
-    ] <+ "VAL": Kind>
-  IdentList <IdentList> Insert <Scope1, IdentList, "UNDEF", Scope2>
-  ":" ident <ident> Find <Table Scope2, ident, "TYPE" BasicType>
+    [ <+ 'VAR': Kind> 'VAR'
+    ] <+ 'VAL': Kind>
+  IdentList <IdentList> Insert <Scope1, IdentList, 'UNDEF', Scope2>
+  ':' ident <ident> Find <Table Scope2, ident, 'TYPE' BasicType>
 
   <Kind, BasicType, Object>
-    [ <- "VAR": Kind, - Type: Type, + "REF" Type: Object>
-    ] <- "VAL": Kind, - Type: Type, + "VAR" Type: Object>
+    [ <- 'VAR': Kind, - Type: Type, + 'REF' Type: Object>
+    ] <- 'VAL': Kind, - Type: Type, + 'VAR' Type: Object>
   Insert <Scope1, IdentList, Object, Scope>.
 
 FormalParameters <- Table: Table, + Scope: Scope>:
-  "("
-  <Table, "HEAD", Scope>
+  '('
+  <Table, 'HEAD', Scope>
     [ <- Table: Table, - Scope1: Scope, + Scope: Scope>
         FPSection <Table, Scope1, Scope2>
         <Table, Scope2, Scope>
           { <- Table: Table, - Scope1: Scope, + Scope: Scope>
-              ";" FPSection <Table, Scope1, Scope2>  <Table, Scope2, Scope>
+              ';' FPSection <Table, Scope1, Scope2>  <Table, Scope2, Scope>
           } <- Table: Table, - Scope: Scope, + Scope: Scope>
     ] <- Table: Table, - Scope: Scope, + Scope: Scope>
-  ")".
+  ')'.
 
 ProcedureBody <- Table1: Table, - Scope: Scope>:
   Declarations <Table1, Scope, Table>
   <Table>
     [ <- Table: Table>
-        "BEGIN" StatementSequence <Table>
+        'BEGIN' StatementSequence <Table>
     ] <- Table: Table>
-  "END".
+  'END'.
 
-Parameters = "NIL" | Val Type Parameters.
+Parameters = 'NIL' | Val Type Parameters.
 
-ProcedureDeclaration <- Table: Table, - Scope1: Scope, + Scope1 ident "PROC" Parameters: Scope>:
-  "PROCEDURE" ident <ident> FindObject <Scope1, ident, "NIL">
+ProcedureDeclaration <- Table: Table, - Scope1: Scope, + Scope1 ident 'PROC' Parameters: Scope>:
+  'PROCEDURE' ident <ident> FindObject <Scope1, ident, 'NIL'>
   <Table Scope1, Scope>
     [ <- Table: Table, + Scope: Scope>
         FormalParameters <Table, Scope>
-    ] <- Table: Table, + "HEAD": Scope>
-  <Scope, "NIL", Parameters>
-    { <- Scope ident "REF" Type: Scope, - Parameters1: Parameters, + Parameters: Parameters>
-        <Scope, "LVAL" Type Parameters1, Parameters>
-    | <- Scope ident "VAR" Type: Scope, - Parameters1: Parameters, + Parameters: Parameters>
-        <Scope, "RVAL" Type Parameters1, Parameters>
-    } <- "HEAD": Scope, - Parameters: Parameters, + Parameters: Parameters>
-  ";" ProcedureBody <Table Scope1 ident "PROC" Parameters, Scope>
+    ] <- Table: Table, + 'HEAD': Scope>
+  <Scope, 'NIL', Parameters>
+    { <- Scope ident 'REF' Type: Scope, - Parameters1: Parameters, + Parameters: Parameters>
+        <Scope, 'LVAL' Type Parameters1, Parameters>
+    | <- Scope ident 'VAR' Type: Scope, - Parameters1: Parameters, + Parameters: Parameters>
+        <Scope, 'RVAL' Type Parameters1, Parameters>
+    } <- 'HEAD': Scope, - Parameters: Parameters, + Parameters: Parameters>
+  ';' ProcedureBody <Table Scope1 ident 'PROC' Parameters, Scope>
   ident <ident>.
 
 Declarations <- Table: Table, - Scope1: Scope, + Table Scope: Table>:
   <Table, Scope1, Scope2>
     [ <- Table: Table, - Scope1: Scope, + Scope: Scope>
-        "CONST"
+        'CONST'
         <Table, Scope1, Scope>
           { <- Table: Table, - Scope1: Scope, + Scope: Scope>
-              ident <ident> FindObject <Scope1, ident, "NIL">
-              "=" Expression <Table Scope1 ident "UNDEF", "CONST", "INT"> ";"
-              <Table, Scope1 ident "CONST" "INT", Scope>
+              ident <ident> FindObject <Scope1, ident, 'NIL'>
+              '=' Expression <Table Scope1 ident 'UNDEF', 'CONST', 'INT'> ';'
+              <Table, Scope1 ident 'CONST' 'INT', Scope>
           } <- Table: Table, - Scope: Scope, + Scope: Scope>
     ] <- Table: Table, - Scope: Scope, + Scope: Scope>
   <Table, Scope2, Scope3>
     [ <- Table: Table, - Scope1: Scope, + Scope: Scope>
-        "TYPE"
+        'TYPE'
         <Table, Scope1, Scope>
           { <- Table: Table, - Scope1: Scope, + Scope: Scope>
-              ident <ident> FindObject <Scope1, ident, "NIL">
-              "=" Type <Table Scope1 ident "UNDEF", Type> ";"
-              <Table, Scope1 ident "TYPE" Type, Scope>
+              ident <ident> FindObject <Scope1, ident, 'NIL'>
+              '=' Type <Table Scope1 ident 'UNDEF', Type> ';'
+              <Table, Scope1 ident 'TYPE' Type, Scope>
           } <- Table: Table, - Scope: Scope, + Scope: Scope>
     ] <- Table: Table, - Scope: Scope, + Scope: Scope>
 
   <Table, Scope3, Scope4>
     [ <- Table: Table, - Scope1: Scope, + Scope: Scope>
-        "VAR"
+        'VAR'
         <Table, Scope1, Scope>
           { <- Table: Table, - Scope1: Scope, + Scope: Scope>
-              IdentList <IdentList> Insert <Scope1, IdentList, "UNDEF", Scope2>
-              ":" Type <Table Scope2, Type> ";"
-              Insert <Scope1, IdentList, "VAR" Type, Scope3>
+              IdentList <IdentList> Insert <Scope1, IdentList, 'UNDEF', Scope2>
+              ':' Type <Table Scope2, Type> ';'
+              Insert <Scope1, IdentList, 'VAR' Type, Scope3>
               <Table, Scope3, Scope>
           } <- Table: Table, - Scope: Scope, + Scope: Scope>
     ] <- Table: Table, - Scope: Scope, + Scope: Scope>
   <Table, Scope4, Scope>
     { <- Table: Table, - Scope1: Scope, + Scope: Scope>
-        ProcedureDeclaration <Table, Scope1, Scope2> ";"
+        ProcedureDeclaration <Table, Scope1, Scope2> ';'
         <Table, Scope2, Scope>
     } <- Table: Table, - Scope: Scope, + Scope: Scope>.
 
-Standard <+ "HEAD"
-            "F" "A" "L" "S" "E"              "CONST" "BOOL"
-            "T" "R" "U" "E"                  "CONST" "BOOL"
-            "I" "N" "T" "E" "G" "E" "R"      "TYPE" "INT"
-            "B" "O" "O" "L" "E" "A" "N"      "TYPE" "BOOL"
-            "R" "e" "a" "d"                  "PROC" "LVAL" "INT" "NIL"
-            "W" "r" "i" "t" "e"              "PROC" "RVAL" "INT" "NIL"
-            "W" "r" "i" "t" "e" "H" "e" "x"  "PROC" "RVAL" "INT" "NIL"
-            "W" "r" "i" "t" "e" "L" "n"      "PROC" "NIL"
+Standard <+ 'HEAD'
+            'F' 'A' 'L' 'S' 'E'              'CONST' 'BOOL'
+            'T' 'R' 'U' 'E'                  'CONST' 'BOOL'
+            'I' 'N' 'T' 'E' 'G' 'E' 'R'      'TYPE' 'INT'
+            'B' 'O' 'O' 'L' 'E' 'A' 'N'      'TYPE' 'BOOL'
+            'R' 'e' 'a' 'd'                  'PROC' 'LVAL' 'INT' 'NIL'
+            'W' 'r' 'i' 't' 'e'              'PROC' 'RVAL' 'INT' 'NIL'
+            'W' 'r' 'i' 't' 'e' 'H' 'e' 'x'  'PROC' 'RVAL' 'INT' 'NIL'
+            'W' 'r' 'i' 't' 'e' 'L' 'n'      'PROC' 'NIL'
           : Scope>: .
 
 Module:
-  "MODULE" ident <ident> Standard <Scope>
-  ";" ProcedureBody <Scope, "HEAD">
-  ident <ident> ".".
+  'MODULE' ident <ident> Standard <Scope>
+  ';' ProcedureBody <Scope, 'HEAD'>
+  ident <ident> '.'.

@@ -1,19 +1,19 @@
 // expressions: a reduced example
 
-Code = Code Code "ADD" | number "ENTER".
+Code = Code Code 'ADD' | number 'ENTER'.
 
 Expr <+ Code2>:
     Term <Code1>
     <Code1, Code2>
         { <- Code1, + Code3>
-            "+" Term <Code2> <Code1 Code2 "ADD", Code3>
+            '+' Term <Code2> <Code1 Code2 'ADD', Code3>
         } <- Code, + Code>.
 
-Term <+ number "ENTER": Code>:
+Term <+ number 'ENTER': Code>:
     number <number>.
 
-number = "0" | "1".
+number = '0' | '1'.
 
 number:
-    <+ "0": number> "0"
-  | <+ "1": number> "1".
+    <+ '0': number> '0'
+  | <+ '1': number> '1'.

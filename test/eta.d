@@ -15,7 +15,7 @@ static foreach (eag; ["eta.eag", "eta-utf8.eag"])
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Pico.Cola"))
                 .shouldMatch(`^program < \+ 'ok' : CODE > : $`);
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Mikro.Cola"))
-                .shouldMatch(`^programm < \+ CODE "ret" ';' : CODE > : $`);
+                .shouldMatch(`^programm < \+ CODE 'ret' ';' : CODE > : $`);
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/PL0.Cola"))
                 .shouldMatch(`^programm < \+ CODE : CODE > : $`);
         }
@@ -32,7 +32,7 @@ static foreach (eag; ["eta.eag", "eta-utf8.eag"])
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Pico.Cola"))
                 .shouldMatch(`^program < \+ 'ok' : CODE > : $`);
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Mikro.Cola"))
-                .shouldMatch(`^programm < \+ CODE "ret" ';' : CODE > : $`);
+                .shouldMatch(`^programm < \+ CODE 'ret' ';' : CODE > : $`);
             run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/PL0.Cola"))
                 .shouldMatch(`^programm < \+ CODE : CODE > : $`);
         }

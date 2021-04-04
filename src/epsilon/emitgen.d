@@ -82,7 +82,7 @@ public void GenEmitProc(File output, Settings settings)
                 if (ANum > CaseLabels)
                 {
                     stdout.write("internal error: Too many meta alts in ");
-                    stdout.write(EAG.symbolTable.symbol(EAG.MTerm[N].Id));
+                    stdout.write(EAG.MTerm[N].Id.repr);
                     stdout.writeln;
                     assert(0);
                 }
@@ -95,7 +95,7 @@ public void GenEmitProc(File output, Settings settings)
                     if (M < 0)
                     {
                         output.write("Out.write(");
-                        output.write(EAG.symbolTable.symbol(EAG.MTerm[-M].Id));
+                        output.write(EAG.MTerm[-M].Id.repr);
                         output.write("); ");
                         if (MNonts == Type2)
                             WhiteSpace;
@@ -180,4 +180,21 @@ public void GenEmitCall(File output, Settings settings)
     output.writeln("Emit", StartMNont, "Type",  Type2[StartMNont] ? "2" : "3", "(V1);");
     output.writeln("Out.writeln;");
     output.writeln("Out.flush;");
+}
+
+private string repr(int id)
+{
+    import std.range : dropBackOne, dropOne, front, only;
+    import std.format : format;
+
+    const value = EAG.symbolTable.symbol(id);
+
+    if (value.front == '\'')
+    {
+        if (value == `'"'`)
+            return "`\"`";
+        return format!`"%s"`(value.dropOne.dropBackOne);
+    }
+    return value;
+
 }

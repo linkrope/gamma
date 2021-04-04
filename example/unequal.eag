@@ -3,33 +3,33 @@
 OberonO <+ Code>: Module <Code>.
 
 letter =
-    "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m"
-  | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
-  | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M"
-  | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z".
+    'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm'
+  | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z'
+  | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M'
+  | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z'.
 
 letter:
-    <+ "a": letter> "a" | <+ "b": letter> "b" | <+ "c": letter> "c" | <+ "d": letter> "d"
-  | <+ "e": letter> "e" | <+ "f": letter> "f" | <+ "g": letter> "g" | <+ "h": letter> "h"
-  | <+ "i": letter> "i" | <+ "j": letter> "j" | <+ "k": letter> "k" | <+ "l": letter> "l"
-  | <+ "m": letter> "m" | <+ "n": letter> "n" | <+ "o": letter> "o" | <+ "p": letter> "p"
-  | <+ "q": letter> "q" | <+ "r": letter> "r" | <+ "s": letter> "s" | <+ "t": letter> "t"
-  | <+ "u": letter> "u" | <+ "v": letter> "v" | <+ "w": letter> "w" | <+ "x": letter> "x"
-  | <+ "y": letter> "y" | <+ "z": letter> "z"
-  | <+ "A": letter> "A" | <+ "B": letter> "B" | <+ "C": letter> "C" | <+ "D": letter> "D"
-  | <+ "E": letter> "E" | <+ "F": letter> "F" | <+ "G": letter> "G" | <+ "H": letter> "H"
-  | <+ "I": letter> "I" | <+ "J": letter> "J" | <+ "K": letter> "K" | <+ "L": letter> "L"
-  | <+ "M": letter> "M" | <+ "N": letter> "N" | <+ "O": letter> "O" | <+ "P": letter> "P"
-  | <+ "Q": letter> "Q" | <+ "R": letter> "R" | <+ "S": letter> "S" | <+ "T": letter> "T"
-  | <+ "U": letter> "U" | <+ "V": letter> "V" | <+ "W": letter> "W" | <+ "X": letter> "X"
-  | <+ "Y": letter> "Y" | <+ "Z": letter> "Z".
+    <+ 'a': letter> 'a' | <+ 'b': letter> 'b' | <+ 'c': letter> 'c' | <+ 'd': letter> 'd'
+  | <+ 'e': letter> 'e' | <+ 'f': letter> 'f' | <+ 'g': letter> 'g' | <+ 'h': letter> 'h'
+  | <+ 'i': letter> 'i' | <+ 'j': letter> 'j' | <+ 'k': letter> 'k' | <+ 'l': letter> 'l'
+  | <+ 'm': letter> 'm' | <+ 'n': letter> 'n' | <+ 'o': letter> 'o' | <+ 'p': letter> 'p'
+  | <+ 'q': letter> 'q' | <+ 'r': letter> 'r' | <+ 's': letter> 's' | <+ 't': letter> 't'
+  | <+ 'u': letter> 'u' | <+ 'v': letter> 'v' | <+ 'w': letter> 'w' | <+ 'x': letter> 'x'
+  | <+ 'y': letter> 'y' | <+ 'z': letter> 'z'
+  | <+ 'A': letter> 'A' | <+ 'B': letter> 'B' | <+ 'C': letter> 'C' | <+ 'D': letter> 'D'
+  | <+ 'E': letter> 'E' | <+ 'F': letter> 'F' | <+ 'G': letter> 'G' | <+ 'H': letter> 'H'
+  | <+ 'I': letter> 'I' | <+ 'J': letter> 'J' | <+ 'K': letter> 'K' | <+ 'L': letter> 'L'
+  | <+ 'M': letter> 'M' | <+ 'N': letter> 'N' | <+ 'O': letter> 'O' | <+ 'P': letter> 'P'
+  | <+ 'Q': letter> 'Q' | <+ 'R': letter> 'R' | <+ 'S': letter> 'S' | <+ 'T': letter> 'T'
+  | <+ 'U': letter> 'U' | <+ 'V': letter> 'V' | <+ 'W': letter> 'W' | <+ 'X': letter> 'X'
+  | <+ 'Y': letter> 'Y' | <+ 'Z': letter> 'Z'.
 
-digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9".
+digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'.
 
 digit:
-    <+ "0": digit> "0" | <+ "1": digit> "1" | <+ "2": digit> "2" | <+ "3": digit> "3"
-  | <+ "4": digit> "4" | <+ "5": digit> "5" | <+ "6": digit> "6" | <+ "7": digit> "7"
-  | <+ "8": digit> "8" | <+ "9": digit> "9".
+    <+ '0': digit> '0' | <+ '1': digit> '1' | <+ '2': digit> '2' | <+ '3': digit> '3'
+  | <+ '4': digit> '4' | <+ '5': digit> '5' | <+ '6': digit> '6' | <+ '7': digit> '7'
+  | <+ '8': digit> '8' | <+ '9': digit> '9'.
 
 ident* = letter | ident letgit.
 
@@ -52,23 +52,23 @@ integer* <+ N>:
     } <- N, + N>.
 
 Selector:
-  { <- Table, - Item, - "RECORD" Scope: Type, + Item2, + Type2,
+  { <- Table, - Item, - 'RECORD' Scope: Type, + Item2, + Type2,
      - Code, - Regs, - N, + Code2, + Regs2, + N2>
-      "." ident <ident> FindObject <Scope, ident, "FIELD" E Type1>
+      '.' ident <ident> FindObject <Scope, ident, 'FIELD' E Type1>
       Field <Item, E, Item1, Code, Regs, Code1, Regs1>
       <Table, Item1, Type1, Item2, Type2, Code1, Regs1, N, Code2, Regs2, N2>
-  | <- Table, - Item, - "ARRAY" E1 "*" E2 Type2: Type, + Item3, + Type3,
+  | <- Table, - Item, - 'ARRAY' E1 '*' E2 Type2: Type, + Item3, + Type3,
      - Code, - Regs, - N, + Code3, + Regs3, + N3>
-      "[" Expression <Table, Item1, "INT", Code, Regs, N, Code1, Regs1, N1> "]"
+      '[' Expression <Table, Item1, 'INT', Code, Regs, N, Code1, Regs1, N1> ']'
       Index <Item, E1, E2, Item1, Item2, Code1, Regs1, Code2, Regs2>
       <Table, Item2, Type2, Item3, Type3, Code2, Regs2, N1, Code3, Regs3, N3>
   } <- Table, - Item, - Type, + Item, + Type,
      - Code, - Regs, - N, + Code, + Regs, + N>.
 
 Op =
-    "+" | "-" | "*" | "DIV" | "MOD"
-  | "NOT" | "OR" | "AND"
-  | "=" | "#" | "<" | ">=" | ">" | "<=".
+    '+' | '-' | '*' | 'DIV' | 'MOD'
+  | 'NOT' | 'OR' | 'AND'
+  | '=' | '#' | '<' | '>=' | '>' | '<='.
 
 Factor:
     <- Table, + Item1, + Type1,
@@ -76,16 +76,16 @@ Factor:
       ident <ident> Find <Table, ident, Object, Lev>
       MakeItem <Object, Lev, Item, Type, Code, Regs, Code1, Regs1>
       Selector <Table, Item, Type, Item1, Type1, Code1, Regs1, N, Code2, Regs2, N2>
-  | <- Table, + "CONST" N1: Item, + "INT": Type,
+  | <- Table, + 'CONST' N1: Item, + 'INT': Type,
      - Code, - Regs, - N, + Code, + Regs, + N>
       integer <N1>
   | <- Table, + Item, + Type,
      - Code, - Regs, - N, + Code1, + Regs1, + N1>
-      "(" Expression <Table, Item, Type, Code, Regs, N, Code1, Regs1, N1> ")"
-  | <- Table, + Item1, + "BOOL": Type,
+      '(' Expression <Table, Item, Type, Code, Regs, N, Code1, Regs1, N1> ')'
+  | <- Table, + Item1, + 'BOOL': Type,
      - Code, - Regs, - N, + Code2, + Regs2, + N1>
-      "~" Factor <Table, Item, "BOOL", Code, Regs, N, Code1, Regs1, N1>
-      UnOp <"NOT", Item, Item1, Code1, Regs1, Code2, Regs2>.
+      '~' Factor <Table, Item, 'BOOL', Code, Regs, N, Code1, Regs1, N1>
+      UnOp <'NOT', Item, Item1, Code1, Regs1, Code2, Regs2>.
 
 Term <- Table, + Item1, + Type,
       - Code, - Regs, - N, + Code2, + Regs2, + N2>:
@@ -94,13 +94,13 @@ Term <- Table, + Item1, + Type,
     { <- Table, - Item, - Type, + Item4,
        - Code, - Regs, - N, + Code4, + Regs4, + N4>
         <Item, Type, Op, Item1, Code, Regs, N, Code1, Regs1, N1>
-          ( <- Item, - "INT": Type, + Op, + Item,
+          ( <- Item, - 'INT': Type, + Op, + Item,
              - Code, - Regs, - N, + Code, + Regs, + N>
               <Op>
-                ( <+ "*": Op> "*" | <+ "DIV": Op> "DIV" | <+ "MOD": Op> "MOD" )
-          | <- Item, - "BOOL": Type, + "AND": Op, + Item1,
+                ( <+ '*': Op> '*' | <+ 'DIV': Op> 'DIV' | <+ 'MOD': Op> 'MOD' )
+          | <- Item, - 'BOOL': Type, + 'AND': Op, + Item1,
              - Code, - Regs, - N, + Code1, + Regs1, + N1>
-              "&"
+              '&'
               CondJump <Item, Item1, Code, Regs, N, Code1, Regs1, N1>
           )
         Factor <Table, Item2, Type, Code1, Regs1, N1, Code2, Regs2, N2>
@@ -109,32 +109,32 @@ Term <- Table, + Item1, + Type,
     } <- Table, - Item, - Type, + Item,
        - Code, - Regs, - N, + Code, + Regs, + N>.
 
-Sign = "+" | "-" | .
+Sign = '+' | '-' | .
 
 SimpleExpression <- Table, + Item2, + Type,
                   - Code, - Regs, - N, + Code3, + Regs3, + N3>:
   <Sign>
-    [ <+ "+": Sign> "+" | <+ "-": Sign> "-" ] <+ : Sign>
+    [ <+ '+': Sign> '+' | <+ '-': Sign> '-' ] <+ : Sign>
   Term <Table, Item, Type, Code, Regs, N, Code1, Regs1, N1>
   <Sign, Item, Type, Item1, Code1, Regs1, Code2, Regs2>
-    [ <- "+": Sign, - Item, - "INT": Type, + Item,
+    [ <- '+': Sign, - Item, - 'INT': Type, + Item,
        - Code, - Regs, + Code, + Regs>
-    | <- "-": Sign, - Item, - "INT": Type, + Item1,
+    | <- '-': Sign, - Item, - 'INT': Type, + Item1,
        - Code, - Regs, + Code1, + Regs1>
-        UnOp <"-", Item, Item1, Code, Regs, Code1, Regs1>
+        UnOp <'-', Item, Item1, Code, Regs, Code1, Regs1>
     ] <- : Sign, - Item, - Type, + Item,
        - Code, - Regs, + Code, + Regs>
   <Table, Item1, Type, Item2, Code2, Regs2, N1, Code3, Regs3, N3>
     { <- Table, - Item, - Type, + Item4,
        - Code, - Regs, - N, + Code4, + Regs4, + N4>
         <Item, Type, Op, Item1, Code, Regs, N, Code1, Regs1, N1>
-          ( <- Item, - "INT": Type, + Op, + Item,
+          ( <- Item, - 'INT': Type, + Op, + Item,
              - Code, - Regs, - N, + Code, + Regs, + N>
               <Op>
-                ( <+ "+": Op> "+" | <+ "-": Op> "-" )
-          | <- Item, - "BOOL": Type, + "OR": Op, + Item2,
+                ( <+ '+': Op> '+' | <+ '-': Op> '-' )
+          | <- Item, - 'BOOL': Type, + 'OR': Op, + Item2,
              - Code, - Regs, - N, + Code2, + Regs2, + N2>
-              "OR" UnOp <"NOT", Item, Item1, Code, Regs, Code1, Regs1>
+              'OR' UnOp <'NOT', Item, Item1, Code, Regs, Code1, Regs1>
               CondJump <Item1, Item2, Code1, Regs1, N, Code2, Regs2, N2>
           )
         Term <Table, Item2, Type, Code1, Regs1, N1, Code2, Regs2, N2>
@@ -147,14 +147,14 @@ Expression <- Table, + Item1, + Type1,
             - Code, - Regs, - N, + Code2, + Regs2, + N2>:
   SimpleExpression <Table, Item, Type, Code, Regs, N, Code1, Regs1, N1>
   <Table, Item, Type, Item1, Type1, Code1, Regs1, N1, Code2, Regs2, N2>
-    [ <- Table, - Item1, - "INT": Type, + Item3, + "BOOL": Type,
+    [ <- Table, - Item1, - 'INT': Type, + Item3, + 'BOOL': Type,
        - Code, - Regs, - N, + Code2, + Regs2, + N1>
         <Op>
-          ( <+ "=": Op> "=" | <+ "#": Op> "#"
-          | <+ "<": Op> "<" | <+ ">=": Op> ">="
-          | <+ ">": Op> ">" | <+ "<=": Op> "<="
+          ( <+ '=': Op> '=' | <+ '#': Op> '#'
+          | <+ '<': Op> '<' | <+ '>=': Op> '>='
+          | <+ '>': Op> '>' | <+ '<=': Op> '<='
           )
-        SimpleExpression <Table, Item2, "INT", Code, Regs, N, Code1, Regs1, N1>
+        SimpleExpression <Table, Item2, 'INT', Code, Regs, N, Code1, Regs1, N1>
         Relation <Op, Item1, Item2, Item3, Code1, Regs1, Code2, Regs2>
     ] <- Table, - Item, - Type, + Item, + Type,
        - Code, - Regs, - N, + Code, + Regs, + N>.
@@ -162,7 +162,7 @@ Expression <- Table, + Item1, + Type1,
 ActualParameters:
   [ <- Table, - Parameters, + Item,
      - Code, - Regs, - N, + Code1, + Regs1, + N1>
-      "("
+      '('
       <Table, Parameters, Item, Code, Regs, N, Code1, Regs1, N1>
         [ <- Table, - Kind Type Parameters: Parameters, + Item,
            - Code, - Regs, - N, + Code3, + Regs3, + N3>
@@ -171,15 +171,15 @@ ActualParameters:
             <Table, Parameters, Code2, Regs2, N1, Code3, Regs3, N3>
               { <- Table, - Kind Type Parameters: Parameters,
                  - Code, - Regs, - N, + Code3, + Regs3, + N3>
-                  "," Expression <Table, Item, Type, Code, Regs, N, Code1, Regs1, N1>
+                  ',' Expression <Table, Item, Type, Code, Regs, N, Code1, Regs1, N1>
                   Parameter <Kind, Item, Code1, Regs1, Code2, Regs2>
                   <Table, Parameters, Code2, Regs2, N1, Code3, Regs3, N3>
               } <- Table, - : Parameters,
                  - Code, - Regs, - N, + Code, + Regs, + N>
-        ] <- Table, - : Parameters, + "VAR" "0" "," "0": Item,
+        ] <- Table, - : Parameters, + 'VAR' '0' ',' '0': Item,
            - Code, - Regs, - N, + Code, + Regs, + N>
-      ")"
-  ] <- Table, - : Parameters, + "VAR" "0" "," "0": Item,
+      ')'
+  ] <- Table, - : Parameters, + 'VAR' '0' ',' '0': Item,
      - Code, - Regs, - N, + Code, + Regs, + N>.
 
 AssignmentOrProcedureCall <- Table, - N, + Code, + N1>:
@@ -189,13 +189,13 @@ AssignmentOrProcedureCall <- Table, - N, + Code, + N1>:
         available <Regs>
         MakeItem <Object, Lev, Item, Type, , Regs, Code1, Regs1>
         Selector <Table, Item, Type, Item1, BasicType, Code1, Regs1, N, Code2, Regs2, N2>
-        ":=" Expression <Table, Item2, BasicType, Code2, Regs2, N2, Code3, Regs3, N3>
+        ':=' Expression <Table, Item2, BasicType, Code2, Regs2, N2, Code3, Regs3, N3>
         Store <Item1, Item2, Code3, Regs3, Code4, Regs4>
     | <- Table, - Proc Parameters: Object, - Lev, - N, + Code2, + N1>
         available <Regs>
         ActualParameters <Table, Parameters, Item, , Regs, N, Code1, Regs1, N1>
         <Proc, Item, Code1, Regs1, Code2, Regs2>
-          ( <- "LPROC" E: Proc, - Item,
+          ( <- 'LPROC' E: Proc, - Item,
              - Code, - Regs, + Code Code1: Code, + Regs>
               Call <E, Code1>
           | <- SProc: Proc, - Item,
@@ -206,34 +206,34 @@ AssignmentOrProcedureCall <- Table, - N, + Code, + N1>:
 
 Condition <- Table, + Item1, - N, + Code2, + N2>:
   available <Regs>
-  Expression <Table, Item, "BOOL", , Regs, N, Code1, Regs1, N1>
+  Expression <Table, Item, 'BOOL', , Regs, N, Code1, Regs1, N1>
   CondJump <Item, Item1, Code1, Regs1, N1, Code2, Regs2, N2>.
 
 IfStatement <- Table, - N, + Code4 Code5: Code, + N4>:
   Label <E, N, Code5, N5>
-  "IF" Condition <Table, Item, N5, Code1, N1>
-  "THEN" StatementSequence <Table, N1, Code2, N2>
+  'IF' Condition <Table, Item, N5, Code1, N1>
+  'THEN' StatementSequence <Table, N1, Code2, N2>
   <Table, E, Item, Item1, Code1 Code2, N2, Code3, N3>
     { <- Table, - E, - Item, + Item2, - Code, - N, + Code5, + N5>
         Jump <E, Code1> Fix <Item, Code2>
-        "ELSIF" Condition <Table, Item1, N, Code3, N3>
-        "THEN" StatementSequence <Table, N3, Code4, N4>
+        'ELSIF' Condition <Table, Item1, N, Code3, N3>
+        'THEN' StatementSequence <Table, N3, Code4, N4>
         <Table, E, Item1, Item2, Code Code1 Code2 Code3 Code4, N4, Code5, N5>
     } <- Table, - E, - Item, + Item, - Code, - N, + Code, + N>
   <Table, E, Item1, Code3, N3, Code4, N4>
     ( <- Table, - E, - Item, - Code, - N, + Code Code1 Code2 Code3: Code, + N3>
         Jump <E, Code1> Fix <Item, Code2>
-        "ELSE" StatementSequence <Table, N, Code3, N3>
+        'ELSE' StatementSequence <Table, N, Code3, N3>
     | <- Table, - E, - Item, - Code, - N, + Code Code1: Code, + N>
         Fix <Item, Code1>
     )
-  "END".
+  'END'.
 
 WhileStatement <- Table, - N, + Code1 Code2 Code3 Code4 Code5: Code, + N3>:
   Label <E, N, Code1, N1>
-  "WHILE" Condition <Table, Item, N1, Code2, N2>
-  "DO" StatementSequence <Table, N2, Code3, N3> Jump <E, Code4>
-  "END" Fix <Item, Code5>.
+  'WHILE' Condition <Table, Item, N1, Code2, N2>
+  'DO' StatementSequence <Table, N2, Code3, N3> Jump <E, Code4>
+  'END' Fix <Item, Code5>.
 
 Statement <- Table, - N, + Code, + N1>:
     AssignmentOrProcedureCall <Table, N, Code, N1>
@@ -246,137 +246,137 @@ StatementSequence <- Table, - N, + Code2, + N2>:
   Statement <Table, N, Code1, N1>
   <Table, Code1, N1, Code2, N2>
     { <- Table, - Code1, - N1, + Code3, + N3>
-        ";" Statement <Table, N1, Code2, N2>
+        ';' Statement <Table, N1, Code2, N2>
         <Table, Code1 Code2, N2, Code3, N3>
     } <- Table, - Code, - N, + Code, + N>.
 
-IdentList = | ident ";" IdentList.
+IdentList = | ident ';' IdentList.
 
-IdentList <+ ident ";" IdentList: IdentList, - Scope, + Scope1>:
-  ident <ident> FindObject <Scope, ident, "NIL">
-  <IdentList, Scope ident "UNDEF", Scope1>
-    { <+ ident ";" IdentList: IdentList, - Scope, + Scope1>
-        "," ident <ident> FindObject <Scope, ident, "NIL">
-        <IdentList, Scope ident "UNDEF", Scope1>
+IdentList <+ ident ';' IdentList: IdentList, - Scope, + Scope1>:
+  ident <ident> FindObject <Scope, ident, 'NIL'>
+  <IdentList, Scope ident 'UNDEF', Scope1>
+    { <+ ident ';' IdentList: IdentList, - Scope, + Scope1>
+        ',' ident <ident> FindObject <Scope, ident, 'NIL'>
+        <IdentList, Scope ident 'UNDEF', Scope1>
     } <+ : IdentList, - Scope, + Scope>.
 
-BasicType = "INT" | "BOOL".
-Type = BasicType | "ARRAY" E "*" E Type | "RECORD" Scope.
+BasicType = 'INT' | 'BOOL'.
+Type = BasicType | 'ARRAY' E '*' E Type | 'RECORD' Scope.
 
-ArrayType <- Table, + "ARRAY" E1 "*" E2 Type: Type, + "(" E1 "*" E2 ")": E>:
+ArrayType <- Table, + 'ARRAY' E1 '*' E2 Type: Type, + '(' E1 '*' E2 ')': E>:
   available <Regs>
-  "ARRAY" Expression <Table, "CONST" E1, "INT", , Regs, "0", Code1, Regs1, N1>
-  "OF" Type <Table, Type, E2>.
+  'ARRAY' Expression <Table, 'CONST' E1, 'INT', , Regs, '0', Code1, Regs1, N1>
+  'OF' Type <Table, Type, E2>.
 
 FieldList:
   [ <- Table, - Scope, - E, + Scope2, + E2>
       IdentList <IdentList, Scope, Scope1>
-      ":" Type <Table "UNDEF" Scope1, Type, E1>
+      ':' Type <Table 'UNDEF' Scope1, Type, E1>
       <IdentList, Type, E1, Scope, E, Scope2, E2>
-        { <- ident ";" IdentList: IdentList, - Type, - E1, - Scope, - E, + Scope2, + E2>
-            <IdentList, Type, E1, Scope ident "FIELD" E Type, "(" E "+" E1 ")", Scope2, E2>
+        { <- ident ';' IdentList: IdentList, - Type, - E1, - Scope, - E, + Scope2, + E2>
+            <IdentList, Type, E1, Scope ident 'FIELD' E Type, '(' E '+' E1 ')', Scope2, E2>
         } <- : IdentList, - Type, - E1, - Scope, - E, + Scope, + E>
   ] <- Table, - Scope, - E, + Scope, + E>.
 
-RecordType <- Table, + "RECORD" Scope2: Type, + E2>:
-  "RECORD" FieldList <Table, , "0", Scope1, E1>
+RecordType <- Table, + 'RECORD' Scope2: Type, + E2>:
+  'RECORD' FieldList <Table, , '0', Scope1, E1>
   <Table, Scope1, E1, Scope2, E2>
     { <- Table, - Scope, - E, + Scope2, + E2>
-        ";" FieldList <Table, Scope, E, Scope1, E1>
+        ';' FieldList <Table, Scope, E, Scope1, E1>
         <Table, Scope1, E1, Scope2, E2>
     } <- Table, - Scope, - E, + Scope, + E>
-  "END".
+  'END'.
 
 Type <- Table, + Type, + E>:
-    ident <ident> Find <Table, ident, "TYPE" E Type, Lev>
+    ident <ident> Find <Table, ident, 'TYPE' E Type, Lev>
   | ArrayType <Table, Type, E>
   | RecordType <Table, Type, E>.
 
-Kind = "VAR" | "REF" | "PAR".
-SProc = "READ" | "WRITE" | "WRITEHEX" | "WRITELN".
-Proc = "LPROC" E | SProc.
+Kind = 'VAR' | 'REF' | 'PAR'.
+SProc = 'READ' | 'WRITE' | 'WRITEHEX' | 'WRITELN'.
+Proc = 'LPROC' E | SProc.
 Parameters = | Kind Type Parameters.
 Object =
-    "UNDEF"
-  | "CONST" E Type | "TYPE" E Type | "FIELD" E Type | Kind E Type | Proc Parameters.
+    'UNDEF'
+  | 'CONST' E Type | 'TYPE' E Type | 'FIELD' E Type | Kind E Type | Proc Parameters.
 Scope = | Scope ident Object.
 
-ObjNil = Object | "NIL".
+ObjNil = Object | 'NIL'.
 
 FindObject:
-    <- : Scope, - ident, + "NIL": ObjNil>
+    <- : Scope, - ident, + 'NIL': ObjNil>
   | <- Scope ident Object: Scope, - ident, + Object: ObjNil>
   | <- Scope ident1 Object: Scope, - ident, + ObjNil: ObjNil>
       uneqID <ident, ident1>
       FindObject <Scope, ident, ObjNil>.
 
 Insert:
-  { <- ident ";" IdentList: IdentList, - Kind, - E1, - Type, - E2,
+  { <- ident ';' IdentList: IdentList, - Kind, - E1, - Type, - E2,
      - Scope, - E, + Scope3, + E3>
       <IdentList, Kind, E1, Type, E2,
-       Scope ident Kind "(" E1 "-" "(" E "+" E2 ")" ")" Type, "(" E "+" E2 ")", Scope3, E3>
+       Scope ident Kind '(' E1 '-' '(' E '+' E2 ')' ')' Type, '(' E '+' E2 ')', Scope3, E3>
   } <- : IdentList, - Kind, - E1, - Type, - E2,
      - Scope, - E, + Scope, + E>.
 
-Lev = "GLOBAL" | "UNDEF" | "LOCAL".
+Lev = 'GLOBAL' | 'UNDEF' | 'LOCAL'.
 Table = | Table Lev Scope.
 
 Find <- Table Lev Scope: Table, - ident, + Object, + Lev1>:
   FindObject <Scope, ident, ObjNil>
   <Table, ident, ObjNil, Lev, Object, Lev1>
-    { <- Table Lev Scope: Table, - ident, - "NIL": ObjNil, - Lev3, + Object, + Lev2>
+    { <- Table Lev Scope: Table, - ident, - 'NIL': ObjNil, - Lev3, + Object, + Lev2>
         FindObject <Scope, ident, ObjNil>
         <Lev, Lev1>
-          ( <- "GLOBAL": Lev, + "GLOBAL": Lev>
-          | <- "UNDEF": Lev, + "UNDEF": Lev>
-          | <- "LOCAL": Lev, + "UNDEF": Lev>
+          ( <- 'GLOBAL': Lev, + 'GLOBAL': Lev>
+          | <- 'UNDEF': Lev, + 'UNDEF': Lev>
+          | <- 'LOCAL': Lev, + 'UNDEF': Lev>
           )
         <Table, ident, ObjNil, Lev1, Object, Lev2>
     } <- Table, - ident, - Object: ObjNil, - Lev, + Object, + Lev>.
 
 FPSection <- Table, - Scope, - E, + Scope2, + E2>:
   <Kind>
-    [ <+ "REF": Kind> "VAR" ] <+ "VAR": Kind>
+    [ <+ 'REF': Kind> 'VAR' ] <+ 'VAR': Kind>
   IdentList <IdentList, Scope, Scope1>
-  ":" ident <ident> Find <Table "UNDEF" Scope1, ident, "TYPE" E1 BasicType, Lev>
-  Insert <IdentList, Kind, "0", BasicType, E1, Scope, E, Scope2, E2>.
+  ':' ident <ident> Find <Table 'UNDEF' Scope1, ident, 'TYPE' E1 BasicType, Lev>
+  Insert <IdentList, Kind, '0', BasicType, E1, Scope, E, Scope2, E2>.
 
 FormalParameters:
   [ <- Table, + Scope, + E, + Parameters>
-      "("
+      '('
       <Table,Scope, E, Parameters>
         [ <- Table, + Scope3, + E2, + Parameters>
-            FPSection <Table, , "0", Scope1, E1>
+            FPSection <Table, , '0', Scope1, E1>
             <Table, Scope1, E1, Scope2, E2>
               { <- Table, - Scope, - E, + Scope2, + E2>
-                  ";" FPSection <Table, Scope, E, Scope1, E1>
+                  ';' FPSection <Table, Scope, E, Scope1, E1>
                   <Table, Scope1, E1, Scope2, E2>
               } <- Table, - Scope, - E, + Scope, + E>
             markSize <E3>
-            <"(" E2 "+" E3 ")", Scope2, Scope3, , Parameters>
+            <'(' E2 '+' E3 ')', Scope2, Scope3, , Parameters>
               { <- E,
                  - Scope ident Kind E1 Type: Scope,
-                 + Scope1 ident Kind "(" E "+" E1 ")" Type: Scope,
+                 + Scope1 ident Kind '(' E '+' E1 ')' Type: Scope,
                  - Parameters, + Parameters1>
                   <E, Scope, Scope1, Kind Type Parameters, Parameters1>
               } <- E, - : Scope, + : Scope, - Parameters, + Parameters>
-        ] <- Table, + : Scope, + "0": E, + : Parameters>
-      ")"
-  ] <- Table, + : Scope, + "0": E, + : Parameters>.
+        ] <- Table, + : Scope, + '0': E, + : Parameters>
+      ')'
+  ] <- Table, + : Scope, + '0': E, + : Parameters>.
 
 Body <- Table, - N, + Code, + N1>:
   <Table, N, Code, N1>
     [ <- Table, - N, + Code, + N1>
-        "BEGIN" StatementSequence <Table, N, Code, N1>
+        'BEGIN' StatementSequence <Table, N, Code, N1>
     ] <- Table, - N, + : Code, + N>
-  "END".
+  'END'.
 
-ProcedureDeclaration <- Table, - Lev, - Scope, + Scope ident "LPROC" E Parameters: Scope,
+ProcedureDeclaration <- Table, - Lev, - Scope, + Scope ident 'LPROC' E Parameters: Scope,
                       - N, + Code1 Code2 Code3 Code4 Code5: Code, + N4>:
   Label <E, N, Code2, N2>
-  "PROCEDURE" ident <ident> FindObject <Scope, ident, "NIL">
+  'PROCEDURE' ident <ident> FindObject <Scope, ident, 'NIL'>
   FormalParameters <Table Lev Scope, Scope1, E1, Parameters>
-  ";" Declarations <Table Lev Scope ident "LPROC" E Parameters, "LOCAL", Scope1, Table1, E2,
+  ';' Declarations <Table Lev Scope ident 'LPROC' E Parameters, 'LOCAL', Scope1, Table1, E2,
                     N2, Code1, N1>
   Enter <E2, Code3>
   Body <Table1, N1, Code4, N4> ident <ident>
@@ -385,157 +385,157 @@ ProcedureDeclaration <- Table, - Lev, - Scope, + Scope ident "LPROC" E Parameter
 Declarations <- Table, - Lev, - Scope, + Table Lev Scope4: Table, + E, - N, + Code1, + N1>:
   <Table, Scope, Scope1>
     [ <- Table, - Scope, + Scope1>
-        "CONST"
+        'CONST'
         <Table, Scope, Scope1>
           { <- Table, - Scope, + Scope1>
-              ident <ident> FindObject <Scope, ident, "NIL">
+              ident <ident> FindObject <Scope, ident, 'NIL'>
               available <Regs>
-              "=" Expression <Table "UNDEF" Scope ident "UNDEF", "CONST" E, "INT",
-                              , Regs, "0", Code1, Regs1, N1>
-              ";"
-              <Table, Scope ident "CONST" E "INT", Scope1>
+              '=' Expression <Table 'UNDEF' Scope ident 'UNDEF', 'CONST' E, 'INT',
+                              , Regs, '0', Code1, Regs1, N1>
+              ';'
+              <Table, Scope ident 'CONST' E 'INT', Scope1>
           } <- Table, - Scope, + Scope>
     ] <- Table, - Scope, + Scope>
   <Table, Scope1, Scope2>
     [ <- Table, - Scope, + Scope1>
-        "TYPE"
+        'TYPE'
         <Table, Scope, Scope1>
           { <- Table, - Scope, + Scope1>
-              ident <ident> FindObject <Scope, ident, "NIL">
-              "=" Type <Table "UNDEF" Scope ident "UNDEF", Type, E>
-              ";"
-              <Table, Scope ident "TYPE" E Type, Scope1>
+              ident <ident> FindObject <Scope, ident, 'NIL'>
+              '=' Type <Table 'UNDEF' Scope ident 'UNDEF', Type, E>
+              ';'
+              <Table, Scope ident 'TYPE' E Type, Scope1>
           } <- Table, - Scope, + Scope>
     ] <- Table, - Scope, + Scope>
   <Table, Lev, Scope2, Scope3, E>
     [ <- Table, - Lev, - Scope, + Scope1, + E1>
         <Lev, E>
-          ( <- "GLOBAL": Lev, + E>
+          ( <- 'GLOBAL': Lev, + E>
               memSize <E>
-          | <- "LOCAL": Lev, + "0": E>
+          | <- 'LOCAL': Lev, + '0': E>
           )
-        "VAR"
-        <Table, E, Scope, "0", Scope1, E1>
+        'VAR'
+        <Table, E, Scope, '0', Scope1, E1>
           { <- Table, - E1, - Scope, - E, + Scope3, + E3>
               IdentList <IdentList, Scope, Scope1>
-              ":" Type <Table "UNDEF" Scope1, Type, E4>
-              Insert <IdentList, "VAR", E1, Type, E4, Scope, E, Scope2, E2>
-              ";"
+              ':' Type <Table 'UNDEF' Scope1, Type, E4>
+              Insert <IdentList, 'VAR', E1, Type, E4, Scope, E, Scope2, E2>
+              ';'
               <Table, E1, Scope2, E2, Scope3, E3>
           } <- Table, - E1, - Scope, - E, + Scope, + E>
-    ] <- Table, - Lev, - Scope, + Scope, + "0": E>
+    ] <- Table, - Lev, - Scope, + Scope, + '0': E>
   <Table, Lev, Scope3, Scope4, , N, Code1, N1>
     { <- Table, - Lev, - Scope, + Scope2, - Code, - N, + Code2, + N2>
         ProcedureDeclaration <Table, Lev, Scope, Scope1, N, Code1, N1>
-        ";"
+        ';'
         <Table, Lev, Scope1, Scope2, Code Code1, N1, Code2, N2>
     } <- Table, - Lev, - Scope, + Scope, - Code, - N, + Code, + N>.
 
-standard <+ "F" "A" "L" "S" "E"              "CONST" "0" "BOOL"
-            "T" "R" "U" "E"                  "CONST" "1" "BOOL"
-            "I" "N" "T" "E" "G" "E" "R"      "TYPE" "1" "INT"
-            "B" "O" "O" "L" "E" "A" "N"      "TYPE" "1" "BOOL"
-            "R" "e" "a" "d"                  "READ"     "PAR" "INT"
-            "W" "r" "i" "t" "e"              "WRITE"    "PAR" "INT"
-            "W" "r" "i" "t" "e" "H" "e" "x"  "WRITEHEX" "PAR" "INT"
-            "W" "r" "i" "t" "e" "L" "n"      "WRITELN"
+standard <+ 'F' 'A' 'L' 'S' 'E'              'CONST' '0' 'BOOL'
+            'T' 'R' 'U' 'E'                  'CONST' '1' 'BOOL'
+            'I' 'N' 'T' 'E' 'G' 'E' 'R'      'TYPE' '1' 'INT'
+            'B' 'O' 'O' 'L' 'E' 'A' 'N'      'TYPE' '1' 'BOOL'
+            'R' 'e' 'a' 'd'                  'READ'     'PAR' 'INT'
+            'W' 'r' 'i' 't' 'e'              'WRITE'    'PAR' 'INT'
+            'W' 'r' 'i' 't' 'e' 'H' 'e' 'x'  'WRITEHEX' 'PAR' 'INT'
+            'W' 'r' 'i' 't' 'e' 'L' 'n'      'WRITELN'
           : Scope>: .
 
 Module <+ Code1 Code2 Code3 Code4: Code>:
   standard <Scope>
-  "MODULE" ident <ident>
-  ";" Declarations <"UNDEF" Scope, "GLOBAL", , Table, E, "1", Code1, N1>
+  'MODULE' ident <ident>
+  ';' Declarations <'UNDEF' Scope, 'GLOBAL', , Table, E, '1', Code1, N1>
   Header <E, Code2>
   Body <Table, N1, Code3, N3> ident <ident>
-  "." close <Code4>.
+  '.' close <Code4>.
 
 // RISC Assembler
 
-label* = "L" N.
+label* = 'L' N.
 Ls = | Ls Ls
   | label.
 
 Inc:
     <- N digit: N, + N digit1: N>
       Inc <digit, digit1>
-  | <- N "9": N, + N1 "0": N>
+  | <- N '9': N, + N1 '0': N>
       Inc <N, N1>
-  | <- "0": N, + "1": N>
-  | <- "1": N, + "2": N>
-  | <- "2": N, + "3": N>
-  | <- "3": N, + "4": N>
-  | <- "4": N, + "5": N>
-  | <- "5": N, + "6": N>
-  | <- "6": N, + "7": N>
-  | <- "7": N, + "8": N>
-  | <- "8": N, + "9": N>
-  | <- "9": N, + "1" "0": N>.
+  | <- '0': N, + '1': N>
+  | <- '1': N, + '2': N>
+  | <- '2': N, + '3': N>
+  | <- '3': N, + '4': N>
+  | <- '4': N, + '5': N>
+  | <- '5': N, + '6': N>
+  | <- '6': N, + '7': N>
+  | <- '7': N, + '8': N>
+  | <- '8': N, + '9': N>
+  | <- '9': N, + '1' '0': N>.
 
 E =
-    N | label | "PC"
-  | "(" E "+" E ")" | "(" E "-" E ")" | "(" E "*" E ")" | "(" E "/" E ")" | "(" E "%" E ")".
+    N | label | 'PC'
+  | '(' E '+' E ')' | '(' E '-' E ')' | '(' E '*' E ')' | '(' E '/' E ')' | '(' E '%' E ')'.
 
-eqO <- "0": E>: .
+eqO <- '0': E>: .
 
 uneqO:
     <- N: E>
-      uneqN <N, "0">
-  | <- label: E> | <- "PC": E>
-  | <- "(" E1 "+" E2 ")": E> | <- "(" E1 "-" E2 ")": E>
-  | <- "(" E1 "*" E2 ")": E> | <- "(" E1 "/" E2 ")": E> | <- "(" E1 "%" E2 ")": E>.
+      uneqN <N, '0'>
+  | <- label: E> | <- 'PC': E>
+  | <- '(' E1 '+' E2 ')': E> | <- '(' E1 '-' E2 ')': E>
+  | <- '(' E1 '*' E2 ')': E> | <- '(' E1 '/' E2 ')': E> | <- '(' E1 '%' E2 ')': E>.
 
-CC = "BEQ" | "BNE" | "BLT" | "BGE" | "BGT" | "BLE".
+CC = 'BEQ' | 'BNE' | 'BLT' | 'BGE' | 'BGT' | 'BLE'.
 
 Negated:
-    <- "BEQ": CC, + "BNE": CC> | <- "BNE": CC, + "BEQ": CC>
-  | <- "BLT": CC, + "BGE": CC> | <- "BGE": CC, + "BLT": CC>
-  | <- "BGT": CC, + "BLE": CC> | <- "BLE": CC, + "BGT": CC>.
+    <- 'BEQ': CC, + 'BNE': CC> | <- 'BNE': CC, + 'BEQ': CC>
+  | <- 'BLT': CC, + 'BGE': CC> | <- 'BGE': CC, + 'BLT': CC>
+  | <- 'BGT': CC, + 'BLE': CC> | <- 'BLE': CC, + 'BGT': CC>.
 
 Code = | Code Code
-  | label "*" | Ls
-  | "ADD"  N "," N "," N
-  | "SUB"  N "," N "," N
-  | "MUL"  N "," N "," N
-  | "DIV"  N "," N "," N
-  | "MOD"  N "," N "," N
-  | "CMP"  N "," N "," N
-  | "ADDI" N "," N "," E
-  | "SUBI" N "," N "," E
-  | "MULI" N "," N "," E
-  | "DIVI" N "," N "," E
-  | "MODI" N "," N "," E
-  | "CMPI" N "," N "," E
-  | "CHKI" N "," E
-  | "LDW"  N "," N "," E
-  | "STW"  N "," N "," E
-  | "POP"  N "," N "," E
-  | "PSH"  N "," N "," E
-  |  CC    N "," E
-  | "BSR"  E
-  | "RET"  N
-  | "RD"   N
-  | "WD"   N
-  | "WH"   N
-  | "WL"   N.
+  | label '*' | Ls
+  | 'ADD'  N ',' N ',' N
+  | 'SUB'  N ',' N ',' N
+  | 'MUL'  N ',' N ',' N
+  | 'DIV'  N ',' N ',' N
+  | 'MOD'  N ',' N ',' N
+  | 'CMP'  N ',' N ',' N
+  | 'ADDI' N ',' N ',' E
+  | 'SUBI' N ',' N ',' E
+  | 'MULI' N ',' N ',' E
+  | 'DIVI' N ',' N ',' E
+  | 'MODI' N ',' N ',' E
+  | 'CMPI' N ',' N ',' E
+  | 'CHKI' N ',' E
+  | 'LDW'  N ',' N ',' E
+  | 'STW'  N ',' N ',' E
+  | 'POP'  N ',' N ',' E
+  | 'PSH'  N ',' N ',' E
+  |  CC    N ',' E
+  | 'BSR'  E
+  | 'RET'  N
+  | 'RD'   N
+  | 'WD'   N
+  | 'WH'   N
+  | 'WL'   N.
 
 // Register Allocation
 
-Regs = | N ";" Regs.
+Regs = | N ';' Regs.
 
-rO  <+     "0": N>: .
+rO  <+     '0': N>: .
 
-fp  <+ "2" "9": N>: .
+fp  <+ '2' '9': N>: .
 
-sp  <+ "3" "0": N>: .
+sp  <+ '3' '0': N>: .
 
-lnk <+ "3" "1": N>: .
+lnk <+ '3' '1': N>: .
 
-available <+     "1" ";"     "2" ";"     "3" ";"     "4" ";"     "5" ";"
-                 "6" ";"     "7" ";"     "8" ";"     "9" ";" "1" "0" ";"
-             "1" "1" ";" "1" "2" ";" "1" "3" ";" "1" "4" ";" "1" "5" ";"
-             "1" "6" ";" "1" "7" ";" "1" "8" ";" "1" "9" ";" "2" "0" ";"
-             "2" "1" ";" "2" "2" ";" "2" "3" ";" "2" "4" ";" "2" "5" ";"
-             "2" "6" ";" "2" "7" ";" "2" "8" ";"
+available <+     '1' ';'     '2' ';'     '3' ';'     '4' ';'     '5' ';'
+                 '6' ';'     '7' ';'     '8' ';'     '9' ';' '1' '0' ';'
+             '1' '1' ';' '1' '2' ';' '1' '3' ';' '1' '4' ';' '1' '5' ';'
+             '1' '6' ';' '1' '7' ';' '1' '8' ';' '1' '9' ';' '2' '0' ';'
+             '2' '1' ';' '2' '2' ';' '2' '3' ';' '2' '4' ';' '2' '5' ';'
+             '2' '6' ';' '2' '7' ';' '2' '8' ';'
            : Regs>: .
 
 FreeReg:
@@ -543,253 +543,253 @@ FreeReg:
       rO <N>
   | <- N, - Regs, + Regs>
       fp <N>
-  | <- N, - Regs, + N ";" Regs: Regs>
+  | <- N, - Regs, + N ';' Regs: Regs>
       rO <N1> uneqN <N, N1>
       fp <N2> uneqN <N, N2>.
 
 // Code Selection
 
-Item = "VAR" N "," E | "REG" N | "CONST" E | "COND" CC N Ls "," Ls | "PEND" Ls.
+Item = 'VAR' N ',' E | 'REG' N | 'CONST' E | 'COND' CC N Ls ',' Ls | 'PEND' Ls.
 
 MakeItem:
-    <- "CONST" E Type: Object, - Lev, + "CONST" E: Item, + Type,
+    <- 'CONST' E Type: Object, - Lev, + 'CONST' E: Item, + Type,
      - Code, - Regs, + Code, + Regs>
-  | <- "VAR" E Type: Object, - "GLOBAL": Lev, + "VAR" N "," E: Item, + Type,
+  | <- 'VAR' E Type: Object, - 'GLOBAL': Lev, + 'VAR' N ',' E: Item, + Type,
      - Code, - Regs, + Code, + Regs>
       rO <N>
-  | <- "VAR" E Type: Object, - "LOCAL": Lev, + "VAR" N "," E: Item, + Type,
+  | <- 'VAR' E Type: Object, - 'LOCAL': Lev, + 'VAR' N ',' E: Item, + Type,
      - Code, - Regs, + Code, + Regs>
       fp <N>
-  | <- "REF" E Type: Object, - "LOCAL": Lev, + "VAR" N1 "," "0": Item, + Type,
-     - Code, - N1 ";" Regs: Regs, + Code "LDW" N1 "," N "," E: Code, + Regs>
+  | <- 'REF' E Type: Object, - 'LOCAL': Lev, + 'VAR' N1 ',' '0': Item, + Type,
+     - Code, - N1 ';' Regs: Regs, + Code 'LDW' N1 ',' N ',' E: Code, + Regs>
       fp <N>.
 
-MakeCond <- Op, - N, + "COND" CC N ",": Item>:
+MakeCond <- Op, - N, + 'COND' CC N ',': Item>:
   <Op, CC>
-    ( <- "=": Op, + "BEQ": CC> | <- "#": Op, + "BNE": CC>
-    | <- "<": Op, + "BLT": CC> | <- ">=": Op, + "BGE": CC>
-    | <- ">": Op, + "BGT": CC> | <- "<=": Op, + "BLE": CC>
+    ( <- '=': Op, + 'BEQ': CC> | <- '#': Op, + 'BNE': CC>
+    | <- '<': Op, + 'BLT': CC> | <- '>=': Op, + 'BGE': CC>
+    | <- '>': Op, + 'BGT': CC> | <- '<=': Op, + 'BLE': CC>
     ).
 
 Load:
-    <- "VAR" N "," E: Item, + "REG" N1: Item,
-     - Code, - Regs, + Code "LDW" N1 "," N "," E: Code, + Regs1>
-      FreeReg <N, Regs, N1 ";" Regs1>
-  | <- "REG" N: Item, + "REG" N: Item,
+    <- 'VAR' N ',' E: Item, + 'REG' N1: Item,
+     - Code, - Regs, + Code 'LDW' N1 ',' N ',' E: Code, + Regs1>
+      FreeReg <N, Regs, N1 ';' Regs1>
+  | <- 'REG' N: Item, + 'REG' N: Item,
      - Code, - Regs, + Code, + Regs>
-  | <- "CONST" E: Item, + "REG" N1: Item,
-     - Code, - N1 ";" Regs: Regs, + Code "ADDI" N1 "," N "," E: Code, + Regs>
+  | <- 'CONST' E: Item, + 'REG' N1: Item,
+     - Code, - N1 ';' Regs: Regs, + Code 'ADDI' N1 ',' N ',' E: Code, + Regs>
       uneqO <E>
       rO <N>
-  | <- "CONST" E: Item, + "REG" N: Item,
+  | <- 'CONST' E: Item, + 'REG' N: Item,
      - Code, - Regs, + Code, + Regs>
       eqO <E>
       rO <N>
-  | <- "COND" CC N1 Ls1 "," Ls2: Item, + "REG" N2: Item,
-     - Code, - Regs, + Code  CC    N1 "," "3"
-                        Ls1 "ADDI" N2 "," N "," "0"
-                            "BEQ"  N "," "2"
-                        Ls2 "ADDI" N2 "," N "," "1": Code, + Regs1>
-      rO <N> FreeReg <N1, Regs, N2 ";" Regs1>.
+  | <- 'COND' CC N1 Ls1 ',' Ls2: Item, + 'REG' N2: Item,
+     - Code, - Regs, + Code  CC    N1 ',' '3'
+                        Ls1 'ADDI' N2 ',' N ',' '0'
+                            'BEQ'  N ',' '2'
+                        Ls2 'ADDI' N2 ',' N ',' '1': Code, + Regs1>
+      rO <N> FreeReg <N1, Regs, N2 ';' Regs1>.
 
 LoadBool:
-    <- "REG" N: Item, + Item>
-      MakeCond <"#", N, Item>
-  | <- "CONST" E: Item, + Item>
+    <- 'REG' N: Item, + Item>
+      MakeCond <'#', N, Item>
+  | <- 'CONST' E: Item, + Item>
       uneqO <E>
-      rO <N> MakeCond <"=", N, Item>
-  | <- "CONST" E: Item, + Item>
+      rO <N> MakeCond <'=', N, Item>
+  | <- 'CONST' E: Item, + Item>
       eqO <E>
-      rO <N> MakeCond <"#", N, Item>
-  | <- "COND" CC N Ls1 "," Ls2: Item, + "COND" CC N Ls1 "," Ls2: Item>.
+      rO <N> MakeCond <'#', N, Item>
+  | <- 'COND' CC N Ls1 ',' Ls2: Item, + 'COND' CC N Ls1 ',' Ls2: Item>.
 
-Field <- "VAR" N "," E: Item, - E1, + "VAR" N "," "(" E "+" E1 ")": Item,
+Field <- 'VAR' N ',' E: Item, - E1, + 'VAR' N ',' '(' E '+' E1 ')': Item,
        - Code, - Regs, + Code, + Regs>: .
 
 Index:
-    <- Item, - E1, - E2, - "VAR" N "," E: Item, + Item2,
+    <- Item, - E1, - E2, - 'VAR' N ',' E: Item, + Item2,
      - Code, - Regs, + Code2, + Regs2>
-      Load <"VAR" N "," E, Item1, Code, Regs, Code1, Regs1>
+      Load <'VAR' N ',' E, Item1, Code, Regs, Code1, Regs1>
       Index <Item, E1, E2, Item1, Item2, Code1, Regs1, Code2, Regs2>
-  | <- "VAR" N "," E: Item, - E1, - E2, - "REG" N1: Item, + "VAR" N2 "," E: Item,
-     - Code, - Regs, + Code "CHKI" N1 "," E1
-                            "MULI" N2 "," N1 "," E2: Code, + Regs1>
+  | <- 'VAR' N ',' E: Item, - E1, - E2, - 'REG' N1: Item, + 'VAR' N2 ',' E: Item,
+     - Code, - Regs, + Code 'CHKI' N1 ',' E1
+                            'MULI' N2 ',' N1 ',' E2: Code, + Regs1>
       rO <N>
-      FreeReg <N1, Regs, N2 ";" Regs1>
-  | <- "VAR" N "," E: Item, - E1, - E2, - "REG" N1: Item, + "VAR" N2 "," E: Item,
-     - Code, - Regs, + Code "CHKI" N1 "," E1
-                            "MULI" N2 "," N1 "," E2
-                            "ADD"  N2 "," N "," N2: Code, + Regs2>
+      FreeReg <N1, Regs, N2 ';' Regs1>
+  | <- 'VAR' N ',' E: Item, - E1, - E2, - 'REG' N1: Item, + 'VAR' N2 ',' E: Item,
+     - Code, - Regs, + Code 'CHKI' N1 ',' E1
+                            'MULI' N2 ',' N1 ',' E2
+                            'ADD'  N2 ',' N ',' N2: Code, + Regs2>
       rO <N3> uneqN <N, N3>
-      FreeReg <N1, Regs, N2 ";" Regs1> FreeReg <N, Regs1, Regs2>
-  | <- "VAR" N "," E: Item, - E1, - E2, - "CONST" E3: Item,
-     + "VAR" N "," "(" E "+" "(" E2 "*" E3 ")" ")": Item,
+      FreeReg <N1, Regs, N2 ';' Regs1> FreeReg <N, Regs1, Regs2>
+  | <- 'VAR' N ',' E: Item, - E1, - E2, - 'CONST' E3: Item,
+     + 'VAR' N ',' '(' E '+' '(' E2 '*' E3 ')' ')': Item,
      - Code, - Regs, + Code, + Regs>.
 
 CondJump:
-    <- "VAR" N1 "," E: Item, + Item2,
+    <- 'VAR' N1 ',' E: Item, + Item2,
      - Code, - Regs, - N, + Code2, + Regs2, + N2>
-      Load <"VAR" N1 "," E, Item1, Code, Regs, Code1, Regs1>
+      Load <'VAR' N1 ',' E, Item1, Code, Regs, Code1, Regs1>
       CondJump <Item1, Item2, Code1, Regs1, N, Code2, Regs2, N2>
-  | <- Item, + "PEND" Ls1 "L" N: Item,
-     - Code, - Regs, - N, + Code  CC1 N2 "," "(" "L" N "-" "PC" ")"
+  | <- Item, + 'PEND' Ls1 'L' N: Item,
+     - Code, - Regs, - N, + Code  CC1 N2 ',' '(' 'L' N '-' 'PC' ')'
                              Ls2: Code, + Regs1, + N1>
-      LoadBool <Item, "COND" CC N2 Ls1 "," Ls2> Negated <CC, CC1>
+      LoadBool <Item, 'COND' CC N2 Ls1 ',' Ls2> Negated <CC, CC1>
       FreeReg <N2, Regs, Regs1> Inc <N, N1>.
 
-Fix <- "PEND" Ls: Item, + Ls: Code>: .
+Fix <- 'PEND' Ls: Item, + Ls: Code>: .
 
 UnOp:
-    <- Op, - "VAR" N "," E: Item, + Item2,
+    <- Op, - 'VAR' N ',' E: Item, + Item2,
      - Code, - Regs, + Code2, + Regs2>
-      Load <"VAR" N "," E, Item1, Code, Regs, Code1, Regs1>
+      Load <'VAR' N ',' E, Item1, Code, Regs, Code1, Regs1>
       UnOp <Op, Item1, Item2, Code1, Regs1, Code2, Regs2>
-  | <- "-": Op, - "REG" N1: Item, + "REG" N2: Item,
-     - Code, - Regs, + Code "SUB" N2 "," N "," N1: Code, + Regs1>
-      rO <N> FreeReg <N1, Regs, N2 ";" Regs1>
-  | <- "-": Op, - "CONST" E: Item, + "CONST" "(" "0" "-" E ")": Item,
+  | <- '-': Op, - 'REG' N1: Item, + 'REG' N2: Item,
+     - Code, - Regs, + Code 'SUB' N2 ',' N ',' N1: Code, + Regs1>
+      rO <N> FreeReg <N1, Regs, N2 ';' Regs1>
+  | <- '-': Op, - 'CONST' E: Item, + 'CONST' '(' '0' '-' E ')': Item,
      - Code, - Regs, + Code, + Regs>
-  | <- "NOT": Op, - Item, + "COND" CC1 N Ls2 "," Ls1: Item,
+  | <- 'NOT': Op, - Item, + 'COND' CC1 N Ls2 ',' Ls1: Item,
      - Code, - Regs, + Code, + Regs>
-      LoadBool <Item, "COND" CC N Ls1 "," Ls2> Negated <CC, CC1>.
+      LoadBool <Item, 'COND' CC N Ls1 ',' Ls2> Negated <CC, CC1>.
 
 Op:
-    <- Op, - Item1, - "VAR" N "," E: Item, + Item3,
+    <- Op, - Item1, - 'VAR' N ',' E: Item, + Item3,
      - Code, - Regs, + Code2, + Regs2>
-      Load <"VAR" N "," E, Item2, Code, Regs, Code1, Regs1>
+      Load <'VAR' N ',' E, Item2, Code, Regs, Code1, Regs1>
       Op <Op, Item1, Item2, Item3, Code1, Regs1, Code2, Regs2>
-  | <- Op, - Item, - "REG" N2: Item, + "REG" N3: Item,
+  | <- Op, - Item, - 'REG' N2: Item, + 'REG' N3: Item,
      - Code, - Regs, + Code1 Code2: Code, + Regs3>
-      Load <Item, "REG" N1, Code, Regs, Code1, Regs1>
-      FreeReg <N2, Regs1, Regs2> FreeReg <N1, Regs2, N3 ";" Regs3>
+      Load <Item, 'REG' N1, Code, Regs, Code1, Regs1>
+      FreeReg <N2, Regs1, Regs2> FreeReg <N1, Regs2, N3 ';' Regs3>
       <Op, N3, N1, N2, Code2>
-        ( <- "+": Op, - N, - N1, - N2, + "ADD" N "," N1 "," N2: Code>
-        | <- "-": Op, - N, - N1, - N2, + "SUB" N "," N1 "," N2: Code>
-        | <- "*": Op, - N, - N1, - N2, + "MUL" N "," N1 "," N2: Code>
-        | <- "DIV": Op, - N, - N1, - N2, + "DIV" N "," N1 "," N2: Code>
-        | <- "MOD": Op, - N, - N1, - N2, + "MOD" N "," N1 "," N2: Code>
+        ( <- '+': Op, - N, - N1, - N2, + 'ADD' N ',' N1 ',' N2: Code>
+        | <- '-': Op, - N, - N1, - N2, + 'SUB' N ',' N1 ',' N2: Code>
+        | <- '*': Op, - N, - N1, - N2, + 'MUL' N ',' N1 ',' N2: Code>
+        | <- 'DIV': Op, - N, - N1, - N2, + 'DIV' N ',' N1 ',' N2: Code>
+        | <- 'MOD': Op, - N, - N1, - N2, + 'MOD' N ',' N1 ',' N2: Code>
         )
-  | <- Op, - Item, - "CONST" E: Item, + "REG" N2: Item,
+  | <- Op, - Item, - 'CONST' E: Item, + 'REG' N2: Item,
      - Code, - Regs, + Code1 Code2: Code, + Regs2>
-      <Item, "REG" N1, Code, Regs, Code1, Regs1>
-        ( <- "VAR" N "," E: Item, + Item,
+      <Item, 'REG' N1, Code, Regs, Code1, Regs1>
+        ( <- 'VAR' N ',' E: Item, + Item,
            - Code, - Regs, + Code1, + Regs1>
-            Load <"VAR" N "," E, Item, Code, Regs, Code1, Regs1>
-        | <- "REG" N: Item, + "REG" N: Item,
+            Load <'VAR' N ',' E, Item, Code, Regs, Code1, Regs1>
+        | <- 'REG' N: Item, + 'REG' N: Item,
            - Code, - Regs, + Code, + Regs>
         )
-      FreeReg <N1, Regs1, N2 ";" Regs2>
+      FreeReg <N1, Regs1, N2 ';' Regs2>
       <Op, N2, N1, E, Code2>
-        ( <- "+": Op, - N, - N1, - E, + "ADDI" N "," N1 "," E: Code>
-        | <- "-": Op, - N, - N1, - E, + "SUBI" N "," N1 "," E: Code>
-        | <- "*": Op, - N, - N1, - E, + "MULI" N "," N1 "," E: Code>
-        | <- "DIV": Op, - N, - N1, - E, + "DIVI" N "," N1 "," E: Code>
-        | <- "MOD": Op, - N, - N1, - E, + "MODI" N "," N1 "," E: Code>
+        ( <- '+': Op, - N, - N1, - E, + 'ADDI' N ',' N1 ',' E: Code>
+        | <- '-': Op, - N, - N1, - E, + 'SUBI' N ',' N1 ',' E: Code>
+        | <- '*': Op, - N, - N1, - E, + 'MULI' N ',' N1 ',' E: Code>
+        | <- 'DIV': Op, - N, - N1, - E, + 'DIVI' N ',' N1 ',' E: Code>
+        | <- 'MOD': Op, - N, - N1, - E, + 'MODI' N ',' N1 ',' E: Code>
         )
-  | <- Op, - "CONST" E1: Item, - "CONST" E2: Item, + "CONST" E3: Item,
+  | <- Op, - 'CONST' E1: Item, - 'CONST' E2: Item, + 'CONST' E3: Item,
      - Code, - Regs, + Code, + Regs>
       <Op, E1, E2, E3>
-        ( <- "+": Op, - E1, - E2, + "(" E1 "+" E2 ")": E>
-        | <- "-": Op, - E1, - E2, + "(" E1 "-" E2 ")": E>
-        | <- "*": Op, - E1, - E2, + "(" E1 "*" E2 ")": E>
-        | <- "DIV": Op, - E1, - E2, + "(" E1 "/" E2 ")": E>
-        | <- "MOD": Op, - E1, - E2, + "(" E1 "%" E2 ")": E>
+        ( <- '+': Op, - E1, - E2, + '(' E1 '+' E2 ')': E>
+        | <- '-': Op, - E1, - E2, + '(' E1 '-' E2 ')': E>
+        | <- '*': Op, - E1, - E2, + '(' E1 '*' E2 ')': E>
+        | <- 'DIV': Op, - E1, - E2, + '(' E1 '/' E2 ')': E>
+        | <- 'MOD': Op, - E1, - E2, + '(' E1 '%' E2 ')': E>
         )
-  | <- "OR": Op, - "PEND" Ls: Item, - Item, + "COND" CC N Ls1 "," Ls Ls2: Item,
+  | <- 'OR': Op, - 'PEND' Ls: Item, - Item, + 'COND' CC N Ls1 ',' Ls Ls2: Item,
      - Code, - Regs, + Code, + Regs>
-      LoadBool <Item, "COND" CC N Ls1 "," Ls2>
-  | <- "AND": Op, - "PEND" Ls: Item, - Item, + "COND" CC N Ls Ls1 "," Ls2: Item,
+      LoadBool <Item, 'COND' CC N Ls1 ',' Ls2>
+  | <- 'AND': Op, - 'PEND' Ls: Item, - Item, + 'COND' CC N Ls Ls1 ',' Ls2: Item,
      - Code, - Regs, + Code, + Regs>
-      LoadBool <Item, "COND" CC N Ls1 "," Ls2>.
+      LoadBool <Item, 'COND' CC N Ls1 ',' Ls2>.
 
 Relation:
-    <- Op, - Item1, - "VAR" N "," E: Item, + Item3,
+    <- Op, - Item1, - 'VAR' N ',' E: Item, + Item3,
      - Code, - Regs, + Code2, + Regs2>
-      Load <"VAR" N "," E, Item2, Code, Regs, Code1, Regs1>
+      Load <'VAR' N ',' E, Item2, Code, Regs, Code1, Regs1>
       Relation <Op, Item1, Item2, Item3, Code1, Regs1, Code2, Regs2>
-  | <- Op, - Item1, - "REG" N2: Item, + Item,
-     - Code, - Regs, + Code1 "CMP" N3 "," N1 "," N2: Code, + Regs3>
-      Load <Item1, "REG" N1, Code, Regs, Code1, Regs1>
-      FreeReg <N2, Regs1, Regs2> FreeReg <N1, Regs2, N3 ";" Regs3>
+  | <- Op, - Item1, - 'REG' N2: Item, + Item,
+     - Code, - Regs, + Code1 'CMP' N3 ',' N1 ',' N2: Code, + Regs3>
+      Load <Item1, 'REG' N1, Code, Regs, Code1, Regs1>
+      FreeReg <N2, Regs1, Regs2> FreeReg <N1, Regs2, N3 ';' Regs3>
       MakeCond <Op, N3, Item>
-  | <- Op, - Item1, - "CONST" E: Item, + Item,
-     - Code, - Regs, + Code1 "CMPI" N2 "," N1 "," E: Code, + Regs2>
+  | <- Op, - Item1, - 'CONST' E: Item, + Item,
+     - Code, - Regs, + Code1 'CMPI' N2 ',' N1 ',' E: Code, + Regs2>
       uneqO <E>
-      Load <Item1, "REG" N1, Code, Regs, Code1, Regs1>
-      FreeReg <N1, Regs1, N2 ";" Regs2>
+      Load <Item1, 'REG' N1, Code, Regs, Code1, Regs1>
+      FreeReg <N1, Regs1, N2 ';' Regs2>
       MakeCond <Op, N2, Item>
-  | <- Op, - Item1, - "CONST" E: Item, + Item,
+  | <- Op, - Item1, - 'CONST' E: Item, + Item,
      - Code, - Regs, + Code1, + Regs1>
       eqO <E>
-      Load <Item1, "REG" N, Code, Regs, Code1, Regs1>
+      Load <Item1, 'REG' N, Code, Regs, Code1, Regs1>
       MakeCond <Op, N, Item>.
 
 Parameter:
-    <- "VAR": Kind, - Item,
-     - Code, - Regs, + Code1 "PSH" N1 "," N "," "1": Code, + Regs2>
-      Load <Item, "REG" N1, Code, Regs, Code1, Regs1>
+    <- 'VAR': Kind, - Item,
+     - Code, - Regs, + Code1 'PSH' N1 ',' N ',' '1': Code, + Regs2>
+      Load <Item, 'REG' N1, Code, Regs, Code1, Regs1>
       sp <N> FreeReg <N1, Regs1, Regs2>
-  | <- "REF": Kind, - "VAR" N1 "," E: Item,
-     - Code, - Regs, + Code "ADDI" N2 "," N1 "," E
-                            "PSH"  N2 "," N "," "1": Code, + N2 ";" Regs1: Regs>
+  | <- 'REF': Kind, - 'VAR' N1 ',' E: Item,
+     - Code, - Regs, + Code 'ADDI' N2 ',' N1 ',' E
+                            'PSH'  N2 ',' N ',' '1': Code, + N2 ';' Regs1: Regs>
       uneqO <E>
-      sp <N> FreeReg <N1, Regs, N2 ";" Regs1>
-  | <- "REF": Kind, - "VAR" N1 "," E: Item,
-     - Code, - Regs, + Code "PSH"  N1 "," N "," "1": Code, + Regs1>
+      sp <N> FreeReg <N1, Regs, N2 ';' Regs1>
+  | <- 'REF': Kind, - 'VAR' N1 ',' E: Item,
+     - Code, - Regs, + Code 'PSH'  N1 ',' N ',' '1': Code, + Regs1>
       eqO <E>
       sp <N> FreeReg <N1, Regs, Regs1>
-  | <- "PAR": Kind, - Item,
+  | <- 'PAR': Kind, - Item,
      - Code, - Regs, + Code, + Regs>.
 
-Store <- "VAR" N "," E: Item, - Item,
-       - Code, - Regs, + Code1 "STW" N1 "," N "," E: Code, + Regs3>:
-  Load <Item, "REG" N1, Code, Regs, Code1, Regs1>
+Store <- 'VAR' N ',' E: Item, - Item,
+       - Code, - Regs, + Code1 'STW' N1 ',' N ',' E: Code, + Regs3>:
+  Load <Item, 'REG' N1, Code, Regs, Code1, Regs1>
   FreeReg <N1, Regs1, Regs2> FreeReg <N, Regs2, Regs3>.
 
-Label <+ "L" N: E, - N, + "L" N: Code, + N1>:
+Label <+ 'L' N: E, - N, + 'L' N: Code, + N1>:
   Inc <N, N1>.
 
-Jump <- E, + "BEQ" N "," "(" E "-" "PC" ")": Code>:
+Jump <- E, + 'BEQ' N ',' '(' E '-' 'PC' ')': Code>:
   rO <N>.
 
-Call <- E, + "BSR" "(" E "-" "PC" ")": Code>: .
+Call <- E, + 'BSR' '(' E '-' 'PC' ')': Code>: .
 
 IOCall:
-    <- "READ": SProc, - Item,
-     - Code, - N ";" Regs: Regs, + Code1, + Regs1>
-      Store <Item, "REG" N, Code "RD" N, Regs, Code1, Regs1>
-  | <- "WRITE": SProc, - Item,
-     - Code, - Regs, + Code1 "WD" N: Code, + Regs2>
-      Load <Item, "REG" N, Code, Regs, Code1, Regs1>
+    <- 'READ': SProc, - Item,
+     - Code, - N ';' Regs: Regs, + Code1, + Regs1>
+      Store <Item, 'REG' N, Code 'RD' N, Regs, Code1, Regs1>
+  | <- 'WRITE': SProc, - Item,
+     - Code, - Regs, + Code1 'WD' N: Code, + Regs2>
+      Load <Item, 'REG' N, Code, Regs, Code1, Regs1>
       FreeReg <N, Regs1, Regs2>
-  | <- "WRITEHEX": SProc, - Item,
-     - Code, - Regs, + Code1 "WH" N: Code, + Regs2>
-      Load <Item, "REG" N, Code, Regs, Code1, Regs1>
+  | <- 'WRITEHEX': SProc, - Item,
+     - Code, - Regs, + Code1 'WH' N: Code, + Regs2>
+      Load <Item, 'REG' N, Code, Regs, Code1, Regs1>
       FreeReg <N, Regs1, Regs2>
-  | <- "WRITELN": SProc, - Item,
-     - Code, - Regs, + Code "WL" N: Code, + Regs>
+  | <- 'WRITELN': SProc, - Item,
+     - Code, - Regs, + Code 'WL' N: Code, + Regs>
       rO <N>.
 
-memSize <+ "1" "0" "2" "4": E>: .
+memSize <+ '1' '0' '2' '4': E>: .
 
-Header <- E, + "L" "0" "*" "ADDI" N2 "," N "," "(" E1 "-" E ")": Code>:
+Header <- E, + 'L' '0' '*' 'ADDI' N2 ',' N ',' '(' E1 '-' E ')': Code>:
   rO <N> sp <N2> memSize <E1>.
 
-close <+ "RET" N: Code>:
+close <+ 'RET' N: Code>:
   rO <N>.
 
-markSize <+ "2": E>: .
+markSize <+ '2': E>: .
 
-Enter <- E, + "PSH"  N3 "," N2 "," "1"
-              "PSH"  N1 "," N2 "," "1"
-              "ADD"  N1 "," N "," N2
-              "SUBI" N2 "," N2 "," E: Code>:
+Enter <- E, + 'PSH'  N3 ',' N2 ',' '1'
+              'PSH'  N1 ',' N2 ',' '1'
+              'ADD'  N1 ',' N ',' N2
+              'SUBI' N2 ',' N2 ',' E: Code>:
   rO <N> fp <N1> sp <N2> lnk <N3>.
 
-Return <- E, + "ADD" N2 "," N "," N1
-               "POP" N1 "," N2 "," "1"
-               "POP" N3 "," N2 "," "(" E "+" "1" ")"
-               "RET" N3: Code>:
+Return <- E, + 'ADD' N2 ',' N ',' N1
+               'POP' N1 ',' N2 ',' '1'
+               'POP' N3 ',' N2 ',' '(' E '+' '1' ')'
+               'RET' N3: Code>:
   rO <N> fp <N1> sp <N2> lnk <N3>.
 
 // unequal
@@ -806,20 +806,20 @@ uneqID:
     <- ident1 letgit1: ident, - ident2 letgit2: ident>
       uneqID <ident1, ident2>
   | <- ident1 letgit1: ident, - ident2 letgit2: ident>
-      excl <"a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m"
-            "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z"
-            "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M"
-            "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z"
-            "0" "1" "2" "3" "4" "5" "6" "7" "8" "9",
+      excl <'a' 'b' 'c' 'd' 'e' 'f' 'g' 'h' 'i' 'j' 'k' 'l' 'm'
+            'n' 'o' 'p' 'q' 'r' 's' 't' 'u' 'v' 'w' 'x' 'y' 'z'
+            'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M'
+            'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'
+            '0' '1' '2' '3' '4' '5' '6' '7' '8' '9',
                       letgit1, letgits1>
       excl <letgits1, letgit2, letgits2>
   | <- ident letgit: ident, - letter: ident>
   | <- letter: ident, - ident letgit: ident>
   | <- letter1: ident, - letter2: ident>
-      excl <"a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m"
-            "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z"
-            "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M"
-            "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z",
+      excl <'a' 'b' 'c' 'd' 'e' 'f' 'g' 'h' 'i' 'j' 'k' 'l' 'm'
+            'n' 'o' 'p' 'q' 'r' 's' 't' 'u' 'v' 'w' 'x' 'y' 'z'
+            'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M'
+            'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z',
                       letter1, letgits1>
       excl <letgits1, letter2, letgits2>.
 
@@ -831,6 +831,6 @@ uneqN:
   | <- N digit1: N, - digit2: N>
   | <- digit1: N, - N digit2: N>
   | <- digit1: N, - digit2: N>
-      excl <"0" "1" "2" "3" "4" "5" "6" "7" "8" "9",
+      excl <'0' '1' '2' '3' '4' '5' '6' '7' '8' '9',
                       digit1, letgits1>
       excl <letgits1, digit2, letgits2>.

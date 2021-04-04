@@ -6,36 +6,36 @@ OberonOc <+ Decls Stmts: OberonO>:
   Decls <Decls> Stmts <Stmts>.
 
 letter =
-    "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m"
-  | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
-  | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M"
-  | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z".
+    'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm'
+  | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z'
+  | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M'
+  | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z'.
 
 letter:
-    <+ "a": letter> "a" | <+ "b": letter> "b" | <+ "c": letter> "c" | <+ "d": letter> "d"
-  | <+ "e": letter> "e" | <+ "f": letter> "f" | <+ "g": letter> "g" | <+ "h": letter> "h"
-  | <+ "i": letter> "i" | <+ "j": letter> "j" | <+ "k": letter> "k" | <+ "l": letter> "l"
-  | <+ "m": letter> "m" | <+ "n": letter> "n" | <+ "o": letter> "o" | <+ "p": letter> "p"
-  | <+ "q": letter> "q" | <+ "r": letter> "r" | <+ "s": letter> "s" | <+ "t": letter> "t"
-  | <+ "u": letter> "u" | <+ "v": letter> "v" | <+ "w": letter> "w" | <+ "x": letter> "x"
-  | <+ "y": letter> "y" | <+ "z": letter> "z"
-  | <+ "A": letter> "A" | <+ "B": letter> "B" | <+ "C": letter> "C" | <+ "D": letter> "D"
-  | <+ "E": letter> "E" | <+ "F": letter> "F" | <+ "G": letter> "G" | <+ "H": letter> "H"
-  | <+ "I": letter> "I" | <+ "J": letter> "J" | <+ "K": letter> "K" | <+ "L": letter> "L"
-  | <+ "M": letter> "M" | <+ "N": letter> "N" | <+ "O": letter> "O" | <+ "P": letter> "P"
-  | <+ "Q": letter> "Q" | <+ "R": letter> "R" | <+ "S": letter> "S" | <+ "T": letter> "T"
-  | <+ "U": letter> "U" | <+ "V": letter> "V" | <+ "W": letter> "W" | <+ "X": letter> "X"
-  | <+ "Y": letter> "Y" | <+ "Z": letter> "Z".
+    <+ 'a': letter> 'a' | <+ 'b': letter> 'b' | <+ 'c': letter> 'c' | <+ 'd': letter> 'd'
+  | <+ 'e': letter> 'e' | <+ 'f': letter> 'f' | <+ 'g': letter> 'g' | <+ 'h': letter> 'h'
+  | <+ 'i': letter> 'i' | <+ 'j': letter> 'j' | <+ 'k': letter> 'k' | <+ 'l': letter> 'l'
+  | <+ 'm': letter> 'm' | <+ 'n': letter> 'n' | <+ 'o': letter> 'o' | <+ 'p': letter> 'p'
+  | <+ 'q': letter> 'q' | <+ 'r': letter> 'r' | <+ 's': letter> 's' | <+ 't': letter> 't'
+  | <+ 'u': letter> 'u' | <+ 'v': letter> 'v' | <+ 'w': letter> 'w' | <+ 'x': letter> 'x'
+  | <+ 'y': letter> 'y' | <+ 'z': letter> 'z'
+  | <+ 'A': letter> 'A' | <+ 'B': letter> 'B' | <+ 'C': letter> 'C' | <+ 'D': letter> 'D'
+  | <+ 'E': letter> 'E' | <+ 'F': letter> 'F' | <+ 'G': letter> 'G' | <+ 'H': letter> 'H'
+  | <+ 'I': letter> 'I' | <+ 'J': letter> 'J' | <+ 'K': letter> 'K' | <+ 'L': letter> 'L'
+  | <+ 'M': letter> 'M' | <+ 'N': letter> 'N' | <+ 'O': letter> 'O' | <+ 'P': letter> 'P'
+  | <+ 'Q': letter> 'Q' | <+ 'R': letter> 'R' | <+ 'S': letter> 'S' | <+ 'T': letter> 'T'
+  | <+ 'U': letter> 'U' | <+ 'V': letter> 'V' | <+ 'W': letter> 'W' | <+ 'X': letter> 'X'
+  | <+ 'Y': letter> 'Y' | <+ 'Z': letter> 'Z'.
 
-digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9".
+digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'.
 
 digit:
-    <+ "0": digit> "0" | <+ "1": digit> "1" | <+ "2": digit> "2" | <+ "3": digit> "3"
-  | <+ "4": digit> "4" | <+ "5": digit> "5" | <+ "6": digit> "6" | <+ "7": digit> "7"
-  | <+ "8": digit> "8" | <+ "9": digit> "9".
+    <+ '0': digit> '0' | <+ '1': digit> '1' | <+ '2': digit> '2' | <+ '3': digit> '3'
+  | <+ '4': digit> '4' | <+ '5': digit> '5' | <+ '6': digit> '6' | <+ '7': digit> '7'
+  | <+ '8': digit> '8' | <+ '9': digit> '9'.
 
 letgits = | letter letgits | digit letgits.
-id = "ID" letgits.
+id = 'ID' letgits.
 
 letgits:
     <+ : letgits>
@@ -44,48 +44,48 @@ letgits:
   | <+ digit letgits: letgits>
       digit <digit> letgits <letgits>.
 
-id <+ "ID" letgits: id>:
-  "ID" letgits <letgits>.
+id <+ 'ID' letgits: id>:
+  'ID' letgits <letgits>.
 
 digits = | digit digits.
-int = "INT" digits.
+int = 'INT' digits.
 
 digits:
     <+ : digits>
   | <+ digit digits: digits>
       digit <digit> digits <digits>.
 
-int <+ "INT" digits: int>:
-  "INT" digits <digits>.
+int <+ 'INT' digits: int>:
+  'INT' digits <digits>.
 
-Sel = | "." id Sel | "[" Expr "]" Sel.
+Sel = | '.' id Sel | '[' Expr ']' Sel.
 
 Sel:
     <+ : Sel>
-  | <+ "." id Sel: Sel>
-      "." id <id> Sel <Sel>
-  | <+ "[" Expr "]" Sel: Sel>
-      "[" Expr <Expr> "]" Sel <Sel>.
+  | <+ '.' id Sel: Sel>
+      '.' id <id> Sel <Sel>
+  | <+ '[' Expr ']' Sel: Sel>
+      '[' Expr <Expr> ']' Sel <Sel>.
 
-UnOp = "+" | "-" | "NOT" | "()".
-Op = "+" | "-" | "*" | "DIV" | "MOD" | "OR" | "AND" | "=" | "#" | "<" | "<=" | ">" | ">=".
+UnOp = '+' | '-' | 'NOT' | '()'.
+Op = '+' | '-' | '*' | 'DIV' | 'MOD' | 'OR' | 'AND' | '=' | '#' | '<' | '<=' | '>' | '>='.
 Expr =
     id Sel
   | int
   | UnOp Expr
-  | "(" Expr Op Expr ")".
+  | '(' Expr Op Expr ')'.
 
 UnOp:
-    <+ "+": UnOp> "+" | <+ "-": UnOp> "-"
-  | <+ "NOT": UnOp> "NOT"
-  | <+ "()": UnOp> "()".
+    <+ '+': UnOp> '+' | <+ '-': UnOp> '-'
+  | <+ 'NOT': UnOp> 'NOT'
+  | <+ '()': UnOp> '()'.
 
 Op:
-    <+ "+": Op> "+" | <+ "-": Op> "-"
-  | <+ "*": Op> "*" | <+ "DIV": Op> "DIV" | <+ "MOD": Op> "MOD"
-  | <+ "OR": Op> "OR" | <+ "AND": Op> "AND"
-  | <+ "=": Op> "=" | <+ "#": Op> "#"
-  | <+ "<": Op> "<" | <+ "<=": Op> "<=" | <+ ">": Op> ">" | <+ ">=": Op> ">=".
+    <+ '+': Op> '+' | <+ '-': Op> '-'
+  | <+ '*': Op> '*' | <+ 'DIV': Op> 'DIV' | <+ 'MOD': Op> 'MOD'
+  | <+ 'OR': Op> 'OR' | <+ 'AND': Op> 'AND'
+  | <+ '=': Op> '=' | <+ '#': Op> '#'
+  | <+ '<': Op> '<' | <+ '<=': Op> '<=' | <+ '>': Op> '>' | <+ '>=': Op> '>='.
 
 Expr:
     <+ id Sel: Expr>
@@ -94,99 +94,99 @@ Expr:
       int <int>
   | <+ UnOp Expr: Expr>
       UnOp <UnOp> Expr <Expr>
-  | <+ "(" Expr1 Op Expr2 ")": Expr>
-      "(" Expr <Expr1> Op <Op> Expr <Expr2> ")".
+  | <+ '(' Expr1 Op Expr2 ')': Expr>
+      '(' Expr <Expr1> Op <Op> Expr <Expr2> ')'.
 
-APList = "NIL" | Expr APList.
+APList = 'NIL' | Expr APList.
 
 APList:
-    <+ "NIL": APList>
-      "NIL"
+    <+ 'NIL': APList>
+      'NIL'
   | <+ Expr APList: APList>
       Expr <Expr> APList <APList>.
 
-Stmts = "NIL" | "(" Stmts Stmts ")"
-  | "ASSIGN" id Sel Expr
-  | "CALL" id APList
-  | "IF" Expr Stmts Stmts
-  | "WHILE" Expr Stmts
-  | "REPEAT" Stmts Expr.
+Stmts = 'NIL' | '(' Stmts Stmts ')'
+  | 'ASSIGN' id Sel Expr
+  | 'CALL' id APList
+  | 'IF' Expr Stmts Stmts
+  | 'WHILE' Expr Stmts
+  | 'REPEAT' Stmts Expr.
 
 Stmts:
-    <+ "NIL": Stmts>
-      "NIL"
-  | <+ "(" Stmts1 Stmts2 ")": Stmts>
-      "(" Stmts <Stmts1> Stmts <Stmts2> ")".
+    <+ 'NIL': Stmts>
+      'NIL'
+  | <+ '(' Stmts1 Stmts2 ')': Stmts>
+      '(' Stmts <Stmts1> Stmts <Stmts2> ')'.
 
 Stmts:
-    <+ "ASSIGN" id Sel Expr: Stmts>
-      "ASSIGN" id <id> Sel <Sel> Expr <Expr>
-  | <+ "CALL" id APList: Stmts>
-      "CALL" id <id> APList <APList>
-  | <+ "IF" Expr Stmts1 Stmts2: Stmts>
-      "IF" Expr <Expr> Stmts <Stmts1> Stmts <Stmts2>
-  | <+ "WHILE" Expr Stmts: Stmts>
-      "WHILE" Expr <Expr> Stmts <Stmts>
-  | <+ "REPEAT" Stmts Expr: Stmts>
-      "REPEAT" Stmts <Stmts> Expr <Expr>.
+    <+ 'ASSIGN' id Sel Expr: Stmts>
+      'ASSIGN' id <id> Sel <Sel> Expr <Expr>
+  | <+ 'CALL' id APList: Stmts>
+      'CALL' id <id> APList <APList>
+  | <+ 'IF' Expr Stmts1 Stmts2: Stmts>
+      'IF' Expr <Expr> Stmts <Stmts1> Stmts <Stmts2>
+  | <+ 'WHILE' Expr Stmts: Stmts>
+      'WHILE' Expr <Expr> Stmts <Stmts>
+  | <+ 'REPEAT' Stmts Expr: Stmts>
+      'REPEAT' Stmts <Stmts> Expr <Expr>.
 
 IdList:
-    <- Object: Object, + "NIL": Decls>
-      "NIL"
-  | <- Object: Object, + "(" id Object Decls ")": Decls>
+    <- Object: Object, + 'NIL': Decls>
+      'NIL'
+  | <- Object: Object, + '(' id Object Decls ')': Decls>
       id <id> IdList <Object, Decls>.
 
-BasicType = "INT" | "BOOL".
-N = | "|" N.
+BasicType = 'INT' | 'BOOL'.
+N = | '|' N.
 Type =
     BasicType
-  | "STRUCT" N.
+  | 'STRUCT' N.
 
 BasicType:
-  <+ "INT": BasicType> "INT" | <+ "BOOL": BasicType> "BOOL".
+  <+ 'INT': BasicType> 'INT' | <+ 'BOOL': BasicType> 'BOOL'.
 
 N:
     <+ : N>
-  | <+ "|" N: N>
-      "|" N <N>.
+  | <+ '|' N: N>
+      '|' N <N>.
 
 Type:
     <+ BasicType: Type>
       BasicType <BasicType>
-  | <+ "STRUCT" N: Type>
-      "STRUCT" N <N>.
+  | <+ 'STRUCT' N: Type>
+      'STRUCT' N <N>.
 
-Kind = "VAR" | "VAL".
-FPList = "NIL" | Kind Type FPList.
+Kind = 'VAR' | 'VAL'.
+FPList = 'NIL' | Kind Type FPList.
 
 Kind:
-  <+ "VAR": Kind> "VAR" | <+ "VAL": Kind> "VAL".
+  <+ 'VAR': Kind> 'VAR' | <+ 'VAL': Kind> 'VAL'.
 
 M:
     <- Kind: Kind, - Type: Type, - FPList: FPList, + FPList: FPList>
   | <- Kind: Kind, - Type: Type, - FPList1: FPList, + Kind Type FPList: FPList>
-      "|" M <Kind, Type, FPList1, FPList>.
+      '|' M <Kind, Type, FPList1, FPList>.
 
 FPList:
-    <+ "NIL": FPList, + "NIL": Decls>
-      "NIL"
-  | <+ FPList: FPList, + "(" Decls1 Decls2 ")": Decls>
+    <+ 'NIL': FPList, + 'NIL': Decls>
+      'NIL'
+  | <+ FPList: FPList, + '(' Decls1 Decls2 ')': Decls>
       Kind <Kind> M <Kind, BasicType, FPList1, FPList> IdList <Object, Decls1>
       TypeUse <BasicType>
       <Kind, BasicType, Object>
-        ( <- "VAR": Kind, - Type: Type, + "REF" Type: Object>
-        | <- "VAL": Kind, - Type: Type, + "VAR" Type: Object>
+        ( <- 'VAR': Kind, - Type: Type, + 'REF' Type: Object>
+        | <- 'VAL': Kind, - Type: Type, + 'VAR' Type: Object>
         )
       FPList <FPList1, Decls2>.
 
 TypeDef =
-    "UNDEF"
+    'UNDEF'
   | id
   | Type.
 
 TypeDef:
-    <+ "UNDEF": TypeDef>
-      "UNDEF"
+    <+ 'UNDEF': TypeDef>
+      'UNDEF'
   | <+ id: TypeDef>
       id <id>
   | <+ Type: TypeDef>
@@ -194,11 +194,11 @@ TypeDef:
 
 TypeTab:
     <- TypeDef: TypeDef, + TypeDef: TypeDef>
-      "NIL"
+      'NIL'
   | <- TypeDef1: TypeDef, + TypeDef: TypeDef>
       id <id> TypeDef <TypeDef2>
       <TypeDef1, id, TypeDef2, TypeDef3>
-        ( <- "UNDEF": TypeDef, - id: id, - TypeDef: TypeDef, + "UNDEF": TypeDef>
+        ( <- 'UNDEF': TypeDef, - id: id, - TypeDef: TypeDef, + 'UNDEF': TypeDef>
         | <- id: TypeDef, - id: id, - TypeDef: TypeDef, + TypeDef: TypeDef>
         | <- !id: TypeDef, - id: id, - TypeDef: TypeDef, + !id: TypeDef>
         | <- Type: TypeDef, - id: id, - TypeDef: TypeDef, + Type: TypeDef>
@@ -212,47 +212,47 @@ TypeUse:
       Type <Type>.
 
 Object =
-    "CONST" Expr
-  | "TYPE" Type
-  | "FIELD" Type
-  | "VAR" Type
-  | "REF" Type
-  | "PROC" FPList Decls Stmts.
+    'CONST' Expr
+  | 'TYPE' Type
+  | 'FIELD' Type
+  | 'VAR' Type
+  | 'REF' Type
+  | 'PROC' FPList Decls Stmts.
 Struct =
-    "ARRAY" Expr Type
-  | "RECORD" Decls.
-Decls = "NIL" | "(" Decls Decls ")"
+    'ARRAY' Expr Type
+  | 'RECORD' Decls.
+Decls = 'NIL' | '(' Decls Decls ')'
   | id Object
-  | "STRUCT" N Struct.
+  | 'STRUCT' N Struct.
 
 Object:
-    <+ "CONST" Expr: Object>
-      "CONST" Expr <Expr>
-  | <+ "TYPE" Type: Object>
-      "TYPE" TypeUse <Type>
-  | <+ "FIELD" Type: Object>
-      "FIELD" TypeUse <Type>
-  | <+ "VAR" Type: Object>
-      "VAR" TypeUse <Type>
-  | <+ "PROC" FPList "(" Decls1 Decls ")" Stmts: Object>
-      "PROC" FPList <FPList, Decls1> Decls <Decls> Stmts <Stmts>.
+    <+ 'CONST' Expr: Object>
+      'CONST' Expr <Expr>
+  | <+ 'TYPE' Type: Object>
+      'TYPE' TypeUse <Type>
+  | <+ 'FIELD' Type: Object>
+      'FIELD' TypeUse <Type>
+  | <+ 'VAR' Type: Object>
+      'VAR' TypeUse <Type>
+  | <+ 'PROC' FPList '(' Decls1 Decls ')' Stmts: Object>
+      'PROC' FPList <FPList, Decls1> Decls <Decls> Stmts <Stmts>.
 
 Struct:
-    <+ "ARRAY" Expr Type: Struct>
-      "ARRAY" Expr <Expr> TypeUse <Type>
-  | <+ "RECORD" Decls: Struct>
-      "RECORD" Decls <Decls>.
+    <+ 'ARRAY' Expr Type: Struct>
+      'ARRAY' Expr <Expr> TypeUse <Type>
+  | <+ 'RECORD' Decls: Struct>
+      'RECORD' Decls <Decls>.
 
 Decls:
-    <+ "NIL": Decls>
-      "NIL"
-  | <+ "(" Decls1 Decls2 ")": Decls>
-      "(" Decls <Decls1> Decls <Decls2> ")".
+    <+ 'NIL': Decls>
+      'NIL'
+  | <+ '(' Decls1 Decls2 ')': Decls>
+      '(' Decls <Decls1> Decls <Decls2> ')'.
 
 Decls:
     <+ id Object: Decls>
       id <id> Object <Object>
   | <+ Decls: Decls>
-      "LIST" IdList <Object, Decls> Object <Object>
-  | <+ "STRUCT" N Struct: Decls>
-      "STRUCT" N <N> Struct <Struct>.
+      'LIST' IdList <Object, Decls> Object <Object>
+  | <+ 'STRUCT' N Struct: Decls>
+      'STRUCT' N <N> Struct <Struct>.

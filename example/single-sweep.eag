@@ -7,8 +7,8 @@ Q = .
 R = .
 S <+P> : SS < , P> .
 SS <-R,+P> : A <N, O, R>  B <N, O, P>  C <N, R>  D <P, Q, N>  E <N, Q, R, P> .
-A <+ : N,-O,-R> :  "a".
-B <-N,+ : O,-P>: "b".
-C <+ : N,-R> : "c".
-D <+ : P,-Q,-N> : "d".
-E <-N,+ : Q,-R,+ : P> : "e".
+A <+ : N,-O,-R> :  'a'.
+B <-N,+ : O,-P>: 'b'.
+C <+ : N,-R> : 'c'.
+D <+ : P,-Q,-N> : 'd'.
+E <-N,+ : Q,-R,+ : P> : 'e'.

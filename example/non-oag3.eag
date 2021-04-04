@@ -1,12 +1,12 @@
 // a non-OAG, which is a SOAG; from [RepTei] p.275
 
-N = "0".
+N = '0'.
 
-S<+ "0": N>: X<"0", N1, "0", N2>.
+S<+ '0': N>: X<'0', N1, '0', N2>.
 
-X<- N1: N, + N1: N, - N2: N, + N2: N>: "a".
+X<- N1: N, + N1: N, - N2: N, + N2: N>: 'a'.
 
 X<- N1: N, + N3: N, - N4: N, + N6: N>:
-    "b"
+    'b'
     X<N1, N2, N5, N6>
     X<N2, N3, N4, N5>.

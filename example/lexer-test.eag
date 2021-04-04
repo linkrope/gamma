@@ -4,30 +4,30 @@
  */
 // not a line comment */
 
- ε <+ word 1 "\n" word 2: _output>:
-    // string: "\n" represents newline
+ ε <+ word 1 '\n' word 2: _output>:
+    // string: '\n' represents newline
     word <word /* left-hand side */ 01>
-    `\` "n"
+    `\` 'n'
     // raw string: `\` represents backslash
     word <word /* right-hand side */ 02>
 
     π <word 01, /* empty */, word 1>
     π <word 02, /* empty */, word 2>.
 
-_output = word "\n" word.
+_output = word '\n' word.
 
 word = | letter word.
 
-letter = "α" | "β".
+letter = 'α' | 'β'.
 
 word:
     { <+ letter word: word>
-        <letter> ( <+ "α": letter> "α" | <+ "β": letter> "β" )  <word>
+        <letter> ( <+ 'α': letter> 'α' | <+ 'β': letter> 'β' )  <word>
     } <+ : word>.
 
 π:
       <- /* empty */: word, - word, + word>
-    | <- "α" word 1: word, - word 2, + "α" word 3: word>
+    | <- 'α' word 1: word, - word 2, + 'α' word 3: word>
         π <word 1, word 2, word 3>
-    | <- "β" word 1: word, - word 2, + word 3>
-        π <word 1, "β" word 2, word 3>.
+    | <- 'β' word 1: word, - word 2, + word 3>
+        π <word 1, 'β' word 2, word 3>.

@@ -1,25 +1,25 @@
 // declarations/applications: a reduced example
 
-Tab = | id ";" Tab.
+Tab = | id ';' Tab.
 
 DeclAppl <+ Tab>:
     <, Tab>
         { <- Tab, + Tab1>
-            "DECL" id< id>
+            'DECL' id< id>
             NotAlreadyDeclared <id, Tab>
-            <id ";" Tab, Tab1>
+            <id ';' Tab, Tab1>
         | <- Tab, + Tab1>
-            "APPL" id< id>
+            'APPL' id< id>
             Declared <id, Tab>
             <Tab, Tab1>
         } <- Tab, + Tab>.
 
-letter = "a" | "b".
+letter = 'a' | 'b'.
 id* = letter | id letter.
 
 letter:
-    <+ "a": letter> "a"
-  | <+ "b": letter> "b".
+    <+ 'a': letter> 'a'
+  | <+ 'b': letter> 'b'.
 
 id *<+ id>:
     letter <letter>
@@ -31,15 +31,15 @@ id *<+ id>:
 
 // helper predicate for better error messages
 NotAlreadyDeclared <-id, -Tab>:
-    Find <id, Tab, "FALSE">.
+    Find <id, Tab, 'FALSE'>.
 
 // helper predicate for better error messages
 Declared <-id, -Tab>:
-    Find <id, Tab, "TRUE">.
+    Find <id, Tab, 'TRUE'>.
 
-Bool = "TRUE" | "FALSE".
+Bool = 'TRUE' | 'FALSE'.
 
-Find <- id, - : Tab, + "FALSE": Bool>: .
-Find <- id, - id ";" Tab: Tab, + "TRUE": Bool>: .
-Find <- id, - !id ";" Tab: Tab, + Bool>:
+Find <- id, - : Tab, + 'FALSE': Bool>: .
+Find <- id, - id ';' Tab: Tab, + 'TRUE': Bool>: .
+Find <- id, - !id ';' Tab: Tab, + Bool>:
     Find <id, Tab, Bool>.

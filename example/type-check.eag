@@ -6,36 +6,36 @@ OberonOf <+ Decls Stmts: OberonO>:
   Decls <Decls> Stmts <Stmts>.
 
 letter =
-    "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m"
-  | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
-  | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M"
-  | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z".
+    'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm'
+  | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z'
+  | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M'
+  | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z'.
 
 letter:
-    <+ "a": letter> "a" | <+ "b": letter> "b" | <+ "c": letter> "c" | <+ "d": letter> "d"
-  | <+ "e": letter> "e" | <+ "f": letter> "f" | <+ "g": letter> "g" | <+ "h": letter> "h"
-  | <+ "i": letter> "i" | <+ "j": letter> "j" | <+ "k": letter> "k" | <+ "l": letter> "l"
-  | <+ "m": letter> "m" | <+ "n": letter> "n" | <+ "o": letter> "o" | <+ "p": letter> "p"
-  | <+ "q": letter> "q" | <+ "r": letter> "r" | <+ "s": letter> "s" | <+ "t": letter> "t"
-  | <+ "u": letter> "u" | <+ "v": letter> "v" | <+ "w": letter> "w" | <+ "x": letter> "x"
-  | <+ "y": letter> "y" | <+ "z": letter> "z"
-  | <+ "A": letter> "A" | <+ "B": letter> "B" | <+ "C": letter> "C" | <+ "D": letter> "D"
-  | <+ "E": letter> "E" | <+ "F": letter> "F" | <+ "G": letter> "G" | <+ "H": letter> "H"
-  | <+ "I": letter> "I" | <+ "J": letter> "J" | <+ "K": letter> "K" | <+ "L": letter> "L"
-  | <+ "M": letter> "M" | <+ "N": letter> "N" | <+ "O": letter> "O" | <+ "P": letter> "P"
-  | <+ "Q": letter> "Q" | <+ "R": letter> "R" | <+ "S": letter> "S" | <+ "T": letter> "T"
-  | <+ "U": letter> "U" | <+ "V": letter> "V" | <+ "W": letter> "W" | <+ "X": letter> "X"
-  | <+ "Y": letter> "Y" | <+ "Z": letter> "Z".
+    <+ 'a': letter> 'a' | <+ 'b': letter> 'b' | <+ 'c': letter> 'c' | <+ 'd': letter> 'd'
+  | <+ 'e': letter> 'e' | <+ 'f': letter> 'f' | <+ 'g': letter> 'g' | <+ 'h': letter> 'h'
+  | <+ 'i': letter> 'i' | <+ 'j': letter> 'j' | <+ 'k': letter> 'k' | <+ 'l': letter> 'l'
+  | <+ 'm': letter> 'm' | <+ 'n': letter> 'n' | <+ 'o': letter> 'o' | <+ 'p': letter> 'p'
+  | <+ 'q': letter> 'q' | <+ 'r': letter> 'r' | <+ 's': letter> 's' | <+ 't': letter> 't'
+  | <+ 'u': letter> 'u' | <+ 'v': letter> 'v' | <+ 'w': letter> 'w' | <+ 'x': letter> 'x'
+  | <+ 'y': letter> 'y' | <+ 'z': letter> 'z'
+  | <+ 'A': letter> 'A' | <+ 'B': letter> 'B' | <+ 'C': letter> 'C' | <+ 'D': letter> 'D'
+  | <+ 'E': letter> 'E' | <+ 'F': letter> 'F' | <+ 'G': letter> 'G' | <+ 'H': letter> 'H'
+  | <+ 'I': letter> 'I' | <+ 'J': letter> 'J' | <+ 'K': letter> 'K' | <+ 'L': letter> 'L'
+  | <+ 'M': letter> 'M' | <+ 'N': letter> 'N' | <+ 'O': letter> 'O' | <+ 'P': letter> 'P'
+  | <+ 'Q': letter> 'Q' | <+ 'R': letter> 'R' | <+ 'S': letter> 'S' | <+ 'T': letter> 'T'
+  | <+ 'U': letter> 'U' | <+ 'V': letter> 'V' | <+ 'W': letter> 'W' | <+ 'X': letter> 'X'
+  | <+ 'Y': letter> 'Y' | <+ 'Z': letter> 'Z'.
 
-digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9".
+digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'.
 
 digit:
-    <+ "0": digit> "0" | <+ "1": digit> "1" | <+ "2": digit> "2" | <+ "3": digit> "3"
-  | <+ "4": digit> "4" | <+ "5": digit> "5" | <+ "6": digit> "6" | <+ "7": digit> "7"
-  | <+ "8": digit> "8" | <+ "9": digit> "9".
+    <+ '0': digit> '0' | <+ '1': digit> '1' | <+ '2': digit> '2' | <+ '3': digit> '3'
+  | <+ '4': digit> '4' | <+ '5': digit> '5' | <+ '6': digit> '6' | <+ '7': digit> '7'
+  | <+ '8': digit> '8' | <+ '9': digit> '9'.
 
 letgits = | letter letgits | digit letgits.
-id = "ID" letgits.
+id = 'ID' letgits.
 
 letgits:
     <+ : letgits>
@@ -44,264 +44,264 @@ letgits:
   | <+ digit letgits: letgits>
       digit <digit> letgits <letgits>.
 
-id <+ "ID" letgits: id>:
-  "ID" letgits <letgits>.
+id <+ 'ID' letgits: id>:
+  'ID' letgits <letgits>.
 
 digits = | digit digits.
-int = "INT" digits.
+int = 'INT' digits.
 
 digits:
     <+ : digits>
   | <+ digit digits: digits>
       digit <digit> digits <digits>.
 
-int <+ "INT" digits: int>:
-  "INT" digits <digits>.
+int <+ 'INT' digits: int>:
+  'INT' digits <digits>.
 
-Sel = | "." id Sel | "[" Expr "]" Sel.
+Sel = | '.' id Sel | '[' Expr ']' Sel.
 
 Sel:
     <+ : Sel, - Type: Type, + Type: Type>
-  | <+ "." id Sel: Sel, - "STRUCT" N: Type, + Type: Type>
-      "." id <id> Map <"NIL", N, id, Type1> Sel <Sel, Type1, Type>
-  | <+ "[" Expr "]" Sel: Sel, - "STRUCT" N: Type, + Type: Type>
-      "[" Expr <"RVAL", Expr, "INT"> "]" Map <"NIL", N, "NIL", Type1> Sel <Sel, Type1, Type>.
+  | <+ '.' id Sel: Sel, - 'STRUCT' N: Type, + Type: Type>
+      '.' id <id> Map <'NIL', N, id, Type1> Sel <Sel, Type1, Type>
+  | <+ '[' Expr ']' Sel: Sel, - 'STRUCT' N: Type, + Type: Type>
+      '[' Expr <'RVAL', Expr, 'INT'> ']' Map <'NIL', N, 'NIL', Type1> Sel <Sel, Type1, Type>.
 
-UnOp = "+" | "-" | "NOT" | "()".
+UnOp = '+' | '-' | 'NOT' | '()'.
 
 Sign:
-  <+ "+": UnOp> "+" | <+ "-": UnOp> "-".
+  <+ '+': UnOp> '+' | <+ '-': UnOp> '-'.
 
 UnOp:
-    <+ UnOp: UnOp, - "INT": Type, + "INT": Type>
+    <+ UnOp: UnOp, - 'INT': Type, + 'INT': Type>
       Sign <UnOp>
-  | <+ "NOT": UnOp, - "BOOL": Type, + "BOOL": Type>
-      "NOT"
-  | <+ "()": UnOp, - Type: Type, + Type: Type>
-      "()".
+  | <+ 'NOT': UnOp, - 'BOOL': Type, + 'BOOL': Type>
+      'NOT'
+  | <+ '()': UnOp, - Type: Type, + Type: Type>
+      '()'.
 
-Op = "+" | "-" | "*" | "DIV" | "MOD" | "OR" | "AND" | "=" | "#" | "<" | "<=" | ">" | ">=".
+Op = '+' | '-' | '*' | 'DIV' | 'MOD' | 'OR' | 'AND' | '=' | '#' | '<' | '<=' | '>' | '>='.
 
 IntOp:
-    <+ "+": Op> "+" | <+ "-": Op> "-"
-  | <+ "*": Op> "*" | <+ "DIV": Op> "DIV" | <+ "MOD": Op> "MOD".
+    <+ '+': Op> '+' | <+ '-': Op> '-'
+  | <+ '*': Op> '*' | <+ 'DIV': Op> 'DIV' | <+ 'MOD': Op> 'MOD'.
 
 BoolOp:
-  <+ "OR": Op> "OR" | <+ "AND": Op> "AND".
+  <+ 'OR': Op> 'OR' | <+ 'AND': Op> 'AND'.
 
 Equal:
-  <+ "=": Op> "=" | <+ "#": Op> "#".
+  <+ '=': Op> '=' | <+ '#': Op> '#'.
 
 Rel:
-  <+ "<": Op> "<" | <+ "<=": Op> "<=" | <+ ">": Op> ">" | <+ ">=": Op> ">=".
+  <+ '<': Op> '<' | <+ '<=': Op> '<=' | <+ '>': Op> '>' | <+ '>=': Op> '>='.
 
 Op:
-    <+ Op: Op, - "INT": Type, + "INT": Type>
+    <+ Op: Op, - 'INT': Type, + 'INT': Type>
       IntOp <Op>
-  | <+ Op: Op, - "BOOL": Type, + "BOOL": Type>
+  | <+ Op: Op, - 'BOOL': Type, + 'BOOL': Type>
       BoolOp <Op>
-  | <+ Op: Op, - BasicType: Type, + "BOOL": Type>
+  | <+ Op: Op, - BasicType: Type, + 'BOOL': Type>
       Equal <Op>
-  | <+ Op: Op, - "INT": Type, + "BOOL": Type>
+  | <+ Op: Op, - 'INT': Type, + 'BOOL': Type>
       Rel <Op>.
 
-RVal = "RVAL" | "CONST".
-Val = "LVAL" | RVal.
+RVal = 'RVAL' | 'CONST'.
+Val = 'LVAL' | RVal.
 Expr =
     Attr Sel
   | int
   | UnOp Expr
-  | "(" Expr Op Expr ")".
+  | '(' Expr Op Expr ')'.
 
 Expr:
     <- Val: Val, + Attr Sel: Expr, + Type: Type>
       Attr <Attr> Sel <Sel, Type1, Type>
       <Val, Attr, Type1>
-        ( <- RVal: Val, - "CONST" BasicType: Attr, + BasicType: Type>
-        | <- "LVAL": Val, - "VAR" Type: Attr, + Type: Type>
-        | <- "RVAL": Val, - "VAR" Type: Attr, + Type: Type>
-        | <- "LVAL": Val, - "REF" Type: Attr, + Type: Type>
-        | <- "RVAL": Val, - "REF" Type: Attr, + Type: Type>
+        ( <- RVal: Val, - 'CONST' BasicType: Attr, + BasicType: Type>
+        | <- 'LVAL': Val, - 'VAR' Type: Attr, + Type: Type>
+        | <- 'RVAL': Val, - 'VAR' Type: Attr, + Type: Type>
+        | <- 'LVAL': Val, - 'REF' Type: Attr, + Type: Type>
+        | <- 'RVAL': Val, - 'REF' Type: Attr, + Type: Type>
         )
-  | <- RVal: Val, + int: Expr, + "INT": Type>
+  | <- RVal: Val, + int: Expr, + 'INT': Type>
       int <int>
   | <- RVal: Val, + UnOp Expr: Expr, + Type: Type>
       UnOp <UnOp, Type1, Type> Expr <RVal, Expr, Type1>
-  | <- RVal: Val, + "(" Expr1 Op Expr2 ")": Expr, + Type: Type>
-      "(" Expr <RVal, Expr1, Type1> Op <Op, Type1, Type> Expr <RVal, Expr2, Type1> ")".
+  | <- RVal: Val, + '(' Expr1 Op Expr2 ')': Expr, + Type: Type>
+      '(' Expr <RVal, Expr1, Type1> Op <Op, Type1, Type> Expr <RVal, Expr2, Type1> ')'.
 
-APList = "NIL" | Expr APList.
+APList = 'NIL' | Expr APList.
 
 APList:
-    <- "NIL": FPList, + "NIL": APList>
-      "NIL"
+    <- 'NIL': FPList, + 'NIL': APList>
+      'NIL'
   | <- Kind Type FPList: FPList, + Expr APList: APList>
       <Kind, Val>
-        ( <- "VAR": Kind, + "LVAL": Val>
-        | <- "VAL": Kind, + "RVAL": Val>
+        ( <- 'VAR': Kind, + 'LVAL': Val>
+        | <- 'VAL': Kind, + 'RVAL': Val>
         )
       Expr <Val, Expr, Type> APList <FPList, APList>.
 
-Stmts = "NIL" | "(" Stmts Stmts ")"
-  | "ASSIGN" Attr Sel Expr
-  | "CALL" Attr APList
-  | "IF" Expr Stmts Stmts
-  | "WHILE" Expr Stmts
-  | "REPEAT" Stmts Expr.
+Stmts = 'NIL' | '(' Stmts Stmts ')'
+  | 'ASSIGN' Attr Sel Expr
+  | 'CALL' Attr APList
+  | 'IF' Expr Stmts Stmts
+  | 'WHILE' Expr Stmts
+  | 'REPEAT' Stmts Expr.
 
 Stmts:
-    <+ "NIL": Stmts>
-      "NIL"
-  | <+ "(" Stmts1 Stmts2 ")": Stmts>
-      "(" Stmts <Stmts1> Stmts <Stmts2> ")".
+    <+ 'NIL': Stmts>
+      'NIL'
+  | <+ '(' Stmts1 Stmts2 ')': Stmts>
+      '(' Stmts <Stmts1> Stmts <Stmts2> ')'.
 
 Stmts:
-    <+ "ASSIGN" Attr Sel Expr: Stmts>
-      "ASSIGN" Attr <Attr>
+    <+ 'ASSIGN' Attr Sel Expr: Stmts>
+      'ASSIGN' Attr <Attr>
       <Attr, Type1>
-        ( <- "VAR" Type: Attr, + Type: Type>
-        | <- "REF" Type: Attr, + Type: Type>
+        ( <- 'VAR' Type: Attr, + Type: Type>
+        | <- 'REF' Type: Attr, + Type: Type>
         )
-      Sel <Sel, Type1, BasicType> Expr <"RVAL", Expr, BasicType>
-  | <+ "CALL" "PROC" FPList APList: Stmts>
-      "CALL" Attr <"PROC" FPList> APList <FPList, APList>
-  | <+ "IF" Expr Stmts1 Stmts2: Stmts>
-      "IF" Expr <"RVAL", Expr, "BOOL"> Stmts <Stmts1> Stmts <Stmts2>
-  | <+ "WHILE" Expr Stmts: Stmts>
-      "WHILE" Expr <"RVAL", Expr, "BOOL"> Stmts <Stmts>
-  | <+ "REPEAT" Stmts Expr: Stmts>
-      "REPEAT" Stmts <Stmts> Expr <"RVAL", Expr, "BOOL">.
+      Sel <Sel, Type1, BasicType> Expr <'RVAL', Expr, BasicType>
+  | <+ 'CALL' 'PROC' FPList APList: Stmts>
+      'CALL' Attr <'PROC' FPList> APList <FPList, APList>
+  | <+ 'IF' Expr Stmts1 Stmts2: Stmts>
+      'IF' Expr <'RVAL', Expr, 'BOOL'> Stmts <Stmts1> Stmts <Stmts2>
+  | <+ 'WHILE' Expr Stmts: Stmts>
+      'WHILE' Expr <'RVAL', Expr, 'BOOL'> Stmts <Stmts>
+  | <+ 'REPEAT' Stmts Expr: Stmts>
+      'REPEAT' Stmts <Stmts> Expr <'RVAL', Expr, 'BOOL'>.
 
-BasicType = "INT" | "BOOL".
-N = | "|" N.
+BasicType = 'INT' | 'BOOL'.
+N = | '|' N.
 Type =
     BasicType
-  | "STRUCT" N.
+  | 'STRUCT' N.
 
 BasicType:
-  <+ "INT": BasicType> "INT" | <+ "BOOL": BasicType> "BOOL".
+  <+ 'INT': BasicType> 'INT' | <+ 'BOOL': BasicType> 'BOOL'.
 
 N:
     <+ : N>
-  | <+ "|" N: N>
-      "|" N <N>.
+  | <+ '|' N: N>
+      '|' N <N>.
 
 Type:
     <+ BasicType: Type>
       BasicType <BasicType>
-  | <+ "STRUCT" N: Type>
-      "STRUCT" N <N>.
+  | <+ 'STRUCT' N: Type>
+      'STRUCT' N <N>.
 
-Kind = "VAR" | "VAL".
-FPList = "NIL" | Kind Type FPList.
+Kind = 'VAR' | 'VAL'.
+FPList = 'NIL' | Kind Type FPList.
 
 Kind:
-  <+ "VAR": Kind> "VAR" | <+ "VAL": Kind> "VAL".
+  <+ 'VAR': Kind> 'VAR' | <+ 'VAL': Kind> 'VAL'.
 
 FPList:
-    <+ "NIL": FPList>
-      "NIL"
+    <+ 'NIL': FPList>
+      'NIL'
   | <+ Kind Type FPList: FPList>
       Kind <Kind> Type <Type> FPList <FPList>.
 
 Attr =
-    "UNDEF"
-  | "CONST" BasicType
-  | "VAR" Type
-  | "REF" Type
-  | "PROC" FPList.
+    'UNDEF'
+  | 'CONST' BasicType
+  | 'VAR' Type
+  | 'REF' Type
+  | 'PROC' FPList.
 
 Attr:
-    <+ "UNDEF": Attr>
-      "UNDEF"
-  | <+ "CONST" BasicType: Attr>
-      "CONST" BasicType <BasicType>
-  | <+ "VAR" Type: Attr>
-      "VAR" Type <Type>
-  | <+ "REF" Type: Attr>
-      "REF" Type <Type>
-  | <+ "PROC" FPList: Attr>
-      "PROC" FPList <FPList>.
+    <+ 'UNDEF': Attr>
+      'UNDEF'
+  | <+ 'CONST' BasicType: Attr>
+      'CONST' BasicType <BasicType>
+  | <+ 'VAR' Type: Attr>
+      'VAR' Type <Type>
+  | <+ 'REF' Type: Attr>
+      'REF' Type <Type>
+  | <+ 'PROC' FPList: Attr>
+      'PROC' FPList <FPList>.
 
-IdOpt = id | "NIL".
-TypeOpt = Type | "NIL".
+IdOpt = id | 'NIL'.
+TypeOpt = Type | 'NIL'.
 
 FieldTab:
-    <- IdOpt: IdOpt, + "NIL": TypeOpt>
-      "NIL"
+    <- IdOpt: IdOpt, + 'NIL': TypeOpt>
+      'NIL'
   | <- IdOpt: IdOpt, + TypeOpt: TypeOpt>
       id <id> Type <Type> FieldTab <IdOpt, TypeOpt1>
       <IdOpt, id, Type, TypeOpt1, TypeOpt>
         ( <- id: IdOpt, - id: id, - Type: Type, - TypeOpt: TypeOpt, + Type: TypeOpt>
         | <- id: IdOpt, - !id: id, - Type: Type, - TypeOpt: TypeOpt, + TypeOpt: TypeOpt>
-        | <- "NIL": IdOpt, - id: id, - Type: Type, - TypeOpt: TypeOpt, + TypeOpt: TypeOpt>
+        | <- 'NIL': IdOpt, - id: id, - Type: Type, - TypeOpt: TypeOpt, + TypeOpt: TypeOpt>
         ).
 
 Desc:
     <- IdOpt: IdOpt, + TypeOpt: TypeOpt>
-      "ARRAY" Type <Type>
+      'ARRAY' Type <Type>
       <IdOpt, Type, TypeOpt>
-        ( <- id: IdOpt, - Type: Type, + "NIL": TypeOpt>
-        | <- "NIL": IdOpt, - Type: Type, + Type: TypeOpt>
+        ( <- id: IdOpt, - Type: Type, + 'NIL': TypeOpt>
+        | <- 'NIL': IdOpt, - Type: Type, + Type: TypeOpt>
         )
   | <- IdOpt: IdOpt, + TypeOpt: TypeOpt>
-      "RECORD" FieldTab <IdOpt, TypeOpt>.
+      'RECORD' FieldTab <IdOpt, TypeOpt>.
 
 Map:
     <- TypeOpt: TypeOpt, - N: N, - IdOpt: IdOpt, + TypeOpt: TypeOpt>
-      "NIL"
+      'NIL'
   | <- TypeOpt1: TypeOpt, - N: N, - IdOpt: IdOpt, + TypeOpt: TypeOpt>
-      "(" Map <TypeOpt1, N, IdOpt, TypeOpt2> Map <TypeOpt2, N, IdOpt, TypeOpt> ")".
+      '(' Map <TypeOpt1, N, IdOpt, TypeOpt2> Map <TypeOpt2, N, IdOpt, TypeOpt> ')'.
 
 Map <- TypeOpt1: TypeOpt, - N: N, - IdOpt: IdOpt, + TypeOpt: TypeOpt>:
-  "STRUCT" N <N1> Desc <IdOpt, TypeOpt2>
+  'STRUCT' N <N1> Desc <IdOpt, TypeOpt2>
   <N, N1, TypeOpt2, TypeOpt1, TypeOpt>
     ( <- N: N, - N: N, - TypeOpt2: TypeOpt, - TypeOpt1: TypeOpt, + TypeOpt2: TypeOpt>
     | <- N: N, - !N: N, - TypeOpt2: TypeOpt, - TypeOpt1: TypeOpt, + TypeOpt1: TypeOpt>
     ).
 
 Object =
-    "CONST" Expr
-  | "TYPE" Type
-  | "FIELD" Type
-  | "VAR" Type
-  | "REF" Type
-  | "PROC" FPList Decls Stmts.
+    'CONST' Expr
+  | 'TYPE' Type
+  | 'FIELD' Type
+  | 'VAR' Type
+  | 'REF' Type
+  | 'PROC' FPList Decls Stmts.
 Struct =
-    "ARRAY" Expr Type
-  | "RECORD" Decls.
-Decls = "NIL" | "(" Decls Decls ")"
+    'ARRAY' Expr Type
+  | 'RECORD' Decls.
+Decls = 'NIL' | '(' Decls Decls ')'
   | id Object
-  | "STRUCT" N Struct.
+  | 'STRUCT' N Struct.
 
 Object:
-    <+ "CONST" Expr: Object>
-      "CONST" Expr <"CONST", Expr, "INT">
-  | <+ "TYPE" Type: Object>
-      "TYPE" Type <Type>
-  | <+ "FIELD" Type: Object>
-      "FIELD" Type <Type>
-  | <+ "VAR" Type: Object>
-      "VAR" Type <Type>
-  | <+ "REF" Type: Object>
-      "REF" Type <Type>
-  | <+ "PROC" FPList Decls Stmts: Object>
-      "PROC" FPList <FPList> Decls <Decls> Stmts <Stmts>.
+    <+ 'CONST' Expr: Object>
+      'CONST' Expr <'CONST', Expr, 'INT'>
+  | <+ 'TYPE' Type: Object>
+      'TYPE' Type <Type>
+  | <+ 'FIELD' Type: Object>
+      'FIELD' Type <Type>
+  | <+ 'VAR' Type: Object>
+      'VAR' Type <Type>
+  | <+ 'REF' Type: Object>
+      'REF' Type <Type>
+  | <+ 'PROC' FPList Decls Stmts: Object>
+      'PROC' FPList <FPList> Decls <Decls> Stmts <Stmts>.
 
 Struct:
-    <+ "ARRAY" Expr Type: Struct>
-      "ARRAY" Expr <"CONST", Expr, "INT"> Type <Type>
-  | <+ "RECORD" Decls: Struct>
-      "RECORD" Decls <Decls>.
+    <+ 'ARRAY' Expr Type: Struct>
+      'ARRAY' Expr <'CONST', Expr, 'INT'> Type <Type>
+  | <+ 'RECORD' Decls: Struct>
+      'RECORD' Decls <Decls>.
 
 Decls:
-    <+ "NIL": Decls>
-      "NIL"
-  | <+ "(" Decls1 Decls2 ")": Decls>
-      "(" Decls <Decls1> Decls <Decls2> ")".
+    <+ 'NIL': Decls>
+      'NIL'
+  | <+ '(' Decls1 Decls2 ')': Decls>
+      '(' Decls <Decls1> Decls <Decls2> ')'.
 
 Decls:
     <+ id Object: Decls>
       id <id> Object <Object>
-  | <+ "STRUCT" N Struct: Decls>
-      "STRUCT" N <N> Struct <Struct>.
+  | <+ 'STRUCT' N Struct: Decls>
+      'STRUCT' N <N> Struct <Struct>.

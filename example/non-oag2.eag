@@ -1,16 +1,16 @@
 // a non-OAG, which is a SOAG and is determined with local backtracking
 
-N = "0" .
+N = '0' .
 
-S<+ "0": N>:
-    B<"0", "0", N2, N1>.
+S<+ '0': N>:
+    B<'0', '0', N2, N1>.
 
 B<- N1: N, - N2: N, + N2: N, + N1: N>:
-    "b"
-    B<"0", N6, N3, N4>
+    'b'
+    B<'0', N6, N3, N4>
     C<N4, N5>
     C<N5, N6>.
 
 B<- N1: N, - N2: N, + N2: N, + N1: N>: .
 
-C<- N1: N, + "0": N>: "c".
+C<- N1: N, + '0': N>: 'c'.

@@ -1,12 +1,12 @@
 S <+ IdentList>: IdentList < , IdentList>.
 
-letter = "a" | "b".
+letter = 'a' | 'b'.
 
-letter: <+ "a": letter> "a" | <+ "b": letter> "b" .
+letter: <+ 'a': letter> 'a' | <+ 'b': letter> 'b' .
 
-digit = "0" | "1".
+digit = '0' | '1'.
 
-digit: <+ "0": digit> "0" | <+ "1": digit> "1" .
+digit: <+ '0': digit> '0' | <+ '1': digit> '1' .
 
 ident* = letter | ident letter | ident digit.
 
@@ -23,13 +23,13 @@ IdentList = | IdentList ident.
 
 IdentList:
     { <- IdentList, +  IdentList1>
-        ident <ident> FindObject <IdentList, ident, "NIL"> <IdentList ident, IdentList1>
+        ident <ident> FindObject <IdentList, ident, 'NIL'> <IdentList ident, IdentList1>
     } <- IdentList, + IdentList>.
 
-IdentNil = ident | "NIL".
+IdentNil = ident | 'NIL'.
 
 FindObject:
-    <- : IdentList, - ident, + "NIL": IdentNil>
+    <- : IdentList, - ident, + 'NIL': IdentNil>
   | <- IdentList ident: IdentList, - ident, + ident: IdentNil>
   | <- IdentList !ident: IdentList, - ident, + IdentNil: IdentNil>
       FindObject <IdentList, ident, IdentNil>.

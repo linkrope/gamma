@@ -4,40 +4,40 @@ Eta <+ Spec>:
   Specification <Spec>.
 
 letter =
-    "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m"
-  | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
-  | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M"
-  | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z".
+    'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm'
+  | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z'
+  | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M'
+  | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z'.
 
 letter:
-    <+ "a": letter> "a" | <+ "b": letter> "b" | <+ "c": letter> "c" | <+ "d": letter> "d"
-  | <+ "e": letter> "e" | <+ "f": letter> "f" | <+ "g": letter> "g" | <+ "h": letter> "h"
-  | <+ "i": letter> "i" | <+ "j": letter> "j" | <+ "k": letter> "k" | <+ "l": letter> "l"
-  | <+ "m": letter> "m" | <+ "n": letter> "n" | <+ "o": letter> "o" | <+ "p": letter> "p"
-  | <+ "q": letter> "q" | <+ "r": letter> "r" | <+ "s": letter> "s" | <+ "t": letter> "t"
-  | <+ "u": letter> "u" | <+ "v": letter> "v" | <+ "w": letter> "w" | <+ "x": letter> "x"
-  | <+ "y": letter> "y" | <+ "z": letter> "z".
+    <+ 'a': letter> 'a' | <+ 'b': letter> 'b' | <+ 'c': letter> 'c' | <+ 'd': letter> 'd'
+  | <+ 'e': letter> 'e' | <+ 'f': letter> 'f' | <+ 'g': letter> 'g' | <+ 'h': letter> 'h'
+  | <+ 'i': letter> 'i' | <+ 'j': letter> 'j' | <+ 'k': letter> 'k' | <+ 'l': letter> 'l'
+  | <+ 'm': letter> 'm' | <+ 'n': letter> 'n' | <+ 'o': letter> 'o' | <+ 'p': letter> 'p'
+  | <+ 'q': letter> 'q' | <+ 'r': letter> 'r' | <+ 's': letter> 's' | <+ 't': letter> 't'
+  | <+ 'u': letter> 'u' | <+ 'v': letter> 'v' | <+ 'w': letter> 'w' | <+ 'x': letter> 'x'
+  | <+ 'y': letter> 'y' | <+ 'z': letter> 'z'.
 
 LETTER:
-    <+ "A": letter> "A" | <+ "B": letter> "B" | <+ "C": letter> "C" | <+ "D": letter> "D"
-  | <+ "E": letter> "E" | <+ "F": letter> "F" | <+ "G": letter> "G" | <+ "H": letter> "H"
-  | <+ "I": letter> "I" | <+ "J": letter> "J" | <+ "K": letter> "K" | <+ "L": letter> "L"
-  | <+ "M": letter> "M" | <+ "N": letter> "N" | <+ "O": letter> "O" | <+ "P": letter> "P"
-  | <+ "Q": letter> "Q" | <+ "R": letter> "R" | <+ "S": letter> "S" | <+ "T": letter> "T"
-  | <+ "U": letter> "U" | <+ "V": letter> "V" | <+ "W": letter> "W" | <+ "X": letter> "X"
-  | <+ "Y": letter> "Y" | <+ "Z": letter> "Z".
+    <+ 'A': letter> 'A' | <+ 'B': letter> 'B' | <+ 'C': letter> 'C' | <+ 'D': letter> 'D'
+  | <+ 'E': letter> 'E' | <+ 'F': letter> 'F' | <+ 'G': letter> 'G' | <+ 'H': letter> 'H'
+  | <+ 'I': letter> 'I' | <+ 'J': letter> 'J' | <+ 'K': letter> 'K' | <+ 'L': letter> 'L'
+  | <+ 'M': letter> 'M' | <+ 'N': letter> 'N' | <+ 'O': letter> 'O' | <+ 'P': letter> 'P'
+  | <+ 'Q': letter> 'Q' | <+ 'R': letter> 'R' | <+ 'S': letter> 'S' | <+ 'T': letter> 'T'
+  | <+ 'U': letter> 'U' | <+ 'V': letter> 'V' | <+ 'W': letter> 'W' | <+ 'X': letter> 'X'
+  | <+ 'Y': letter> 'Y' | <+ 'Z': letter> 'Z'.
 
-digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9".
+digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'.
 
 digit:
-    <+ "0": digit> "0" | <+ "1": digit> "1" | <+ "2": digit> "2" | <+ "3": digit> "3"
-  | <+ "4": digit> "4" | <+ "5": digit> "5" | <+ "6": digit> "6" | <+ "7": digit> "7"
-  | <+ "8": digit> "8" | <+ "9": digit> "9".
+    <+ '0': digit> '0' | <+ '1': digit> '1' | <+ '2': digit> '2' | <+ '3': digit> '3'
+  | <+ '4': digit> '4' | <+ '5': digit> '5' | <+ '6': digit> '6' | <+ '7': digit> '7'
+  | <+ '8': digit> '8' | <+ '9': digit> '9'.
 
-char = letter | digit | "'"
-  | " " | "!" | `"` | "#" | "$" | "%" | "&" | "(" | ")" | "*" | "+" | ","
-  | "-" | "." | "/" | ":" | ";" | "<" | "=" | ">" | "?" | "@" | "[" | `\`
-  | "]" | "^" | "_" | "`" | "{" | "|" | "}" | "~".
+char = letter | digit | `'`
+  | ' ' | '!' | '"' | '#' | '$' | '%' | '&' | '(' | ')' | '*' | '+' | ','
+  | '-' | '.' | '/' | ':' | ';' | '<' | '=' | '>' | '?' | '@' | '[' | `\`
+  | ']' | '^' | '_' | '`' | '{' | '|' | '}' | '~'.
 
 char:
     <+ letter: char>
@@ -46,14 +46,14 @@ char:
       LETTER <letter>
   | <+ digit: char>
       digit <digit>
-  | <+ " ": char> " " | <+ "!": char> "!" | <+ `"`: char> `"` | <+ "#": char> "#"
-  | <+ "$": char> "$" | <+ "%": char> "%" | <+ "&": char> "&" | <+ "(": char> "("
-  | <+ ")": char> ")" | <+ "*": char> "*" | <+ "+": char> "+" | <+ ",": char> ","
-  | <+ "-": char> "-" | <+ ".": char> "." | <+ "/": char> "/" | <+ ":": char> ":"
-  | <+ ";": char> ";" | <+ "<": char> "<" | <+ "=": char> "=" | <+ ">": char> ">"
-  | <+ "?": char> "?" | <+ "@": char> "@" | <+ "[": char> "[" | <+ `\`: char> `\`
-  | <+ "]": char> "]" | <+ "^": char> "^" | <+ "_": char> "_" | <+ "`": char> "`"
-  | <+ "{": char> "{" | <+ "|": char> "|" | <+ "}": char> "}" | <+ "~": char> "~".
+  | <+ ' ': char> ' ' | <+ '!': char> '!' | <+ '"': char> '"' | <+ '#': char> '#'
+  | <+ '$': char> '$' | <+ '%': char> '%' | <+ '&': char> '&' | <+ '(': char> '('
+  | <+ ')': char> ')' | <+ '*': char> '*' | <+ '+': char> '+' | <+ ',': char> ','
+  | <+ '-': char> '-' | <+ '.': char> '.' | <+ '/': char> '/' | <+ ':': char> ':'
+  | <+ ';': char> ';' | <+ '<': char> '<' | <+ '=': char> '=' | <+ '>': char> '>'
+  | <+ '?': char> '?' | <+ '@': char> '@' | <+ '[': char> '[' | <+ `\`: char> `\`
+  | <+ ']': char> ']' | <+ '^': char> '^' | <+ '_': char> '_' | <+ '`': char> '`'
+  | <+ '{': char> '{' | <+ '|': char> '|' | <+ '}': char> '}' | <+ '~': char> '~'.
 
 chars = | char chars.
 
@@ -64,12 +64,12 @@ ident* <+ letter chars: chars>:
         letter <letter>  <chars>
     | <+ digit chars: chars>
         digit <digit>  <chars>
-    | <+ "_" chars: chars>
-        "_"  <chars>
+    | <+ '_' chars: chars>
+        '_'  <chars>
     } <+ : chars>.
 
 ident* = letter | ident letter.
-leftIdent* = "\n" ident.
+leftIdent* = '\n' ident.
 
 IDENT* <+ ident>:
   LETTER <letter>
@@ -87,24 +87,24 @@ number* <+ digit digits: digits>:
         digit <digit>  <digits>
     } <+ : digits>.
 
-string* = "'" chars "'" | `"` chars `"`.
+string* = `'` chars `'` | '"' chars '"'.
 
 string* <+ string>:
-  "'"
+  `'`
   <string>
-    ( <+ "'" char chars "'": string>
+    ( <+ `'` char chars `'`: string>
         char <char>
         <chars>
           { <+ char chars: chars>
               char <char>  <chars>
           } <+ : chars>
-    | <+ `"` "'" `"`: string>
-        "'" "'"
+    | <+ '"' `'` '"': string>
+        `'` `'`
     )
-  "'".
+  `'`.
 
 MetaT:
-    <+ `"` chars `"`: string>
+    <+ `'` chars `'`: string>
       ident <chars>
   | <+ string>
       string <string>.
@@ -124,37 +124,37 @@ HyperN <+ ident>:
   <letter, chars, ident>
     { <- ident1, - letter chars: chars, + ident>
         <ident1 letter, chars, ident>
-    | <- ident1, - "0" chars: chars, + ident>
-        <ident1 "O" "h", chars, ident>
-    | <- ident1, - "1" chars: chars, + ident>
-        <ident1 "O" "n" "e", chars, ident>
-    | <- ident1, - "2" chars: chars, + ident>
-        <ident1 "T" "w" "o", chars, ident>
-    | <- ident1, - "3" chars: chars, + ident>
-        <ident1 "T" "h" "r" "e" "e", chars, ident>
-    | <- ident1, - "4" chars: chars, + ident>
-        <ident1 "F" "o" "u" "r", chars, ident>
-    | <- ident1, - "5" chars: chars, + ident>
-        <ident1 "F" "i" "v" "e", chars, ident>
-    | <- ident1, - "6" chars: chars, + ident>
-        <ident1 "S" "i" "x", chars, ident>
-    | <- ident1, - "7" chars: chars, + ident>
-        <ident1 "S" "e" "v" "e" "n", chars, ident>
-    | <- ident1, - "8" chars: chars, + ident>
-        <ident1 "E" "i" "g" "h" "t", chars, ident>
-    | <- ident1, - "9" chars: chars, + ident>
-        <ident1 "N" "i" "n" "e", chars, ident>
-    | <- ident1, - "_" chars: chars, + ident>
-        <ident1 "X", chars, ident>
+    | <- ident1, - '0' chars: chars, + ident>
+        <ident1 'O' 'h', chars, ident>
+    | <- ident1, - '1' chars: chars, + ident>
+        <ident1 'O' 'n' 'e', chars, ident>
+    | <- ident1, - '2' chars: chars, + ident>
+        <ident1 'T' 'w' 'o', chars, ident>
+    | <- ident1, - '3' chars: chars, + ident>
+        <ident1 'T' 'h' 'r' 'e' 'e', chars, ident>
+    | <- ident1, - '4' chars: chars, + ident>
+        <ident1 'F' 'o' 'u' 'r', chars, ident>
+    | <- ident1, - '5' chars: chars, + ident>
+        <ident1 'F' 'i' 'v' 'e', chars, ident>
+    | <- ident1, - '6' chars: chars, + ident>
+        <ident1 'S' 'i' 'x', chars, ident>
+    | <- ident1, - '7' chars: chars, + ident>
+        <ident1 'S' 'e' 'v' 'e' 'n', chars, ident>
+    | <- ident1, - '8' chars: chars, + ident>
+        <ident1 'E' 'i' 'g' 'h' 't', chars, ident>
+    | <- ident1, - '9' chars: chars, + ident>
+        <ident1 'N' 'i' 'n' 'e', chars, ident>
+    | <- ident1, - '_' chars: chars, + ident>
+        <ident1 'X', chars, ident>
     } <- ident, - : chars, + ident>.
 
-Dir = "+" | "-".
-Signature = "NIL" | Dir ident Signature.
+Dir = '+' | '-'.
+Signature = 'NIL' | Dir ident Signature.
 
 FormalParameter <+ Dir, + ident>:
   <Dir>
-    ( <+ "+": Dir> "+"
-    | <+ "-": Dir> "-"
+    ( <+ '+': Dir> '+'
+    | <+ '-': Dir> '-'
     )
   MetaN <ident, digits>.
 
@@ -162,16 +162,16 @@ Definition <+ ident, + Signature>:
   HyperN <ident>
   <Signature>
     [ <+ Dir ident Signature: Signature>
-        "(" FormalParameter <Dir, ident>
+        '(' FormalParameter <Dir, ident>
         <Signature>
           { <+ Dir ident Signature: Signature>
-              "," FormalParameter <Dir, ident>
+              ',' FormalParameter <Dir, ident>
               <Signature>
-          } <+ "NIL": Signature>
-        ")"
-    ] <+ "NIL": Signature>.
+          } <+ 'NIL': Signature>
+        ')'
+    ] <+ 'NIL': Signature>.
 
-Kind = "ROOT" | "NONT" | "PRED".
+Kind = 'ROOT' | 'NONT' | 'PRED'.
 Table = | Kind ident Signature Table.
 
 Find:
@@ -180,75 +180,75 @@ Find:
       Find <Table, Kind, ident, Signature>.
 
 Heading <+ Table>:
-  HyperN <ident1> "(" "+" MetaN <ident, digits> ")"
-  <"ROOT" ident1 "+" ident "NIL", Table1>
+  HyperN <ident1> '(' '+' MetaN <ident, digits> ')'
+  <'ROOT' ident1 '+' ident 'NIL', Table1>
     { <- Table1, + Table>
         Definition <ident, Signature>
-        <"NONT" ident Signature Table1, Table>
+        <'NONT' ident Signature Table1, Table>
     } <- Table, + Table>
   <Table1, Table>
     [ <- Table1, + Table>
-        ";" Definition <ident, Signature>
-        <"PRED" ident Signature Table1, Table>
+        ';' Definition <ident, Signature>
+        <'PRED' ident Signature Table1, Table>
           { <- Table1, + Table>
               Definition <ident, Signature>
-              <"PRED" ident Signature Table1, Table>
+              <'PRED' ident Signature Table1, Table>
           } <- Table, + Table>
     ] <- Table, + Table>
-  ".".
+  '.'.
 
-Bool = "TRUE" | "FALSE".
+Bool = 'TRUE' | 'FALSE'.
 
 and:
-    <- "TRUE": Bool, - Bool, + Bool>
-  | <- "FALSE": Bool, - Bool, + "FALSE": Bool>.
+    <- 'TRUE': Bool, - Bool, + Bool>
+  | <- 'FALSE': Bool, - Bool, + 'FALSE': Bool>.
 
 MetaTerm = | MetaTerm MetaTerm
   | string
   | ident.
-MetaExpr = MetaExpr "\n " "|" MetaExpr
+MetaExpr = MetaExpr '\n ' '|' MetaExpr
   | MetaTerm .
-Enum = Enum "|" Enum |
+Enum = Enum '|' Enum |
   MetaTerm.
 MetaRule =
-    leftIdent "=" "\n   " MetaExpr "."
-  | leftIdent "=" "\n " Enum ".".
+    leftIdent '=' '\n   ' MetaExpr '.'
+  | leftIdent '=' '\n ' Enum '.'.
 
 MetaAlt:
   [ <+ MetaTerm1 MetaTerm2: MetaTerm, + Bool>
       <MetaTerm1, Bool1>
-        ( <+ string: MetaTerm, + "TRUE": Bool>
+        ( <+ string: MetaTerm, + 'TRUE': Bool>
             MetaT <string>
-        | <+ ident: MetaTerm, + "FALSE": Bool>
+        | <+ ident: MetaTerm, + 'FALSE': Bool>
             MetaN <ident, digits>
         )
       <MetaTerm2, Bool2>
-        { <+ string MetaTerm: MetaTerm, + "FALSE": Bool>
+        { <+ string MetaTerm: MetaTerm, + 'FALSE': Bool>
             MetaT <string>
             <MetaTerm, Bool>
-        | <+ ident MetaTerm: MetaTerm, + "FALSE": Bool>
+        | <+ ident MetaTerm: MetaTerm, + 'FALSE': Bool>
             MetaN <ident, digits>
             <MetaTerm, Bool>
-        } <+ : MetaTerm, + "TRUE": Bool>
+        } <+ : MetaTerm, + 'TRUE': Bool>
       and <Bool1, Bool2, Bool>
-  ] <+ : MetaTerm, + "FALSE": Bool>.
+  ] <+ : MetaTerm, + 'FALSE': Bool>.
 
 MetaRule <+ MetaRule>:
-  MetaN <ident, digits> ":"
+  MetaN <ident, digits> ':'
   MetaAlt <MetaTerm, Bool1>
   <MetaTerm, MetaTerm, Bool1, MetaExpr, Enum, Bool>
     { <- MetaExpr1, - Enum1, - Bool1, + MetaExpr, + Enum, + Bool>
-        ";" MetaAlt <MetaTerm, Bool2>
+        ';' MetaAlt <MetaTerm, Bool2>
         and <Bool1, Bool2, Bool3>
-        <MetaExpr1 "\n " "|" MetaTerm, Enum1 "|" MetaTerm, Bool3, MetaExpr, Enum, Bool>
+        <MetaExpr1 '\n ' '|' MetaTerm, Enum1 '|' MetaTerm, Bool3, MetaExpr, Enum, Bool>
     } <- MetaExpr, - Enum, - Bool, + MetaExpr, + Enum, + Bool>
   <ident, MetaExpr, Enum, Bool, MetaRule>
-    ( <- ident, - MetaExpr, - Enum, - "TRUE": Bool,
-       + "\n" ident "=" "\n " Enum ".": MetaRule>
-    | <- ident, - MetaExpr, - Enum, - "FALSE": Bool,
-       + "\n" ident "=" "\n   " MetaExpr ".": MetaRule>
+    ( <- ident, - MetaExpr, - Enum, - 'TRUE': Bool,
+       + '\n' ident '=' '\n ' Enum '.': MetaRule>
+    | <- ident, - MetaExpr, - Enum, - 'FALSE': Bool,
+       + '\n' ident '=' '\n   ' MetaExpr '.': MetaRule>
     )
-  ".".
+  '.'.
 
 Var* = ident digits.
 AffixForm = | AffixForm AffixForm
@@ -273,52 +273,52 @@ AffixForm:
         } <+ : AffixForm>
   ] <+ : AffixForm>.
 
-FPList = FPList "," FPList
-  | Dir AffixForm ":" ident.
-FormalParams = | "<" FPList ">".
+FPList = FPList ',' FPList
+  | Dir AffixForm ':' ident.
+FormalParams = | '<' FPList '>'.
 
 LeftHyperNotion <- Table, + Kind, + ident, + FormalParams>:
   HyperN <ident>
   Find <Table, Kind, ident, Signature>
   <Signature, FormalParams>
-    [ <- Dir ident Signature: Signature, + "<" FPList ">": FormalParams>
-        "(" AffixForm <AffixForm>
-        <Dir AffixForm ":" ident, Signature, FPList>
+    [ <- Dir ident Signature: Signature, + '<' FPList '>': FormalParams>
+        '(' AffixForm <AffixForm>
+        <Dir AffixForm ':' ident, Signature, FPList>
           { <- FPList1, - Dir ident Signature: Signature, + FPList>
-              "," AffixForm <AffixForm>
-              <FPList1 "," Dir AffixForm ":" ident, Signature, FPList>
-          } <- FPList, - "NIL": Signature, + FPList>
-        ")"
-    ] <- "NIL": Signature, + : FormalParams>.
+              ',' AffixForm <AffixForm>
+              <FPList1 ',' Dir AffixForm ':' ident, Signature, FPList>
+          } <- FPList, - 'NIL': Signature, + FPList>
+        ')'
+    ] <- 'NIL': Signature, + : FormalParams>.
 
-APList = APList "," APList
+APList = APList ',' APList
   | AffixForm.
-ActualParams = | "<" APList ">".
+ActualParams = | '<' APList '>'.
 
 RightHyperNotion <+ ident, + ActualParams>:
   HyperN <ident>
   <ActualParams>
-    [ <+ "<" APList ">": ActualParams>
-        "(" AffixForm <AffixForm>
+    [ <+ '<' APList '>': ActualParams>
+        '(' AffixForm <AffixForm>
         <AffixForm, APList>
           { <- APList1, + APList>
-              "," AffixForm <AffixForm>
-              <APList1 "," AffixForm, APList>
+              ',' AffixForm <AffixForm>
+              <APList1 ',' AffixForm, APList>
           } <- APList, + APList>
-        ")"
+        ')'
     ] <+ : ActualParams>.
 
 HyperFactor =
     string
   | ident ActualParams.
-HyperTerm = | "\n " HyperFactor HyperTerm.
+HyperTerm = | '\n ' HyperFactor HyperTerm.
 HyperExpr =
     HyperTerm
   | string.
-HyperRule = leftIdent FormalParams ":" HyperExpr ".".
+HyperRule = leftIdent FormalParams ':' HyperExpr '.'.
 
-HyperRule <- Table, + Kind, + "\n" ident FormalParams ":" HyperExpr ".": HyperRule>:
-  LeftHyperNotion <Table, Kind, ident, FormalParams> ":"
+HyperRule <- Table, + Kind, + '\n' ident FormalParams ':' HyperExpr '.': HyperRule>:
+  LeftHyperNotion <Table, Kind, ident, FormalParams> ':'
   <HyperExpr>
     [ <+ HyperExpr>
         <HyperFactor>
@@ -328,10 +328,10 @@ HyperRule <- Table, + Kind, + "\n" ident FormalParams ":" HyperExpr ".": HyperRu
               RightHyperNotion <ident, ActualParams>
           )
         <HyperTerm>
-          { <+ "\n " string HyperTerm: HyperTerm>
+          { <+ '\n ' string HyperTerm: HyperTerm>
               HyperT <string>
               <HyperTerm>
-          | <+ "\n " ident ActualParams HyperTerm: HyperTerm>
+          | <+ '\n ' ident ActualParams HyperTerm: HyperTerm>
               RightHyperNotion <ident, ActualParams>
               <HyperTerm>
           } <+ : HyperTerm>
@@ -339,21 +339,21 @@ HyperRule <- Table, + Kind, + "\n" ident FormalParams ":" HyperExpr ".": HyperRu
           ( <- string: HyperFactor, - : HyperTerm,
              + string: HyperExpr>
           | <- ident ActualParams: HyperFactor, - : HyperTerm,
-             + "\n " ident ActualParams: HyperExpr>
-          | <- HyperFactor1, - "\n " HyperFactor HyperTerm: HyperTerm,
-             + "\n " HyperFactor1 "\n " HyperFactor HyperTerm: HyperExpr>
+             + '\n ' ident ActualParams: HyperExpr>
+          | <- HyperFactor1, - '\n ' HyperFactor HyperTerm: HyperTerm,
+             + '\n ' HyperFactor1 '\n ' HyperFactor HyperTerm: HyperExpr>
           )
     ] <+ : HyperExpr>
-  ".".
+  '.'.
 
 Spec = | Spec Spec
   | MetaRule
   | HyperRule.
 
 append:
-    <- "ROOT": Kind, - HyperRule, - Spec1, + Spec1 HyperRule: Spec, - Spec2, + Spec2>
-  | <- "NONT": Kind, - HyperRule, - Spec1, + Spec1, - Spec2, + Spec2 HyperRule: Spec>
-  | <- "PRED": Kind, - HyperRule, - Spec1, + Spec1, - Spec2, + Spec2 HyperRule: Spec>.
+    <- 'ROOT': Kind, - HyperRule, - Spec1, + Spec1 HyperRule: Spec, - Spec2, + Spec2>
+  | <- 'NONT': Kind, - HyperRule, - Spec1, + Spec1, - Spec2, + Spec2 HyperRule: Spec>
+  | <- 'PRED': Kind, - HyperRule, - Spec1, + Spec1, - Spec2, + Spec2 HyperRule: Spec>.
 
 Specification <+ Spec1 Spec2 Spec3: Spec>:
   Heading <Table>
