@@ -1,5 +1,6 @@
 module gamma.main;
 
+import gamma.grammar.Grammar;
 import log;
 import std.range;
 import std.stdio;
@@ -8,11 +9,18 @@ void main(string[] args)
 {
     import core.stdc.stdlib : exit, EXIT_FAILURE, EXIT_SUCCESS;
     import gamma.grammar.hyper.PrintingHyperVisitor : printingHyperVisitor;
+    import gamma.grammar.Node : Node;
     import gamma.grammar.PrintingVisitor : printingVisitor;
+    import gamma.grammar.Symbol : Symbol;
     import gamma.input.epsilang.Analyzer : Analyzer;
+    import gamma.parsgen.lalr1.ParserGrammarBuilder : extendedCfgFromHyperGrammar;
+    import gamma.parsgen.lalr1.PredicateFilter : PredicateFilter;
+    import std.algorithm : map;
+    import std.array : assocArray;
     import std.datetime.stopwatch : AutoStart, StopWatch;
     import std.exception : ErrnoException;
     import std.getopt : defaultGetoptPrinter, getopt, GetoptResult;
+    import std.typecons : tuple;
 
     GetoptResult result;
     bool verbose;
@@ -68,9 +76,22 @@ void main(string[] args)
                         stderr.writeln("meta grammar not well defined");
                     if (auto grammar = analyzer.yieldHyperGrammar)
                     {
+                        bool[Symbol] lexicalHyperNonterminals = analyzer.getLexicalHyperNonterminals.byKeyValue
+                            .map!(pair => tuple(cast(Symbol) pair.key, pair.value))
+                            .assocArray;
+                        auto predicateFilter = new class PredicateFilter
+                        {
+                            override bool isPredicate(Node node)
+                            {
+                                return false;
+                            }
+                        };
+                        auto parserGrammar = grammar
+                            .extendedCfgFromHyperGrammar(lexicalHyperNonterminals, predicateFilter);
                         auto visitor = printingHyperVisitor(stdout.lockingTextWriter);
 
-                        visitor.visit(grammar);
+                        visitor.visit(parserGrammar);
+                        generateParser(parserGrammar);
                     }
                     else
                         stderr.writeln("hyper grammar not well defined");
@@ -92,4 +113,18 @@ void main(string[] args)
         stderr.writeln(exception.msg);
         exit(EXIT_FAILURE);
     }
+}
+
+private void generateParser(Grammar grammar)
+{
+    import gamma.parsgen.lalr1.PennelloDeRemer : PennelloDeRemer;
+    import gamma.parsgen.lalr1.SimpleLR1ConflictResolver : SimpleLR1ConflictResolver;
+    import gamma.parsgen.lalr1.LR1ParserTablesWriter : write;
+    import std.stdio : stdout;
+
+    auto parserGenerator = new PennelloDeRemer;
+    auto conflictResolver = new SimpleLR1ConflictResolver(grammar);
+    auto parserTables = parserGenerator.computeParser(grammar, conflictResolver);
+
+    write(parserTables, stdout);
 }

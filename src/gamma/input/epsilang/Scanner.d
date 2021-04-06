@@ -89,11 +89,10 @@ class Scanner
 
     this(File input)
     {
-        char[] buffer;
+        import std.algorithm : joiner;
+        import std.array : array;
 
-        while (input.readln(buffer))
-            this.source ~= buffer;
-
+        this.source = cast(char[]) input.byChunk(4096).joiner.array;
         this.source ~= END;
         this.lineBeginPos ~= this.pos;
     }
@@ -183,7 +182,9 @@ class Scanner
                     break;
                 default:
                     getPosition.markError(format!"CHAR: %s"(c));
+                    break;
             }
+            --this.errorCount;
         }
         return c;
     }

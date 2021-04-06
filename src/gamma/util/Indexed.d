@@ -5,5 +5,5 @@ public interface Indexed
     /**
      * @return  a non-negative integer constant for this object
      */
-    public size_t index();
+    public size_t index() @nogc nothrow pure @safe;
 }
