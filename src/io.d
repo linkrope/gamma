@@ -10,15 +10,12 @@ Input read(string name)
 
 Input read(string name, File file)
 {
-    return Input(name, read(file));
-}
-
-char[] read(File file)
-{
     import std.algorithm : joiner;
     import std.array : array;
 
-    return cast(char[]) file.byChunk(4096).joiner.array;
+    auto text = cast(char[]) file.byChunk(4096).joiner.array;
+
+    return Input(name, text);
 }
 
 struct Input
