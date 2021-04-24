@@ -15,7 +15,7 @@ import gamma.grammar.Terminal;
  */
 public interface OrderedLR1Tables
 {
-    public abstract class Action
+    public static abstract class Action
     {
         public bool isContinuationAction;
 
@@ -28,7 +28,7 @@ public interface OrderedLR1Tables
         }
     }
 
-    public class Shift : Action
+    public static class Shift : Action
     {
         public size_t state; // LRMachine.State.index
 
@@ -39,7 +39,7 @@ public interface OrderedLR1Tables
         }
     }
 
-    public class Halt : Action
+    public static class Halt : Action
     {
         public this(Terminal lookahead)
         {
@@ -47,7 +47,7 @@ public interface OrderedLR1Tables
         }
     }
 
-    public class Reduce : Action
+    public static class Reduce : Action
     {
         public Alternative alternative;
 
@@ -58,7 +58,7 @@ public interface OrderedLR1Tables
         }
     }
 
-    public class Goto
+    public static class Goto
     {
         public Nonterminal lhs;
 

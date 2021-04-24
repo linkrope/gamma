@@ -8,90 +8,138 @@ import gamma.grammar.Symbol;
 import gamma.grammar.SymbolNode;
 import gamma.grammar.Terminal;
 import gamma.parsgen.lalr1.OrderedLR1Tables;
+import std.algorithm;
+import std.array;
+import std.json;
 import std.stdio;
 
 /**
- * Writes an OrderedLR1Tables instance to a given OutputStream.
- * This implementation uses an XML representation for output.
- *
- * @author SöKa
+ * Writes an OrderedLR1Tables representation to a given output file.
  */
 public static void write(OrderedLR1Tables parserTables, File output)
 {
-    output.writeln("<?xml version='1.0' encoding='UTF-8' standalone='yes'?>");
-    output.writeln("<lr1-parser>");
-    output.writeln("<grammar>");
-    output.writeln("<nonterminals>");
-    foreach (nonterminal; parserTables.grammar.nonterminals)
-        output.writefln!`<add index="%s" repr="%s"/>`(nonterminal.index, nonterminal);
-    output.writeln("</nonterminals>");
-    output.writeln("<terminals>");
-    foreach (terminal; parserTables.grammar.terminals)
-        output.writefln!`<add index="%s" repr="%s"/>`(terminal.index, terminal);
-    output.writeln("</terminals>");
-    output.writeln("<rules>");
+    JSONValue[string] grammarObject;
+    JSONValue[] nonterminals;
 
+    foreach (nonterminal; parserTables.grammar.nonterminals)
+        nonterminals ~= JSONValue([
+            "index": JSONValue(nonterminal.index),
+            "repr": JSONValue(nonterminal.toString),
+        ]);
+    grammarObject["nonterminals"] = nonterminals;
+
+    JSONValue[] terminals;
+
+    foreach (terminal; parserTables.grammar.terminals)
+        terminals ~= JSONValue([
+            "index": JSONValue(terminal.index),
+            "repr": JSONValue(terminal.toString),
+        ]);
+    grammarObject["terminals"] = terminals;
+
+    JSONValue[] rules;
     size_t altIndex = 0;
     size_t[Alternative] alt2IndexMap;
 
     foreach (rule; parserTables.grammar.rules)
     {
+        JSONValue[string] ruleObject;
+
         if (rule.alternatives.length == 0)
             continue;
-        output.writefln!`<rule lhs="%s">`((cast(Nonterminal)(cast(Alternative) rule.alternatives[0]).lhs.symbol).index);
+
+        ruleObject["lhs"] = (cast(Nonterminal)(cast(Alternative) rule.alternatives[0]).lhs.symbol).index;
+
+        JSONValue[] alternatives;
+
         foreach (alternative; rule.alternatives)
         {
-            output.writefln!`<alternative index="%s">`(altIndex);
+            JSONValue[string] alternativeObject;
+
+            alternativeObject["index"] = altIndex;
             alt2IndexMap[alternative] = altIndex;
             ++altIndex;
+
+            JSONValue[] symbols;
+
             foreach (node; alternative.rhs)
             {
                 assert(cast(SymbolNode) node);
 
-                Symbol s = (cast(SymbolNode) node).symbol;
+                auto symbol = (cast(SymbolNode) node).symbol;
 
-                if (cast(Terminal) s)
-                    output.writefln!`<terminal index="%s"/>`((cast(Terminal) s).index);
-                else if (cast(Nonterminal) s)
-                    output.writefln!`<nonterminal index="%s"/>`((cast(Nonterminal) s).index);
+                if (cast(Terminal) symbol)
+                    symbols ~= JSONValue([
+                        "type": JSONValue("terminal"),
+                        "index": JSONValue((cast(Terminal) symbol).index),
+                    ]);
+                else if (cast(Nonterminal) symbol)
+                    symbols ~= JSONValue([
+                        "type": JSONValue("nonterminal"),
+                        "index": JSONValue((cast(Nonterminal) symbol).index)
+                    ]);
             }
-            output.writeln("</alternative>");
+            alternativeObject["rhs"] = symbols;
+            alternatives ~= JSONValue(alternativeObject);
         }
-        output.writeln("</rule>");
+        ruleObject["alternatives"] = alternatives;
+        rules ~= JSONValue(ruleObject);
     }
-    output.writeln("</rules>");
-    output.writefln!`<startsymbol index="%s"/>`(parserTables.grammar.startSymbol.index);
-    output.writeln("</grammar>");
-    output.writeln("<actions>");
+    grammarObject["rules"] = rules;
+    grammarObject["startSymbol"] = ["index": parserTables.grammar.startSymbol.index];
+
+    JSONValue[] states;
+
     foreach (state; 0 .. parserTables.stateCount)
     {
-        output.writefln!`<state index="%s"`(state);
+        JSONValue[string] stateObject;
+
+        stateObject["index"] = state;
+
+        JSONValue[] actions;
+
         foreach (action; parserTables.getSortedParserActionRow(state))
         {
-            const la = action.lookahead.index;
+            JSONValue[string] actionObject;
 
+            actionObject["on"] = action.lookahead.index;
             if (cast(OrderedLR1Tables.Shift) action)
             {
-                output.writef!`<shift on="%s" to="%s"`(la, (cast(OrderedLR1Tables.Shift) action).state);
+                actionObject["type"] = "shift";
+                actionObject["to"] = (cast(OrderedLR1Tables.Shift) action).state;
             }
             else if (cast(OrderedLR1Tables.Reduce) action)
             {
                 OrderedLR1Tables.Reduce ra = cast(OrderedLR1Tables.Reduce) action;
 
-                output.writef!`<reduce on="%s" rulealt="%s"`(la, alt2IndexMap[ra.alternative]);
+                actionObject["type"] = "reduce";
+                actionObject["ruleAlt"] = alt2IndexMap[ra.alternative];
             }
             else if (cast(OrderedLR1Tables.Halt) action)
             {
-                output.writef!`<halt on="%s"`(la);
+                actionObject["type"] = "halt";
             }
             if (action.isContinuationAction)
-                output.write(` continues="true"`);
-            output.writeln("/>");
+                actionObject["continues"] = true;
+            actions ~= JSONValue(actionObject);
         }
+        stateObject["actions"] = actions;
+
+        JSONValue[] transitions;
+
         foreach (g; parserTables.getSortedGotoRow(state))
-            output.writefln!`<goto on="%s" to="%s"/>`(g.lhs.index, g.state);
-        output.writeln("</state>");
+            transitions ~= JSONValue([
+                "on": JSONValue(g.lhs.index),
+                "to": JSONValue(g.state),
+            ]);
+        stateObject["transitions"] = transitions;
+        states ~= JSONValue(stateObject);
     }
-    output.writeln("</actions>");
-    output.writeln("</lr1-parser>");
+
+    JSONValue value = [
+        "grammar": JSONValue(grammarObject),
+        "states": JSONValue(states),
+        ];
+
+    output.writeln(value.toPrettyString);
 }
