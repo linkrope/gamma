@@ -32,6 +32,8 @@ struct Input
 
     private size_t col = 1;
 
+    private size_t offset; // needed by the Epsilon language server for marking problems
+
     this(string name, const(char)[] text) @nogc nothrow
     {
         this.name = name;
@@ -51,6 +53,7 @@ struct Input
             col = 0;
         }
         index_ += text[index_ .. $].stride;
+        ++offset;
         ++col;
         if (lineBreak)
             begin = index_;
@@ -72,7 +75,7 @@ struct Input
 
         const end = text.length - text[begin .. $].find('\n').length;
 
-        return Position(name, line, col, text[begin .. end]);
+        return Position(name, line, col, offset, text[begin .. end]);
     }
 
     const(char)[] sliceFrom(size_t begin) const @nogc nothrow
@@ -96,6 +99,8 @@ struct Position
     private size_t line;
 
     private size_t col;
+
+    private size_t offset; // needed by the Epsilon language server for marking problems
 
     private const(char)[] text;
 
@@ -133,6 +138,39 @@ struct Position
         writer.put(text.take(col - 1).map!(c => (c == '\t') ? c : ' '));
         writer.put('^');
     }
+
+    /*
+     * Reports a position with an offset in the form <file-name>@<offset> instead of line and column.
+     * This is a machine interface for allowing the Epslion language server to add markers via the offset. 
+     */
+    string toStringWithOffset() const @safe
+    {
+        import std.array : appender;
+
+        auto writer = appender!string;
+
+        toStringWithOffset(writer);
+        return writer[];
+    }
+
+    void toStringWithOffset(W)(ref W writer) const
+    if (isOutputRange!(W, char))
+    {
+        import std.algorithm : map;
+        import std.format : format;
+
+        if (this == UndefPos)
+        {
+            const link = format!"%s@0:1:1"(name);
+            writer.put(link);
+        }
+        else {
+            const link = format!"%s@%s:%s:%s"(name, offset, line, col);
+            writer.put(link);
+        }
+
+    }
+
 }
 
 @("convert position to string")
@@ -140,7 +178,7 @@ unittest
 {
     import std.string : outdent, strip;
 
-    const position = Position("äöü.txt", 42, 2, "äöü");
+    const position = Position("äöü.txt", 42, 2, 47, "äöü");
     const expected = `
         äöü.txt:42:2 äöü
                       ^
