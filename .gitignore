@@ -7,3 +7,4 @@ tmp
 *.lst
 *.o
 *.obj
+build
