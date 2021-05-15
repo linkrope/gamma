@@ -35,6 +35,9 @@ struct Settings
     /// generate SOAG evaluator
     bool soag;
 
+    /// report offset for positions additionally to line and column (needed for Epsilon language server) 
+    bool offset;
+
     string outputDirectory;
 
     string path(string fileName) nothrow pure @safe

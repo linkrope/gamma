@@ -3,6 +3,7 @@ module epsilon.analyzer;
 import EAG = epsilon.eag;
 import Earley = epsilon.earley;
 import epsilon.lexer : Lexer, Token;
+import epsilon.settings : Settings;
 import io : Input, Position;
 import log;
 import runtime;
@@ -12,6 +13,7 @@ import std.conv : to;
 const nil = EAG.nil;
 int ErrorCounter;
 bool NameNotified;
+bool reportOffset = false;
 
 Lexer lexer;
 
@@ -23,8 +25,10 @@ void Error(Position Pos, string ErrMsg) @safe
 
     enforce(ErrorCounter <= 25,
             "Too many errors!");
-
-    error!"%s\n%s"(ErrMsg, Pos);
+    if (reportOffset)
+        error!"%s\n%s"(ErrMsg, Pos.toStringWithOffset());
+    else
+        error!"%s\n%s"(ErrMsg, Pos);
 }
 
 /**
@@ -898,8 +902,9 @@ void ComputeEAGSets()
         warn!"%s warnings"(Warnings);
 }
 
-void Analyse(Input input)
+void Analyse(Input input, bool offset)
 {
+    reportOffset = offset; 
     EAG.Init;
     lexer = Lexer(input, EAG.symbolTable);
     Earley.Init;
@@ -918,15 +923,18 @@ void Analyse(Input input)
     if (ErrorCounter == 0)
     {
         EAG.History |= EAG.analysed;
-        info!"%s grammar is valid"(EAG.BaseName);
+        if (!reportOffset)
+            info!"%s grammar is valid"(EAG.BaseName);
     }
     else
     {
         EAG.History &= ~EAG.analysed;
-        if (NameNotified)
-            error!"errors in %s"(EAG.BaseName);
-        else
-            error!"errors";
+        if (!reportOffset) { // skip final message as language server intergration does not need them  
+            if (NameNotified)
+                error!"errors in %s"(EAG.BaseName);
+            else
+                error!"errors";
+        }
     }
 }
 

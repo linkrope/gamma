@@ -38,6 +38,7 @@ void main(string[] args)
                     "slag", "Generate SLAG evaluator.", &slag,
                     "sweep", "Generate single-sweep evaluator.", &sweep,
                     "soag", "Generate SOAG evaluator.", &soag,
+                    "offset", "Additionally reports offset position, omits erroneous code output", &offset,
                     "output-directory", "Write compiled compiler to directory.", &outputDirectory,
             );
         }
@@ -107,7 +108,7 @@ void compile(Input input, Settings settings)
     import std.exception : enforce;
     import std.range : empty;
 
-    analyzer.Analyse(input);
+    analyzer.Analyse(input, settings.offset);
 
     enforce(analyzer.ErrorCounter == 0);
 
