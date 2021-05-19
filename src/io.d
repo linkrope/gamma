@@ -133,27 +133,20 @@ struct Position
     void toString(W)(ref W writer) const
     if (isOutputRange!(W, char))
     {
+        if (this == UndefPos)
+        {
+            writer.put("unknown position");
+            return;
+        }
+
         import std.format : format;
         if (line == 0) { // means, lsSupport == true 
-            if (this == UndefPos)
-            {
-                const link = format!"%s@0"(name);
-                writer.put(link);
-            }
-            else {
-                const link = format!"%s@%s"(name, col);
-                writer.put(link);
-            }
+            const link = format!"%s@%s"(name, col);
+            writer.put(link);
         }
         else {
             import std.algorithm : map;
             import std.utf : count;
-
-            if (this == UndefPos)
-            {
-                writer.put("unknown position");
-                return;
-            }
 
             const link = format!"%s:%s:%s"(name, line, col);
 
@@ -178,6 +171,19 @@ unittest
     const expected = `
         äöü.txt:42:2 äöü
                       ^
+        `.outdent.strip;
+
+    assert(position.toString == expected);
+}
+
+@("convert position to offset")
+unittest
+{
+    import std.string : outdent, strip;
+
+    const position = Position("äöü.txt", 0, 43, "äöü or empty");
+    const expected = `
+        äöü.txt@43
         `.outdent.strip;
 
     assert(position.toString == expected);
