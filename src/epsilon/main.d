@@ -62,6 +62,9 @@ void main(string[] args)
     {
         if (verbose)
             levels |= Level.trace;
+        else if (lsSupport)
+            levels = Level.error | Level.warn;
+        
         if (!slag && !sweep && !soag)
         {
             // try all evaluators until one fits
