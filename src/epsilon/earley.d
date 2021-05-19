@@ -347,9 +347,9 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def) @safe
             Scanner;
             if (CurList == NextItem)
             {
-                import epsilon.analyzer : Error;
+                import log : error;
 
-                Error(MSymBuf[CurSym].Pos, "affixform incorrect");
+                error!"affixform incorrect\n%s"(MSymBuf[CurSym].Pos);
                 Tree = nil;
                 return;
             }
