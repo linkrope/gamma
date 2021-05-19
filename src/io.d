@@ -5,17 +5,27 @@ import std.stdio;
 
 Input read(string name)
 {
-    return read(name, File(name));
+    return read(name, File(name), false);
 }
 
 Input read(string name, File file)
+{
+    return read(name, file, false);
+}
+
+Input read(string name, bool lsSupport)
+{
+    return read(name, File(name), lsSupport);
+}
+
+Input read(string name, File file, bool lsSupport)
 {
     import std.algorithm : joiner;
     import std.array : array;
 
     auto text = cast(char[]) file.byChunk(4096).joiner.array;
 
-    return Input(name, text);
+    return Input(name, text, lsSupport);
 }
 
 struct Input
@@ -32,12 +42,15 @@ struct Input
 
     private size_t col = 1;
 
-    private size_t offset; // needed by the Epsilon language server for marking problems
+    private size_t offset = 0; // needed by the Epsilon language server for marking problems
 
-    this(string name, const(char)[] text) @nogc nothrow
+    private bool lsSupport;
+
+    this(string name, const(char)[] text, bool lsSupport) @nogc nothrow
     {
         this.name = name;
         this.text = text;
+        this.lsSupport = lsSupport;
     }
 
     void popFront()
@@ -71,11 +84,16 @@ struct Input
 
     Position position() const pure @safe
     {
-        import std.algorithm : find;
+        if (lsSupport) {    
+            return Position(name, 0, offset, "");
+        }
+        else {
+            import std.algorithm : find;
 
-        const end = text.length - text[begin .. $].find('\n').length;
+            const end = text.length - text[begin .. $].find('\n').length;
 
-        return Position(name, line, col, offset, text[begin .. end]);
+            return Position(name, line, col, text[begin .. end]);
+        }
     }
 
     const(char)[] sliceFrom(size_t begin) const @nogc nothrow
@@ -98,9 +116,7 @@ struct Position
 
     private size_t line;
 
-    private size_t col;
-
-    private size_t offset; // needed by the Epsilon language server for marking problems
+    private size_t col; // if line is 0 then this holds the offset (in case of LS support)
 
     private const(char)[] text;
 
@@ -117,60 +133,40 @@ struct Position
     void toString(W)(ref W writer) const
     if (isOutputRange!(W, char))
     {
-        import std.algorithm : map;
         import std.format : format;
-        import std.utf : count;
-
-        if (this == UndefPos)
-        {
-            writer.put("unknown position");
-            return;
-        }
-
-        const link = format!"%s:%s:%s"(name, line, col);
-
-        writer.put(link);
-        writer.put(' ');
-        writer.put(text);
-        writer.put('\n');
-        writer.put(' ');
-        writer.put(' '.repeat(link.count));
-        writer.put(text.take(col - 1).map!(c => (c == '\t') ? c : ' '));
-        writer.put('^');
-    }
-
-    /*
-     * Reports a position with an offset in the form <file-name>@<offset> instead of line and column.
-     * This is a machine interface for allowing the Epslion language server to add markers via the offset. 
-     */
-    string toStringWithOffset() const @safe
-    {
-        import std.array : appender;
-
-        auto writer = appender!string;
-
-        toStringWithOffset(writer);
-        return writer[];
-    }
-
-    void toStringWithOffset(W)(ref W writer) const
-    if (isOutputRange!(W, char))
-    {
-        import std.algorithm : map;
-        import std.format : format;
-
-        if (this == UndefPos)
-        {
-            const link = format!"%s@0:1:1"(name);
-            writer.put(link);
+        if (line == 0) { // means, lsSupport == true 
+            if (this == UndefPos)
+            {
+                const link = format!"%s@0"(name);
+                writer.put(link);
+            }
+            else {
+                const link = format!"%s@%s"(name, col);
+                writer.put(link);
+            }
         }
         else {
-            const link = format!"%s@%s:%s:%s"(name, offset, line, col);
+            import std.algorithm : map;
+            import std.utf : count;
+
+            if (this == UndefPos)
+            {
+                writer.put("unknown position");
+                return;
+            }
+
+            const link = format!"%s:%s:%s"(name, line, col);
+
             writer.put(link);
+            writer.put(' ');
+            writer.put(text);
+            writer.put('\n');
+            writer.put(' ');
+            writer.put(' '.repeat(link.count));
+            writer.put(text.take(col - 1).map!(c => (c == '\t') ? c : ' '));
+            writer.put('^');
         }
-
     }
-
 }
 
 @("convert position to string")
@@ -178,7 +174,7 @@ unittest
 {
     import std.string : outdent, strip;
 
-    const position = Position("äöü.txt", 42, 2, 47, "äöü");
+    const position = Position("äöü.txt", 42, 2, "äöü");
     const expected = `
         äöü.txt:42:2 äöü
                       ^

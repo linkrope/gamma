@@ -38,8 +38,8 @@ void main(string[] args)
                     "slag", "Generate SLAG evaluator.", &slag,
                     "sweep", "Generate single-sweep evaluator.", &sweep,
                     "soag", "Generate SOAG evaluator.", &soag,
-                    "offset", "Additionally reports offset position, omits erroneous code output", &offset,
                     "output-directory", "Write compiled compiler to directory.", &outputDirectory,
+                    "ls", "reports offset positions for accompanying VS code extension's language server", &lsSupport,
             );
         }
     }
@@ -82,7 +82,7 @@ void main(string[] args)
             compile(read("stdin", stdin), settings);
 
         foreach (arg; args.dropOne)
-            compile(read(arg), settings);
+            compile(read(arg, settings.lsSupport), settings);
     }
     catch (ErrnoException exception)
     {
@@ -108,7 +108,7 @@ void compile(Input input, Settings settings)
     import std.exception : enforce;
     import std.range : empty;
 
-    analyzer.Analyse(input, settings.offset);
+    analyzer.Analyse(input);
 
     enforce(analyzer.ErrorCounter == 0);
 
