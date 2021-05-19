@@ -495,6 +495,6 @@ version (unittest)
 
         auto symbolTable = new SymbolTable;
 
-        return Fixture(Lexer(Input("name", text), symbolTable), symbolTable);
+        return Fixture(Lexer(Input("name", text, false), symbolTable), symbolTable);
     }
 }
