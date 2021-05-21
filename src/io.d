@@ -2,23 +2,14 @@ module io;
 
 import std.range;
 import std.stdio;
+import std.typecons : Flag;
 
-Input read(string name)
-{
-    return read(name, File(name), false);
-}
-
-Input read(string name, File file)
-{
-    return read(name, file, false);
-}
-
-Input read(string name, bool lsSupport)
+Input read(string name, Flag!"languageServerSupport" lsSupport = No.languageServerSupport)
 {
     return read(name, File(name), lsSupport);
 }
 
-Input read(string name, File file, bool lsSupport)
+Input read(string name, File file, Flag!"languageServerSupport" lsSupport = No.languageServerSupport)
 {
     import std.algorithm : joiner;
     import std.array : array;

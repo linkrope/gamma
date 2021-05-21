@@ -81,11 +81,15 @@ void main(string[] args)
     }
     try
     {
+        import std.typecons : Yes,No;
+
         if (args.dropOne.empty)
             compile(read("stdin", stdin), settings);
 
+        const languageServerSupport = settings.lsSupport ? Yes.languageServerSupport : No.languageServerSupport;
+        
         foreach (arg; args.dropOne)
-            compile(read(arg, settings.lsSupport), settings);
+            compile(read(arg, languageServerSupport), settings);
     }
     catch (ErrnoException exception)
     {
