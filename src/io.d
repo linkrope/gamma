@@ -172,12 +172,12 @@ unittest
     assert(position.toString == expected);
 }
 
-@("convert position to offset")
+@("convert offset position to string")
 unittest
 {
     import std.string : outdent, strip;
 
-    const position = Position("äöü.txt", 0, 43, "äöü or empty");
+    const position = Position("äöü.txt", 0, 43, "äöü");
     const expected = `
         äöü.txt@43
         `.outdent.strip;
