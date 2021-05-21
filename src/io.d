@@ -29,19 +29,25 @@ struct Input
 
     private size_t begin;
 
-    private size_t line = 1;
+    private size_t line;
 
-    private size_t col = 1;
+    private size_t col; // holds the offset if useOffset is true, column otherwise
 
-    private size_t offset = 0; // needed by the Epsilon language server for marking problems
+    private bool useOffset;
 
-    private bool lsSupport;
-
-    this(string name, const(char)[] text, bool lsSupport) @nogc nothrow
+    this(string name, const(char)[] text, bool useOffset = false) @nogc nothrow
     {
         this.name = name;
         this.text = text;
-        this.lsSupport = lsSupport;
+        this.useOffset = useOffset;
+        if (useOffset) {
+            this.line = 0;
+            this.col = 0;
+        }
+        else {
+            this.line = 1;
+            this.col = 1;
+        }
     }
 
     void popFront()
@@ -51,13 +57,12 @@ struct Input
 
         const lineBreak = front == '\n';
 
-        if (lineBreak)
+        if (lineBreak && !useOffset)
         {
             ++line;
             col = 0;
         }
         index_ += text[index_ .. $].stride;
-        ++offset;
         ++col;
         if (lineBreak)
             begin = index_;
@@ -75,8 +80,8 @@ struct Input
 
     Position position() const pure @safe
     {
-        if (lsSupport) {    
-            return Position(name, 0, offset, "");
+        if (useOffset) {    
+            return Position(name, 0, col, "");
         }
         else {
             import std.algorithm : find;
