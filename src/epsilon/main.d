@@ -39,7 +39,7 @@ void main(string[] args)
                     "sweep", "Generate single-sweep evaluator.", &sweep,
                     "soag", "Generate SOAG evaluator.", &soag,
                     "output-directory", "Write compiled compiler to directory.", &outputDirectory,
-                    "ls", "reports offset positions for accompanying VS code extension's language server", &lsSupport,
+                    "language-server", "enables support for the accompanying VS code extension's language server, e.g reports offset positions", &lsSupport,
             );
         }
     }
