@@ -86,10 +86,8 @@ void main(string[] args)
         if (args.dropOne.empty)
             compile(read("stdin", stdin), settings);
 
-        const languageServerSupport = settings.lsSupport ? Yes.languageServerSupport : No.languageServerSupport;
-        
         foreach (arg; args.dropOne)
-            compile(read(arg, languageServerSupport), settings);
+            compile(read(arg, settings.lsSupport), settings);
     }
     catch (ErrnoException exception)
     {

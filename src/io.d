@@ -4,12 +4,12 @@ import std.range;
 import std.stdio;
 import std.typecons : Flag;
 
-Input read(string name, Flag!"languageServerSupport" lsSupport = No.languageServerSupport)
+Input read(string name, bool lsSupport = false)
 {
     return read(name, File(name), lsSupport);
 }
 
-Input read(string name, File file, Flag!"languageServerSupport" lsSupport = No.languageServerSupport)
+Input read(string name, File file, bool lsSupport = false)
 {
     import std.algorithm : joiner;
     import std.array : array;
