@@ -4,19 +4,19 @@ import std.range;
 import std.stdio;
 import std.typecons : Flag;
 
-Input read(string name, bool lsSupport = false)
+Input read(string name, bool useOffset = false)
 {
-    return read(name, File(name), lsSupport);
+    return read(name, File(name), useOffset);
 }
 
-Input read(string name, File file, bool lsSupport = false)
+Input read(string name, File file, bool useOffset = false)
 {
     import std.algorithm : joiner;
     import std.array : array;
 
     auto text = cast(char[]) file.byChunk(4096).joiner.array;
 
-    return Input(name, text, lsSupport);
+    return Input(name, text, useOffset);
 }
 
 struct Input
@@ -40,11 +40,13 @@ struct Input
         this.name = name;
         this.text = text;
         this.useOffset = useOffset;
-        if (useOffset) {
+        if (useOffset) 
+        {
             this.line = 0;
             this.col = 0;
         }
-        else {
+        else 
+        {
             this.line = 1;
             this.col = 1;
         }
@@ -136,7 +138,8 @@ struct Position
         }
 
         import std.format : format;
-        if (line == 0) { // means, lsSupport == true 
+        if (line == 0) // means, useOffset == true 
+        {    
             const link = format!"%s@%s"(name, col);
             writer.put(link);
         }
