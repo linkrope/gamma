@@ -2,7 +2,6 @@ module io;
 
 import std.range;
 import std.stdio;
-import std.typecons : Flag;
 
 Input read(string name, bool useOffset = false)
 {
@@ -82,16 +81,11 @@ struct Input
 
     Position position() const pure @safe
     {
-        if (useOffset) {    
-            return Position(name, 0, col, "");
-        }
-        else {
-            import std.algorithm : find;
+        import std.algorithm : find;
 
-            const end = text.length - text[begin .. $].find('\n').length;
+        const end = text.length - text[begin .. $].find('\n').length;
 
-            return Position(name, line, col, text[begin .. end]);
-        }
+        return Position(name, line, col, text[begin .. end]);
     }
 
     const(char)[] sliceFrom(size_t begin) const @nogc nothrow
@@ -138,7 +132,7 @@ struct Position
         }
 
         import std.format : format;
-        if (line == 0) // means, useOffset == true 
+        if (line == 0) // means, col holds the offset 
         {    
             const link = format!"%s@%s"(name, col);
             writer.put(link);
