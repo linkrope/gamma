@@ -20,5 +20,25 @@ Use [dub] to run the experimental LALR(1) parser generator. For example:
 
     dub run :experimental -- example/gamma-test.eag -v
 
+## Bibliography
+
+[_Echte Compilergenerierung:\
+Effiziente Implementierung einer abgeschlossenen Theorie_][1]
+
+[_True Compiler Generation_][1a]\
+[automatic translation of the German publication from 1997]
+
+[_Ein Evaluatorgenerator für zwei heuristische Teilklassen\
+Sequentiell Orientierbarer Erweiterter Affixgrammatiken_][2]
+
+[_An Evaluator Generator for Two Heuristic Subclasses of\
+Sequentially Orientable Extended Affix Grammars_][2a]\
+[automatic translation of the German diploma thesis from 1998]
+
+[1]: ../assets/doc/epsilon-red-series.german.pdf
+[1a]: ../assets/doc/epsilon-red-series.adoc
+[2]: ../assets/doc/soag/soag-diploma-thesis.german.pdf
+[2a]: ../assets/doc/soag/soag-diploma-thesis.adoc
+
 [dub]: http://code.dlang.org/
 [extended affix grammar]: https://en.wikipedia.org/wiki/Extended_affix_grammar
