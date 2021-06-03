@@ -9,6 +9,7 @@ import epsilon.settings;
 import io : Input, read;
 import log;
 import runtime;
+import std.range;
 import std.stdio;
 
 void main(string[] args)
@@ -16,8 +17,6 @@ void main(string[] args)
     import core.stdc.stdlib : exit, EXIT_FAILURE, EXIT_SUCCESS;
     import std.exception : ErrnoException;
     import std.getopt : defaultGetoptPrinter, getopt, GetoptResult;
-    import std.range : dropOne, empty, front;
-    import std.stdio : writefln, writeln;
 
     GetoptResult result;
     Settings settings;
@@ -39,7 +38,7 @@ void main(string[] args)
                     "sweep", "Generate single-sweep evaluator.", &sweep,
                     "soag", "Generate SOAG evaluator.", &soag,
                     "output-directory", "Write compiled compiler to directory.", &outputDirectory,
-                    "language-server", "enables support for the accompanying VS code extension's language server, e.g reports offset positions", &lsSupport,
+                    "offset", "Show error positions language-server friendly as offsets.", &offset,
             );
         }
     }
@@ -62,7 +61,7 @@ void main(string[] args)
     {
         if (verbose)
             levels |= Level.trace;
-        
+
         if (!slag && !sweep && !soag)
         {
             // try all evaluators until one fits
@@ -79,13 +78,15 @@ void main(string[] args)
     }
     try
     {
-        import std.typecons : Yes,No;
+        import std.typecons : No, Yes;
+
+        const offset = settings.offset ? Yes.offset : No.offset;
 
         if (args.dropOne.empty)
-            compile(read("stdin", stdin), settings);
+            compile(read("stdin", stdin, offset), settings);
 
         foreach (arg; args.dropOne)
-            compile(read(arg, settings.lsSupport), settings);
+            compile(read(arg, offset), settings);
     }
     catch (ErrnoException exception)
     {
@@ -109,7 +110,6 @@ void compile(Input input, Settings settings)
     import SOAGGen = epsilon.soag.soaggen;
     import Sweep = epsilon.sweep;
     import std.exception : enforce;
-    import std.range : empty;
 
     analyzer.Analyse(input);
 
@@ -173,7 +173,6 @@ void build(string[] fileNames, string outputDirectory)
     import std.format : format;
     import std.path : stripExtension;
     import std.process : spawnProcess, wait;
-    import std.range : empty, front;
     import std.string : join;
 
     auto args = "dmd" ~ fileNames ~ "-g" ~ "include/runtime.d"

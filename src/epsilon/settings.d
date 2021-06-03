@@ -35,8 +35,8 @@ struct Settings
     /// generate SOAG evaluator
     bool soag;
 
-    /// support the Epsilon EAG language server, for example by reporting offsets instead of line and column
-    bool lsSupport;
+    /// show error positions language-server friendly as offsets
+    bool offset;
 
     string outputDirectory;
 
