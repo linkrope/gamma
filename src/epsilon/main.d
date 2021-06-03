@@ -39,6 +39,7 @@ void main(string[] args)
                     "sweep", "Generate single-sweep evaluator.", &sweep,
                     "soag", "Generate SOAG evaluator.", &soag,
                     "output-directory", "Write compiled compiler to directory.", &outputDirectory,
+                    "language-server", "enables support for the accompanying VS code extension's language server, e.g reports offset positions", &lsSupport,
             );
         }
     }
@@ -61,6 +62,7 @@ void main(string[] args)
     {
         if (verbose)
             levels |= Level.trace;
+        
         if (!slag && !sweep && !soag)
         {
             // try all evaluators until one fits
@@ -77,11 +79,13 @@ void main(string[] args)
     }
     try
     {
+        import std.typecons : Yes,No;
+
         if (args.dropOne.empty)
             compile(read("stdin", stdin), settings);
 
         foreach (arg; args.dropOne)
-            compile(read(arg), settings);
+            compile(read(arg, settings.lsSupport), settings);
     }
     catch (ErrnoException exception)
     {

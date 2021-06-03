@@ -349,7 +349,7 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def) @safe
             {
                 import log : error;
 
-                error!"%s affixform incorrect"(MSymBuf[CurSym].Pos);
+                error!"affixform incorrect\n%s"(MSymBuf[CurSym].Pos);
                 Tree = nil;
                 return;
             }

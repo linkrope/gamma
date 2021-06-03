@@ -924,9 +924,9 @@ void Analyse(Input input)
     {
         EAG.History &= ~EAG.analysed;
         if (NameNotified)
-            error!"errors in %s"(EAG.BaseName);
+            info!"errors in %s"(EAG.BaseName);
         else
-            error!"errors";
+            info!"errors";
     }
 }
 

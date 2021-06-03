@@ -3,19 +3,19 @@ module io;
 import std.range;
 import std.stdio;
 
-Input read(string name)
+Input read(string name, bool useOffset = false)
 {
-    return read(name, File(name));
+    return read(name, File(name), useOffset);
 }
 
-Input read(string name, File file)
+Input read(string name, File file, bool useOffset = false)
 {
     import std.algorithm : joiner;
     import std.array : array;
 
     auto text = cast(char[]) file.byChunk(4096).joiner.array;
 
-    return Input(name, text);
+    return Input(name, text, useOffset);
 }
 
 struct Input
@@ -28,14 +28,27 @@ struct Input
 
     private size_t begin;
 
-    private size_t line = 1;
+    private size_t line;
 
-    private size_t col = 1;
+    private size_t col; // holds the offset if useOffset is true, column otherwise
 
-    this(string name, const(char)[] text) @nogc nothrow
+    private bool useOffset;
+
+    this(string name, const(char)[] text, bool useOffset = false) @nogc nothrow
     {
         this.name = name;
         this.text = text;
+        this.useOffset = useOffset;
+        if (useOffset) 
+        {
+            this.line = 0;
+            this.col = 0;
+        }
+        else 
+        {
+            this.line = 1;
+            this.col = 1;
+        }
     }
 
     void popFront()
@@ -45,7 +58,7 @@ struct Input
 
         const lineBreak = front == '\n';
 
-        if (lineBreak)
+        if (lineBreak && !useOffset)
         {
             ++line;
             col = 0;
@@ -95,7 +108,7 @@ struct Position
 
     private size_t line;
 
-    private size_t col;
+    private size_t col; // if line is 0 then this holds the offset (in case of LS support)
 
     private const(char)[] text;
 
@@ -112,26 +125,33 @@ struct Position
     void toString(W)(ref W writer) const
     if (isOutputRange!(W, char))
     {
-        import std.algorithm : map;
-        import std.format : format;
-        import std.utf : count;
-
         if (this == UndefPos)
         {
             writer.put("unknown position");
             return;
         }
 
-        const link = format!"%s:%s:%s"(name, line, col);
+        import std.format : format;
+        if (line == 0) // means, col holds the offset 
+        {    
+            const link = format!"%s@%s"(name, col);
+            writer.put(link);
+        }
+        else {
+            import std.algorithm : map;
+            import std.utf : count;
 
-        writer.put(link);
-        writer.put(' ');
-        writer.put(text);
-        writer.put('\n');
-        writer.put(' ');
-        writer.put(' '.repeat(link.count));
-        writer.put(text.take(col - 1).map!(c => (c == '\t') ? c : ' '));
-        writer.put('^');
+            const link = format!"%s:%s:%s"(name, line, col);
+
+            writer.put(link);
+            writer.put(' ');
+            writer.put(text);
+            writer.put('\n');
+            writer.put(' ');
+            writer.put(' '.repeat(link.count));
+            writer.put(text.take(col - 1).map!(c => (c == '\t') ? c : ' '));
+            writer.put('^');
+        }
     }
 }
 
@@ -144,6 +164,19 @@ unittest
     const expected = `
         äöü.txt:42:2 äöü
                       ^
+        `.outdent.strip;
+
+    assert(position.toString == expected);
+}
+
+@("convert offset position to string")
+unittest
+{
+    import std.string : outdent, strip;
+
+    const position = Position("äöü.txt", 0, 43, "äöü");
+    const expected = `
+        äöü.txt@43
         `.outdent.strip;
 
     assert(position.toString == expected);
