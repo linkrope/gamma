@@ -14,4 +14,7 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - init: dub test
+  - name: Run tests
+    init: dub test
+  - name: Compile gamma
+    init: dub build
