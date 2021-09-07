@@ -1,5 +1,6 @@
 {
     "eag.runCompilerGenerator": true,
     "eag.compilerGenerator.additionalExeOptions": "-s",
-    "eag.compilerGenerator.codeGenerationOnly": false
+    "eag.compilerGenerator.codeGenerationOnly": false,
+    "workbench.colorTheme": "EAG (dark)"
 }
