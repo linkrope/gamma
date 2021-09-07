@@ -1,0 +1,5 @@
+{
+    "eag.runCompilerGenerator": true,
+    "eag.compilerGenerator.additionalExeOptions": "-s",
+    "eag.compilerGenerator.codeGenerationOnly": false
+}
