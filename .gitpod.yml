@@ -1,13 +1,9 @@
 vscode:
   extensions:
     - webfreak.code-d
-
     - grammarcraft.epsilon-eag-extension-pack@2.0.3
-
     - grammarcraft.epsilon-eag@2.0.3
-
     - grammarcraft.epsilon-eag-dark-theme@2.0.3
-
     - grammarcraft.epsilon-eag-light-theme@2.0.3
 
 image:

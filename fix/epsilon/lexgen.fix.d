@@ -31,10 +31,10 @@ enum Mode
 
 private Mode mode;
 
-dchar Ch;
-dchar StringCh;
-Position Pos;
-Position PrevPos;
+private dchar Ch;
+private dchar StringCh;
+public Position Pos;
+private Position PrevPos;
 
 void function(ref int Tok) Get;
 
@@ -42,62 +42,62 @@ void Get2(ref int Tok)
 {
     final switch (mode) with (Mode)
     {
-        case none:
-            while (Ch.isWhite)
-                GetCh;
-            GetPos;
-            if (Ch == eot)
+    case none:
+        while (Ch.isWhite)
+            GetCh;
+        GetPos;
+        if (Ch == eot)
+        {
+            Tok = eot;
+        }
+        else if (Ch.isAlphaNum)
+        {
+            Keyword(Tok);
+        }
+        else if (Ch == '\'' || Ch == '"' || Ch == '`')
+        {
+            StringCh = Ch;
+            mode = string_;
+            Tok = Node[Ch].Tok;
+            GetCh;
+        }
+        else
+        {
+            Symbol(Tok);
+            if (Tok == comment)
             {
-                Tok = eot;
-            }
-            else if (Ch.isAlphaNum)
-            {
-                Keyword(Tok);
-            }
-            else if (Ch == '\'' || Ch == '"' || Ch == '`')
-            {
-                StringCh = Ch;
-                mode = string_;
-                Tok = Node[Ch].Tok;
-                GetCh;
-            }
-            else
-            {
-                Symbol(Tok);
-                if (Tok == comment)
-                {
-                    Comment;
-                    Get(Tok);
-                }
-            }
-            break;
-        case ident:
-            if (Ch.isAlphaNum)
-            {
-                GetPos;
-                Tok = Node[Ch].Tok;
-                GetCh;
-            }
-            else
-            {
-                mode = none;
+                Comment;
                 Get(Tok);
             }
-            break;
-        case string_:
-            if (Ch == eot)
-            {
-                Tok = eot;
-            }
-            else
-            {
-                if (Ch == StringCh || Ch == eol)
-                    mode = none;
-                GetPos;
-                Tok = (Ch in Node) ? Node[Ch].Tok : undef;
-                GetCh;
-            }
-            break;
+        }
+        break;
+    case ident:
+        if (Ch.isAlphaNum)
+        {
+            GetPos;
+            Tok = Node[Ch].Tok;
+            GetCh;
+        }
+        else
+        {
+            mode = none;
+            Get(Tok);
+        }
+        break;
+    case string_:
+        if (Ch == eot)
+        {
+            Tok = eot;
+        }
+        else
+        {
+            if (Ch == StringCh || Ch == eol)
+                mode = none;
+            GetPos;
+            Tok = (Ch in Node) ? Node[Ch].Tok : undef;
+            GetCh;
+        }
+        break;
     }
 }
 
@@ -105,67 +105,67 @@ void Get3(ref int Tok)
 {
     final switch (mode) with (Mode)
     {
-        case none:
-            GetPos;
-            if (Ch == eot)
+    case none:
+        GetPos;
+        if (Ch == eot)
+        {
+            Tok = eot;
+        }
+        else if (Ch.isWhite)
+        {
+            do
+                GetCh;
+            while (Ch.isWhite);
+            Tok = whitespace;
+        }
+        else if (Ch.isAlphaNum)
+        {
+            Keyword(Tok);
+        }
+        else if (Ch == '\'' || Ch == '"' || Ch == '`')
+        {
+            StringCh = Ch;
+            mode = string_;
+            Tok = Node[Ch].Tok;
+            GetCh;
+        }
+        else
+        {
+            Symbol(Tok);
+            if (Tok == comment)
             {
-                Tok = eot;
-            }
-            else if (Ch.isWhite)
-            {
-                do
-                    GetCh;
-                while (Ch.isWhite);
+                Comment;
                 Tok = whitespace;
             }
-            else if (Ch.isAlphaNum)
-            {
-                Keyword(Tok);
-            }
-            else if (Ch == '\'' || Ch == '"' || Ch == '`')
-            {
-                StringCh = Ch;
-                mode = string_;
-                Tok = Node[Ch].Tok;
-                GetCh;
-            }
-            else
-            {
-                Symbol(Tok);
-                if (Tok == comment)
-                {
-                    Comment;
-                    Tok = whitespace;
-                }
-            }
-            break;
-        case ident:
-            if (Ch.isAlphaNum)
-            {
-                GetPos;
-                Tok = Node[Ch].Tok;
-                GetCh;
-            }
-            else
-            {
+        }
+        break;
+    case ident:
+        if (Ch.isAlphaNum)
+        {
+            GetPos;
+            Tok = Node[Ch].Tok;
+            GetCh;
+        }
+        else
+        {
+            mode = none;
+            Get(Tok);
+        }
+        break;
+    case string_:
+        if (Ch == eot)
+        {
+            Tok = eot;
+        }
+        else
+        {
+            if (Ch == StringCh || Ch == eol)
                 mode = none;
-                Get(Tok);
-            }
-            break;
-        case string_:
-            if (Ch == eot)
-            {
-                Tok = eot;
-            }
-            else
-            {
-                if (Ch == StringCh || Ch == eol)
-                    mode = none;
-                GetPos;
-                Tok = Node[Ch].Tok;
-                GetCh;
-            }
-            break;
+            GetPos;
+            Tok = Node[Ch].Tok;
+            GetCh;
+        }
+        break;
     }
 }
 
@@ -378,69 +378,68 @@ void BuildTree()
     COPY("sepTok", NameTab[2]);
     Enter(whitespace, eol.to!string);
     Enter(comment, "(*");
-$
-}
+    $}
 
-private void COPY(T)(string x, ref T v)
-{
-    import std.algorithm : copy, fill;
-
-    fill(v[], '\0');
-    copy(x[], v[]);
-}
-
-void Enter(int Tok, string Name)
-{
-    import std.range : empty, front, popFront;
-
-    int Ptr;
-
-    void Insert(ref int Ptr, dchar Ch)
+    private void COPY(T)(string x, ref T v)
     {
-        Ptr = NextNode;
-        Node[NextNode] = NodeRecord(Ch);
-        ++NextNode;
+        import std.algorithm : copy, fill;
+
+        fill(v[], '\0');
+        copy(x[], v[]);
     }
 
-    if (Tok >= 0)
-        COPY(Name, NameTab[Tok]);
-    Ptr = Name.front;
-    while (!Name.empty)
+    void Enter(int Tok, string Name)
     {
-        if (Ptr !in Node)
-            Node[Ptr] = NodeRecord(Ptr);
-        while (Node[Ptr].Ch != Name.front && Node[Ptr].Next != nil)
-            Ptr = Node[Ptr].Next;
-        if (Node[Ptr].Ch != Name.front)
+        import std.range : empty, front, popFront;
+
+        int Ptr;
+
+        void Insert(ref int Ptr, dchar Ch)
         {
-            Insert(Node[Ptr].Next, Name.front);
-            Ptr = Node[Ptr].Next;
+            Ptr = NextNode;
+            Node[NextNode] = NodeRecord(Ch);
+            ++NextNode;
         }
-        Name.popFront;
-        if (Node[Ptr].Sub != nil && !Name.empty)
+
+        if (Tok >= 0)
+            COPY(Name, NameTab[Tok]);
+        Ptr = Name.front;
+        while (!Name.empty)
         {
-            Ptr = Node[Ptr].Sub;
-        }
-        else
-        {
-            while (!Name.empty)
+            if (Ptr !in Node)
+                Node[Ptr] = NodeRecord(Ptr);
+            while (Node[Ptr].Ch != Name.front && Node[Ptr].Next != nil)
+                Ptr = Node[Ptr].Next;
+            if (Node[Ptr].Ch != Name.front)
             {
-                Insert(Node[Ptr].Sub, Name.front);
+                Insert(Node[Ptr].Next, Name.front);
+                Ptr = Node[Ptr].Next;
+            }
+            Name.popFront;
+            if (Node[Ptr].Sub != nil && !Name.empty)
+            {
                 Ptr = Node[Ptr].Sub;
-                Name.popFront;
+            }
+            else
+            {
+                while (!Name.empty)
+                {
+                    Insert(Node[Ptr].Sub, Name.front);
+                    Ptr = Node[Ptr].Sub;
+                    Name.popFront;
+                }
             }
         }
+        Node[Ptr].Tok = Tok;
     }
-    Node[Ptr].Tok = Tok;
-}
 
-private void Read(ref Input input, ref dchar c)
-{
-    c = input.front;
-    PrevPos = input.position;
-    if (!input.empty)
-        input.popFront;
-}
+    private void Read(ref Input input, ref dchar c)
+    {
+        c = input.front;
+        PrevPos = input.position;
+        if (!input.empty)
+            input.popFront;
+    }
 
-// END $.
-$
+    // END $.
+    $
