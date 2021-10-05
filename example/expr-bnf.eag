@@ -1,0 +1,38 @@
+// A reduced exampl of a expression-to-RPN compiler
+//
+// build generator: dub build
+// run generator: ./gamma -s example/expr-bnf.eag
+// run generated compiler: echo 1 + 0 + 1 | ./Expr
+// output: 1 ENTER 0 ENTER ADD 1 ENTER ADD 
+
+Code = Code Code "ADD" | Number "ENTER".
+
+Expr <+ Code2>:
+    Term <Code1> ExprTail<Code1, Code2>.
+
+ExprTail<- Code1, + Code3>:
+    "+" Term<Code2> ExprTail<Code1 Code2 "ADD", Code3>.
+ExprTail<- Code, + Code>: .
+
+
+Term <+ Number "ENTER": Code>:
+    number <Number>.
+
+Number = "0" | "1".
+
+number:
+      <+ "0": Number> "0"
+    | <+ "1": Number> "1".
+    
+    
+// ExprTail shorter:
+// ExprTail:
+//     <- Code1, + Code3> "+" Term<Code2> ExprTail<Code1 Code2 "ADD", Code3> | <- Code, + Code> .
+
+// Expr as one EBNF rule instead - even shorter
+// Expr <+ Code2>:
+//     Term <Code1>
+//     <Code1, Code2>
+//         { <- Code1, + Code3>
+//             "+" Term <Code2> <Code1 Code2 "ADD", Code3>
+//         } <- Code, + Code>.

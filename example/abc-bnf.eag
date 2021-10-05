@@ -1,0 +1,20 @@
+// a^n b^n c^n -> |^n in BNF 
+// see abc.eag for an EBNF specifcation
+
+N = "|" N | .
+
+S<+ N: N>: A <N> B <N> C <N>.
+
+A<+ "|" N: N>: "a" A <N>.
+A<+ : N> : .
+
+B<- "|" N: N>: "b" B <N>.
+B<- : N>:.
+
+C<- "|" N: N>: "c" C <N>.
+C<- : N>: .
+
+// build generator: dub build
+// run generator: ./gamma -s example/abc-bnf.eag 
+// run generated recognizer: echo aaabbbccc | ./S
+// run generated recognizer: echo aaabbbcc | ./S
