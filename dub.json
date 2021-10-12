@@ -8,6 +8,7 @@
     "importPaths": ["include", "src"],
     "mainSourceFile": "src/epsilon/main.d",
     "excludedSourceFiles": ["src/gamma/main.d"],
+    "stringImportPaths": ["fix/epsilon"],
     "configurations": [
         {
             "name": "gamma",

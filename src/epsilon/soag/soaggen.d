@@ -83,7 +83,7 @@ private void ComputeNodeNames(int R) @nogc nothrow
     void Traverse(int Node, ref int Var)
     {
         int Node1;
-        const  Arity = EAG.MAlt[EAG.NodeBuf[Node]].Arity;
+        const Arity = EAG.MAlt[EAG.NodeBuf[Node]].Arity;
 
         ++Var;
         NodeName[Node] = Var;
@@ -1410,10 +1410,11 @@ private string GenerateModule(Settings settings)
         Fix.popFront;
     }
 
+    enum fixName = "soag.fix.d";
     const name = EAG.BaseName ~ "Eval";
     const fileName = settings.path(name ~ ".d");
 
-    Fix = read("fix/epsilon/soag.fix.d");
+    Fix = Input(fixName, import(fixName));
     output = File(fileName, "w");
     SLAGGen.InitGen(output, SLAGGen.sweepPass, settings);
     InclFix('$');

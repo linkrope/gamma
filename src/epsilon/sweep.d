@@ -539,6 +539,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
         output.writeln;
     }
 
+    enum fixName = "sweep.fix.d";
     const name = EAG.BaseName ~ "Eval";
     const fileName = settings.path(name ~ ".d");
 
@@ -546,7 +547,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
     Error = Error || !EvalGen.PredsOK();
     if (createMod)
     {
-        Fix = read("fix/epsilon/sweep.fix.d");
+        Fix = Input(fixName, import(fixName));
         output = File(fileName, "w");
         if (!Error)
         {

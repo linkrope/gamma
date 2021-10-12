@@ -37,7 +37,7 @@ in (EAG.Performed(EAG.analysed))
         const s = Str.toStringz;
 
         Len = 0;
-        if (s[0] != '\'' && s[0] != '"'  && s[0] != '`' || s[1] == 0 || s[1] == s[0])
+        if (s[0] != '\'' && s[0] != '"' && s[0] != '`' || s[1] == 0 || s[1] == s[0])
         {
             Err("must be non empty string");
             return;
@@ -112,10 +112,11 @@ in (EAG.Performed(EAG.analysed))
     if (Error)
         assert(0, "TODO: error handling for lexer generator");
 
+    enum fixName = "lexgen.fix.d";
     const name = EAG.BaseName ~ "Lex";
     const fileName = settings.path(name ~ ".d");
 
-    Fix = read("fix/epsilon/lexgen.fix.d");
+    Fix = Input(fixName, import(fixName));
     output = File(fileName, "w");
     InclFix('$');
     output.write(name);

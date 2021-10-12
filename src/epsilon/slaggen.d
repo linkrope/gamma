@@ -731,10 +731,11 @@ public void GenDeclarations(Settings settings)
         Tab.writefln!"long %s"(TabTimeStamp);
     }
 
+    enum fixName = "slaggen.fix.d";
     const name = EAG.BaseName ~ (TraversePass ? "Eval.EvalTab" : ".EvalTab");
     const TabTimeStamp = MonoTime.currTime.ticks;
 
-    Fix = read("fix/epsilon/slaggen.fix.d");
+    Fix = Input(fixName, import(fixName));
     InclFix('$');
     output.write(FirstHeap - 1);
     InclFix('$');

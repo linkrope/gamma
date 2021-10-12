@@ -118,7 +118,7 @@ public string GenerateParser(Settings settings)
 in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.hasEvaluator))
 {
     info!"ELL(1) writing parser of %s"(EAG.BaseName);
-    EAG.History &=  ~EAG.parsable;
+    EAG.History &= ~EAG.parsable;
     Init(settings);
     scope (exit)
         Finit;
@@ -1309,11 +1309,12 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
         Fix.popFront;
     }
 
+    enum fixName = "ell1gen.fix.d";
     const fileName = settings.path(EAG.BaseName ~ ".d");
 
     AllToks = BitArray();
     AllToks.length = nToks + 1;
-    Fix = read("fix/epsilon/ell1gen.fix.d");
+    Fix = Input(fixName, import(fixName));
     output = File(fileName, "w");
     if (parsePass)
         EvalGen.InitGen(output, EvalGen.parsePass, settings);
