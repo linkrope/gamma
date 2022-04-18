@@ -54,4 +54,8 @@ Comment:
 
 - https://github.com/pbackus/sumtype
 
+## Expressive Diagnostics
+
+- https://clang.llvm.org/diagnostics.html
+
 ## Color

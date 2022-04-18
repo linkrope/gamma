@@ -18,7 +18,7 @@ Then, run the compiled compiler. For example:
 
 Use [dub] to run the experimental LALR(1) parser generator. For example:
 
-    dub run :experimental -- example/gamma-test.eag -v
+    dub run :experimental -- example/ab.eag -v
 
 ## Bibliography
 

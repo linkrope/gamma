@@ -38,7 +38,8 @@
             "sourcePaths": ["include", "src"],
             "importPaths": ["include", "src"],
             "mainSourceFile": "src/gamma/main.d",
-            "excludedSourceFiles": ["src/epsilon/main.d"]
+            "excludedSourceFiles": ["src/epsilon/main.d"],
+            "stringImportPaths": ["fix/epsilon"]
         }
     ]
 

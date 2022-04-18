@@ -10,6 +10,7 @@ import gamma.grammar.Symbol;
 import gamma.grammar.SymbolNode;
 import gamma.grammar.Terminal;
 import gamma.parsgen.lalr1.PredicateFilter;
+import gamma.util.Position;
 
 public Grammar extendedCfgFromHyperGrammar(Grammar hyperGrammar,
     bool[Symbol] lexicalHyperNonterminals,
@@ -22,10 +23,10 @@ public Grammar extendedCfgFromHyperGrammar(Grammar hyperGrammar,
     // --- Go ahead with rest of parser generation... ---
     {
         Terminal bottom = grammarBuilder.buildTerminal("(end)");
-        Node[] rhs = [new SymbolNode(originalStartSymbol, null), new SymbolNode(bottom, null)];
+        Node[] rhs = [new SymbolNode(originalStartSymbol, Position()), new SymbolNode(bottom, Position())];
 
         grammarBuilder.add(
-            new Alternative(new SymbolNode(extStartSymbol, null), rhs, null));
+            new Alternative(new SymbolNode(extStartSymbol, Position()), rhs, Position()));
     }
 
     // Filter the pure CFG out of the hyperGrammar using

@@ -36,8 +36,12 @@ public class LR1ParserTablesReader
 
     private long maxState;
 
-    static public class SimplePosition : Position
+    public struct SimplePosition
     {
+        alias position this;
+
+        public Position position;
+
         private string repr;
 
         public this(string repr)
@@ -170,13 +174,13 @@ public class LR1ParserTablesReader
                 symbol = parseTerminal(nodeValue);
             else
                 break;
-            rhs ~= new SymbolNode(symbol, new SimplePosition(symbol.toString));
+            rhs ~= new SymbolNode(symbol, SimplePosition(symbol.toString));
         }
 
         auto alternative = new Alternative(
-            new SymbolNode(lhs, new SimplePosition(lhs.toString)),
+            new SymbolNode(lhs, SimplePosition(lhs.toString)),
             rhs,
-            new SimplePosition(format!"alternative #%s"(index)));
+            SimplePosition(format!"alternative #%s"(index)));
 
         this.index2Alternative[index] = alternative;
         grammarBuilder.add(alternative);

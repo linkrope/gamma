@@ -179,7 +179,7 @@ struct Lexer
             }
             if (input.empty)
             {
-                addError("comment not closed at end of input");
+                addError(position_, "comment not closed at end of input");
                 break;
             }
             prev = input.front;
@@ -250,7 +250,7 @@ struct Lexer
             }
             if (input.empty || input.front == '\n')
             {
-                addError("string not closed at end of line");
+                addError(position_, "string not closed at end of line");
                 return;
             }
         }
@@ -328,7 +328,7 @@ struct Lexer
             input.popFront;
             if (input.empty || input.front == '\n')
             {
-                addError("string not closed at end of line");
+                addError(position_, "string not closed at end of line");
                 return;
             }
         }
@@ -445,12 +445,12 @@ struct Lexer
         }
     }
 
-    private void addError(string message)
+    public void addError(Position position, string message)
     {
         import log : error;
 
         ++errorCount;
-        error!"%s\n%s"(message, position_);
+        error!"%s\n%s"(message, position);
     }
 
     bool ok() const @nogc nothrow pure @safe

@@ -126,7 +126,7 @@ public struct GrammarBuilder
      */
     public void markErrors()
     {
-        import std.format : format;
+        import log : error;
 
         if (this.undefinedNonterminals.empty)
             return;
@@ -141,9 +141,7 @@ public struct GrammarBuilder
                         Symbol symbol = (cast(SymbolNode) node).symbol;
 
                         if (cast(Nonterminal) symbol && cast(Nonterminal) symbol in this.undefinedNonterminals)
-                        {
-                            node.position.markError(format!"%s is undefined (not on left hand side)"(symbol));
-                        }
+                            error!"%s is undefined (not on left hand side\n%s"(symbol, node.position);
                     }
                 }
             }

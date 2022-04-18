@@ -1,0 +1,10 @@
+// example for new whitespace rule with Oberon comments
+
+OberonO <+ : Code>: .
+
+:
+      " " | "\t" | "\n" | "\f" | "\r"
+    // Comments do not nest.
+    | "(*" ~ "*)".
+
+Code = .

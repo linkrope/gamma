@@ -180,12 +180,12 @@ public class PennelloDeRemer : LR1ParserGenerator
         if (this.grammar is null)
             return;
 
-        Position pos = null;
+        Position pos;
         Alternative[] alts = this.grammar.ruleOf(this.grammar.startSymbol).alternatives;
 
         if (alts !is null && alts.length == 1)
             pos = alts[0].lhs.position;
-        if (pos is null)
+        if (pos == Position())
         {
             Node[] rhs = alts[0].rhs;
 
@@ -199,7 +199,7 @@ public class PennelloDeRemer : LR1ParserGenerator
             }
         }
 
-        if (pos !is null)
+        if (pos != Position())
             pos.markError(message);
         else
             error!"%s"(message);

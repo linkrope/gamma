@@ -5,6 +5,7 @@ import gamma.grammar.Grammar;
 import gamma.grammar.Nonterminal;
 import gamma.grammar.Terminal;
 import gamma.parsgen.lalr1.LR1ConflictResolver;
+import gamma.util.Position;
 
 /**
  * A standard LR(1) conflict resolver.

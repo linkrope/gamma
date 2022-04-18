@@ -1,5 +1,6 @@
 module gamma.input.epsilang.Analyzer;
 
+import epsilon.lexer;
 import gamma.input.epsilang.Scanner;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
@@ -18,14 +19,17 @@ import gamma.grammar.hyper.RepetitionAlternative;
 import gamma.util.Position;
 import std.stdio;
 import std.typecons;
+import symbols;
 
 public class Analyzer
 {
-    private Scanner scanner;
+    private SymbolTable symbolTable;
+
+    private Lexer lexer;
 
     private char token;
 
-    private Position lastPosition = null;
+    private Position lastPosition;
 
     private bool formalParams;
 
@@ -50,17 +54,19 @@ public class Analyzer
      */
     public this(File input)
     {
-        this.scanner = new Scanner(input);
-        this.token = this.scanner.read;
+        import io : read;
+
+        this.symbolTable = new SymbolTable;
+        this.lexer = Lexer(read("FIXME", input), this.symbolTable);
     }
 
     private void markError(string message)
     {
-        Position position = this.scanner.getPosition;
+        const position = this.lexer.position;
 
         if (position != this.lastPosition)
         {
-            position.markError(message);
+            this.lexer.addError(position, message);
             this.lastPosition = position;
         }
     }
@@ -68,34 +74,41 @@ public class Analyzer
     /**
      * Specification:
      *     { WhiteSpaceRule | MetaRule | HyperRule }.
+     *
+     * The start symbol appears on the left-hand side of the first hyper rule.
      */
     public void parseSpecification()
     {
         for (;;)
         {
-            if (this.token == ':')
+            if (this.lexer.front == ':')
             {
                 parseWhiteSpaceRule;
             }
-            else if (this.token == Scanner.SYNTACTIC_VARIABLE || this.token == Scanner.LEXICAL_VARIABLE)
+            else if (this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE)
             {
-                const representation = this.scanner.getRepresentation;
-                Position position = this.scanner.getPosition;
-                const variableToken = this.token;
+                const representation = this.symbolTable.symbol(this.lexer.value);
+                const position = this.lexer.position;
+                const variableToken = this.lexer.front;
 
-                this.token = this.scanner.read;
-                if (this.token == Scanner.NUMBER)
+                this.lexer.popFront;
+                if (this.lexer.front == Token.number)
                 {
                     markError("unexpected number");
-                    this.token = this.scanner.read;
+                    this.lexer.popFront;
                 }
-                if (this.token != '=' && this.token != ':' && this.token != '<')
+                if (this.lexer.front == '*')
+                {
+                    // TODO: handle token mark
+                    this.lexer.popFront;
+                }
+                if (this.lexer.front != '=' && this.lexer.front != ':' && this.lexer.front != '<')
                 {
                     markError("unexpected symbol");
-                    if (this.token != '.' && this.token != Scanner.END)
-                        this.token = this.scanner.read;
+                    if (!this.lexer.empty && this.lexer.front != '.')
+                        this.lexer.popFront;
                 }
-                if (this.token == '=')
+                if (this.lexer.front == '=')
                 {
                     Nonterminal nonterminal = this.metaGrammarBuilder.buildNonterminal(representation);
                     SymbolNode lhs = new SymbolNode(nonterminal, position);
@@ -105,7 +118,7 @@ public class Analyzer
 
                     parseMetaRule(lhs);
                 }
-                else if (this.token == ':' || this.token == '<')
+                else if (this.lexer.front == ':' || this.lexer.front == '<')
                 {
                     Nonterminal nonterminal = this.hyperGrammarBuilder.buildNonterminal(representation);
                     SymbolNode lhs = new HyperSymbolNode(nonterminal, null, position);
@@ -113,57 +126,58 @@ public class Analyzer
                     if (variableToken == Scanner.LEXICAL_VARIABLE)
                         this.lexicalHyperNonterminals[nonterminal] = true;
 
-                    if ( variableToken == Scanner.SYNTACTIC_VARIABLE )
-                        this.startSymbol = nonterminal;
+                    if (variableToken == Scanner.SYNTACTIC_VARIABLE)
+                        if (this.startSymbol is null)
+                            this.startSymbol = nonterminal;
 
                     parseHyperRule(lhs);
                 }
             }
-            else if (this.token == Scanner.END)
+            else if (this.lexer.empty)
                 break;
             else
             {  // sync
                 markError("start of some rule expected");
-                while (this.token != '.' && this.token != Scanner.END)
-                    this.token = this.scanner.read;
-                if (this.token == '.')
-                    this.token = this.scanner.read;
+                while (!this.lexer.empty && this.lexer.front != '.')
+                    this.lexer.popFront;
+                if (this.lexer.front == '.')
+                    this.lexer.popFront;
             }
         }
     }
 
     /**
      * WhiteSpaceRule:
-     *     ":" WhiteSpaceDefinition { "|" WhiteSpaceDefinition } ".".
+     *     ':' WhiteSpaceDefinition { '|' WhiteSpaceDefinition } '.'.
      */
     private void parseWhiteSpaceRule()
-    in (this.token == ':')
+    in (this.lexer.front == ':')
     {
-        this.token = this.scanner.read;
+        this.lexer.popFront;
 
         for (;;)
         {
-            if (this.token == Scanner.LITERAL)
+            if (this.lexer.front == Token.string_)
                 parseWhiteSpaceDefinition;
             else
                 markError("white space definition expected");
-            if (this.token != '|' && this.token != '.' && this.token != Scanner.END)
+            if (!this.lexer.empty && this.lexer.front != '|' && this.lexer.front != '.')
             {  // sync
                 markError("unexpected symbol");
                 do
-                    this.token = this.scanner.read;
-                while (this.token != '|' && this.token != '.' && this.token != Scanner.END);
+                    this.lexer.popFront;
+                while (!this.lexer.empty && this.lexer.front != '|' && this.lexer.front != '.');
             }
-            if (this.token == '|')
-                this.token = this.scanner.read;
+            if (this.lexer.front == '|')
+                this.lexer.popFront;
             else
                 break;
         }
 
-        assert(this.token == '.' || this.token == Scanner.END);
+        assert(this.lexer.empty || this.lexer.front == '.');
 
-        if (this.token == '.')
-            this.token = this.scanner.read;
+        if (this.lexer.front == '.')
+            this.lexer.popFront;
         else
             markError(`symbol "." expected`);
     }
@@ -171,27 +185,27 @@ public class Analyzer
     /**
      * WhiteSpaceDefinition:
      *     string                  ! white space
-     *   | string "~"              ! comment that extends to end of line
-     *   | string "~" string       ! comment in brackets
-     *   | string "~" "~" string.  ! nesting comment in brackets
+     *   | string '~'              ! comment that extends to end of line
+     *   | string '~' string       ! comment in brackets
+     *   | string '~' '~' string.  ! nesting comment in brackets
      */
     private void parseWhiteSpaceDefinition()
-    in (this.token == Scanner.LITERAL)
+    in (this.lexer.front == Token.string_)
     {
-        this.token = this.scanner.read;
+        this.lexer.popFront;
 
-        if (this.token == '~')
+        if (this.lexer.front == '~')
         {
             bool nestingComment = false;
 
-            this.token = this.scanner.read;
-            if (this.token == '~')
+            this.lexer.popFront;
+            if (this.lexer.front == '~')
             {
                 nestingComment = true;
-                this.token = this.scanner.read;
+                this.lexer.popFront;
             }
-            if (this.token == Scanner.LITERAL)
-                this.token = this.scanner.read;
+            if (this.lexer.front == Token.string_)
+                this.lexer.popFront;
             else if (nestingComment)
                 markError("closing bracket for nesting comment expected");
         }
@@ -199,29 +213,29 @@ public class Analyzer
 
     /**
      * MetaRule:
-     *     ident "=" MetaExpr ".".
+     *     ident [ '*' ] '=' MetaExpr '.'.
      *
      * @param lhs  the identifier occurrence for the left-hand side
      */
     private void parseMetaRule(SymbolNode lhs)
-    in (this.token == '=')
+    in (this.lexer.front == '=')
     {
-        Position position = this.scanner.getPosition();
+        const position = this.lexer.position;
 
-        this.token = this.scanner.read;
+        this.lexer.popFront;
         parseMetaExpr(lhs, position);
 
-        assert(this.token == '.' || this.token == Scanner.END);
+        assert(this.lexer.empty || this.lexer.front == '.');
 
-        if (this.token == '.')
-            this.token = this.scanner.read;
+        if (this.lexer.front == '.')
+            this.lexer.popFront;
         else
             markError(`symbol "." expected`);
     }
 
     /**
      * MetaExpr:
-     *     MetaTerm { "|" MetaTerm }.
+     *     MetaTerm { '|' MetaTerm }.
      *
      * @param lhs       the identifier occurrence for the left-hand side
      * @param position  the position for the first alternative
@@ -235,12 +249,12 @@ public class Analyzer
 
             this.metaGrammarBuilder.add(alternative);
 
-            assert(this.token == '|' || this.token == '.' || this.token == Scanner.END);
+            assert(this.lexer.empty || this.lexer.front == '|' || this.lexer.front == '.');
 
-            if (this.token != '|')
+            if (this.lexer.front != '|')
                 break;
-            position = this.scanner.getPosition;
-            this.token = this.scanner.read;
+            position = this.lexer.position;
+            this.lexer.popFront;
         }
     }
 
@@ -255,37 +269,37 @@ public class Analyzer
         Node[] nodes;
 
         for (;;)
-            if (this.token == Scanner.SYNTACTIC_VARIABLE || this.token == Scanner.LEXICAL_VARIABLE)
+            if (this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE)
             {
-                const representation = this.scanner.getRepresentation;
+                const representation = this.symbolTable.symbol(this.lexer.value);
                 Nonterminal nonterminal = this.metaGrammarBuilder.buildNonterminal(representation);
-                Position position = this.scanner.getPosition;
+                const position = this.lexer.position;
 
                 nodes ~= new SymbolNode(nonterminal, position);
-                this.token = this.scanner.read;
-                if (this.token == Scanner.NUMBER)
+                this.lexer.popFront;
+                if (this.lexer.front == Token.number)
                 {
                     markError("unexpected number");
-                    this.token = this.scanner.read;
+                    this.lexer.popFront;
                 }
             }
-            else if (this.token == Scanner.LITERAL)
+            else if (this.lexer.front == Token.string_)
             {
-                const representation = this.scanner.getRepresentation;
+                const representation = this.symbolTable.symbol(this.lexer.value);
                 Terminal terminal = this.metaGrammarBuilder.buildTerminal(representation);
-                Position position = this.scanner.getPosition;
+                const position = this.lexer.position;
 
                 nodes ~= new SymbolNode(terminal, position);
-                this.token = this.scanner.read;
+                this.lexer.popFront;
             }
-            else if (this.token == '|' || this.token == '.' || this.token == Scanner.END)
+            else if (this.lexer.empty || this.lexer.front == '|' || this.lexer.front == '.')
                 break;
             else
             {  // sync
                 markError("unexpected symbol");
                 do
-                    this.token = this.scanner.read;
-                while (this.token != '|' && this.token != '.' && this.token != Scanner.END);
+                    this.lexer.popFront;
+                while (!this.lexer.empty && this.lexer.front != '|' && this.lexer.front != '.');
             }
 
         return nodes;
@@ -293,26 +307,26 @@ public class Analyzer
 
     /**
      * HyperRule:
-     *     ident [ FormalParams ] ":" HyperExpr ".".
+     *     ident [ '*' ] [ FormalParams ] ':' HyperExpr '.'.
      *
      * @param lhs  the identifier occurrence for the left-hand side
      */
     private void parseHyperRule(SymbolNode lhs)
-    in (this.token == ':' || this.token == '<')
+    in (this.lexer.front == ':' || this.lexer.front == '<')
     {
         bool formalParams = false;
-        Position position = null;
+        Position position;
 
-        if (this.token == '<')
+        if (this.lexer.front == '<')
         {
-            this.token = this.scanner.read;
+            this.lexer.popFront;
             parseFormalParams;
             formalParams = true;
         }
-        if (this.token == ':')
+        if (this.lexer.front == ':')
         {
-            position = this.scanner.getPosition;
-            this.token = this.scanner.read;
+            position = this.lexer.position;
+            this.lexer.popFront;
         } else
             markError(`symbol ":" expected`);
 
@@ -323,11 +337,11 @@ public class Analyzer
         foreach (alternative; alternatives)
             this.hyperGrammarBuilder.add(alternative);
 
-        assert(this.token == ')' || this.token == ']' || this.token == '}'
-            || this.token == '.' || this.token == Scanner.END);
+        assert(this.lexer.empty || this.lexer.front == '.'
+            || this.lexer.front == ')' || this.lexer.front == ']' || this.lexer.front == '}');
 
-        if (this.token == '.')
-            this.token = this.scanner.read;
+        if (this.lexer.front == '.')
+            this.lexer.popFront;
         else
             markError(`symbol "." expected`);
     }
@@ -335,7 +349,7 @@ public class Analyzer
     /**
      * HyperExpr:
      *     [ FormalParams ] HyperTerm [ ActualParams ]
-     *     { "|" [ FormalParams ] HyperTerm [ ActualParams ] }.
+     *     { '|' [ FormalParams ] HyperTerm [ ActualParams ] }.
      *
      * @param lhs  the identifier occurrence for the left-hand side
      * @return     the list of alternatives
@@ -350,18 +364,17 @@ public class Analyzer
         for (bool firstRound = true;; firstRound = false)
         {
             bool spareActualParams = false;
-            Position paramsPosition = null;
+            Position paramsPosition;
 
-            if (this.token == '<')
+            if (this.lexer.front == '<')
             {
-                paramsPosition = this.scanner.getPosition;
-                this.token = this.scanner.read;
-                if (this.token == '+' || this.token == '-')
+                paramsPosition = this.lexer.position;
+                this.lexer.popFront;
+                if (this.lexer.front == '+' || this.lexer.front == '-')
                 {
                     parseFormalParams;
                     if (!formalParamsAllowed || !firstRound && !formalParams)
-                        paramsPosition.
-                            markError("unexpected formal parameters");
+                        this.lexer.addError(paramsPosition, "unexpected formal parameters");
                     else
                         formalParams = true;
                 }
@@ -369,8 +382,7 @@ public class Analyzer
                 {
                     parseActualParams;
                     if (formalParams)
-                        paramsPosition.
-                            markError("formal parameters expected");
+                        this.lexer.addError(paramsPosition, "formal parameters expected");
                     else
                         spareActualParams = true;
                 }
@@ -395,15 +407,15 @@ public class Analyzer
             }
             else
                 if (this.spareActualParams)
-                    this.paramsPosition.markError("unexpected actual parameters");
+                    this.lexer.addError(this.paramsPosition, "unexpected actual parameters");
 
-            assert(this.token == ')' || this.token == ']' || this.token == '}'
-                || this.token == '|' || this.token == '.' || this.token == Scanner.END);
+            assert(this.lexer.empty || this.lexer.front == '|' || this.lexer.front == '.'
+                || this.lexer.front == ')' || this.lexer.front == ']' || this.lexer.front == '}');
 
-            if (this.token != '|')
+            if (this.lexer.front != '|')
                 break;
-            position = this.scanner.getPosition;
-            this.token = this.scanner.read;
+            position = this.lexer.position;
+            this.lexer.popFront;
         }
 
         this.formalParams = formalParams;
@@ -414,9 +426,9 @@ public class Analyzer
      * HyperTerm:
      *     { ident [ ActualParams ]
      *   | string
-     *   | [ ActualParams ] ( "(" HyperExpr ")"
-     *                      | "[" HyperExpr "]" [ FormalParams ]
-     *                      | "{" HyperExpr "}" [ FormalParams ]
+     *   | [ ActualParams ] ( '(' HyperExpr ')'
+     *                      | '[' HyperExpr ']' [ FormalParams ]
+     *                      | '{' HyperExpr '}' [ FormalParams ]
      *                      )
      *   }.
      *
@@ -429,61 +441,61 @@ public class Analyzer
 
         for (;;)
         {
-            if (this.token == Scanner.SYNTACTIC_VARIABLE || this.token == Scanner.LEXICAL_VARIABLE
-                || this.token == Scanner.LITERAL || this.token == '<')
+            if (this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE
+                || this.lexer.front == Token.string_ || this.lexer.front == '<')
             {
                 undecidedActualParams = false;
                 if (spareActualParams)
                 {
-                    paramsPosition.markError("unexpected actual parameters");
+                    this.lexer.addError(paramsPosition, "unexpected actual parameters");
                     spareActualParams = false;
-                    paramsPosition = null;
+                    paramsPosition = Position();
                 }
-                if (this.token == Scanner.SYNTACTIC_VARIABLE || this.token == Scanner.LEXICAL_VARIABLE)
+                if (this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE)
                 {
-                    const representation = this.scanner.getRepresentation;
+                    const representation = this.symbolTable.symbol(this.lexer.value);
                     Nonterminal nonterminal = this.hyperGrammarBuilder.buildNonterminal(representation);
-                    Position position = this.scanner.getPosition;
+                    const position = this.lexer.position;
                     Node node = new HyperSymbolNode (nonterminal, null, position);
 
                     nodes ~= node;
-                    this.token = this.scanner.read;
-                    if (this.token == Scanner.NUMBER)
+                    this.lexer.popFront;
+                    if (this.lexer.front == Token.number)
                     {
                         markError("unexpected number");
-                        this.token = this.scanner.read;
+                        this.lexer.popFront;
                     }
-                    if (this.token == '<')
+                    if (this.lexer.front == '<')
                     {
-                        this.token = this.scanner.read;
+                        this.lexer.popFront;
                         parseActualParams;
                         undecidedActualParams = true;
                     }
                 }
-                else if (this.token == Scanner.LITERAL)
+                else if (this.lexer.front == Token.string_)
                 {
-                    const representation = this.scanner.getRepresentation;
+                    const representation = this.symbolTable.symbol(this.lexer.value);
                     Terminal terminal = this.hyperGrammarBuilder.buildTerminal(representation);
-                    Position position = this.scanner.getPosition;
+                    const position = this.lexer.position;
                     Node node = new SymbolNode(terminal, position);
 
                     nodes ~= node;
-                    this.token = this.scanner.read;
+                    this.lexer.popFront;
                 }
-                else if (this.token == '<')
+                else if (this.lexer.front == '<')
                 {
-                    this.token = this.scanner.read;
+                    this.lexer.popFront;
                     parseActualParams;
                     spareActualParams = true;
-                    paramsPosition = this.scanner.getPosition;
+                    paramsPosition = this.lexer.position;
                 }
             }
-            else if (this.token == '(' || this.token == '[' || this.token == '{')
+            else if (this.lexer.front == '(' || this.lexer.front == '[' || this.lexer.front == '{')
             {
-                const open = this.token;
-                Position position = this.scanner.getPosition;
+                const open = this.lexer.front;
+                const position = this.lexer.position;
 
-                this.token = this.scanner.read;
+                this.lexer.popFront;
 
                 Nonterminal identifier = hyperGrammarBuilder.buildGeneratedNonterminal;
                 SymbolNode lhs = new HyperSymbolNode (identifier, null, position);
@@ -493,36 +505,36 @@ public class Analyzer
                 Rule rule = new Rule(alternatives);
                 Operator operator = null;
 
-                assert(this.token == ')' || this.token == ']' || this.token == '}'
-                    || this.token == '|' || this.token == '.' || this.token == Scanner.END);
+                assert(this.lexer.empty || this.lexer.front == '|' || this.lexer.front == '.'
+                    || this.lexer.front == ')' || this.lexer.front == ']' || this.lexer.front == '}');
 
                 if (open == '(')
                 {
-                    if (this.token != ')')
+                    if (this.lexer.front != ')')
                         markError(`symbol ")" expected`);
                     operator = new Group(null, rule, position);
                 }
                 else if (open == '[')
                 {
-                    if (this.token != ']')
+                    if (this.lexer.front != ']')
                         markError(`symbol "]" expected`);
                     operator = new Option(null, rule, null, position);
                 }
                 else if (open == '{')
                 {
-                    if (this.token != '}')
+                    if (this.lexer.front != '}')
                         markError(`symbol "}" expected`);
                     operator = new Repetition(null, rule, null, position);
                 }
                 nodes ~= operator;
 
-                if (this.token == ')' || this.token == ']' || this.token == '}')
-                    this.token = this.scanner.read;
+                if (this.lexer.front == ')' || this.lexer.front == ']' || this.lexer.front == '}')
+                    this.lexer.popFront;
                 if (open != '(' && this.formalParams)
                 {
-                    if (this.token == '<')
+                    if (this.lexer.front == '<')
                     {
-                        this.token = this.scanner.read;
+                        this.lexer.popFront;
                         parseFormalParams;
                     }
                     else
@@ -532,25 +544,25 @@ public class Analyzer
                 {
                     // FIXME: also OK for EBNF expression at beginning when LHS has no formal parameter
                     if (!undecidedActualParams && !spareActualParams && false)
-                        position.markError("actual parameters expected");
+                        this.lexer.addError(position, "actual parameters expected");
                 }
                 else
                     if (spareActualParams)
-                        paramsPosition.markError("unexpected actual parameters");
+                        this.lexer.addError(paramsPosition, "unexpected actual parameters");
                 undecidedActualParams = false;
                 spareActualParams = false;
-                paramsPosition = null;
+                paramsPosition = Position();
             }
-            else if (this.token == ')' || this.token == ']' || this.token == '}'
-                || this.token == '|' || this.token == '.' || this.token == Scanner.END)
+            else if (this.lexer.empty || this.lexer.front == '|' || this.lexer.front == '.'
+                || this.lexer.front == ')' || this.lexer.front == ']' || this.lexer.front == '}')
                 break;
             else
             {  // sync
                 markError("unexpected symbol");
                 do
-                    this.token = this.scanner.read;
-                while (this.token != '(' && this.token != '[' && this.token != '{'
-                    && this.token != '|' && this.token != '.' && this.token != Scanner.END);
+                    this.lexer.popFront;
+                while (!this.lexer.empty && this.lexer.front != '|' && this.lexer.front != '.'
+                    && this.lexer.front != '(' && this.lexer.front != '[' && this.lexer.front != '{');
             }
         }
 
@@ -562,69 +574,69 @@ public class Analyzer
 
     /**
      * ActualParams:
-     *     "<" AffixForm { "," AffixForm } ">".
+     *     '<' AffixForm { ',' AffixForm } '>'.
      */
     private void parseActualParams()
     {
         for (;;)
         {
-            if (this.token == '+' || this.token == '-')
+            if (this.lexer.front == '+' || this.lexer.front == '-')
             {
                 markError(`symbol "+" or "-" not allowed in actual parameters`);
-                this.token = this.scanner.read;
+                this.lexer.popFront;
             }
             parseAffixForm;
-            if (this.token != ',' && this.token != '>'
-                && this.token != '.' && this.token != Scanner.END)
+            if (!this.lexer.empty && this.lexer.front != '.'
+                && this.lexer.front != ',' && this.lexer.front != '>')
             {  // sync
                 markError("unexpected symbol");
                 do
-                    this.token = this.scanner.read;
-                while (this.token != ',' && this.token != '>'
-                    && this.token != '.' && this.token != Scanner.END);
+                    this.lexer.popFront;
+                while (!this.lexer.empty && this.lexer.front != '.'
+                    && this.lexer.front != ',' && this.lexer.front != '>');
             }
-            if (this.token == ',')
-                this.token = this.scanner.read;
+            if (this.lexer.front == ',')
+                this.lexer.popFront;
             else
                 break;
         }
 
-        assert(this.token == '>' || this.token == '.' || this.token == Scanner.END);
+        assert(this.lexer.empty || this.lexer.front == '>' || this.lexer.front == '.');
 
-        if (this.token == '>')
-            this.token = this.scanner.read;
+        if (this.lexer.front == '>')
+            this.lexer.popFront;
         else
             markError(`symbol ">" expected`);
     }
 
     /**
      * FormalParams:
-     *     "<" ( "+" | "-" ) ( AffixForm ":" ident | Variable )
-     *     { "," ( "+" | "-" ) ( AffixForm ":" ident | Variable ) } ">".
+     *     '<' ( '+' | '-' ) ( AffixForm ':' ident | Variable )
+     *     { ',' ( '+' | '-' ) ( AffixForm ':' ident | Variable ) } '>'.
      */
     private void parseFormalParams()
     {
         for (;;)
         {
-            if (this.token == '+' || this.token == '-')
+            if (this.lexer.front == '+' || this.lexer.front == '-')
             {
-                this.token = this.scanner.read;
+                this.lexer.popFront;
             }
             else
                 markError(`symbol "+" or "-" expected`);
 
             const isVariable = parseAffixForm;
 
-            if (this.token == ':')
+            if (this.lexer.front == ':')
             {
-                this.token = this.scanner.read;
-                if (this.token == Scanner.SYNTACTIC_VARIABLE || this.token == Scanner.LEXICAL_VARIABLE)
+                this.lexer.popFront;
+                if (this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE)
                 {
-                    this.token = this.scanner.read;
-                    if (this.token == Scanner.NUMBER)
+                    this.lexer.popFront;
+                    if (this.lexer.front == Token.number)
                     {
                         markError("unexpected number");
-                        this.token = this.scanner.read;
+                        this.lexer.popFront;
                     }
                 }
                 else
@@ -632,22 +644,22 @@ public class Analyzer
             }
             else if (!isVariable)
                 markError(`symbol ":" expected`);
-            if (this.token != ',' && this.token != '>'
-                && this.token != '.' && this.token != Scanner.END)
+            if (!this.lexer.empty && this.lexer.front != '.'
+                && this.lexer.front != ',' && this.lexer.front != '>')
             {  // sync
                 markError("unexpected symbol");
                 do
-                    this.token = this.scanner.read;
-                while (this.token != ',' && this.token != '>'
-                    && this.token != '.' && this.token != Scanner.END);
+                    this.lexer.popFront;
+                while (!this.lexer.empty && this.lexer.front != '.'
+                    && this.lexer.front != ',' && this.lexer.front != '>');
             }
-            if (this.token == ',')
-                this.token = this.scanner.read;
+            if (this.lexer.front == ',')
+                this.lexer.popFront;
             else
                 break;
         }
-        if (this.token == '>')
-            this.token = this.scanner.read;
+        if (this.lexer.front == '>')
+            this.lexer.popFront;
         else
             markError(`symbol ">" expected`);
     }
@@ -662,13 +674,13 @@ public class Analyzer
 
         for (bool firstRound = true;; firstRound = false)
         {
-            if (this.token == Scanner.LITERAL)
+            if (this.lexer.front == Token.string_)
             {
-                this.token = this.scanner.read;
+                this.lexer.popFront;
                 isVariable = false;
             }
-            else if (this.token == '!'
-                || this.token == Scanner.SYNTACTIC_VARIABLE || this.token == Scanner.LEXICAL_VARIABLE)
+            else if (this.lexer.front == '!'
+                || this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE)
             {
                 parseVariable;
                 isVariable = firstRound;
@@ -681,19 +693,19 @@ public class Analyzer
 
     /**
      * Variable:
-     *     [ "!" ] ident [ number ].
+     *     [ '!' ] ident [ number ].
      */
     private void parseVariable()
-    in (this.token == '!'
-        || this.token == Scanner.SYNTACTIC_VARIABLE || this.token == Scanner.LEXICAL_VARIABLE)
+    in (this.lexer.front == '!'
+        || this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE)
     {
-        if (this.token == '!')
-            this.token = this.scanner.read;
-        if (this.token == Scanner.SYNTACTIC_VARIABLE || this.token == Scanner.LEXICAL_VARIABLE)
+        if (this.lexer.front == '!')
+            this.lexer.popFront;
+        if (this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE)
         {
-            this.token = this.scanner.read;
-            if (this.token == Scanner.NUMBER)
-                this.token = this.scanner.read;
+            this.lexer.popFront;
+            if (this.lexer.front == Token.number)
+                this.lexer.popFront;
         }
         else
             markError("meta-variable expected");
@@ -701,13 +713,12 @@ public class Analyzer
 
     public int getErrorCount() const
     {
-        return this.scanner.getErrorCount;
+        return this.lexer.ok ? 0 : 42; // FIXME
     }
 
     public Grammar yieldMetaGrammar()
     {
-        if (this.scanner.getErrorCount == 0
-            && this.metaGrammarBuilder.grammarIsWellDefined)
+        if (this.lexer.ok && this.metaGrammarBuilder.grammarIsWellDefined)
         {
             return this.metaGrammarBuilder.getGrammar;
         }
@@ -720,8 +731,7 @@ public class Analyzer
 
     public Grammar yieldHyperGrammar()
     {
-        if (this.scanner.getErrorCount == 0 && this.startSymbol !is null
-            && this.hyperGrammarBuilder.grammarIsWellDefined)
+        if (this.lexer.ok && this.startSymbol !is null && this.hyperGrammarBuilder.grammarIsWellDefined)
         {
             return this.hyperGrammarBuilder.getGrammar(this.startSymbol);
         }

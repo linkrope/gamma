@@ -9,60 +9,6 @@ import std.stdio;
 
 class Scanner
 {
-    private class MarkedLinePrinting : Position
-    {
-        private size_t pos;
-
-        this(size_t pos)
-        {
-            this.pos = pos;
-        }
-
-        public void markError(string message)
-        {
-            const lineNumber = this.outer.lineBeginPos.assumeSorted.lowerBound(this.pos + 1).length;
-            const beginPos = this.outer.lineBeginPos[lineNumber - 1];
-            const endPos = findLineSeparator(this.pos);
-
-            if (beginPos <= this.pos)
-            {
-                char[] quotation = this.outer.source[beginPos .. endPos];
-                char[] mark = new char[this.pos - beginPos + 1];
-
-                foreach (i; 0 .. mark.length - 1)
-                    if (this.outer.source[beginPos + i] == '\t')
-                        mark[i] = '\t';
-                    else
-                        mark[i] = ' ';
-                mark[mark.length - 1] = '^';
-                error!"%s: %s\n%s\n%s"(lineNumber, message, quotation, mark);
-            }
-            else
-                error!"%s: %s"(lineNumber, message);
-            ++this.outer.errorCount;
-        }
-
-        public override bool opEquals(Object o)
-        {
-            if (!cast(MarkedLinePrinting) o)
-                return false;
-
-            auto that = cast(MarkedLinePrinting) o;
-
-            return this.pos == that.pos && this.scanner == that.scanner;
-        }
-
-        public override size_t toHash() nothrow @safe
-        {
-            return this.pos;
-        }
-
-        private Scanner scanner()
-        {
-            return this.outer;
-        }
-    }
-
     static const char END = 0;
 
     static const char LITERAL = '"';
@@ -128,7 +74,7 @@ class Scanner
                 else
                     break;
             }
-            this.position = new MarkedLinePrinting(pos);
+            this.position = Position();
             this.representation = null;
             if (c == '"')
             {
@@ -223,7 +169,7 @@ class Scanner
             }
             if (c1 == END)
             {
-                Position position = new MarkedLinePrinting(pos);
+                Position position;
 
                 position.markError("comment not terminated at end of input");
                 return;
@@ -278,7 +224,7 @@ class Scanner
             value = this.source[pos + 1 .. this.pos].to!int(8);
             if (value > 0xff)
             {
-                Position position = new MarkedLinePrinting(pos);
+                Position position;
 
                 position.markError("octal character constant out of range");
                 return 0;
@@ -289,7 +235,7 @@ class Scanner
             {
                 if (!isHexDigit(this.source[++this.pos]))
                 {
-                    Position position = new MarkedLinePrinting(this.pos);
+                    Position position;
 
                     position.markError("hexadecimal digit expected");
                     return 0;
@@ -302,7 +248,7 @@ class Scanner
         default:
             if (c != '\n' && c != '\r' && c != END)
             {
-                Position position = new MarkedLinePrinting(this.pos);
+                Position position;
 
                 position.markError("illegal escape character");
             }

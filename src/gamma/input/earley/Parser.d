@@ -14,6 +14,7 @@ import gamma.grammar.affixes.Variable;
 import gamma.input.earley.AffixForm;
 import gamma.input.earley.Item;
 import gamma.input.earley.ItemSet;
+import gamma.util.Position;
 import std.range;
 
 /**
@@ -63,13 +64,13 @@ public class Parser
     {
         Node[] rhs;
 
-        rhs ~= new SymbolNode(startSymbol, null);
-        rhs ~= new SymbolNode(this.endSymbol, null);
+        rhs ~= new SymbolNode(startSymbol, Position());
+        rhs ~= new SymbolNode(this.endSymbol, Position());
 
-        Alternative alternative = new Alternative(new SymbolNode(this.startSymbol, null), rhs, null);
+        Alternative alternative = new Alternative(new SymbolNode(this.startSymbol, Position()), rhs, Position());
         SymbolNode[] symbolNodes = affixForm.symbolNodes;
 
-        symbolNodes ~= new SymbolNode(this.endSymbol, null);
+        symbolNodes ~= new SymbolNode(this.endSymbol, Position());
 
         ItemSet itemSet = ItemSet.initialItemSet(alternative, grammar);
 

@@ -1,6 +1,11 @@
 module gamma.util.Position;
 
-public interface Position
+public import io : Position;
+
+
+public void markError(Position position, string message)
 {
-    public void markError(string message);
+    import log : error;
+
+    error!"%s\n%s"(message, position);
 }
