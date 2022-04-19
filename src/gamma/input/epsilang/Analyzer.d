@@ -1,7 +1,6 @@
 module gamma.input.epsilang.Analyzer;
 
 import epsilon.lexer;
-import gamma.input.epsilang.Scanner;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.GrammarBuilder;
@@ -85,11 +84,11 @@ public class Analyzer
             {
                 parseWhiteSpaceRule;
             }
-            else if (this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE)
+            else if (this.lexer.front == Token.name)
             {
                 const representation = this.symbolTable.symbol(this.lexer.value);
                 const position = this.lexer.position;
-                const variableToken = this.lexer.front;
+                bool starred = false;
 
                 this.lexer.popFront;
                 if (this.lexer.front == Token.number)
@@ -99,7 +98,7 @@ public class Analyzer
                 }
                 if (this.lexer.front == '*')
                 {
-                    // TODO: handle token mark
+                    starred = true;
                     this.lexer.popFront;
                 }
                 if (this.lexer.front != '=' && this.lexer.front != ':' && this.lexer.front != '<')
@@ -113,7 +112,7 @@ public class Analyzer
                     Nonterminal nonterminal = this.metaGrammarBuilder.buildNonterminal(representation);
                     SymbolNode lhs = new SymbolNode(nonterminal, position);
 
-                    if (variableToken == Scanner.LEXICAL_VARIABLE)
+                    if (starred)
                         this.lexicalMetaNonterminals[nonterminal] = true;
 
                     parseMetaRule(lhs);
@@ -123,10 +122,9 @@ public class Analyzer
                     Nonterminal nonterminal = this.hyperGrammarBuilder.buildNonterminal(representation);
                     SymbolNode lhs = new HyperSymbolNode(nonterminal, null, position);
 
-                    if (variableToken == Scanner.LEXICAL_VARIABLE)
+                    if (starred)
                         this.lexicalHyperNonterminals[nonterminal] = true;
-
-                    if (variableToken == Scanner.SYNTACTIC_VARIABLE)
+                    else
                         if (this.startSymbol is null)
                             this.startSymbol = nonterminal;
 
@@ -269,7 +267,7 @@ public class Analyzer
         Node[] nodes;
 
         for (;;)
-            if (this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE)
+            if (this.lexer.front == Token.name)
             {
                 const representation = this.symbolTable.symbol(this.lexer.value);
                 Nonterminal nonterminal = this.metaGrammarBuilder.buildNonterminal(representation);
@@ -441,8 +439,7 @@ public class Analyzer
 
         for (;;)
         {
-            if (this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE
-                || this.lexer.front == Token.string_ || this.lexer.front == '<')
+            if (this.lexer.front == Token.name || this.lexer.front == Token.string_ || this.lexer.front == '<')
             {
                 undecidedActualParams = false;
                 if (spareActualParams)
@@ -451,7 +448,7 @@ public class Analyzer
                     spareActualParams = false;
                     paramsPosition = Position();
                 }
-                if (this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE)
+                if (this.lexer.front == Token.name)
                 {
                     const representation = this.symbolTable.symbol(this.lexer.value);
                     Nonterminal nonterminal = this.hyperGrammarBuilder.buildNonterminal(representation);
@@ -630,7 +627,7 @@ public class Analyzer
             if (this.lexer.front == ':')
             {
                 this.lexer.popFront;
-                if (this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE)
+                if (this.lexer.front == Token.name)
                 {
                     this.lexer.popFront;
                     if (this.lexer.front == Token.number)
@@ -679,8 +676,7 @@ public class Analyzer
                 this.lexer.popFront;
                 isVariable = false;
             }
-            else if (this.lexer.front == '!'
-                || this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE)
+            else if (this.lexer.front == '!' || this.lexer.front == Token.name)
             {
                 parseVariable;
                 isVariable = firstRound;
@@ -696,12 +692,11 @@ public class Analyzer
      *     [ '!' ] ident [ number ].
      */
     private void parseVariable()
-    in (this.lexer.front == '!'
-        || this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE)
+    in (this.lexer.front == '!' || this.lexer.front == Token.name)
     {
         if (this.lexer.front == '!')
             this.lexer.popFront;
-        if (this.lexer.front == Scanner.SYNTACTIC_VARIABLE || this.lexer.front == Scanner.LEXICAL_VARIABLE)
+        if (this.lexer.front == Token.name)
         {
             this.lexer.popFront;
             if (this.lexer.front == Token.number)

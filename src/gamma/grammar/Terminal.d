@@ -13,14 +13,6 @@ public class Terminal : Symbol, Indexed
         this.index_ = index;
     }
 
-    public override string toString() const
-    {
-        import std.format : format;
-        import std.range : only;
-
-        return format!"%(%s%)"(only(super.toString));
-    }
-
     public size_t index() const
     {
         return this.index_;
