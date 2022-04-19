@@ -250,11 +250,15 @@ struct TestGrammarBuilder
     public Symbol symbol(string representation)
     out (symbol; symbol !is null)
     {
-        import std.uni;
+        import std.format : format;
+        import std.uni : isLower, isUpper;
 
         if (representation.front.isUpper)
             return buildNonterminal(representation);
-        else
+        else if (representation.front.isLower)
             return buildTerminal(representation);
+        else
+            // quote escaped representation
+            return buildTerminal(format!"%(%s%)"(only(representation)));
     }
 }

@@ -419,8 +419,8 @@ unittest
                 [
                     `G -> . E "=" E`,
                     `E => . T`,
-                    `T => . "f"`,
-                    `T -> . T "*" "f"`,
+                    `T => . f`,
+                    `T -> . T "*" f`,
                     `E -> . E "+" T`
                 ]);
             assert(getTransition(states[0], symbol("f")).to == states[1]);
@@ -429,7 +429,7 @@ unittest
             // state 1
             assert(states[1].orderedClosureItems.to!(string[]) ==
                 [
-                    `T => "f" .`,
+                    `T => f .`,
                 ]);
             // state 2
             assert(states[2].orderedClosureItems.to!(string[]) ==
@@ -443,15 +443,15 @@ unittest
             assert(states[3].orderedClosureItems.to!(string[]) ==
                 [
                     `E => T .`,
-                    `T -> T . "*" "f"`,
+                    `T -> T . "*" f`,
                 ]);
             assert(getTransition(states[3], symbol("*")).to == states[6]);
             // state 4
             assert(states[4].orderedClosureItems.to!(string[]) ==
                 [
                     `E -> E "+" . T`,
-                    `T => . "f"`,
-                    `T -> . T "*" "f"`,
+                    `T => . f`,
+                    `T -> . T "*" f`,
                 ]);
             assert(getTransition(states[4], symbol("f")).to == states[1]);
             assert(getTransition(states[4], symbol("T")).to == states[7]);
@@ -460,8 +460,8 @@ unittest
                 [
                     `G -> E "=" . E`,
                     `E => . T`,
-                    `T => . "f"`,
-                    `T -> . T "*" "f"`,
+                    `T => . f`,
+                    `T -> . T "*" f`,
                     `E -> . E "+" T`,
                 ]);
             assert(getTransition(states[5], symbol("f")).to == states[1]);
@@ -470,14 +470,14 @@ unittest
             // state 6
             assert(states[6].orderedClosureItems.to!(string[]) ==
                 [
-                    `T -> T "*" . "f"`,
+                    `T -> T "*" . f`,
                 ]);
             assert(getTransition(states[6], symbol("f")).to == states[9]);
             // state 7
             assert(states[7].orderedClosureItems.to!(string[]) ==
                 [
                     `E -> E "+" T .`,
-                    `T -> T . "*" "f"`,
+                    `T -> T . "*" f`,
                 ]);
             assert(getTransition(states[7], symbol("*")).to == states[6]);
             // state 8
@@ -490,7 +490,7 @@ unittest
             // state 9
             assert(states[9].orderedClosureItems.to!(string[]) ==
                 [
-                    `T -> T "*" "f" .`,
+                    `T -> T "*" f .`,
                 ]);
         }
     }
