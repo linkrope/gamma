@@ -1,7 +1,7 @@
 Number<+ sign digits: number>: 
-    <sign> [ <+ 'PLUS': sign> '+' | <+ 'MINUS': sign> '-' ] <+ : sign> Digits<digits>.
+    <sign> [ <+ 'PLUS': sign> '+' | <+ 'MINUS': sign> '-' ] <+ 'PLUS': sign> Digits<digits>.
   
-sign = 'PLUS' | 'MINUS' | .
+sign = 'PLUS' | 'MINUS'.
 number = sign digits .
 
 digits* = digit digits | .
