@@ -1,3 +1,5 @@
+// A simple example referenced in the tutorial for showing how the optional EBNF operator works
+
 Number<+ sign digits: number>: 
     <sign> [ <+ 'PLUS': sign> '+' | <+ 'MINUS': sign> '-' ] <+ 'PLUS': sign> Digits<digits>.
   
