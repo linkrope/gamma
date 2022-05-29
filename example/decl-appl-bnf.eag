@@ -6,34 +6,33 @@
 // run generated compiler: ./DeclAppl test/decl-appl/test1
 // output: aba ; ab ;
 
-    Table = | id ";" Table .
+Table = | id ";" Table .
 
-    DeclAppl <+ Table>:
-        Statements<, Table>
-    .
-    
-    Statements<- Table, + Table1>:
-            "DECL" ident<id> Statements<id ";" Table, Table1>.
-    Statements<- Table, + Table1>:
-            "APPL" ident<id> Find<id, Table> Statements<Table, Table1>.
-    Statements <- Table, + Table>: .
-    
-    x = "a" | "b".
-    id* = x | id x.
-    
-    x<+ "a": x>: "a".
-    x<+ "b": x>: "b".
-    
-    ident*<+ id>:
-        x<x> identTail<x, id>
-    .
-            
-    identTail: 
-            <- id, + id1> x<x> identTail<id x, id1>
-        |   <- id, + id>
-    .
-    
-    Find<- id, - !id ";" Table: Table>:
-        Find<id, Table>.
-    Find<- id, - id ";" Table: Table>: .
-    
+DeclAppl <+ Table>:
+    Statements<, Table>
+.
+
+Statements<- Table, + Table1>:
+        "DECL" ident<id> Statements<id ";" Table, Table1>.
+Statements<- Table, + Table1>:
+        "APPL" ident<id> Find<id, Table> Statements<Table, Table1>.
+Statements <- Table, + Table>: .
+
+x = "a" | "b".
+id* = x | id x.
+
+x<+ "a": x>: "a".
+x<+ "b": x>: "b".
+
+ident*<+ id>:
+    x<x> identTail<x, id>
+.
+        
+identTail: 
+        <- id, + id1> x<x> identTail<id x, id1>
+    |   <- id, + id>
+.
+
+Find<- id, - !id ";" Table: Table>:
+    Find<id, Table>.
+Find<- id, - id ";" Table: Table>: .
