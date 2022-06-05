@@ -1,3 +1,9 @@
+## Escape Sequences
+
+- epsilon blindly copies escape sequences to the generated compiler
+- but this makes `"\""` and `'"'` two different terminal symbols
+- take, for example, the code from the gamma Scanner
+
 ## compiled compiler
 
 - swap options `--info` and `--verbose`
@@ -36,7 +42,7 @@
 
 ## RISC Assembler
 
-- revive RISC assembler
+- revive RISC assembler?
 
 ## Lexer Generation
 

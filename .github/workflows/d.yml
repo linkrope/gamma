@@ -6,10 +6,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: dlang-community/setup-dlang@v1.0.6
+    - uses: dlang-community/setup-dlang@v1
       with:
         compiler: dmd-latest
     - name: 'Build & Test'
       run: |
         dub build --compiler=$DC
         dub test --compiler=$DC --config=example
+
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: dlang-community/setup-dlang@v1
+      with:
+        compiler: dmd-latest
+    - name: 'Check Style'
+      run: |
+        dub fetch dscanner --version=0.12.0
+        dub run dscanner -- --styleCheck src test
