@@ -119,7 +119,7 @@ class LRMachine
             size_t hc = this.kernelItems.length;
 
             for (size_t i = 0, n = this.kernelItems.length; i < n; ++i)
-                hc = (hc * 379 + this.kernelItems[i].index) % 13579;
+                hc = (hc * 379 + this.kernelItems[i].index) % 13_579;
             return hc;
         }
 

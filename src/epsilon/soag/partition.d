@@ -505,7 +505,6 @@ void DynTopSortSym(int X)
     int AO2;
     int SO;
     int Part = 0;
-    int i;
     int a1;
     int a;
     int b;

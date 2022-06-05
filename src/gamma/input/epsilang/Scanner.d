@@ -138,7 +138,6 @@ class Scanner
     private void readComment()
     in (this.source[this.pos] == '/' && this.source[this.pos + 1] == '*')
     {
-        const pos = this.pos;
         int level = 1;
         char c1 = ' ';
         char c2;
