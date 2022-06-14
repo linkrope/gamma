@@ -29,10 +29,76 @@ void Error(Position Pos, string ErrMsg) @safe
 
 /**
  * Specification:
- *   (MetaRule | HyperRule) {MetaRule | HyperRule} .
+ *   {WhiteSpaceRule | MetaRule | HyperRule}.
  */
 void Specification()
 {
+    /**
+     * WhiteSpaceRule:
+     *   ':' WhiteSpaceDefinition {'|' WhiteSpaceDefinition} '.'.
+     */
+    void WhiteSpaceRule()
+    in (lexer.front == ':')
+    {
+        /**
+         * WhiteSpaceDefinition:
+         *     string                  ! white space
+         *   | string '~'              ! comment that extends to end of line
+         *   | string '~' string       ! comment in brackets
+         *   | string '~' '~' string.  ! nesting comment in brackets
+         */
+        void WhiteSpaceDefinition()
+        in (lexer.front == Token.string_)
+        {
+            lexer.popFront;
+
+            if (lexer.front == '~')
+            {
+                bool nestingComment = false;
+
+                lexer.popFront;
+                if (lexer.front == '~')
+                {
+                    nestingComment = true;
+                    lexer.popFront;
+                }
+                if (lexer.front == Token.string_)
+                    lexer.popFront;
+                else if (nestingComment)
+                    Error(lexer.position, "closing bracket for nesting comment expected");
+            }
+        }
+
+        warn!"skipping not yet supported whitespace rule\n%s"(lexer.position);
+        lexer.popFront;
+
+        for (;;)
+        {
+            if (lexer.front == Token.string_)
+                WhiteSpaceDefinition;
+            else
+                Error(lexer.position, "white space definition expected");
+            if (!lexer.empty && lexer.front != '|' && lexer.front != '.')
+            {  // sync
+                Error(lexer.position, "unexpected symbol");
+                do
+                    lexer.popFront;
+                while (!lexer.empty && lexer.front != '|' && lexer.front != '.');
+            }
+            if (lexer.front == '|')
+                lexer.popFront;
+            else
+                break;
+        }
+
+        assert(lexer.empty || lexer.front == '.');
+
+        if (lexer.front == '.')
+            lexer.popFront;
+        else
+            Error(lexer.position, `symbol "." expected`);
+    }
+
     /**
      * MetaRule:
      *   ident "=" MetaExpr ".".
@@ -509,6 +575,11 @@ void Specification()
         int Id;
         bool IsToken = false;
 
+        if (lexer.front == ':')
+        {
+            WhiteSpaceRule;
+            continue;
+        }
         if (lexer.front == Token.name)
         {
             Id = lexer.value.to!int;
@@ -532,7 +603,7 @@ void Specification()
             MetaRule(Id, IsToken);
         else
             HyperRule(Id, IsToken);
-        if (lexer.front != Token.name && lexer.front != Token.end)
+        if (lexer.front != ':' && lexer.front != Token.name && lexer.front != Token.end)
         {
             Error(lexer.position, "not allowed symbol");
             do
