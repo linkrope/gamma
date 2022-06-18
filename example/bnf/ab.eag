@@ -1,0 +1,7 @@
+// a^n b^n  -> i^n  without EBNF
+
+N = 'i' N | .
+
+S: <+ N: N> A <N> B <N>.
+A: <+ 'i' N: N> 'a' A <N> | <+ : N> .
+B: <- 'i' N: N> 'b' B <N> | <- : N> .
