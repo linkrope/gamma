@@ -1,5 +1,5 @@
 DECL ab
-DECL aba
+DECL ba
 
-APPL aba
+APPL ba
 APPL ab
