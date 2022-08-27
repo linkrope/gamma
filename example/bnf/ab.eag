@@ -1,4 +1,5 @@
-// a^n b^n  -> i^n  without EBNF
+// a^n b^n  -> i^n  in BNF
+// see ../ab.eag for an EBNF specifcation
 
 N = 'i' N | .
 

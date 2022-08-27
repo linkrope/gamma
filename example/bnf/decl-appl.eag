@@ -1,5 +1,5 @@
 // declarations/applications: a reduced example in BNF
-// see decl-appl.eag for an EBNF specification
+// see ../decl-appl.eag for an EBNF specification
 
 Table = | id ";" Table .
 
