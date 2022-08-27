@@ -26,12 +26,12 @@ unittest
     }
 }
 
-@("compile ab-ebnf.eag as Single-Sweep and run compiler")
+@("compile ab.eag as Single-Sweep and run compiler")
 unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep --space example/ab-ebnf.eag --output-directory %s"(directory)
+        run!"./gamma --sweep --space example/ab.eag --output-directory %s"(directory)
             .shouldMatch("S grammar is single sweep");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldMatch("^i i i $");

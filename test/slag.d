@@ -26,12 +26,12 @@ unittest
     }
 }
 
-@("compile ab-ebnf.eag as SLAG and run compiler")
+@("compile ab.eag as SLAG and run compiler")
 unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space example/ab-ebnf.eag --output-directory %s"(directory)
+        run!"./gamma --space example/ab.eag --output-directory %s"(directory)
             .shouldMatch("S grammar is SLAG");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldMatch("^i i i $");
