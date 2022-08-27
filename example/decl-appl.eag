@@ -5,11 +5,11 @@ Table = | id ';' Table.
 DeclAppl <+ Table>:
     <, Table>
         { <- Table, + Table1>
-            'DECL' ident<id>
+            'DECL' id<id>
             NotAlreadyDeclared <id, Table>
             <id ';' Table, Table1>
         | <- Table, + Table1>
-            'APPL' ident<id>
+            'APPL' id<id>
             Declared <id, Table>
             <Table, Table1>
         } <- Table, + Table>.
@@ -21,7 +21,7 @@ letter:
     <+ 'a': letter> 'a'
   | <+ 'b': letter> 'b'.
 
-ident *<+ id>:
+id *<+ id>:
     letter <letter>
     <letter, id>
         { <- id, + id1>
