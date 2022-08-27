@@ -1,4 +1,6 @@
-DECL abba
+DECL ab
 
-APPL abba
-APPL abb
+APPL ab
+APPL ba
+
+DECL ba
