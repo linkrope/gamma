@@ -1,10 +1,5 @@
 // declarations/applications: a reduced example in BNF
 // see decl-appl.eag for an EBNF specification
-// 
-// build generator: dub build.
-// run generator: ./gamma -s example/decl-appl-bnf.eag
-// run generated compiler: ./DeclAppl test/decl-appl/test1
-// output: aba ; ab ;
 
 Table = | id ";" Table .
 
