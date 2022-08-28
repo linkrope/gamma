@@ -23,5 +23,5 @@ jobs:
         compiler: dmd-latest
     - name: 'Check Style'
       run: |
-        dub fetch dscanner --version=0.12.0
+        dub fetch dscanner --version=0.12.2
         dub run dscanner -- --styleCheck src test
