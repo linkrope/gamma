@@ -5,9 +5,6 @@ struct Settings
     /// DISABLE collapsing constant trees
     bool c;
 
-    /// generate only, do not compile
-    bool generate;
-
     /// DISABLE optimizing of variable storage in compiled compiler
     bool o;
 
@@ -20,23 +17,8 @@ struct Settings
     /// use space instead of newline as separator
     bool space;
 
-    /// print debug output
-    bool verbose;
-
     /// write compilation output as default
     bool write;
-
-    /// generate SLAG evaluator
-    bool slag;
-
-    /// generate single-sweep evaluator
-    bool sweep;
-
-    /// generate SOAG evaluator
-    bool soag;
-
-    /// show error positions language-server friendly as offsets
-    bool offset;
 
     string outputDirectory;
 

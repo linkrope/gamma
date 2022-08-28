@@ -12,6 +12,6 @@ public class GeneratedNonterminal : Nonterminal
     {
         import std.format : format;
 
-        super(format!"YYNont%s"(index), index);
+        super(format!"(N%s)"(index), index);
     }
 }

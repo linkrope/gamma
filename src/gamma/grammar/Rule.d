@@ -1,13 +1,15 @@
 module gamma.grammar.Rule;
 
 import gamma.grammar.Alternative;
-import gamma.grammar.Symbol;
+import gamma.grammar.SymbolNode;
 import gamma.grammar.Visitor;
 import std.range;
 
 public class Rule
 {
     private Alternative[] alternatives_;
+
+    invariant (!alternatives_.empty);
 
     /**
      * @param alternatives
@@ -18,7 +20,7 @@ public class Rule
     public this(Alternative[] alternatives)
     in (!alternatives.empty)
     {
-        Symbol symbol = alternatives.front.lhs.symbol;
+        auto symbol = alternatives.front.lhs.symbol;
 
         foreach (alternative; alternatives)
         {
@@ -30,6 +32,11 @@ public class Rule
     public void accept(Visitor visitor)
     {
         visitor.visit(this);
+    }
+
+    public SymbolNode lhs()
+    {
+        return this.alternatives_.front.lhs;
     }
 
     public Alternative[] alternatives()

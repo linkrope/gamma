@@ -1,10 +1,11 @@
-//          Copyright Mario Kröplin 2021.
+//          Copyright Mario Kröplin 2022.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
 
 module epsilon.main;
 
+import argparse;
 import epsilon.settings;
 import io : Input, read;
 import log;
@@ -12,52 +13,67 @@ import runtime;
 import std.range;
 import std.stdio;
 
-void main(string[] args)
+mixin CLI!(config, Arguments).main!command;
+
+enum config = {
+    Config config;
+
+    config.bundling = true;
+    return config;
+}();
+
+@(Command(null).Description("Compile each Extended Affix Grammar file into a compiler"))
+struct Arguments
 {
-    import core.stdc.stdlib : exit, EXIT_FAILURE, EXIT_SUCCESS;
+    @(PositionalArgument(0).Optional().Description("Extended-Affix Grammar files"))
+    string[] file;
+
+    @(NamedArgument.Description("Disable collapsing constant trees"))
+    bool c;
+
+    @(NamedArgument("g").Description("Generate only, do not compile"))
+    bool generate;
+
+    @(NamedArgument.Description("Disable optimizing of variable storage in compiled compiler"))
+    bool o;
+
+    @(NamedArgument.Description("Parser ignores regular token marks at hyper-nonterminals"))
+    bool p;
+
+    @(NamedArgument.Description("Disable reference counting in compiled compiler"))
+    bool r;
+
+    @(NamedArgument("s", "space").Description("Compiled compiler uses space instead of newline as separator"))
+    bool space;
+
+    @(NamedArgument("v", "verbose").Description("Print debug output"))
+    bool verbose;
+
+    @(NamedArgument("w", "write").Description("Write compilation output as default"))
+    bool write;
+
+    @(NamedArgument.Description("Generate SLAG evaluator"))
+    bool slag;
+
+    @(NamedArgument.Description("Generate single-sweep evaluator"))
+    bool sweep;
+
+    @(NamedArgument.Description("Generate SOAG evaluator"))
+    bool soag;
+
+    @(NamedArgument("output-directory").Placeholder("DIRECTORY").Description("Write compiled compiler to DIRECTORY"))
+    string outputDirectory;
+
+    @(NamedArgument.Description("Show error positions language-server friendly as offsets"))
+    bool offset;
+}
+
+void command(Arguments arguments)
+{
+    import core.stdc.stdlib : exit, EXIT_FAILURE;
     import std.exception : ErrnoException;
-    import std.getopt : defaultGetoptPrinter, getopt, GetoptResult;
 
-    GetoptResult result;
-    Settings settings;
-
-    try
-    {
-        with (settings)
-        {
-            result = getopt(args,
-                    "c", "Disable collapsing constant trees.", &c,
-                    "g", "Generate only, do not compile.", &generate,
-                    "p", "Parser ignores regular token marks at hyper-nonterminals.", &p,
-                    "o", "Disable optimizing of variable storage in compiled compiler.", &o,
-                    "r", "Disable reference counting in compiled compiler.", &r,
-                    "space|s", "Compiled compiler uses space instead of newline as separator.", &space,
-                    "verbose|v", "Print debug output.", &verbose,
-                    "write|w", "Write compilation output as default.", &write,
-                    "slag", "Generate SLAG evaluator.", &slag,
-                    "sweep", "Generate single-sweep evaluator.", &sweep,
-                    "soag", "Generate SOAG evaluator.", &soag,
-                    "output-directory", "Write compiled compiler to directory.", &outputDirectory,
-                    "offset", "Show error positions language-server friendly as offsets.", &offset,
-            );
-        }
-    }
-    catch (Exception exception)
-    {
-        error!"%s"(exception.msg);
-        exit(EXIT_FAILURE);
-    }
-    if (result.helpWanted)
-    {
-        import std.path : baseName;
-
-        writefln!"Usage: %s [options] <file>..."(args.front.baseName);
-        writeln("Compile each Extended Affix Grammar file into a compiler.");
-        defaultGetoptPrinter("Options:", result.options);
-        exit(EXIT_SUCCESS);
-    }
-
-    with (settings)
+    with (arguments)
     {
         if (verbose)
             levels |= Level.trace;
@@ -80,13 +96,13 @@ void main(string[] args)
     {
         import std.typecons : No, Yes;
 
-        const offset = settings.offset ? Yes.offset : No.offset;
+        const offset = arguments.offset ? Yes.offset : No.offset;
 
-        if (args.dropOne.empty)
-            compile(read("stdin", stdin, offset), settings);
+        if (arguments.file.empty)
+            compile(read("stdin", stdin, offset), arguments);
 
-        foreach (arg; args.dropOne)
-            compile(read(arg, offset), settings);
+        foreach (file; arguments.file)
+            compile(read(file, offset), arguments);
     }
     catch (ErrnoException exception)
     {
@@ -99,7 +115,7 @@ void main(string[] args)
     }
 }
 
-void compile(Input input, Settings settings)
+void compile(Input input, const Arguments arguments)
 {
     import analyzer = epsilon.analyzer;
     import EAG = epsilon.eag;
@@ -110,6 +126,8 @@ void compile(Input input, Settings settings)
     import SOAGGen = epsilon.soag.soaggen;
     import Sweep = epsilon.sweep;
     import std.exception : enforce;
+
+    const settings = createSettings(arguments);
 
     analyzer.Analyse(input);
 
@@ -125,7 +143,7 @@ void compile(Input input, Settings settings)
     string[] fileNames;
     bool success = false;
 
-    if (settings.slag)
+    if (arguments.slag)
     {
         SLAGGen.Test;
         if (EAG.History & EAG.isSLAG)
@@ -135,7 +153,7 @@ void compile(Input input, Settings settings)
             success = true;
         }
     }
-    if (!success && settings.sweep)
+    if (!success && arguments.sweep)
     {
         Sweep.Test(settings);
         if (EAG.History & EAG.isSweep)
@@ -146,11 +164,11 @@ void compile(Input input, Settings settings)
             success = true;
         }
     }
-    if (!success && settings.soag)
+    if (!success && arguments.soag)
     {
         fileNames = LexGen.Generate(settings) ~ fileNames;
         fileNames = SOAGGen.Generate(settings) ~ fileNames;
-        if (settings.verbose)
+        if (arguments.verbose)
         {
             import protocol = epsilon.soag.protocol;
 
@@ -163,8 +181,25 @@ void compile(Input input, Settings settings)
 
     enforce(success);
 
-    if (!fileNames.empty && !settings.generate)
+    if (!fileNames.empty && !arguments.generate)
         build(fileNames, settings.outputDirectory);
+}
+
+Settings createSettings(const Arguments arguments)
+{
+    with (arguments)
+    {
+        Settings settings;
+
+        settings.c = c;
+        settings.o = o;
+        settings.p = p;
+        settings.r = r;
+        settings.space = space;
+        settings.write = write;
+        settings.outputDirectory = outputDirectory;
+        return settings;
+    }
 }
 
 void build(string[] fileNames, string outputDirectory)

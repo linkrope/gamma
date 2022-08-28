@@ -5,14 +5,28 @@
 
 module gamma.main;
 
+import argparse;
 import gamma.grammar.Grammar;
 import log;
 import std.range;
 import std.stdio;
 
-void main(string[] args)
+mixin CLI!Arguments.main!command;
+
+@(Command(null).Description("Compile each Extended Affix Grammar file into a compiler"))
+struct Arguments
 {
-    import core.stdc.stdlib : exit, EXIT_FAILURE, EXIT_SUCCESS;
+    @(PositionalArgument(0).Optional().Description("Extended-Affix Grammar files"))
+    string[] file;
+
+    @(NamedArgument("v", "verbose").Description("Print debug output"))
+    bool verbose;
+}
+
+void command(const Arguments arguments)
+{
+    import core.stdc.stdlib : exit, EXIT_FAILURE;
+    import gamma.grammar.hyper.EBNFConverter : convert;
     import gamma.grammar.hyper.PrintingHyperVisitor : printingHyperVisitor;
     import gamma.grammar.Node : Node;
     import gamma.grammar.PrintingVisitor : printingVisitor;
@@ -24,45 +38,20 @@ void main(string[] args)
     import std.array : assocArray;
     import std.datetime.stopwatch : AutoStart, StopWatch;
     import std.exception : ErrnoException;
-    import std.getopt : defaultGetoptPrinter, getopt, GetoptResult;
     import std.typecons : tuple;
 
-    GetoptResult result;
-    bool verbose;
-
-    try
-    {
-        result = getopt(args,
-                "verbose|v", "Print debug output.", &verbose,
-        );
-    }
-    catch (Exception exception)
-    {
-        error!"%s"(exception.msg);
-        exit(EXIT_FAILURE);
-    }
-    if (result.helpWanted)
-    {
-        import std.path : baseName;
-
-        writefln!"Usage: %s [options] <file>..."(args.front.baseName);
-        writeln("Compile each Extended Affix Grammar file into a compiler.");
-        defaultGetoptPrinter("Options:", result.options);
-        exit(EXIT_SUCCESS);
-    }
-
-    if (verbose)
+    if (arguments.verbose)
         levels |= Level.trace;
 
     try
     {
-        foreach (arg; args.dropOne)
+        foreach (file; arguments.file)
         {
             auto stopWatch = StopWatch(AutoStart.yes);
-            auto input = File(arg);
+            auto input = File(file);
             auto analyzer = new Analyzer(input);
 
-            info!"compiling %s"(arg);
+            info!"compiling %s"(file);
             analyzer.parseSpecification;
 
             const errorCount = analyzer.getErrorCount;
@@ -92,6 +81,7 @@ void main(string[] args)
                             }
                         };
                         auto parserGrammar = grammar
+                            .convert
                             .extendedCfgFromHyperGrammar(lexicalHyperNonterminals, predicateFilter);
                         auto visitor = printingHyperVisitor(stdout.lockingTextWriter);
 

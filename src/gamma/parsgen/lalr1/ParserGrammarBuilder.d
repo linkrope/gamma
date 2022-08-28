@@ -18,7 +18,7 @@ public Grammar extendedCfgFromHyperGrammar(Grammar hyperGrammar,
 {
     auto grammarBuilder = GrammarBuilder();
     Symbol originalStartSymbol = grammarBuilder.buildNonterminal(hyperGrammar.startSymbol.toString);
-    Nonterminal extStartSymbol = grammarBuilder.buildNonterminal("(start)");
+    Nonterminal extStartSymbol = grammarBuilder.buildNonterminal("(Start)");
 
     // --- Go ahead with rest of parser generation... ---
     {
@@ -30,9 +30,9 @@ public Grammar extendedCfgFromHyperGrammar(Grammar hyperGrammar,
     }
 
     // Filter the pure CFG out of the hyperGrammar using
-    // - help from Analyser which nonterminal symbols are "lexical nonterminals"; and
+    // - help from Analyzer which nonterminal symbols are "lexical nonterminals"; and
     // - help from PredicateFilter which RHS symbol occurrences are "predicates".
-    // Any Alternative/Rule the lhs of which is not a Nonterminal of the parser CFG is skipped.
+    // Any Alternative/Rule the LHS of which is not a Nonterminal of the parser CFG is skipped.
     // For the remaining RHS's, SymbolNode's are
     // - not copied to the corresponding target CFG RHS if they represent a "predicate";
     // - copied to the target CFG as a Terminal if they represent a "lexical nonterminal";

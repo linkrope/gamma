@@ -18,7 +18,7 @@
             "name": "unittest",
             "dflags": ["-checkaction=context"],
             "dependencies": {
-                "silly": "~>1.0.2"
+                "silly": ">=1.0.2"
             }
         },
         {
@@ -27,10 +27,13 @@
             "importPaths": ["test"],
             "preBuildCommands": ["$DUB build"],
             "dependencies": {
-                "silly": "~>1.0.2"
+                "silly": ">=1.0.2"
             }
         }
     ],
+    "dependencies": {
+        "argparse": ">=1.1.0"
+    },
     "subPackages": [
         {
             "name": "experimental",
@@ -39,8 +42,10 @@
             "importPaths": ["include", "src"],
             "mainSourceFile": "src/gamma/main.d",
             "excludedSourceFiles": ["src/epsilon/main.d"],
-            "stringImportPaths": ["fix/epsilon"]
+            "stringImportPaths": ["fix/epsilon"],
+            "dependencies": {
+                "argparse": ">=1.1.0"
+            }
         }
     ]
-
 }
