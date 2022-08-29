@@ -15,18 +15,19 @@ import std.stdio;
 
 mixin CLI!(config, Arguments).main!command;
 
-enum config = {
+Config config()
+{
     Config config;
 
     config.bundling = true;
     return config;
-}();
+}
 
-@(Command(null).Description("Compile each Extended Affix Grammar file into a compiler"))
-struct Arguments
+@(Command(null).Description("Compile each Extended Affix Grammar FILE into a compiler"))
+static struct Arguments
 {
-    @(PositionalArgument(0).Optional().Description("Extended-Affix Grammar files"))
-    string[] file;
+    @(PositionalArgument(0).Optional().Placeholder("FILE").Description("Extended-Affix Grammar FILE"))
+    string[] files;
 
     @(NamedArgument.Description("Disable collapsing constant trees"))
     bool c;
@@ -98,10 +99,10 @@ void command(Arguments arguments)
 
         const offset = arguments.offset ? Yes.offset : No.offset;
 
-        if (arguments.file.empty)
+        if (arguments.files.empty)
             compile(read("stdin", stdin, offset), arguments);
 
-        foreach (file; arguments.file)
+        foreach (file; arguments.files)
             compile(read(file, offset), arguments);
     }
     catch (ErrnoException exception)
@@ -185,7 +186,7 @@ void compile(Input input, const Arguments arguments)
         build(fileNames, settings.outputDirectory);
 }
 
-Settings createSettings(const Arguments arguments)
+Settings createSettings(const Arguments arguments) @nogc nothrow
 {
     with (arguments)
     {

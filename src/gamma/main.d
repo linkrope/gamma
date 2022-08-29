@@ -13,11 +13,11 @@ import std.stdio;
 
 mixin CLI!Arguments.main!command;
 
-@(Command(null).Description("Compile each Extended Affix Grammar file into a compiler"))
+@(Command(null).Description("Compile each Extended Affix Grammar FILE into a compiler"))
 struct Arguments
 {
-    @(PositionalArgument(0).Optional().Description("Extended-Affix Grammar files"))
-    string[] file;
+    @(PositionalArgument(0).Optional().Placeholder("FILE").Description("Extended-Affix Grammar FILE"))
+    string[] files;
 
     @(NamedArgument("v", "verbose").Description("Print debug output"))
     bool verbose;
@@ -45,7 +45,7 @@ void command(const Arguments arguments)
 
     try
     {
-        foreach (file; arguments.file)
+        foreach (file; arguments.files)
         {
             auto stopWatch = StopWatch(AutoStart.yes);
             auto input = File(file);
