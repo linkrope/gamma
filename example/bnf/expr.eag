@@ -15,19 +15,5 @@ Term <+ Number "ENTER": Code>:
 
 Number = "0" | "1".
 
-number:
-      <+ "0": Number> "0"
-    | <+ "1": Number> "1".
-    
-    
-// ExprTail shorter:
-// ExprTail:
-//     <- Code1, + Code3> "+" Term<Code2> ExprTail<Code1 Code2 "ADD", Code3> | <- Code, + Code> .
-
-// Expr as one EBNF rule instead - even shorter
-// Expr <+ Code2>:
-//     Term <Code1>
-//     <Code1, Code2>
-//         { <- Code1, + Code3>
-//             "+" Term <Code2> <Code1 Code2 "ADD", Code3>
-//         } <- Code, + Code>.
+number: <+ "0": Number> "0".
+number: <+ "1": Number> "1".

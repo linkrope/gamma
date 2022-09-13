@@ -8,9 +8,9 @@ DeclAppl <+ Table>:
 .
 
 Statements<- Table, + Table1>:
-        "DECL" id<id> Statements<id ";" Table, Table1>.
+    "DECL" id<id> Statements<id ";" Table, Table1>.
 Statements<- Table, + Table1>:
-        "APPL" id<id> Find<id, Table> Statements<Table, Table1>.
+    "APPL" id<id> Find<id, Table> Statements<Table, Table1>.
 Statements <- Table, + Table>: .
 
 x = "a" | "b".
@@ -23,10 +23,8 @@ id*<+ id>:
     x<x> idTail<x, id>
 .
         
-idTail: 
-        <- id, + id1> x<x> idTail<id x, id1>
-    |   <- id, + id>
-.
+idTail: <- id, + id1> x<x> idTail<id x, id1>.
+idTail: <- id, + id>.
 
 Find<- id, - !id ";" Table: Table>:
     Find<id, Table>.
