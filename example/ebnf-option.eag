@@ -1,0 +1,9 @@
+// A simple example to show how the EBNF option operator (brackets) works.
+// It accepts only the term '+ x' and '- x' and 
+// returns how the term is signed as compilation result 
+
+SimpleExpr<+ sign>: <sign>[ <+'plus':sign> '+' | <+'minus':sign> '-' ]<+'plus':sign> Term.
+
+sign = 'plus' | 'minus'.
+
+Term: 'x'. 

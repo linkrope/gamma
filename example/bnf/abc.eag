@@ -1,0 +1,15 @@
+// a^n b^n c^n -> |^n in BNF 
+// see ../abc.eag for an EBNF specifcation
+
+N = "i" N | .
+
+S<+ N: N>: A <N> B <N> C <N>.
+
+A<+ "i" N: N>: "a" A <N>.
+A<+ : N> : .
+
+B<- "i" N: N>: "b" B <N>.
+B<- : N>:.
+
+C<- "i" N: N>: "c" C <N>.
+C<- : N>: .

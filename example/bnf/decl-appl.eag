@@ -1,0 +1,31 @@
+// declarations/applications: a reduced example in BNF
+// see ../decl-appl.eag for an EBNF specification
+
+Table = | id ";" Table .
+
+DeclAppl <+ Table>:
+    Statements<, Table>
+.
+
+Statements<- Table, + Table1>:
+    "DECL" id<id> Statements<id ";" Table, Table1>.
+Statements<- Table, + Table1>:
+    "APPL" id<id> Find<id, Table> Statements<Table, Table1>.
+Statements <- Table, + Table>: .
+
+x = "a" | "b".
+id* = x | id x.
+
+x<+ "a": x>: "a".
+x<+ "b": x>: "b".
+
+id*<+ id>:
+    x<x> idTail<x, id>
+.
+        
+idTail: <- id, + id1> x<x> idTail<id x, id1>.
+idTail: <- id, + id>.
+
+Find<- id, - !id ";" Table: Table>:
+    Find<id, Table>.
+Find<- id, - id ";" Table: Table>: .

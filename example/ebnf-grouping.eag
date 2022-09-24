@@ -1,0 +1,9 @@
+// A simple example to show how the EBNF grouping operator (paranthesis) works.
+// It accepts only the expressions 'x + x' and 'x - x' and returns as compilation result 
+// whether the expression is an addition or a substraction  
+
+Expr<+ op>: Term <op>( <+'addition':op> '+' | <+'subtraction':op> '-' ) Term.
+
+op = 'addition' | 'subtraction'.
+
+Term: 'x'.
