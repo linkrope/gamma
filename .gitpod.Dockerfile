@@ -2,8 +2,10 @@ FROM gitpod/workspace-full:latest
 
 USER root
 
-RUN wget http://downloads.dlang.org/releases/2.x/2.093.1/dmd_2.093.1-0_amd64.deb
-RUN sudo dpkg -i dmd_2.093.1-0_amd64.deb
+ARG DMD_VERSION=2.093.1
+ARG DMD_BUILD=$DMD_VERSION-0
+RUN wget http://downloads.dlang.org/releases/2.x/$DMD_VERSION/dmd_${DMD_BUILD}_amd64.deb
+RUN sudo dpkg -i dmd_${DMD_BUILD}_amd64.deb
 
 USER gitpod
 # apply user-specific settings
