@@ -1,44 +1,38 @@
-# Extended Affix Grammar Compiler Compiler
+<img src="../assets/doc/images/Greek_lc_gamma.svg" alt="gamma" width="100"/>
+
+# Extended Affix Grammar Compiler Generator
 
 [![D](https://github.com/linkrope/gamma/actions/workflows/d.yml/badge.svg)](https://github.com/linkrope/gamma/actions/workflows/d.yml)
 
-_gamma_ is a compiler compiler for the [Extended Affix Grammar] formalism.
+_gamma_ is a compiler generator for the [Extended Affix Grammar] formalism.
+
+See the [Wiki](https://github.com/linkrope/gamma/wiki) for detailed introductions, tutorials,
+information on Extended Affix Grammars and compiler generators, and more.
 
 ## Usage
 
-Use [dub] to run, build, or test the compiler compiler. For example:
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/linkrope/gamma)
 
-    dub run -- example/abc.eag
+Run _gamma_ to generate a compiler for some of the available [examples](example).
+For example:
 
-Then, run the compiled compiler. For example:
+    ./gamma example/abc.eag
+
+Then, run the generated compiler. For example:
 
     ./S test/abc
 
+Alternatively, use [dub] to run, build, or test the compiler generator.
+For example:
+
+    dub run -- example/abc.eag
+
 ## Experimental
 
-Use [dub] to run the experimental LALR(1) parser generator. For example:
+Use [dub] to try out the experimental LALR(1) parser generator.
+For example:
 
-    dub run :experimental -- example/ab.eag -v
-
-## Bibliography
-
-[_Echte Compilergenerierung:\
-Effiziente Implementierung einer abgeschlossenen Theorie_][1]
-
-[_True Compiler Generation_][1a]\
-[automatic translation of the German publication from 1997]
-
-[_Ein Evaluatorgenerator für zwei heuristische Teilklassen\
-Sequentiell Orientierbarer Erweiterter Affixgrammatiken_][2]
-
-[_An Evaluator Generator for Two Heuristic Subclasses of\
-Sequentially Orientable Extended Affix Grammars_][2a]\
-[automatic translation of the German diploma thesis from 1998]
-
-[1]: ../assets/doc/epsilon-red-series.german.pdf
-[1a]: ../assets/doc/epsilon-red-series.adoc
-[2]: ../assets/doc/soag/soag-diploma-thesis.german.pdf
-[2a]: ../assets/doc/soag/soag-diploma-thesis.adoc
+    dub run :experimental -- example/bnf/ab.eag -v
 
 [dub]: http://code.dlang.org/
 [extended affix grammar]: https://en.wikipedia.org/wiki/Extended_affix_grammar

@@ -1,0 +1,46 @@
+// This EAG shows the notation for group, option, and repetition
+// without EBNF expressions.
+// This lowering defines the meaning of the related example/ebnf.eag.
+
+S = S ',' S | L.
+
+S <+ L1 ',' L2 ',' L3: S>:
+    Group <L1> ',' Option <L2> ',' Repetition <L3>.
+S <+ L1 ',' L2 ',' L3: S>:
+    GroupSubrule <L1> ',' OptionSubrule <L2> ',' RepetitionSubrule <L3>.
+
+L = 'a' L | 'b' L | .
+
+Group <+ 'a': L>:
+    'a'.
+Group <+ 'b': L>:
+    'b'.
+
+Option <+ 'a': L>:
+    'a'.
+Option <+ 'b': L>:
+    'b'.
+Option <+ : L>:
+    .
+
+Repetition <+ 'a' L: L>:
+    'a' Repetition <L>.
+Repetition <+ 'b' L: L>:
+    'b' Repetition <L>.
+Repetition <+ : L>:
+    .
+
+GroupSubrule <+ L>:
+    '"'
+    Group <L>
+    '"'.
+
+OptionSubrule <+ L>:
+    '"'
+    Option <L>
+    '"'.
+
+RepetitionSubrule <+L>:
+    '"'
+    Repetition <L>
+    '"'.

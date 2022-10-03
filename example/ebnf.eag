@@ -1,0 +1,50 @@
+// This EAG shows the use of EBNF expressions for group, option, and repetition
+// with corresponding parameters.
+// The meaning is defined by the lowering in the related example/bnf/ebnf.eag.
+
+S = S ',' S | L.
+
+S <+ L1 ',' L2 ',' L3: S>:
+    Group <L1> ',' Option <L2> ',' Repetition <L3>
+  | GroupSubrule <L1> ',' OptionSubrule <L2> ',' RepetitionSubrule <L3>.
+
+L = 'a' L | 'b' L | .
+
+Group:
+    ( <+ 'a': L> 'a'
+    | <+ 'b': L> 'b'
+    ).
+
+Option:
+    [ <+ 'a': L> 'a'
+    | <+ 'b': L> 'b'
+    ] <+ : L>.
+
+Repetition:
+    { <+ 'a' L: L> 'a' <L>
+    | <+ 'b' L: L> 'b' <L>
+    } <+ : L>.
+
+GroupSubrule <+ L>:
+    '"'
+    <L>
+        ( <+ 'a': L> 'a'
+        | <+ 'b': L> 'b'
+        )
+    '"'.
+
+OptionSubrule <+ L>:
+    '"'
+    <L>
+        [ <+ 'a': L> 'a'
+        | <+ 'a': L> 'b'
+        ] <+ : L>
+    '"'.
+
+RepetitionSubrule <+L>:
+    '"'
+    <L>
+        { <+ 'a' L: L> 'a' <L>
+        | <+ 'b' L: L> 'b' <L>
+        } <+ : L>
+    '"'.
