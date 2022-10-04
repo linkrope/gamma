@@ -68,7 +68,8 @@ static struct Arguments
     @(NamedArgument.Description("Show error positions language-server friendly as offsets"))
     bool offset;
 
-    @(NamedArgument("ignore-nonproductive").Description("Ignore non-productive non-terminals and force code generation"))
+    @(NamedArgument("ignore-nonproductive")
+        .Description("Ignore non-productive non-terminals and force code generation"))
     bool ignoreNonproductiveNonterminals;
 
 }
