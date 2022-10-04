@@ -889,6 +889,7 @@ void ComputeEAGSets()
     EAG.Reach.length = EAG.NextHNont + 1;
 
     ComputeReach(EAG.StartSym);
+    // count warnings for unreachable non-terminals
     for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
         if (EAG.HNont[Sym].Def !is null && !EAG.Reach[Sym] && EAG.HNont[Sym].Id >= 0)
             ++Warnings;
@@ -964,6 +965,7 @@ void ComputeEAGSets()
     }
     Prune;
     EAG.Prod = Prod;
+    // count warnings for unproductive non-terminals
     Warnings += (EAG.All & ~EAG.Prod).count;
     if (Warnings > 0)
         warn!"%s warnings"(Warnings);
@@ -988,6 +990,10 @@ void Analyse(Input input)
     }
     if (ErrorCounter == 0)
     {
+        CheckForUnproductiveNonterminals();
+    } 
+    if (ErrorCounter == 0)
+    {
         EAG.History |= EAG.analysed;
         info!"%s grammar is valid"(EAG.BaseName);
     }
@@ -1001,12 +1007,30 @@ void Analyse(Input input)
     }
 }
 
+void CheckForUnproductiveNonterminals()
+{
+    const Unprod = EAG.All - EAG.Prod;
+    for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
+    {
+        if (Unprod[Sym])
+        {
+            if (EAG.HNont[Sym].anonymous) {
+                ErrorCounter++;
+                error!"anonymous nonterminal in %s unproductive"(EAG.NamedHNontRepr(Sym));
+            }
+            else
+                ErrorCounter++;
+                error!"%s unproductive"(EAG.HNontRepr(Sym));
+        }
+    }
+
+}
+
 void Warnings()
 in (EAG.Performed(EAG.analysed))
 {
     const Unreach = EAG.All - EAG.Reach;
-    const Unprod = EAG.All - EAG.Prod;
-    const NoWarnings = Unreach.bitsSet.empty && Unprod.bitsSet.empty;
+    const NoWarnings = Unreach.bitsSet.empty;
 
     if (NoWarnings)
     {
@@ -1018,12 +1042,5 @@ in (EAG.Performed(EAG.analysed))
     {
         if (Unreach[Sym] && EAG.HNont[Sym].Id >= 0)
             warn!"%s unreachable"(EAG.HNontRepr(Sym));
-        if (Unprod[Sym])
-        {
-            if (EAG.HNont[Sym].anonymous)
-                warn!"anonymous nonterminal in %s unproductive"(EAG.NamedHNontRepr(Sym));
-            else
-                warn!"%s unproductive"(EAG.HNontRepr(Sym));
-        }
     }
 }
