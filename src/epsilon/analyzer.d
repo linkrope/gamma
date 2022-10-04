@@ -883,16 +883,10 @@ void ComputeEAGSets()
         }
     }
 
-    long Warnings = 0;
-
     EAG.Reach = BitArray();
     EAG.Reach.length = EAG.NextHNont + 1;
 
     ComputeReach(EAG.StartSym);
-    // count warnings for unreachable non-terminals
-    for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
-        if (EAG.HNont[Sym].Def !is null && !EAG.Reach[Sym] && EAG.HNont[Sym].Id >= 0)
-            ++Warnings;
     Deg = new int[EAG.NextHAlt];
     Stack = new int[EAG.NextHNont];
     Top = 0;
@@ -965,10 +959,6 @@ void ComputeEAGSets()
     }
     Prune;
     EAG.Prod = Prod;
-    // count warnings for unproductive non-terminals
-    Warnings += (EAG.All & ~EAG.Prod).count;
-    if (Warnings > 0)
-        warn!"%s warnings"(Warnings);
 }
 
 void Analyse(Input input)
