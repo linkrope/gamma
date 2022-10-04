@@ -67,6 +67,10 @@ static struct Arguments
 
     @(NamedArgument.Description("Show error positions language-server friendly as offsets"))
     bool offset;
+
+    @(NamedArgument("ignore-nonproductive").Description("Ignore non-productive non-terminals and force code generation"))
+    bool ignoreNonproductiveNonterminals;
+
 }
 
 void command(Arguments arguments)
@@ -130,11 +134,11 @@ void compile(Input input, const Arguments arguments)
 
     const settings = createSettings(arguments);
 
-    analyzer.Analyse(input);
+    analyzer.Analyse(input, arguments);
 
     enforce(analyzer.ErrorCounter == 0);
 
-    analyzer.Warnings;
+    analyzer.CheckForUnreachableNonterminals;
     Predicates.Check;
 
     ELL1Gen.Test(settings);

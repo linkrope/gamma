@@ -8,6 +8,7 @@ import log;
 import runtime;
 import std.bitmanip : BitArray;
 import std.conv : to;
+import epsilon.main : Arguments;
 
 const nil = EAG.nil;
 int ErrorCounter;
@@ -961,7 +962,7 @@ void ComputeEAGSets()
     EAG.Prod = Prod;
 }
 
-void Analyse(Input input)
+void Analyse(Input input, const Arguments arguments)
 {
     EAG.Init;
     lexer = Lexer(input, EAG.symbolTable);
@@ -980,7 +981,7 @@ void Analyse(Input input)
     }
     if (ErrorCounter == 0)
     {
-        CheckForUnproductiveNonterminals();
+        CheckForUnproductiveNonterminals(arguments);
     } 
     if (ErrorCounter == 0)
     {
@@ -997,7 +998,7 @@ void Analyse(Input input)
     }
 }
 
-void CheckForUnproductiveNonterminals()
+void CheckForUnproductiveNonterminals(const Arguments arguments)
 {
     const Unprod = EAG.All - EAG.Prod;
     for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
@@ -1005,32 +1006,39 @@ void CheckForUnproductiveNonterminals()
         if (Unprod[Sym])
         {
             if (EAG.HNont[Sym].anonymous) {
-                ErrorCounter++;
-                error!"anonymous nonterminal in %s unproductive"(EAG.NamedHNontRepr(Sym));
+                if (arguments.ignoreNonproductiveNonterminals) {
+                    warn!"anonymous nonterminal in %s unproductive"(EAG.NamedHNontRepr(Sym));
+                }
+                else {
+                    ErrorCounter++;
+                    error!"anonymous nonterminal in %s unproductive"(EAG.NamedHNontRepr(Sym));
+                }
             }
-            else
-                ErrorCounter++;
-                error!"%s unproductive"(EAG.HNontRepr(Sym));
+            else {
+                if (arguments.ignoreNonproductiveNonterminals) {
+                    warn!"%s unproductive"(EAG.HNontRepr(Sym));
+                }
+                else {
+                    ErrorCounter++;
+                    error!"%s unproductive"(EAG.HNontRepr(Sym));
+                }
+            }
         }
     }
 
 }
 
-void Warnings()
+void CheckForUnreachableNonterminals()
 in (EAG.Performed(EAG.analysed))
 {
     const Unreach = EAG.All - EAG.Reach;
-    const NoWarnings = Unreach.bitsSet.empty;
 
-    if (NoWarnings)
+    if (!Unreach.bitsSet.empty)
     {
-        info!"Analyser: no warnings on %s's hyper-nonterminals"(EAG.BaseName);
-        return;
-    }
-    warn!"Analyser warnings on %s's hyper-nonterminals:"(EAG.BaseName);
-    for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
-    {
-        if (Unreach[Sym] && EAG.HNont[Sym].Id >= 0)
-            warn!"%s unreachable"(EAG.HNontRepr(Sym));
+        for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
+        {
+            if (Unreach[Sym] && EAG.HNont[Sym].Id >= 0)
+                warn!"%s unreachable"(EAG.HNontRepr(Sym));
+        }
     }
 }
