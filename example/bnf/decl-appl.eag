@@ -1,31 +1,40 @@
 // declarations/applications: a reduced example in BNF
-// see ../decl-appl.eag for an EBNF specification
+// (multiple declarations are not prevented here)
+// see related example/decl-appl.eag in EBNF
 
-Table = | id ";" Table .
+Table = | id ';' Table .
 
 DeclAppl <+ Table>:
-    Statements<, Table>
-.
+    Statements <, Table>.
 
-Statements<- Table, + Table1>:
-    "DECL" id<id> Statements<id ";" Table, Table1>.
-Statements<- Table, + Table1>:
-    "APPL" id<id> Find<id, Table> Statements<Table, Table1>.
-Statements <- Table, + Table>: .
+Statements <- Table, + Table>:
+    .
+Statements <- Table, + Table1>:
+    'DECL' id <id>
+    Statements <id ';' Table, Table1>.
+Statements <- Table, + Table1>:
+    'APPL' id <id>
+    Find <id, Table>
+    Statements <Table, Table1>.
 
-x = "a" | "b".
+x = 'a' | 'b'.
+
+x <+ 'a': x>:
+    'a'.
+x <+ 'b': x>:
+    'b'.
+
 id* = x | id x.
 
-x<+ "a": x>: "a".
-x<+ "b": x>: "b".
+id* <+ id>:
+    x <x> idTail <x, id>.
 
-id*<+ id>:
-    x<x> idTail<x, id>
-.
-        
-idTail: <- id, + id1> x<x> idTail<id x, id1>.
-idTail: <- id, + id>.
+idTail <- id, + id>:
+    .
+idTail <- id, + id1>:
+    x <x> idTail <id x, id1>.
 
-Find<- id, - !id ";" Table: Table>:
-    Find<id, Table>.
-Find<- id, - id ";" Table: Table>: .
+Find <- id, - id ';' Table: Table>:
+    .
+Find <- id, - !id ';' Table: Table>:
+    Find <id, Table>.

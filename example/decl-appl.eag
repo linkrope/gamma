@@ -15,11 +15,12 @@ DeclAppl <+ Table>:
         } <- Table, + Table>.
 
 letter = 'a' | 'b'.
-id* = letter | id letter.
 
 letter:
     <+ 'a': letter> 'a'
   | <+ 'b': letter> 'b'.
+
+id* = letter | id letter.
 
 id *<+ id>:
     letter <letter>

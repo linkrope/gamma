@@ -1,19 +1,22 @@
-// A reduced exampl of a expression-to-RPN compiler 
+// A reduced example of a expression-to-RPN compiler.
 
-Code = Code Code "ADD" | Number "ENTER".
+Code = Number 'ENTER' | Code Code 'ADD'.
 
 Expr <+ Code2>:
-    Term <Code1> ExprTail<Code1, Code2>.
+    Term <Code1>
+    ExprTail <Code1, Code2>.
 
-ExprTail<- Code1, + Code3>:
-    "+" Term<Code2> ExprTail<Code1 Code2 "ADD", Code3>.
-ExprTail<- Code, + Code>: .
+ExprTail <- Code, + Code>:
+    .
+ExprTail <- Code1, + Code3>:
+    '+' Term <Code2>
+    ExprTail <Code1 Code2 'ADD', Code3>.
 
 
-Term <+ Number "ENTER": Code>:
+Term <+ Number 'ENTER': Code>:
     number <Number>.
 
-Number = "0" | "1".
+Number = '0' | '1'.
 
-number: <+ "0": Number> "0".
-number: <+ "1": Number> "1".
+number <+ '0': Number>: '0'.
+number <+ '1': Number>: '1'.

@@ -1,15 +1,18 @@
-// A simple example referenced in the tutorial for showing how the grouping EBNF operator works
+// A simple example referenced in the tutorial for showing how the grouping EBNF operator works.
 
-SignedNumber<+ sign digits: number>: 
-    <sign> ( <+ 'PLUS': sign> '+' | <+ 'MINUS': sign> '-' ) Digits<digits>.
-  
+SignedNumber <+ sign digits: number>:
+    <sign> ( <+ 'PLUS': sign> '+' | <+ 'MINUS': sign> '-' )
+    Digits <digits>.
+
 sign = 'PLUS' | 'MINUS'.
+
 number = sign digits .
 
 digits* = digit digits | .
+
 digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' .
 
-Digits<+ digits: digits>:
+Digits <+ digits: digits>:
     <digits>
     { <+ '0' digits: digits> '0' <digits>
     | <+ '1' digits: digits> '1' <digits>
@@ -21,6 +24,4 @@ Digits<+ digits: digits>:
     | <+ '7' digits: digits> '7' <digits>
     | <+ '8' digits: digits> '8' <digits>
     | <+ '9' digits: digits> '9' <digits>
-    } <+ :digits>
-.
-    
+    } <+ :digits>.

@@ -2,14 +2,14 @@
 // without EBNF expressions.
 // This lowering defines the meaning of the related example/ebnf.eag.
 
-S = S ',' S | L.
+S = L | S ',' S.
 
 S <+ L1 ',' L2 ',' L3: S>:
     Group <L1> ',' Option <L2> ',' Repetition <L3>.
 S <+ L1 ',' L2 ',' L3: S>:
     GroupSubrule <L1> ',' OptionSubrule <L2> ',' RepetitionSubrule <L3>.
 
-L = 'a' L | 'b' L | .
+L = | 'a' L | 'b' L.
 
 Group <+ 'a': L>:
     'a'.

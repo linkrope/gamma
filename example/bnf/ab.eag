@@ -1,12 +1,18 @@
 // a^n b^n  -> i^n  in BNF
-// see ../ab.eag for an EBNF specification
+// see related example/ab.eag in EBNF
 
-N = 'i' N | .
+N = | 'i' N.
 
-S: <+ N: N> A <N> B <N>.
+S <+ N: N>:
+    A <N>
+    B <N>.
 
-A: <+ 'i' N: N> 'a' A <N>.
-A: <+ : N>.
+A <+ : N>:
+    .
+A <+ 'i' N: N>:
+    'a' A <N>.
 
-B: <- 'i' N: N> 'b' B <N>.
-B: <- : N>.
+B <- : N>:
+    .
+B <- 'i' N: N>:
+    'b' B <N>.
