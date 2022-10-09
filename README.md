@@ -27,12 +27,5 @@ For example:
 
     dub run -- example/abc.eag
 
-## Experimental
-
-Use [dub] to try out the experimental LALR(1) parser generator.
-For example:
-
-    dub run :experimental -- example/bnf/ab.eag -v
-
 [dub]: http://code.dlang.org/
 [extended affix grammar]: https://en.wikipedia.org/wiki/Extended_affix_grammar
