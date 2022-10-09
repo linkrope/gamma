@@ -83,11 +83,11 @@ public class PennelloDeRemer : LR1ParserGenerator
 
         // TODO: compose single log message
         trace!"First productive alternatives:";
-        foreach (nontreminal; grammar.nonterminals)
+        foreach (nonterminal; grammar.nonterminals)
         {
             int i = 0;
 
-            foreach (alternative; grammar.ruleOf(nontreminal).alternatives)
+            foreach (alternative; grammar.ruleOf(nonterminal).alternatives)
             {
                 if (this.grammarProperties.isFirstProductiveAlternative(alternative))
                     trace!"#%s for lhs %s"(i, alternative.lhs.symbol);

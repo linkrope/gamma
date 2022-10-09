@@ -16,7 +16,7 @@ import gamma.grammar.hyper.Option;
 import gamma.grammar.hyper.Repetition;
 import gamma.grammar.hyper.RepetitionAlternative;
 import gamma.util.Position;
-import std.stdio;
+import io;
 import std.typecons;
 import symbols;
 
@@ -51,12 +51,11 @@ public class Analyzer
     /**
      * Creates an analyzer for the given file.
      */
-    public this(File input)
+    public this(Input input)
     {
-        import io : read;
 
         this.symbolTable = new SymbolTable;
-        this.lexer = Lexer(read("FIXME", input), this.symbolTable);
+        this.lexer = Lexer(input, this.symbolTable);
     }
 
     private void markError(string message)

@@ -6,8 +6,7 @@
     "license" : "BSL-1.0",
     "sourcePaths": ["include", "src"],
     "importPaths": ["include", "src"],
-    "mainSourceFile": "src/epsilon/main.d",
-    "excludedSourceFiles": ["src/gamma/main.d"],
+    "mainSourceFile": "src/gamma/main.d",
     "stringImportPaths": ["fix/epsilon"],
     "configurations": [
         {
@@ -33,19 +32,5 @@
     ],
     "dependencies": {
         "argparse": ">=1.1.0"
-    },
-    "subPackages": [
-        {
-            "name": "experimental",
-            "targetType": "executable",
-            "sourcePaths": ["include", "src"],
-            "importPaths": ["include", "src"],
-            "mainSourceFile": "src/gamma/main.d",
-            "excludedSourceFiles": ["src/epsilon/main.d"],
-            "stringImportPaths": ["fix/epsilon"],
-            "dependencies": {
-                "argparse": ">=1.1.0"
-            }
-        }
-    ]
+    }
 }
