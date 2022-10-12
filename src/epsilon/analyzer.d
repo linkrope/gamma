@@ -8,7 +8,6 @@ import log;
 import runtime;
 import std.bitmanip : BitArray;
 import std.conv : to;
-import epsilon.main : Arguments;
 
 const nil = EAG.nil;
 int ErrorCounter;
@@ -962,7 +961,7 @@ void ComputeEAGSets()
     EAG.Prod = Prod;
 }
 
-void Analyse(Input input, const Arguments arguments)
+void Analyse(Input input)
 {
     EAG.Init;
     lexer = Lexer(input, EAG.symbolTable);
@@ -981,7 +980,7 @@ void Analyse(Input input, const Arguments arguments)
     }
     if (ErrorCounter == 0)
     {
-        CheckForUnproductiveNonterminals(arguments);
+        CheckForUnproductiveNonterminals;
     } 
     if (ErrorCounter == 0)
     {
@@ -998,34 +997,25 @@ void Analyse(Input input, const Arguments arguments)
     }
 }
 
-void CheckForUnproductiveNonterminals(const Arguments arguments)
+void CheckForUnproductiveNonterminals()
 {
     const Unprod = EAG.All - EAG.Prod;
-    for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
-    {
-        if (Unprod[Sym])
-        {
-            if (EAG.HNont[Sym].anonymous) {
-                if (arguments.ignoreNonproductiveNonterminals) {
-                    warn!"anonymous nonterminal in %s unproductive"(EAG.NamedHNontRepr(Sym));
-                }
-                else {
-                    ErrorCounter++;
-                    error!"anonymous nonterminal in %s unproductive"(EAG.NamedHNontRepr(Sym));
-                }
-            }
-            else {
-                if (arguments.ignoreNonproductiveNonterminals) {
-                    warn!"%s unproductive"(EAG.HNontRepr(Sym));
-                }
-                else {
-                    ErrorCounter++;
-                    error!"%s unproductive"(EAG.HNontRepr(Sym));
-                }
-            }
-        }
+
+    if (Unprod[EAG.StartSym]) {
+        ErrorCounter++;
+        error!"start symbol %s is unproductive"(EAG.HNontRepr(EAG.StartSym));
     }
 
+    for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
+    {
+        if (Unprod[Sym] && Sym != EAG.StartSym)
+        {
+            if (EAG.HNont[Sym].anonymous)
+                warn!"anonymous nonterminal in %s unproductive"(EAG.NamedHNontRepr(Sym));
+            else
+                warn!"%s unproductive"(EAG.HNontRepr(Sym));
+        }
+    }
 }
 
 void CheckForUnreachableNonterminals()

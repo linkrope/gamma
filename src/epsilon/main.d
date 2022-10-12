@@ -67,11 +67,6 @@ static struct Arguments
 
     @(NamedArgument.Description("Show error positions language-server friendly as offsets"))
     bool offset;
-
-    @(NamedArgument("ignore-nonproductive")
-        .Description("Ignore non-productive non-terminals and force code generation"))
-    bool ignoreNonproductiveNonterminals;
-
 }
 
 void command(Arguments arguments)
@@ -135,7 +130,7 @@ void compile(Input input, const Arguments arguments)
 
     const settings = createSettings(arguments);
 
-    analyzer.Analyse(input, arguments);
+    analyzer.Analyse(input);
 
     enforce(analyzer.ErrorCounter == 0);
 
