@@ -883,15 +883,10 @@ void ComputeEAGSets()
         }
     }
 
-    long Warnings = 0;
-
     EAG.Reach = BitArray();
     EAG.Reach.length = EAG.NextHNont + 1;
 
     ComputeReach(EAG.StartSym);
-    for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
-        if (EAG.HNont[Sym].Def !is null && !EAG.Reach[Sym] && EAG.HNont[Sym].Id >= 0)
-            ++Warnings;
     Deg = new int[EAG.NextHAlt];
     Stack = new int[EAG.NextHNont];
     Top = 0;
@@ -964,9 +959,6 @@ void ComputeEAGSets()
     }
     Prune;
     EAG.Prod = Prod;
-    Warnings += (EAG.All & ~EAG.Prod).count;
-    if (Warnings > 0)
-        warn!"%s warnings"(Warnings);
 }
 
 void Analyse(Input input)
@@ -988,6 +980,10 @@ void Analyse(Input input)
     }
     if (ErrorCounter == 0)
     {
+        CheckForUnproductiveNonterminals;
+    } 
+    if (ErrorCounter == 0)
+    {
         EAG.History |= EAG.analysed;
         info!"%s grammar is valid"(EAG.BaseName);
     }
@@ -1001,24 +997,33 @@ void Analyse(Input input)
     }
 }
 
-void Warnings()
+void CheckForUnreachableNonterminals()
 in (EAG.Performed(EAG.analysed))
 {
     const Unreach = EAG.All - EAG.Reach;
-    const Unprod = EAG.All - EAG.Prod;
-    const NoWarnings = Unreach.bitsSet.empty && Unprod.bitsSet.empty;
 
-    if (NoWarnings)
+    if (!Unreach.bitsSet.empty)
     {
-        info!"Analyser: no warnings on %s's hyper-nonterminals"(EAG.BaseName);
-        return;
+        for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
+        {
+            if (Unreach[Sym] && EAG.HNont[Sym].Id >= 0)
+                warn!"%s unreachable"(EAG.HNontRepr(Sym));
+        }
     }
-    warn!"Analyser warnings on %s's hyper-nonterminals:"(EAG.BaseName);
+}
+
+void CheckForUnproductiveNonterminals()
+{
+    const Unprod = EAG.All - EAG.Prod;
+
+    if (Unprod[EAG.StartSym]) {
+        ErrorCounter++;
+        error!"start symbol %s is unproductive"(EAG.HNontRepr(EAG.StartSym));
+    }
+
     for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
     {
-        if (Unreach[Sym] && EAG.HNont[Sym].Id >= 0)
-            warn!"%s unreachable"(EAG.HNontRepr(Sym));
-        if (Unprod[Sym])
+        if (Unprod[Sym] && Sym != EAG.StartSym)
         {
             if (EAG.HNont[Sym].anonymous)
                 warn!"anonymous nonterminal in %s unproductive"(EAG.NamedHNontRepr(Sym));
