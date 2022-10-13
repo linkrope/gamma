@@ -57,3 +57,15 @@ Result shouldFail(Result result, string pattern)
     }
     return result;
 }
+
+Result shouldFailNotMatching(Result result, string pattern)
+{
+    import std.regex : matchFirst, regex;
+
+    with (result)
+    {
+        assert(status != 0, output);
+        assert(!output.matchFirst(regex(pattern, "m")), output);
+    }
+    return result;
+}
