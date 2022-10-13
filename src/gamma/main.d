@@ -144,7 +144,7 @@ void compile(Input input, const Arguments arguments)
 
     enforce(analyzer.ErrorCounter == 0);
 
-    analyzer.Warnings;
+    analyzer.CheckForUnreachableNonterminals;
     Predicates.Check;
 
     ELL1Gen.Test(settings);
