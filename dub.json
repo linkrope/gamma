@@ -24,18 +24,8 @@
             "name": "example",
             "sourcePaths": ["test"],
             "importPaths": ["test"],
-            "excludedSourceFiles": ["test/issues/*.d"],
             "preBuildCommands": ["$DUB build"],
-            "dependencies": {
-                "silly": ">=1.0.2"
-            }
-        },
-        {
-            "name": "issues",
-            "sourcePaths": ["test/issues"],
-            "sourceFiles": ["test/helper.d"],
-            "importPaths": ["test"],
-            "preBuildCommands": ["$DUB build"],
+            "dflags": ["-checkaction=context"],
             "dependencies": {
                 "silly": ">=1.0.2"
             }

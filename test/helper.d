@@ -34,7 +34,7 @@ Result run(string fmt, A...)(lazy A args)
     return executeShell(command);
 }
 
-Result shouldMatch(Result result, string pattern)
+Result shouldPassWith(Result result, string pattern)
 {
     import std.regex : matchFirst, regex;
 
@@ -46,7 +46,7 @@ Result shouldMatch(Result result, string pattern)
     return result;
 }
 
-Result shouldFail(Result result, string pattern)
+Result shouldFailWith(Result result, string pattern)
 {
     import std.regex : matchFirst, regex;
 
@@ -54,18 +54,6 @@ Result shouldFail(Result result, string pattern)
     {
         assert(status != 0, output);
         assert(output.matchFirst(regex(pattern, "m")), output);
-    }
-    return result;
-}
-
-Result shouldFailNotMatching(Result result, string pattern)
-{
-    import std.regex : matchFirst, regex;
-
-    with (result)
-    {
-        assert(status != 0, output);
-        assert(!output.matchFirst(regex(pattern, "m")), output);
     }
     return result;
 }
