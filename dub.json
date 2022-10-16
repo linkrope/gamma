@@ -25,7 +25,6 @@
             "sourcePaths": ["test"],
             "importPaths": ["test"],
             "preBuildCommands": ["$DUB build"],
-            "dflags": ["-checkaction=context"],
             "dependencies": {
                 "silly": ">=1.0.2"
             }
