@@ -132,11 +132,9 @@ void compile(Input input, const Arguments arguments)
     import Sweep = epsilon.sweep;
     import std.exception : enforce;
 
+    check(input, arguments);
     if (arguments.lalr)
-    {
-        check(input, arguments);
         return;
-    }
 
     const settings = createSettings(arguments);
 
@@ -206,9 +204,7 @@ void check(Input input, const Arguments arguments)
 
     analyzer.parseSpecification;
 
-    const errorCount = analyzer.getErrorCount;
-
-    enforce(errorCount == 0);
+    enforce(analyzer.getErrorCount == 0);
 
     auto metaGrammar = analyzer.yieldMetaGrammar;
 

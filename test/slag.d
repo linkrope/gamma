@@ -151,3 +151,31 @@ unittest
             .shouldPassWith("S grammar is no SLAG but LAG");
     }
 }
+
+@("compile ebnf.eag as SLAG and run compiler")
+unittest
+{
+    with (sandbox)
+    {
+        run!"./gamma --space example/ebnf.eag --output-directory %s"(directory)
+            .shouldPassWith("S grammar is SLAG");
+        run!`cd %s && echo 'a, , ab' | ./S`(directory)
+            .shouldPassWith("^a , , a b $");
+        run!`cd %s && echo '"a", "", "ab"' | ./S`(directory)
+            .shouldPassWith("^a , , a b $");
+    }
+}
+
+@("compile bnf/ebnf.eag as SLAG and run compiler")
+unittest
+{
+    with (sandbox)
+    {
+        run!"./gamma --space example/bnf/ebnf.eag --output-directory %s"(directory)
+            .shouldPassWith("S grammar is SLAG");
+        run!`cd %s && echo 'a, , ab' | ./S`(directory)
+            .shouldPassWith("^a , , a b $");
+        run!`cd %s && echo '"a", "", "ab"' | ./S`(directory)
+            .shouldPassWith("^a , , a b $");
+    }
+}
