@@ -7,18 +7,18 @@
  * affix position #2 of S: stack
  */
 
-N = 'i' N | N N | .
+N = | '1' N | N N.
 
-P<+ 'i': N>: B<N1, N1> .
+P <+ '1': N>: B <N1, N1>.
 
-B<+ N1 :N, - N2: N>: S<N1, N2>.
+B <+ N1 :N, - N2: N>: S <N1, N2>.
 
 S:
-      <+ N1 N2: N, -N3: N>
-        'a' S<N1, N3> S<N2, N3>
-    | <+ : N, - N1: N>
-        'e'
-    | <+ 'i': N, - N1: N>
-        'i'
-    | <+ N2: N, -N1: N>
-        'b' B<N2, N1 N2> .
+    <+ N1 N2: N, -N3: N>
+        'a' S <N1, N3> S <N2, N3>
+  | <+ : N, - N1: N>
+       'e'
+  | <+ '1': N, - N1: N>
+        '1'
+  | <+ N2: N, -N1: N>
+        'b' B <N2, N1 N2> .

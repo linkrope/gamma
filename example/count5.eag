@@ -1,16 +1,18 @@
 // Same as count4.eag but without EBNF operators
 
-N = 'i' N | .
+N = | '1' N.
 
-Z* = Z '0' | Z '1' | Z '2' | Z '3' | Z '4' | Z '5' | Z '6' | Z '7' | Z '8' | Z '9' |  .
+Z* = | Z '0' | Z '1' | Z '2' | Z '3' | Z '4' | Z '5' | Z '6' | Z '7' | Z '8' | Z '9'.
 
-S<+Z: Z>: A<N, N, Z>.
+S <+ Z: Z>: A <N, N, Z>.
 
 // This is the original rule from count4.eag
-// A: { <+ 'i' N: N, - 'i' N1: N, + Z2: Z> 'a' INC<Z1, Z2> <N, N1, Z1> } <+ : N, - : N, + '0': Z>.
+// A: { <+ '1' N: N, - '1' N1: N, + Z2: Z> 'a' INC<Z1, Z2> <N, N1, Z1> } <+ : N, - : N, + '0': Z>.
 
-A <+ 'i' N: N, - 'i' N1: N, + Z2: Z>: 'a' INC <Z1, Z2> A<N, N1, Z1>.
-A <+ : N, - : N, + '0': Z>: .
+A <+ '1' N: N, - '1' N1: N, + Z2: Z>:
+    'a' INC <Z1, Z2> A<N, N1, Z1>.
+A <+ : N, - : N, + '0': Z>:
+    .
 
 INC:
     <- : Z, + '1': Z>

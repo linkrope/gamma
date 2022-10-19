@@ -13,7 +13,7 @@ unittest
         run!"./gamma --soag --space example/abc.eag --output-directory %s"(directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo a a a b b b c c c | ./S"(directory)
-            .shouldPassWith(`^\| \| \| $`);
+            .shouldPassWith(`^1 1 1 $`);
     }
 }
 
@@ -25,7 +25,7 @@ unittest
         run!"./gamma --soag --space example/ab.eag --output-directory %s"(directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo a a a b b b | ./S"(directory)
-            .shouldPassWith("^i i i $");
+            .shouldPassWith("^1 1 1 $");
     }
 }
 
@@ -37,7 +37,7 @@ unittest
         run!"./gamma --soag --space example/ab.eag --output-directory %s"(directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo a a a b b b | ./S"(directory)
-            .shouldPassWith("^i i i $");
+            .shouldPassWith("^1 1 1 $");
     }
 }
 
@@ -84,7 +84,7 @@ unittest
     {
         run!"./gamma --soag --space example/count1.eag --output-directory %s"(directory)
             .shouldPassWith("grammar is SOAG");
-        run!"cd %s && echo i i i i i i i i i i i i i | ./S"(directory)
+        run!"cd %s && echo 1 1 1 1 1 1 1 1 1 1 1 1 1 | ./S"(directory)
             .shouldPassWith("^Number 1 3 $");
     }
 }
@@ -168,8 +168,8 @@ unittest
     {
         run!"./gamma --soag example/example.eag --output-directory %s"(directory)
             .shouldPassWith("grammar is SOAG");
-        run!"cd %s && echo a b e i | ./P"(directory)
-            .shouldPassWith("^i$");
+        run!"cd %s && echo a b e 1 | ./P"(directory)
+            .shouldPassWith("^1$");
     }
 }
 

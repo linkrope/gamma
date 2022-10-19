@@ -10,7 +10,7 @@ unittest
         run!"./gamma --space example/abc.eag --output-directory %s"(directory)
             .shouldPassWith("S grammar is SLAG");
         run!"cd %s && echo a a a b b b c c c | ./S"(directory)
-            .shouldPassWith(`^\| \| \| $`);
+            .shouldPassWith(`^1 1 1 $`);
     }
 }
 
@@ -22,7 +22,7 @@ unittest
         run!"./gamma --space example/ab.eag --output-directory %s"(directory)
             .shouldPassWith("S grammar is SLAG");
         run!"cd %s && echo a a a b b b | ./S"(directory)
-            .shouldPassWith("^i i i $");
+            .shouldPassWith("^1 1 1 $");
     }
 }
 
@@ -34,7 +34,7 @@ unittest
         run!"./gamma --space example/ab.eag --output-directory %s"(directory)
             .shouldPassWith("S grammar is SLAG");
         run!"cd %s && echo a a a b b b | ./S"(directory)
-            .shouldPassWith("^i i i $");
+            .shouldPassWith("^1 1 1 $");
     }
 }
 
@@ -69,7 +69,7 @@ unittest
     {
     run!"./gamma --space example/count1.eag --output-directory %s"(directory)
         .shouldPassWith("S grammar is SLAG");
-    run!"cd %s && echo i i i i i i i i i i i i i | ./S"(directory)
+    run!"cd %s && echo 1 1 1 1 1 1 1 1 1 1 1 1 1 | ./S"(directory)
         .shouldPassWith("^Number 1 3 $");
     }
 }

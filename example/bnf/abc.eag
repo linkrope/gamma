@@ -1,22 +1,22 @@
-// a^n b^n c^n -> |^n in BNF
+// a^n b^n c^n -> 1^n in BNF
 // see related example/abc.eag in EBNF
 
-N = | 'i' N.
+N = | '1' N.
 
 S <+ N: N>:
     A <N> B <N> C <N>.
 
 A <+ : N>:
     .
-A <+ 'i' N: N>:
+A <+ '1' N: N>:
     'a' A <N>.
 
 B <+ : N>:
     .
-B <+ 'i' N: N>:
+B <+ '1' N: N>:
     'b' B <N>.
 
 C <+ : N>:
     .
-C <+ 'i' N: N>:
+C <+ '1' N: N>:
     'c' C <N>.

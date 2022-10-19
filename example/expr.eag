@@ -1,6 +1,6 @@
 // expressions: a reduced example
 
-Code = Code Code 'ADD' | number 'ENTER'.
+Code = number 'ENTER' | Code Code 'ADD'.
 
 Expr <+ Code2>:
     Term <Code1>

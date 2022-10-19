@@ -1,15 +1,15 @@
 // a non-OAG, which is a SOAG; from [KroepKann]
 
-N = '0' | N N | .
+N = | '0' | N N.
 
-S<+ '0': N>:
-    B<'0', '0', '0', N1, N2, N3>.
+S <+ '0': N>:
+    B <'0', '0', '0', N1, N2, N3>.
 
-B<- N5: N, - N6: N, - N7: N, + N7: N, + N6: N, + N5: N>:
+B <- N5: N, - N6: N, - N7: N, + N7: N, + N6: N, + N5: N>:
     'b'
-    B<'0', N1 N4, '0', N1, N2, N3>
-    C<N3, N4>.
+    B <'0', N1 N4, '0', N1, N2, N3>
+    C <N3, N4>.
 
-B<- N5: N, - N6: N, - N7: N, + N7: N, + N6: N, + N5: N>: .
+B <- N5: N, - N6: N, - N7: N, + N7: N, + N6: N, + N5: N>: .
 
-C<- N1: N, + '0': N>: 'c'.
+C <- N1: N, + '0': N>: 'c'.
