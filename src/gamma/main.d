@@ -116,6 +116,7 @@ void command(Arguments arguments)
     }
     catch (Exception exception)
     {
+        error!"%s"(exception.msg);
         exit(EXIT_FAILURE);
     }
 }

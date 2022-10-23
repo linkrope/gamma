@@ -64,7 +64,7 @@ public struct GrammarBuilder
         this.nonterminals ~= nonterminal;
         this.alternativesMap ~= null;
 
-        this.undefinedNonterminals[nonterminal] = true;
+        // nonterminals generated for EBNF expressions are never undefined
 
         return nonterminal;
     }
@@ -103,9 +103,7 @@ public struct GrammarBuilder
      */
     public bool grammarIsWellDefined()
     {
-        // TODO: hyper grammar contains undefined nonterminals,
-        // because a complete rule is added for any EBNF expression
-        return this.undefinedNonterminals.empty || true;
+        return this.undefinedNonterminals.empty;
     }
 
     @("build well-formed grammar")
