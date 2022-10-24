@@ -1,3 +1,17 @@
+## Merger of epsilon and gamma
+
+- epsilon is a full generator based on an LL(1) parser
+- gamma is just an LALR(1) parser generator
+- both need a lexer and parser for EAG specifications
+- by now, we already changed gamma to use the epsilon' s lexer
+- since gamma uses a modern grammar model, we try the following approach:
+  - we analyze grammar properties only with `gamma.input`
+  - we finish `gamma.input`
+  (handling of affix forms)
+  - we transform the gamma grammar model into the epsilon grammar model
+  (to reuse the compiler generation)
+  - we remove the epsilon analyzer and move the lexer to `gamma.input.epsilang`
+
 ## Escape Sequences
 
 - epsilon blindly copies escape sequences to the generated compiler

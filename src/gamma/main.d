@@ -116,7 +116,6 @@ void command(Arguments arguments)
     }
     catch (Exception exception)
     {
-        error!"%s"(exception.msg);
         exit(EXIT_FAILURE);
     }
 }
@@ -209,10 +208,7 @@ void check(Input input, const Arguments arguments)
 
     auto metaGrammar = analyzer.yieldMetaGrammar;
 
-    enforce(metaGrammar,
-        "meta grammar not well defined");
-
-    if (arguments.verbose)
+    if (metaGrammar && arguments.verbose)
     {
         import gamma.grammar.PrintingVisitor : printingVisitor;
 
@@ -224,10 +220,7 @@ void check(Input input, const Arguments arguments)
 
     auto hyperGrammar = analyzer.yieldHyperGrammar;
 
-    enforce(hyperGrammar,
-        "hyper grammar not well defined");
-
-    if (arguments.verbose)
+    if (hyperGrammar && arguments.verbose)
     {
         import gamma.grammar.hyper.PrintingHyperVisitor : printingHyperVisitor;
 
@@ -236,6 +229,10 @@ void check(Input input, const Arguments arguments)
         visitor.visit(hyperGrammar);
         stdout.writeln;
     }
+
+    enforce(metaGrammar && hyperGrammar,
+        "grammar not well defined");
+
     if (arguments.lalr)
     {
         import gamma.grammar.hyper.EBNFConverter : convert;

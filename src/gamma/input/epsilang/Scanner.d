@@ -7,6 +7,7 @@ import std.conv;
 import std.range;
 import std.stdio;
 
+/// WARNING: THIS CODE IS NO LONGER USED
 class Scanner
 {
     static const char END = 0;

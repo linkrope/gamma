@@ -139,7 +139,7 @@ public struct GrammarBuilder
                         Symbol symbol = (cast(SymbolNode) node).symbol;
 
                         if (cast(Nonterminal) symbol && cast(Nonterminal) symbol in this.undefinedNonterminals)
-                            error!"%s is undefined (not on left hand side\n%s"(symbol, node.position);
+                            error!"%s is undefined (not on left-hand side of any rule)\n%s"(symbol, node.position);
                     }
                 }
             }
