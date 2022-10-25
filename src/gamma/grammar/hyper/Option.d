@@ -24,6 +24,6 @@ public class Option : Operator
 
     public Params endParams()
     {
-        return this.endParams;
+        return this.endParams_;
     }
 }

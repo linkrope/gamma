@@ -419,8 +419,8 @@ public class GrammarProperties
     }
 
     /**
-     * Depth-first traversal of the symbols occurring on right hand sides (if
-     * any) of the given <code>symbol</code>.
+     * Depth-first traversal of the symbols occurring on right-hand sides
+     * (if any) of the given <code>symbol</code>.
      */
     private void traverseReachables(Symbol symbol)
     in (cast(Nonterminal) symbol || cast(Terminal) symbol)
@@ -446,7 +446,7 @@ public class GrammarProperties
                             // for EBNF operators some walk-arounds are
                             // necessary to get the lhs nonterminal
                             // assert(node instanceof grammar_.hyper.Operator);
-                            // asser(((Operator) node).rule.alternatives.size > 0);
+                            // assert(((Operator) node).rule.alternatives.size > 0);
                             auto firstAlt = cast(Alternative) (cast(Operator) node).rule.alternatives.front;
 
                             traverseReachables(firstAlt.lhs.symbol);

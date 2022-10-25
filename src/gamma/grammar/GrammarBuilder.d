@@ -1,6 +1,6 @@
 module gamma.grammar.GrammarBuilder;
 
-import gamma.grammar.hyper.GeneratedNonterminal;
+import gamma.grammar.hyper.AnonymousNonterminal;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.Nonterminal;
@@ -45,16 +45,13 @@ public struct GrammarBuilder
         return nonterminal;
     }
 
-    /**
-     * TODO: ?
-     */
-    public GeneratedNonterminal buildGeneratedNonterminal()
+    public AnonymousNonterminal buildAnonymousNonterminal()
     {
         import std.exception : enforce;
         import std.format : format;
 
         const index = this.nonterminals.length;
-        auto nonterminal = new GeneratedNonterminal(index);
+        auto nonterminal = new AnonymousNonterminal(index);
         Nonterminal userNont = this.nonterminalMap.get(nonterminal.toString, null);
 
         enforce(userNont is null,
@@ -64,7 +61,7 @@ public struct GrammarBuilder
         this.nonterminals ~= nonterminal;
         this.alternativesMap ~= null;
 
-        // nonterminals generated for EBNF expressions are never undefined
+        // anonymous nonterminals for EBNF expressions are never undefined
 
         return nonterminal;
     }

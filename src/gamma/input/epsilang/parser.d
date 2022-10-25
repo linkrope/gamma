@@ -1,4 +1,4 @@
-module gamma.input.epsilang.Analyzer;
+module gamma.input.epsilang.parser;
 
 import epsilon.lexer;
 import gamma.grammar.Alternative;
@@ -20,7 +20,7 @@ import io;
 import std.typecons;
 import symbols;
 
-public class Analyzer
+public class Parser
 {
     private SymbolTable symbolTable;
 
@@ -49,7 +49,7 @@ public class Analyzer
     private bool[Nonterminal] lexicalHyperNonterminals;
 
     /**
-     * Creates an analyzer for the given file.
+     * Creates a parser for the given file.
      */
     public this(Input input)
     {
@@ -493,7 +493,7 @@ public class Analyzer
 
                 this.lexer.popFront;
 
-                Nonterminal identifier = hyperGrammarBuilder.buildGeneratedNonterminal;
+                Nonterminal identifier = hyperGrammarBuilder.buildAnonymousNonterminal;
                 SymbolNode lhs = new HyperSymbolNode (identifier, null, position);
                 Alternative[] alternatives = parseHyperExpr(lhs,
                     Yes.formalParamsAllowed, (open == '{') ? Yes.repetition : No.repetition,

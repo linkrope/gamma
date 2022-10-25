@@ -197,91 +197,17 @@ void compile(Input input, const Arguments arguments)
 // check hyper-grammar with new gamma Analyzer
 void check(Input input, const Arguments arguments)
 {
-    import gamma.input.epsilang.Analyzer : Analyzer;
-    import std.exception : enforce;
+    import gamma.input.epsilang.analyzer : Analyzer;
 
-    auto analyzer = new Analyzer(input);
+    auto analyzer = new Analyzer(arguments.verbose);
 
-    analyzer.parseSpecification;
-
-    enforce(analyzer.getErrorCount == 0);
-
-    auto metaGrammar = analyzer.yieldMetaGrammar;
-
-    if (metaGrammar && arguments.verbose)
-    {
-        import gamma.grammar.PrintingVisitor : printingVisitor;
-
-        auto visitor = printingVisitor(stdout.lockingTextWriter);
-
-        visitor.visit(metaGrammar);
-        stdout.writeln;
-    }
-
-    auto hyperGrammar = analyzer.yieldHyperGrammar;
-
-    if (hyperGrammar && arguments.verbose)
-    {
-        import gamma.grammar.hyper.PrintingHyperVisitor : printingHyperVisitor;
-
-        auto visitor = printingHyperVisitor(stdout.lockingTextWriter);
-
-        visitor.visit(hyperGrammar);
-        stdout.writeln;
-    }
-
-    enforce(metaGrammar && hyperGrammar,
-        "grammar not well defined");
-
+    analyzer.analyze(input);
     if (arguments.lalr)
     {
-        import gamma.grammar.hyper.EBNFConverter : convert;
-        import gamma.grammar.Node : Node;
-        import gamma.grammar.Symbol : Symbol;
-        import gamma.parsgen.lalr1.ParserGrammarBuilder : extendedCfgFromHyperGrammar;
-        import gamma.parsgen.lalr1.PredicateFilter : PredicateFilter;
-        import std.algorithm : map;
-        import std.typecons : tuple;
+        import gamma.parsgen.lalr1.PennelloDeRemer : generateParser;
 
-        bool[Symbol] lexicalHyperNonterminals = analyzer.getLexicalHyperNonterminals.byKeyValue
-            .map!(pair => tuple(cast(Symbol) pair.key, pair.value))
-            .assocArray;
-        auto predicateFilter = new class PredicateFilter
-        {
-            override bool isPredicate(Node node)
-            {
-                return false;
-            }
-        };
-        auto parserGrammar = hyperGrammar
-            .convert
-            .extendedCfgFromHyperGrammar(lexicalHyperNonterminals, predicateFilter);
-
-        if (arguments.verbose)
-        {
-            import gamma.grammar.hyper.PrintingHyperVisitor : printingHyperVisitor;
-
-            auto visitor = printingHyperVisitor(stdout.lockingTextWriter);
-
-            visitor.visit(parserGrammar);
-            stdout.writeln;
-        }
-        generateParser(parserGrammar);
+        generateParser(analyzer.parserGrammar);
     }
-}
-
-private void generateParser(Grammar grammar)
-{
-    import gamma.parsgen.lalr1.PennelloDeRemer : PennelloDeRemer;
-    import gamma.parsgen.lalr1.SimpleLR1ConflictResolver : SimpleLR1ConflictResolver;
-    import gamma.parsgen.lalr1.LR1ParserTablesWriter : write;
-    import std.stdio : stdout;
-
-    auto parserGenerator = new PennelloDeRemer;
-    auto conflictResolver = new SimpleLR1ConflictResolver(grammar);
-    auto parserTables = parserGenerator.computeParser(grammar, conflictResolver);
-
-    write(parserTables, stdout);
 }
 
 Settings createSettings(const Arguments arguments) @nogc nothrow

@@ -24,6 +24,19 @@ private alias State = LRMachine.State;
 
 private alias Transition = LRMachine.Transition;
 
+public void generateParser(Grammar grammar)
+{
+    import gamma.parsgen.lalr1.SimpleLR1ConflictResolver : SimpleLR1ConflictResolver;
+    import gamma.parsgen.lalr1.LR1ParserTablesWriter : write;
+    import std.stdio : stdout;
+
+    auto parserGenerator = new PennelloDeRemer;
+    auto conflictResolver = new SimpleLR1ConflictResolver(grammar);
+    auto parserTables = parserGenerator.computeParser(grammar, conflictResolver);
+
+    write(parserTables, stdout);
+}
+
 /**
  * Implementation of Pennello's and DeRemer's efficient LALR(1) look-ahead computation algorithm
  * given an ("ordered") LR(0) machine.
