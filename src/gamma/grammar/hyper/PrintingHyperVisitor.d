@@ -14,13 +14,24 @@ import std.range;
 
 version (unittest) import gamma.grammar.GrammarBuilder;
 
+public string toPrettyString(Grammar grammar)
+{
+    import std.array : appender;
+
+    auto writer = appender!string;
+    auto visitor = printingHyperVisitor(writer);
+
+    visitor.visit(grammar);
+    return writer[];
+}
+
 public auto printingHyperVisitor(Writer)(Writer writer)
 out (visitor; visitor !is null)
 {
     return new PrintingHyperVisitor!Writer(writer);
 }
 
-public class PrintingHyperVisitor(Writer) : HyperVisitor
+private class PrintingHyperVisitor(Writer) : HyperVisitor
 {
     private Writer writer;
 
@@ -139,21 +150,15 @@ public class PrintingHyperVisitor(Writer) : HyperVisitor
     }
 }
 
-@("write hyper grammar")
+@("pretty printing")
 unittest
 {
-    import std.array : appender;
     import std.string : outdent, stripLeft;
 
     with (TestGrammarBuilder())
     {
         rule("A: A |");
         rule("B: | B");
-
-        auto writer = appender!string;
-        auto visitor = printingHyperVisitor(writer);
-
-        visitor.visit(grammar);
 
         const expected = `
             A:
@@ -162,8 +167,8 @@ unittest
 
             B:
               | B.
-            `;
+            `.outdent.stripLeft;
 
-        assert(writer[] == expected.outdent.stripLeft);
+        assert(grammar.toPrettyString == expected);
     }
 }

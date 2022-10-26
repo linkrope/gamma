@@ -5,22 +5,14 @@ import gamma.grammar.GrammarProperties;
 import gamma.input.epsilang.parser;
 import io;
 import log;
-import std.stdio;
 
 class Analyzer
 {
-    private bool verbose;
-
     private Parser parser;
 
     private Grammar metaGrammar;
 
     private Grammar hyperGrammar;
-
-    public this(bool verbose)
-    {
-        this.verbose = verbose;
-    }
 
     public void analyze(Input input)
     {
@@ -33,40 +25,31 @@ class Analyzer
         enforce(this.parser.getErrorCount == 0);
 
         this.metaGrammar = this.parser.yieldMetaGrammar;
-        if (this.metaGrammar && this.verbose)
+        if (this.metaGrammar)
         {
-            import gamma.grammar.PrintingVisitor : printingVisitor;
+            import gamma.grammar.PrintingVisitor : toPrettyString;
 
-            auto visitor = printingVisitor(stdout.lockingTextWriter);
-
-            visitor.visit(this.metaGrammar);
-            stdout.writeln;
+            log.trace!"meta grammar:\n%s"(this.metaGrammar.toPrettyString);
         }
 
         auto hyperEBNFGrammar = parser.yieldHyperGrammar;
 
-        if (hyperEBNFGrammar && this.verbose)
+        if (hyperEBNFGrammar)
         {
-            import gamma.grammar.hyper.PrintingHyperVisitor : printingHyperVisitor;
+            import gamma.grammar.hyper.PrintingHyperVisitor : toPrettyString;
 
-            auto visitor = printingHyperVisitor(stdout.lockingTextWriter);
-
-            visitor.visit(hyperEBNFGrammar);
-            stdout.writeln;
+            log.trace!"hyper grammar:\n%s"(hyperEBNFGrammar.toPrettyString);
         }
 
         enforce(this.metaGrammar && hyperEBNFGrammar,
             "grammar not well defined");
 
         this.hyperGrammar = convert(hyperEBNFGrammar);
-        if (this.verbose)
+        // TODO
         {
-            import gamma.grammar.hyper.PrintingHyperVisitor : printingHyperVisitor;
+            import gamma.grammar.hyper.PrintingHyperVisitor : toPrettyString;
 
-            auto visitor = printingHyperVisitor(stdout.lockingTextWriter);
-
-            visitor.visit(this.hyperGrammar);
-            stdout.writeln;
+            log.trace!"converted hyper grammar:\n%s"(this.hyperGrammar.toPrettyString);
         }
 
         auto grammarProperties = new GrammarProperties(this.hyperGrammar);
@@ -108,14 +91,11 @@ class Analyzer
             .convert
             .extendedCfgFromHyperGrammar(lexicalHyperNonterminals, predicateFilter);
 
-        if (this.verbose)
+        // TODO
         {
-            import gamma.grammar.hyper.PrintingHyperVisitor : printingHyperVisitor;
+            import gamma.grammar.PrintingVisitor : toPrettyString;
 
-            auto visitor = printingHyperVisitor(stdout.lockingTextWriter);
-
-            visitor.visit(parserGrammar);
-            stdout.writeln;
+            trace!"parser grammar:\n%s"(parserGrammar.toPrettyString);
         }
         return parserGrammar;
     }

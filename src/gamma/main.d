@@ -199,7 +199,7 @@ void check(Input input, const Arguments arguments)
 {
     import gamma.input.epsilang.analyzer : Analyzer;
 
-    auto analyzer = new Analyzer(arguments.verbose);
+    auto analyzer = new Analyzer;
 
     analyzer.analyze(input);
     if (arguments.lalr)

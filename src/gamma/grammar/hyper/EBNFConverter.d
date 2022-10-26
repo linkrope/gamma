@@ -52,33 +52,33 @@ private class EBNFConverter : HyperVisitor
 
     void visit(Alternative alternative)
     {
-        this.rhsStack.pushFront(null);
+        this.rhsStack ~= null;
         alternative.rhs.each!(node => node.accept(this));
-        this.alternatives ~= new Alternative(alternative.lhs, this.rhsStack.front, alternative.position);
-        this.rhsStack.popFront;
+        this.alternatives ~= new Alternative(alternative.lhs, this.rhsStack.back, alternative.position);
+        this.rhsStack.popBack;
     }
 
     void visit(SymbolNode symbolNode)
     {
-        this.rhsStack.front ~= symbolNode;
+        this.rhsStack.back ~= symbolNode;
     }
 
     void visit(Rule rule)
     {
-        this.lhsStack.pushFront(rule.lhs);
+        this.lhsStack ~= rule.lhs;
         rule.alternatives.each!(alternative => alternative.accept(this));
-        this.lhsStack.popFront;
+        this.lhsStack.popBack;
     }
 
     void visit(Group group)
     {
-        this.rhsStack.front ~= group.rule.lhs;
+        this.rhsStack.back ~= group.rule.lhs;
         group.rule.accept(this);
     }
 
     void visit(Option option)
     {
-        this.rhsStack.front ~= option.rule.lhs;
+        this.rhsStack.back ~= option.rule.lhs;
         option.rule.accept(this);
 
         auto nonterminal = cast(Nonterminal) option.rule.lhs.symbol;
@@ -89,7 +89,7 @@ private class EBNFConverter : HyperVisitor
 
     void visit(Repetition repetition)
     {
-        this.rhsStack.front ~= repetition.rule.lhs;
+        this.rhsStack.back ~= repetition.rule.lhs;
         repetition.rule.accept(this);
 
         auto nonterminal = cast(Nonterminal) repetition.rule.lhs.symbol;
@@ -100,15 +100,15 @@ private class EBNFConverter : HyperVisitor
 
     void visit(RepetitionAlternative alternative)
     {
-        this.rhsStack.pushFront(null);
+        this.rhsStack ~= null;
         alternative.rhs.each!(node => node.accept(this));
 
-        auto nonterminal = cast(Nonterminal) this.lhsStack.front.symbol;
+        auto nonterminal = cast(Nonterminal) this.lhsStack.back.symbol;
         SymbolNode symbolNode = new HyperSymbolNode(nonterminal, alternative.params, alternative.position);
-        Node[] rhs = this.rhsStack.front ~ symbolNode;
+        Node[] rhs = this.rhsStack.back ~ symbolNode;
 
         this.alternatives ~= new Alternative(alternative.lhs, rhs, alternative.position);
-        this.rhsStack.popFront;
+        this.rhsStack.popBack;
     }
 
     Grammar grammar()
@@ -129,9 +129,4 @@ private class EBNFConverter : HyperVisitor
         }
         return new Grammar(this.nonterminals, this.terminals, rules, this.startSymbol);
     }
-}
-
-private void pushFront(T)(ref T[] stack, T element)
-{
-    stack = element ~ stack;
 }

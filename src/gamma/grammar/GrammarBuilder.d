@@ -52,9 +52,8 @@ public struct GrammarBuilder
 
         const index = this.nonterminals.length;
         auto nonterminal = new AnonymousNonterminal(index);
-        Nonterminal userNont = this.nonterminalMap.get(nonterminal.toString, null);
 
-        enforce(userNont is null,
+        enforce(nonterminal.toString !in this.nonterminalMap,
                 format!"generated nonterminal name already defined by the user: %s"(nonterminal));
 
         this.nonterminalMap[nonterminal.toString] = nonterminal;
