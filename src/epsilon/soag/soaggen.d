@@ -13,7 +13,7 @@ import io : Input, read;
 import log;
 import runtime;
 import std.bitmanip : BitArray;
-import std.stdio;
+import std.stdio : File;
 
 private const firstAffixOffset = 0;
 private const optimizedStorage = -1;
@@ -1168,6 +1168,8 @@ private void GenPredPos(int R, int i, ref bool PosNeeded) @safe
  */
 private void GenVisitRule(int R)
 {
+    import std.stdio : stdout;
+
     int SO;
     int VN;
     int VisitNo;

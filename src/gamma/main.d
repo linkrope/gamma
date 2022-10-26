@@ -12,7 +12,6 @@ import io : Input, read;
 import log;
 import runtime;
 import std.range;
-import std.stdio;
 
 mixin CLI!(config, Arguments).main!command;
 
@@ -99,6 +98,7 @@ void command(Arguments arguments)
     }
     try
     {
+        import std.stdio : stdin;
         import std.typecons : No, Yes;
 
         const offset = arguments.offset ? Yes.offset : No.offset;
@@ -243,7 +243,7 @@ void build(string[] fileNames, string outputDirectory)
         args ~= format!"-od=%s"(outputDirectory);
         args ~= format!"-of=%s"(fileNames.front.stripExtension);
     }
-    writefln!"%s"(args.join(' '));
+    info!"%s"(args.join(' '));
 
     auto pid = spawnProcess(args);
     const status = wait(pid);

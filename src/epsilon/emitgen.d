@@ -4,7 +4,7 @@ import EAG = epsilon.eag;
 import epsilon.settings;
 import runtime;
 import std.bitmanip : BitArray;
-import std.stdio;
+import std.stdio : File;
 
 private const CaseLabels = 127;
 private BitArray Type3;
@@ -81,6 +81,8 @@ public void GenEmitProc(File output, Settings settings)
             {
                 if (ANum > CaseLabels)
                 {
+                    import std.stdio : stdout;  // TODO: replace with log
+
                     stdout.write("internal error: Too many meta alts in ");
                     stdout.write(EAG.MTerm[N].Id.repr);
                     stdout.writeln;

@@ -11,7 +11,7 @@ import gamma.parsgen.lalr1.OrderedLR1Tables;
 import std.algorithm;
 import std.array;
 import std.json;
-import std.stdio;
+import std.stdio : File;
 
 /**
  * Writes an OrderedLR1Tables representation to a given output file.

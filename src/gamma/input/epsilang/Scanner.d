@@ -5,7 +5,7 @@ import log;
 import std.ascii;
 import std.conv;
 import std.range;
-import std.stdio;
+import std.stdio : File;
 
 /// WARNING: THIS CODE IS NO LONGER USED
 class Scanner

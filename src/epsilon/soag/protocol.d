@@ -3,7 +3,7 @@ module epsilon.soag.protocol;
 import EAG = epsilon.eag;
 import SOAG = epsilon.soag.soag;
 import runtime;
-import std.stdio;
+import std.stdio : File;
 
 const standardLevel = 1;
 const outRuleData = 2;
@@ -357,6 +357,8 @@ void WriteSyms() @safe
 
 static this() nothrow
 {
+    import std.stdio : stdout;
+
     output = stdout;
     Level = standardLevel;
 }

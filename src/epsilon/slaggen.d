@@ -8,7 +8,7 @@ import log;
 import runtime;
 import std.algorithm;
 import std.bitmanip : BitArray;
-import std.stdio;
+import std.stdio : File;
 import std.typecons;
 
 public const parsePass = 0;

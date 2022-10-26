@@ -3,7 +3,6 @@ module epsilon.earley;
 import EAG = epsilon.eag;
 import io : Position;
 import runtime;
-import std.stdio;
 
 const end = int.min;
 const nil = EAG.nil;

@@ -4,7 +4,6 @@ import EAG = epsilon.eag;
 import Predicates = epsilon.predicates;
 import runtime;
 import std.bitmanip : BitArray;
-import std.stdio;
 
 const firstSym = EAG.firstHNont;
 const firstRule = 0;
@@ -165,6 +164,8 @@ const notEnoughMemory = 99;
 
 void Error(T)(int ErrorType, T Proc)
 {
+    import std.stdio : stdout;  // TODO: replace with log
+
     stdout.write("ERROR: ");
     switch (ErrorType)
     {

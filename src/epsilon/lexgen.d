@@ -5,7 +5,6 @@ import epsilon.settings;
 import io : Input, read;
 import log;
 import runtime;
-import std.stdio;
 
 private const firstUserTok = 3;
 private const lenOfPredefinedToken = 8;
@@ -15,6 +14,8 @@ private bool[256] IsSymbol;
 public string Generate(Settings settings)
 in (EAG.Performed(EAG.analysed))
 {
+    import std.stdio : File;
+
     Input Fix;
     File output;
     int Term;

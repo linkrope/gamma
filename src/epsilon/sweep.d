@@ -8,7 +8,6 @@ import io : Input, read, UndefPos;
 import log;
 import runtime;
 import std.bitmanip : BitArray;
-import std.stdio;
 import std.typecons;
 
 private const nil = 0;
@@ -78,6 +77,8 @@ private void Finit() @nogc nothrow @safe
 
 private string GenerateMod(Flag!"createMod" createMod, Settings settings)
 {
+    import std.stdio : File;
+
     const firstEdge = 1;
     const firstStack = 0;
 

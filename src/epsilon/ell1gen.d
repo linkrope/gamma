@@ -12,7 +12,6 @@ import runtime;
 import std.bitmanip : BitArray;
 import std.conv : to;
 import std.format;
-import std.stdio;
 import std.typecons;
 
 private const nil = 0;
@@ -894,6 +893,8 @@ private void ComputeSets()
 
 private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
 {
+    import std.stdio :File;
+
     File output;
     Input Fix;
     int Tok;

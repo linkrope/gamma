@@ -15,7 +15,7 @@ import std.algorithm;
 import std.exception;
 import std.format;
 import std.json;
-import std.stdio;
+import std.stdio : File;
 
 /**
  * Reads an OrderedLR1Tables representation from a given input file.

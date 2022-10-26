@@ -7,7 +7,6 @@ import SOAG = epsilon.soag.soag;
 import log;
 import runtime;
 import std.bitmanip : BitArray;
-import std.stdio;
 
 const unor = -1;
 const nil = 0;
@@ -273,6 +272,8 @@ void ComputeDefAffOcc(int R)
         }
         else
         {
+            import std.stdio : writeln;  // TODO: replace with log
+
             writeln(EAG.Var[V].Pos);
             SOAG.Error(SOAG.notLeftDefined, "epsilon.soag.partition.ComputeDefAffOcc");
         }

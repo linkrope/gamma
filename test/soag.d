@@ -2,7 +2,6 @@ module test.soag;
 
 import core.exception;
 import std.exception;
-import std.stdio;
 import test.helper;
 
 @("compile abc.eag as SOAG and run compiler")
