@@ -1,8 +1,5 @@
 module gamma.grammar.GrammarProperties;
 
-import gamma.grammar.hyper.Operator;
-import gamma.grammar.hyper.Option;
-import gamma.grammar.hyper.Repetition;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.Node;
@@ -18,6 +15,7 @@ import std.range;
 
 version (unittest) import gamma.grammar.GrammarBuilder;
 
+// requires a (converted) grammar without EBNF expressions
 public class GrammarProperties
 {
     /**
@@ -209,7 +207,7 @@ public class GrammarProperties
     {
         /*
          * create map:
-         * <code>alt2Count</code> : Alternative -> number of symbols and operators in the alternative
+         * <code>alt2Count</code> : Alternative -> number of symbols in the alternative
          */
         size_t[Alternative] alt2Count;
 
@@ -229,36 +227,14 @@ public class GrammarProperties
          *   which have been marked as nullable and for which this property
          *   has to be propagated to the alternatives where they occur on
          *   right hand sides;
-         * - alt2Count contains the number of symbols and operators which
+         * - alt2Count contains the number of symbols which
          *   are potentially not nullable
-         * 1. find all Repetition and Option operators and decrement
-         *     alt2Count for them
-         * 2. all nonterminals with empty alternatives on the right
+         * 1. all nonterminals with empty alternatives on the right
          *     hand side are marked and put on a stack
-         * 3. the nullable property is propagated until the stack is empty
+         * 2. the nullable property is propagated until the stack is empty
          */
         nullableNonterminals = BitArray();
         nullableNonterminals.length = this.grammar_.nonterminals.length;
-
-        // find all Repetition and Option operators;
-        // they have implicit empty rules
-        foreach (lhs; this.grammar_.nonterminals)
-        {
-            foreach (alt; this.grammar_.ruleOf(lhs).alternatives)
-            {
-                int op = 0;
-
-                for (size_t i = 0, rhsLen = alt2Count[alt]; i < rhsLen; i++)
-                {
-                    auto node = cast(Node) alt.rhs[i];
-
-                    if (cast(Repetition) node || cast(Option) node)
-                        ++op;
-                }
-                if (op > 0)
-                    alt2Count[alt] -= op;
-            }
-        }
 
         Nonterminal[] nontStack;
 
@@ -439,18 +415,9 @@ public class GrammarProperties
                     {
                         auto node = cast(Node) alt.rhs[i];
 
-                        if (cast(SymbolNode) node)
-                            traverseReachables(cast(Symbol) (cast(SymbolNode) node).symbol);
-                        else
-                        {
-                            // for EBNF operators some walk-arounds are
-                            // necessary to get the lhs nonterminal
-                            // assert(node instanceof grammar_.hyper.Operator);
-                            // assert(((Operator) node).rule.alternatives.size > 0);
-                            auto firstAlt = cast(Alternative) (cast(Operator) node).rule.alternatives.front;
+                        assert(cast(SymbolNode) node);
 
-                            traverseReachables(firstAlt.lhs.symbol);
-                        }
+                        traverseReachables(cast(Symbol) (cast(SymbolNode) node).symbol);
                     }
                 }
             }
