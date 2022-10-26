@@ -1,5 +1,8 @@
 module gamma.input.earley.Parser;
 
+import gamma.grammar.affixes.Composite;
+import gamma.grammar.affixes.Term;
+import gamma.grammar.affixes.Variable;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.GrammarBuilder;
@@ -8,9 +11,6 @@ import gamma.grammar.Nonterminal;
 import gamma.grammar.Symbol;
 import gamma.grammar.SymbolNode;
 import gamma.grammar.Terminal;
-import gamma.grammar.affixes.Composite;
-import gamma.grammar.affixes.Term;
-import gamma.grammar.affixes.Variable;
 import gamma.input.earley.AffixForm;
 import gamma.input.earley.Item;
 import gamma.input.earley.ItemSet;

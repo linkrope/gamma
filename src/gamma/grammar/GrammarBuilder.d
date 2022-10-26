@@ -1,8 +1,8 @@
 module gamma.grammar.GrammarBuilder;
 
-import gamma.grammar.hyper.AnonymousNonterminal;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
+import gamma.grammar.hyper.AnonymousNonterminal;
 import gamma.grammar.Nonterminal;
 import gamma.grammar.Rule;
 import gamma.grammar.Symbol;

@@ -1,9 +1,9 @@
 module epsilon.soag.visitseq;
 
 import EAG = epsilon.eag;
-import runtime;
 import hash = epsilon.soag.hash;
 import SOAG = epsilon.soag.soag;
+import runtime;
 import std.range;
 
 const noVisit = -1;

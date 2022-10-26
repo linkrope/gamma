@@ -981,7 +981,7 @@ void Analyse(Input input)
     if (ErrorCounter == 0)
     {
         CheckForUnproductiveNonterminals;
-    } 
+    }
     if (ErrorCounter == 0)
     {
         EAG.History |= EAG.analysed;
@@ -1016,7 +1016,8 @@ void CheckForUnproductiveNonterminals()
 {
     const Unprod = EAG.All - EAG.Prod;
 
-    if (Unprod[EAG.StartSym]) {
+    if (Unprod[EAG.StartSym])
+    {
         ErrorCounter++;
         error!"start symbol %s is unproductive"(EAG.HNontRepr(EAG.StartSym));
     }

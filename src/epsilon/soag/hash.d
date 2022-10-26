@@ -1,7 +1,7 @@
 module epsilon.soag.hash;
 
-import runtime;
 import SOAG = epsilon.soag.soag;
+import runtime;
 
 class HashEntry
 {

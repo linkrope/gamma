@@ -34,7 +34,8 @@ public class Alternative
         this.position_ = position;
     }
 
-    public void accept(Visitor visitor) {
+    public void accept(Visitor visitor)
+    {
         visitor.visit(this);
     }
 

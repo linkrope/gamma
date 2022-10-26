@@ -9,10 +9,10 @@ import gamma.grammar.Rule;
 import gamma.grammar.Symbol;
 import gamma.grammar.SymbolNode;
 import gamma.grammar.Terminal;
-import gamma.parsgen.lalr1.LRItem;
-import gamma.parsgen.lalr1.LRMachine;
 import gamma.parsgen.lalr1.LR1ConflictResolver;
 import gamma.parsgen.lalr1.LR1ParserGenerator;
+import gamma.parsgen.lalr1.LRItem;
+import gamma.parsgen.lalr1.LRMachine;
 import gamma.parsgen.lalr1.OrderedLR1Tables;
 import gamma.parsgen.lalr1.SCCSetComputation;
 import gamma.util.Indexed;
@@ -26,8 +26,8 @@ private alias Transition = LRMachine.Transition;
 
 public void generateParser(Grammar grammar)
 {
-    import gamma.parsgen.lalr1.SimpleLR1ConflictResolver : SimpleLR1ConflictResolver;
     import gamma.parsgen.lalr1.LR1ParserTablesWriter : write;
+    import gamma.parsgen.lalr1.SimpleLR1ConflictResolver : SimpleLR1ConflictResolver;
     import std.stdio : stdout;
 
     auto parserGenerator = new PennelloDeRemer;
@@ -83,7 +83,8 @@ public class PennelloDeRemer : LR1ParserGenerator
 
         if (!this.grammarProperties.isReduced)
         {
-            foreach (nonterminal; this.grammar.nonterminals) {
+            foreach (nonterminal; this.grammar.nonterminals)
+            {
                 if (!this.grammarProperties.isProductive(nonterminal))
                     nonPositionMark(format!"Nonterminal %s not productive."(nonterminal));
             }

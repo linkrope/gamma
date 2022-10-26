@@ -1,11 +1,11 @@
 module epsilon.soag.optimizer;
 
 import EAG = epsilon.eag;
-import runtime;
 import ALists = epsilon.soag.alists;
-import SOAG = epsilon.soag.soag;
 import Protocol = epsilon.soag.protocol;
+import SOAG = epsilon.soag.soag;
 import VisitSeq = epsilon.soag.visitseq;
+import runtime;
 import std.stdio;
 
 const firstGlobalVar = 1;

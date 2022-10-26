@@ -115,7 +115,6 @@ private class EBNFConverter : HyperVisitor
     {
         import std.algorithm : filter;
         import std.array : array;
-        import log;
 
         Rule[] rules;
 

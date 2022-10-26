@@ -2,8 +2,8 @@ module epsilon.sweep;
 
 import EAG = epsilon.eag;
 import EmitGen = epsilon.emitgen;
-import EvalGen = epsilon.slaggen;
 import epsilon.settings;
+import EvalGen = epsilon.slaggen;
 import io : Input, read, UndefPos;
 import log;
 import runtime;

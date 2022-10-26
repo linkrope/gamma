@@ -2,16 +2,16 @@ module epsilon.soag.soaggen;
 
 import EAG = epsilon.eag;
 import EmitGen = epsilon.emitgen;
-import SLAGGen = epsilon.slaggen;
 import epsilon.settings;
-import io : Input, read;
-import log;
-import runtime;
+import SLAGGen = epsilon.slaggen;
 import optimizer = epsilon.soag.optimizer;
 import partition = epsilon.soag.partition;
 import Protocol = epsilon.soag.protocol;
 import SOAG = epsilon.soag.soag;
 import VisitSeq = epsilon.soag.visitseq;
+import io : Input, read;
+import log;
+import runtime;
 import std.bitmanip : BitArray;
 import std.stdio;
 

@@ -1,7 +1,7 @@
 module gamma.input.earley.AffixForm;
 
-import gamma.grammar.SymbolNode;
 import gamma.grammar.affixes.Variable;
+import gamma.grammar.SymbolNode;
 
 public class AffixForm
 {

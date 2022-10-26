@@ -1,11 +1,11 @@
 module epsilon.soag.partition;
 
 import EAG = epsilon.eag;
-import log;
-import runtime;
 import ALists = epsilon.soag.alists;
 import Protocol = epsilon.soag.protocol;
 import SOAG = epsilon.soag.soag;
+import log;
+import runtime;
 import std.bitmanip : BitArray;
 import std.stdio;
 

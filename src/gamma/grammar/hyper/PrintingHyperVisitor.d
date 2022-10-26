@@ -1,12 +1,12 @@
 module gamma.grammar.hyper.PrintingHyperVisitor;
 
+import gamma.grammar.Alternative;
+import gamma.grammar.Grammar;
 import gamma.grammar.hyper.Group;
 import gamma.grammar.hyper.HyperVisitor;
 import gamma.grammar.hyper.Option;
 import gamma.grammar.hyper.Repetition;
 import gamma.grammar.hyper.RepetitionAlternative;
-import gamma.grammar.Alternative;
-import gamma.grammar.Grammar;
 import gamma.grammar.Node;
 import gamma.grammar.Rule;
 import gamma.grammar.SymbolNode;

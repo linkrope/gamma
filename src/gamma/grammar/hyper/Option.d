@@ -18,7 +18,8 @@ public class Option : Operator
         this.endParams_ = endParams;
     }
 
-    public override void accept(HyperVisitor visitor) {
+    public override void accept(HyperVisitor visitor)
+    {
         visitor.visit(this);
     }
 

@@ -1,20 +1,21 @@
 module gamma.input.epsilang.parser;
 
 import epsilon.lexer;
+import gamma.grammar.affixes.Variable;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.GrammarBuilder;
-import gamma.grammar.Node;
-import gamma.grammar.Nonterminal;
-import gamma.grammar.Rule;
-import gamma.grammar.SymbolNode;
-import gamma.grammar.Terminal;
 import gamma.grammar.hyper.Group;
 import gamma.grammar.hyper.HyperSymbolNode;
 import gamma.grammar.hyper.Operator;
 import gamma.grammar.hyper.Option;
 import gamma.grammar.hyper.Repetition;
 import gamma.grammar.hyper.RepetitionAlternative;
+import gamma.grammar.Node;
+import gamma.grammar.Nonterminal;
+import gamma.grammar.Rule;
+import gamma.grammar.SymbolNode;
+import gamma.grammar.Terminal;
 import gamma.util.Position;
 import io;
 import std.typecons;

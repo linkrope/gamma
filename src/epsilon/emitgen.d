@@ -184,8 +184,8 @@ public void GenEmitCall(File output, Settings settings)
 
 private string repr(int id)
 {
-    import std.range : dropBackOne, dropOne, front, only;
     import std.format : format;
+    import std.range : dropBackOne, dropOne, front, only;
 
     const value = EAG.symbolTable.symbol(id);
 

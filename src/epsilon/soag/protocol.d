@@ -1,8 +1,8 @@
 module epsilon.soag.protocol;
 
 import EAG = epsilon.eag;
-import runtime;
 import SOAG = epsilon.soag.soag;
+import runtime;
 import std.stdio;
 
 const standardLevel = 1;

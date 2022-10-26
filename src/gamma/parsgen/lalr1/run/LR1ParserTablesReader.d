@@ -51,7 +51,7 @@ public class LR1ParserTablesReader
 
         public void markError(string message)
         {
-            import log;
+            import log : error;
 
             error!"%s: %s"(repr, message);
         }

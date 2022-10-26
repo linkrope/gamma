@@ -1,8 +1,8 @@
 module gamma.grammar.hyper.RepetitionAlternative;
 
+import gamma.grammar.Alternative;
 import gamma.grammar.hyper.HyperVisitor;
 import gamma.grammar.hyper.Params;
-import gamma.grammar.Alternative;
 import gamma.grammar.Node;
 import gamma.grammar.SymbolNode;
 import gamma.grammar.Visitor;

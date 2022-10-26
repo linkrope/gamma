@@ -4,8 +4,8 @@ import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.Nonterminal;
 import gamma.grammar.Symbol;
-import gamma.util.Indexed;
 import gamma.input.earley.Item;
+import gamma.util.Indexed;
 
 class ItemSet : Indexed
 {
