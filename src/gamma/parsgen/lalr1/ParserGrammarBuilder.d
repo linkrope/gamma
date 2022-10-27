@@ -9,12 +9,12 @@ import gamma.grammar.Rule;
 import gamma.grammar.Symbol;
 import gamma.grammar.SymbolNode;
 import gamma.grammar.Terminal;
-import gamma.parsgen.lalr1.PredicateFilter;
 import gamma.util.Position;
 
+// TODO: by using the grammar builder the indexes of the symbols will be changed
 public Grammar extendedCfgFromHyperGrammar(Grammar hyperGrammar,
-    bool[Symbol] lexicalHyperNonterminals,
-    PredicateFilter predicateFilter)
+    bool delegate(Symbol) isTerminal,
+    bool delegate(Symbol) isPredicate)
 {
     auto grammarBuilder = GrammarBuilder();
     Symbol originalStartSymbol = grammarBuilder.buildNonterminal(hyperGrammar.startSymbol.toString);
@@ -30,8 +30,8 @@ public Grammar extendedCfgFromHyperGrammar(Grammar hyperGrammar,
     }
 
     // Filter the pure CFG out of the hyperGrammar using
-    // - help from Analyzer which nonterminal symbols are "lexical nonterminals"; and
-    // - help from PredicateFilter which RHS symbol occurrences are "predicates".
+    // - help which nonterminal symbols are "lexical nonterminals"
+    // - help which RHS symbol occurrences are "predicates"
     // Any Alternative/Rule the LHS of which is not a Nonterminal of the parser CFG is skipped.
     // For the remaining RHS's, SymbolNode's are
     // - not copied to the corresponding target CFG RHS if they represent a "predicate";
@@ -41,9 +41,9 @@ public Grammar extendedCfgFromHyperGrammar(Grammar hyperGrammar,
     {
         foreach (hyperAlt; hyperRule.alternatives)
         {
-            if (hyperAlt.lhs.symbol in lexicalHyperNonterminals)
+            if (isTerminal(hyperAlt.lhs.symbol))
                 break;
-            if (predicateFilter.isPredicate(hyperAlt.lhs))
+            if (isPredicate(hyperAlt.lhs.symbol))
                 break;
 
             Nonterminal lhs = grammarBuilder.buildNonterminal(hyperAlt.lhs.symbol.toString);
@@ -55,13 +55,12 @@ public Grammar extendedCfgFromHyperGrammar(Grammar hyperGrammar,
 
                 SymbolNode node = cast(SymbolNode) rhsNode;
 
-                if (predicateFilter.isPredicate(node))
+                if (isPredicate(node.symbol))
                     continue;
 
                 Symbol sym;
 
-                if (node.symbol in lexicalHyperNonterminals
-                    || cast(Terminal)(cast(SymbolNode) node).symbol)
+                if (isTerminal(node.symbol) || cast(Terminal)(cast(SymbolNode) node).symbol)
                     sym = grammarBuilder.buildTerminal(node.symbol.toString);
                 else
                     sym = grammarBuilder.buildNonterminal(node.symbol.toString);

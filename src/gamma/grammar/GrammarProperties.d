@@ -23,6 +23,8 @@ public class GrammarProperties
      */
     private Grammar grammar_;
 
+    private bool[Nonterminal] tokens;
+
     /**
      * A flag for each nonterminal which is true if the nonterminal produces the
      * empty word.
@@ -60,14 +62,17 @@ public class GrammarProperties
     private BitArray reachableTerminals;
 
     /**
-     * A flag for each nonterminal which is true if the nobtrminal defines
+     * A flag for each nonterminal which is true if the nonterminal defines
      * a predicate
      */
     private BitArray predicateNonterminals;
 
-    public this(Grammar grammar)
+    private BitArray lexicalNonterminals;
+
+    public this(Grammar grammar, bool[Nonterminal] tokens = null)
     {
         this.grammar_ = grammar;
+        this.tokens = tokens;
     }
 
     /**
@@ -124,7 +129,16 @@ public class GrammarProperties
             computeStrongNullables;
 
         return (cast(Nonterminal) symbol)
-            && predicateNonterminals[(cast(Nonterminal) symbol).index];
+            && this.predicateNonterminals[(cast(Nonterminal) symbol).index];
+    }
+
+    public bool isLexicalNonterminal(Symbol symbol)
+    {
+        if (this.lexicalNonterminals.empty)
+            computeLexicalNonterminals;
+
+        return (cast(Nonterminal) symbol)
+            && this.lexicalNonterminals[(cast(Nonterminal) symbol).index];
     }
 
     /**
@@ -317,14 +331,10 @@ public class GrammarProperties
             {
                 size_t t = 0; // the number of terminals in the alternative
 
-                for (size_t i = 0, n = alternative.rhs.length; i < n; ++i)
-                {
-                    auto node = cast(Node) alternative.rhs[i];
-
+                foreach (node; alternative.rhs)
                     if (cast(SymbolNode) node)
                         if (cast(Terminal) (cast(SymbolNode) node).symbol)
                             ++t;
-                }
                 if (t > 0)
                 {
                     t = alt2Count[alternative] - t;
@@ -409,23 +419,48 @@ public class GrammarProperties
             {
                 reachableNonterminals[nonterminal.index] = true;
 
-                foreach (alt; this.grammar_.ruleOf(nonterminal).alternatives)
-                {
-                    for (size_t i = 0, n = alt.rhs.length; i < n; ++i)
+                foreach (alternative; this.grammar_.ruleOf(nonterminal).alternatives)
+                    foreach (node; alternative.rhs)
                     {
-                        auto node = cast(Node) alt.rhs[i];
-
                         assert(cast(SymbolNode) node);
 
                         traverseReachables(cast(Symbol) (cast(SymbolNode) node).symbol);
                     }
-                }
             }
         }
         else
         {
             if (!reachableTerminals[(cast(Terminal) symbol).index])
                 reachableTerminals[(cast(Terminal) symbol).index] = true;
+        }
+    }
+
+    /**
+     * Computes the lexical nonterminals by depth-first traversal
+     * starting from the nonterminals marked as tokens.
+     */
+    private void computeLexicalNonterminals()
+    {
+        this.lexicalNonterminals = BitArray();
+        this.lexicalNonterminals.length = this.grammar_.nonterminals.length;
+
+        foreach (nonterminal, value; this.tokens)
+            if (value)
+                traverseLexicalNonterminals(nonterminal);
+
+        trace!"lexical nonterminals:%-(\n%s%)"
+            (this.grammar_.nonterminals.filter!(nonterminal => isLexicalNonterminal(nonterminal)));
+    }
+
+    private void traverseLexicalNonterminals(Nonterminal nonterminal)
+    {
+        if (!this.lexicalNonterminals[nonterminal.index])
+        {
+            this.lexicalNonterminals[nonterminal.index] = true;
+            foreach (alternative; this.grammar_.ruleOf(nonterminal).alternatives)
+                foreach (node; alternative.rhs)
+                    if (cast(SymbolNode) node && cast(Nonterminal) (cast(SymbolNode) node).symbol)
+                        traverseLexicalNonterminals(cast(Nonterminal) (cast(SymbolNode) node).symbol);
         }
     }
 

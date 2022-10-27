@@ -28,13 +28,15 @@ public void generateParser(Grammar grammar)
 {
     import gamma.parsgen.lalr1.LR1ParserTablesWriter : write;
     import gamma.parsgen.lalr1.SimpleLR1ConflictResolver : SimpleLR1ConflictResolver;
-    import std.stdio : stdout;
+    import std.stdio : File;
 
+    const name = "parser-tables.json";
     auto parserGenerator = new PennelloDeRemer;
     auto conflictResolver = new SimpleLR1ConflictResolver(grammar);
     auto parserTables = parserGenerator.computeParser(grammar, conflictResolver);
 
-    write(parserTables, stdout);
+    info!"writing %s"(name);
+    write(parserTables, File(name, "w"));
 }
 
 /**

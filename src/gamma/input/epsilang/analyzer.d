@@ -14,6 +14,8 @@ class Analyzer
 
     private Grammar hyperGrammar;
 
+    private GrammarProperties hyperGrammarProperties;
+
     public void analyze(Input input)
     {
         import gamma.grammar.hyper.EBNFConverter : convert;
@@ -52,13 +54,12 @@ class Analyzer
             log.trace!"converted hyper grammar:\n%s"(this.hyperGrammar.toPrettyString);
         }
 
-        auto grammarProperties = new GrammarProperties(this.hyperGrammar);
-
-        if (grammarProperties.isReduced)
+        this.hyperGrammarProperties = new GrammarProperties(this.hyperGrammar, this.parser.getLexicalHyperNonterminals);
+        if (this.hyperGrammarProperties.isReduced)
         {
             trace!"hyper grammar is reduced";
         }
-        if (!grammarProperties.isProductive(this.hyperGrammar.startSymbol))
+        if (!this.hyperGrammarProperties.isProductive(this.hyperGrammar.startSymbol))
         {
             error!"start symbol %s is unproductive"(this.hyperGrammar.startSymbol);
 
@@ -68,28 +69,24 @@ class Analyzer
 
     public Grammar parserGrammar()
     {
-        import gamma.grammar.hyper.EBNFConverter : convert;
-        import gamma.grammar.Node : Node;
+        import gamma.grammar.Nonterminal : Nonterminal;
         import gamma.grammar.Symbol : Symbol;
         import gamma.parsgen.lalr1.ParserGrammarBuilder : extendedCfgFromHyperGrammar;
-        import gamma.parsgen.lalr1.PredicateFilter : PredicateFilter;
-        import std.algorithm : map;
-        import std.array : assocArray;
-        import std.typecons : tuple;
 
-        bool[Symbol] lexicalHyperNonterminals = this.parser.getLexicalHyperNonterminals.byKeyValue
-            .map!(pair => tuple(cast(Symbol) pair.key, pair.value))
-            .assocArray;
-        auto predicateFilter = new class PredicateFilter
+        bool isTerminal(Symbol symbol)
         {
-            override bool isPredicate(Node node)
-            {
-                return false;
-            }
-        };
+            return this.hyperGrammarProperties.isLexicalNonterminal(symbol);
+        }
+
+        bool isPredicate(Symbol symbol)
+        {
+            // bad things happen when the start symbol is taken as a predicate
+            return symbol != this.hyperGrammar.startSymbol
+                && this.hyperGrammarProperties.isStrongNullable(symbol);
+        }
+
         auto parserGrammar = this.hyperGrammar
-            .convert
-            .extendedCfgFromHyperGrammar(lexicalHyperNonterminals, predicateFilter);
+            .extendedCfgFromHyperGrammar(&isTerminal, &isPredicate);
 
         // TODO
         {

@@ -20,7 +20,7 @@ public class ParserGrammarProperties : GrammarProperties
     private bool[Indexed][] rightDeriv;
 
 	/**
-	 * Constructor for ParserGramarProperties.
+	 * Constructor for ParserGrammarProperties.
 	 * @param grammar The grammar of which to present the properties.
 	 */
 	public this(Grammar grammar)
