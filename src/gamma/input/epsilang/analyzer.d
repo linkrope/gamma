@@ -46,11 +46,15 @@ class Analyzer
         enforce(this.metaGrammar && hyperEBNFGrammar,
             "grammar not well defined");
 
-        this.hyperGrammar = convert(hyperEBNFGrammar);
-        // TODO
+        if (hyperEBNFGrammar.isPlain)
+        {
+            this.hyperGrammar = hyperEBNFGrammar;
+        }
+        else
         {
             import gamma.grammar.hyper.PrintingHyperVisitor : toPrettyString;
 
+            this.hyperGrammar = convert(hyperEBNFGrammar);
             log.trace!"converted hyper grammar:\n%s"(this.hyperGrammar.toPrettyString);
         }
 
@@ -71,7 +75,7 @@ class Analyzer
     {
         import gamma.grammar.Nonterminal : Nonterminal;
         import gamma.grammar.Symbol : Symbol;
-        import gamma.parsgen.lalr1.ParserGrammarBuilder : extendedCfgFromHyperGrammar;
+        import gamma.parsgen.lalr1.ParserGrammarBuilder : toExtendedParserGrammar;
 
         bool isTerminal(Symbol symbol)
         {
@@ -86,7 +90,7 @@ class Analyzer
         }
 
         auto parserGrammar = this.hyperGrammar
-            .extendedCfgFromHyperGrammar(&isTerminal, &isPredicate);
+            .toExtendedParserGrammar(&isTerminal, &isPredicate);
 
         // TODO
         {

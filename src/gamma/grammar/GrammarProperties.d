@@ -70,6 +70,7 @@ public class GrammarProperties
     private BitArray lexicalNonterminals;
 
     public this(Grammar grammar, bool[Nonterminal] tokens = null)
+    in (grammar.isPlain)
     {
         this.grammar_ = grammar;
         this.tokens = tokens;

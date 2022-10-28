@@ -12,12 +12,13 @@ import gamma.grammar.Terminal;
 import gamma.util.Position;
 
 // TODO: by using the grammar builder the indexes of the symbols will be changed
-public Grammar extendedCfgFromHyperGrammar(Grammar hyperGrammar,
+public Grammar toExtendedParserGrammar(Grammar grammar,
     bool delegate(Symbol) isTerminal,
     bool delegate(Symbol) isPredicate)
+in (grammar.isPlain)
 {
-    auto grammarBuilder = GrammarBuilder();
-    Symbol originalStartSymbol = grammarBuilder.buildNonterminal(hyperGrammar.startSymbol.toString);
+    GrammarBuilder grammarBuilder;
+    Symbol originalStartSymbol = grammarBuilder.buildNonterminal(grammar.startSymbol.toString);
     Nonterminal extStartSymbol = grammarBuilder.buildNonterminal("(Start)");
 
     // --- Go ahead with rest of parser generation... ---
@@ -29,45 +30,45 @@ public Grammar extendedCfgFromHyperGrammar(Grammar hyperGrammar,
             new Alternative(new SymbolNode(extStartSymbol, Position()), rhs, Position()));
     }
 
-    // Filter the pure CFG out of the hyperGrammar using
+    // Filter the pure parser grammar out of the grammar using
     // - help which nonterminal symbols are "lexical nonterminals"
     // - help which RHS symbol occurrences are "predicates"
-    // Any Alternative/Rule the LHS of which is not a Nonterminal of the parser CFG is skipped.
+    // Any alternative/rule the LHS of which is not a nonterminal of the parser grammar is skipped.
     // For the remaining RHS's, SymbolNode's are
-    // - not copied to the corresponding target CFG RHS if they represent a "predicate";
-    // - copied to the target CFG as a Terminal if they represent a "lexical nonterminal";
-    // - copied to the target CFG as a Nonterminal otherwise.
-    foreach (hyperRule; hyperGrammar.rules)
+    // - not copied to the corresponding parser grammar RHS if they represent a "predicate"
+    // - copied to the parser grammar as a terminal if they represent a "lexical nonterminal"
+    // - copied to the parser grammar as a nonterminal otherwise
+    foreach (rule; grammar.rules)
     {
-        foreach (hyperAlt; hyperRule.alternatives)
+        foreach (alternative; rule.alternatives)
         {
-            if (isTerminal(hyperAlt.lhs.symbol))
+            if (isTerminal(alternative.lhs.symbol))
                 break;
-            if (isPredicate(hyperAlt.lhs.symbol))
+            if (isPredicate(alternative.lhs.symbol))
                 break;
 
-            Nonterminal lhs = grammarBuilder.buildNonterminal(hyperAlt.lhs.symbol.toString);
+            Nonterminal lhs = grammarBuilder.buildNonterminal(alternative.lhs.symbol.toString);
             Node[] rhs;
 
-            foreach (rhsNode; hyperAlt.rhs)
+            foreach (node; alternative.rhs)
             {
-                assert(cast(SymbolNode) rhsNode);
+                assert(cast(SymbolNode) node);
 
-                SymbolNode node = cast(SymbolNode) rhsNode;
+                SymbolNode symbolNode = cast(SymbolNode) node;
 
-                if (isPredicate(node.symbol))
+                if (isPredicate(symbolNode.symbol))
                     continue;
 
-                Symbol sym;
+                Symbol symbol;
 
-                if (isTerminal(node.symbol) || cast(Terminal)(cast(SymbolNode) node).symbol)
-                    sym = grammarBuilder.buildTerminal(node.symbol.toString);
+                if (isTerminal(symbolNode.symbol) || cast(Terminal) symbolNode.symbol)
+                    symbol = grammarBuilder.buildTerminal(symbolNode.symbol.toString);
                 else
-                    sym = grammarBuilder.buildNonterminal(node.symbol.toString);
-                rhs ~= new SymbolNode(sym, node.position);
+                    symbol = grammarBuilder.buildNonterminal(symbolNode.symbol.toString);
+                rhs ~= new SymbolNode(symbol, symbolNode.position);
             }
             grammarBuilder
-                .add(new Alternative(new SymbolNode(lhs, hyperAlt.lhs.position), rhs, hyperAlt.position));
+                .add(new Alternative(new SymbolNode(lhs, alternative.lhs.position), rhs, alternative.position));
         }
     }
 

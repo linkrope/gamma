@@ -18,6 +18,7 @@ import std.range;
 
 public Grammar convert(Grammar grammar)
 in (grammar !is null)
+out (convertedGrammar; convertedGrammar.isPlain)
 {
     auto visitor = new EBNFConverter;
 

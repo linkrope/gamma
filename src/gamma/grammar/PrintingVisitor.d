@@ -10,6 +10,7 @@ import std.range;
 version (unittest) import gamma.grammar.GrammarBuilder;
 
 public string toPrettyString(Grammar grammar)
+in (grammar.isPlain)
 {
     import std.array : appender;
 
@@ -36,6 +37,7 @@ private class PrintingVisitor(Writer) : Visitor
     }
 
     public void visit(Grammar grammar)
+    in (grammar.isPlain)
     {
         foreach (i, rule; grammar.rules.enumerate)
         {

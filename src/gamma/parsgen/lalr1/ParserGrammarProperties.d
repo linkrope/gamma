@@ -24,6 +24,7 @@ public class ParserGrammarProperties : GrammarProperties
 	 * @param grammar The grammar of which to present the properties.
 	 */
 	public this(Grammar grammar)
+    in (grammar.isPlain)
 	{
 		super(grammar);
         computeRightDerivationLeaders;
