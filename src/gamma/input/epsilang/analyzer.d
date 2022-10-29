@@ -69,6 +69,28 @@ class Analyzer
 
             enforce(false);
         }
+        foreach (nonterminal; this.hyperGrammar.nonterminals)
+            if (!this.hyperGrammarProperties.isProductive(nonterminal))
+            {
+                import gamma.grammar.hyper.AnonymousNonterminal : AnonymousNonterminal;
+
+                const position = this.hyperGrammar.ruleOf(nonterminal).lhs.position;
+
+                if (cast(AnonymousNonterminal) nonterminal)
+                    warn!"EBNF expression is unproductive\n%s"(position);
+                else
+                    warn!"%s is unproductive\n%s"(nonterminal, position);
+            }
+        foreach (nonterminal; this.hyperGrammar.nonterminals)
+            if (!this.hyperGrammarProperties.isReachable(nonterminal))
+            {
+                import gamma.grammar.hyper.AnonymousNonterminal : AnonymousNonterminal;
+
+                const position = this.hyperGrammar.ruleOf(nonterminal).lhs.position;
+
+                if (!cast(AnonymousNonterminal) nonterminal)
+                    warn!"%s is unreachable\n%s"(nonterminal, position);
+            }
     }
 
     public Grammar parserGrammar()

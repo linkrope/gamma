@@ -69,10 +69,6 @@ public class PennelloDeRemer : LR1ParserGenerator
 
     private int[] lookbackIndex; // from=[2*state.index], to=[2*state.index+1]
 
-    public this()
-    {
-    }
-
     public OrderedLR1Tables computeParser(Grammar grammar, LR1ConflictResolver lr1ConflictResolver)
     {
         import std.format : format;
@@ -84,18 +80,7 @@ public class PennelloDeRemer : LR1ParserGenerator
         this.grammarProperties = new GrammarProperties(this.grammar);
 
         if (!this.grammarProperties.isReduced)
-        {
-            foreach (nonterminal; this.grammar.nonterminals)
-            {
-                if (!this.grammarProperties.isProductive(nonterminal))
-                    nonPositionMark(format!"Nonterminal %s not productive."(nonterminal));
-            }
-            foreach (nonterminal; this.grammar.nonterminals)
-            {
-                if (!this.grammarProperties.isReachable(nonterminal))
-                    nonPositionMark(format!"Nonterminal %s not reachable."(nonterminal));
-            }
-        }
+            warn!"parser grammar is not reduced";
 
         // TODO: compose single log message
         trace!"First productive alternatives:";

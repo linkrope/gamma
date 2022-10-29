@@ -476,65 +476,51 @@ public class GrammarProperties
             createNontOccurrences;
 
         Nonterminal[] nonStrongNullableStack; // all nonterminals which are definitely not strong nullable
-        BitArray strongNullablesComplementSet;
+        BitArray nonStrongNullables;
 
-        strongNullablesComplementSet.length = this.grammar_.nonterminals.length;
+        nonStrongNullables.length = this.grammar_.nonterminals.length;
 
-        // initialize stack and the complement set
-        foreach (lhs; this.grammar_.nonterminals)
+        foreach (rule; this.grammar_.rules)
         {
-            if (!isNullable(lhs))
-            {
-                nonStrongNullableStack ~= lhs;
-                strongNullablesComplementSet[lhs.index] = true;
-            }
-            else
-            {
-                 foreach (alternative; this.grammar_.ruleOf(lhs).alternatives)
-                 {
-                    foreach (node; alternative.rhs)
-                    {
-                        if (cast(SymbolNode) node)
-                        {
-                            auto symbol = cast(Symbol) (cast(SymbolNode) node).symbol;
+            Nonterminal lhs = cast(Nonterminal) rule.lhs.symbol;
 
-                            if (cast(Terminal) symbol)
-                            {
-                                if (!strongNullablesComplementSet[lhs.index])
-                                {
-                                    nonStrongNullableStack ~= lhs;
-                                    strongNullablesComplementSet[lhs.index] = true;
-                                }
-                                break; // node loop
-                            }
+            foreach (alternative; rule.alternatives)
+                foreach (node; alternative.rhs)
+                {
+                    auto symbol = cast(Symbol) (cast(SymbolNode) node).symbol;
+
+                    if (cast(Terminal) symbol)
+                    {
+                        if (!nonStrongNullables[lhs.index])
+                        {
+                            nonStrongNullableStack ~= lhs;
+                            nonStrongNullables[lhs.index] = true;
                         }
+                        break;  // node loop
                     }
                 }
-            }
         }
 
         while (!nonStrongNullableStack.empty)
         {
-            // assert nonStrongNullableStack.top instanceof Nonterminal
-            Nonterminal nont = nonStrongNullableStack.back;
-            Alternative[] altList = this.nontOccurrences[nont.index];
+            Nonterminal nonterminal = nonStrongNullableStack.back;
 
             nonStrongNullableStack.popBack;
-            foreach (alt; altList)
+            foreach (alternative; this.nontOccurrences[nonterminal.index])
             {
-                // assert alt.lhs.symbol instanceof Nonterminal
-                auto lhs = cast(Nonterminal) alt.lhs.symbol;
+                // assert alternative.lhs.symbol instanceof Nonterminal
+                auto lhs = cast(Nonterminal) alternative.lhs.symbol;
 
-                if (!strongNullablesComplementSet[lhs.index])
+                if (!nonStrongNullables[lhs.index])
                 {
                     nonStrongNullableStack ~= lhs;
-                    strongNullablesComplementSet[lhs.index] = true;
+                    nonStrongNullables[lhs.index] = true;
                 }
             }
-
-            this.predicateNonterminals = this.productiveNonterminals.dup;
-            this.predicateNonterminals -= strongNullablesComplementSet;
         }
+
+        this.predicateNonterminals = this.productiveNonterminals.dup;
+        this.predicateNonterminals -= nonStrongNullables;
 
         trace!"predicates:%-(\n%s%)"
             (this.grammar_.nonterminals.filter!(nonterminal => isStrongNullable(nonterminal)));

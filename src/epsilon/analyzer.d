@@ -980,7 +980,11 @@ void Analyse(Input input)
     }
     if (ErrorCounter == 0)
     {
-        CheckForUnproductiveNonterminals;
+        if (!EAG.Prod[EAG.StartSym])
+        {
+            ++ErrorCounter;
+            error!"start symbol %s is unproductive"(EAG.HNontRepr(EAG.StartSym));
+        }
     }
     if (ErrorCounter == 0)
     {
@@ -994,42 +998,5 @@ void Analyse(Input input)
             info!"errors in %s"(EAG.BaseName);
         else
             info!"errors";
-    }
-}
-
-void CheckForUnreachableNonterminals()
-in (EAG.Performed(EAG.analysed))
-{
-    const Unreach = EAG.All - EAG.Reach;
-
-    if (!Unreach.bitsSet.empty)
-    {
-        for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
-        {
-            if (Unreach[Sym] && EAG.HNont[Sym].Id >= 0)
-                warn!"%s unreachable"(EAG.HNontRepr(Sym));
-        }
-    }
-}
-
-void CheckForUnproductiveNonterminals()
-{
-    const Unprod = EAG.All - EAG.Prod;
-
-    if (Unprod[EAG.StartSym])
-    {
-        ErrorCounter++;
-        error!"start symbol %s is unproductive"(EAG.HNontRepr(EAG.StartSym));
-    }
-
-    for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
-    {
-        if (Unprod[Sym] && Sym != EAG.StartSym)
-        {
-            if (EAG.HNont[Sym].anonymous)
-                warn!"anonymous nonterminal in %s unproductive"(EAG.NamedHNontRepr(Sym));
-            else
-                warn!"%s unproductive"(EAG.HNontRepr(Sym));
-        }
     }
 }

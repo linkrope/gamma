@@ -214,7 +214,7 @@ in (EAG.Prod[N])
             if (auto nont = cast(EAG.Nont) F)
             {
                 nont.Actual.params.each!(param => CheckApplPos(param));
-                if (checkSLAG && EAG.HNont[nont.Sym].anonymous)
+                if (checkSLAG && EAG.HNont[nont.Sym].anonymous && EAG.Prod[nont.Sym])
                     type = min(type, TestHNont(nont.Sym, checkSLAG));
                 nont.Actual.params.each!(param => CheckDefPos(param));
             }

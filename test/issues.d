@@ -33,6 +33,6 @@ unittest
             `.outdent;
 
         run!"cat <<EOF | ./gamma --output-directory %s%sEOF"(directory, eag)
-            .shouldPassWith("warn: A unproductive");
+            .shouldPassWith("warn: A is unproductive");
     }
 }
