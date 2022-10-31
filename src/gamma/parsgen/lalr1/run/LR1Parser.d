@@ -167,7 +167,7 @@ public class LR1Parser
         size_t stateSnapshot = this.state;
         BitArray anchors;
 
-        while (true)
+        for (;;)
         {
             // Collect all terminal-labeled edges in the LR(0) machine departing from state1 as anchor candidates...
             Action[] sortedParserActionRow = this.parserTables.getSortedParserActionRow(this.state);
@@ -224,7 +224,7 @@ public class LR1Parser
         // Any shift actions executed until the anchor is shifted denote tokens to be inserted.
         this.state = stateSnapshot;
         this.stack = stackSnapshot;
-        while (true)
+        for (;;)
         {
             if (canShift(this.lookahead))
                 break;
@@ -262,7 +262,7 @@ public class LR1Parser
     public void parse()
     {
         stack.push(0);
-        while (true)
+        for (;;)
         {
             // The parser is acting normally: it consumes input and does shift and reduce actions
             // until a systax error or halt is detected.

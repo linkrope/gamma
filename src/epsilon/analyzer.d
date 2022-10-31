@@ -119,7 +119,7 @@ void Specification()
              */
             void MetaTerm()
             {
-                while (true)
+                for (;;)
                 {
                     if (lexer.front == Token.name)
                     {
@@ -144,7 +144,7 @@ void Specification()
                 }
             }
 
-            while (true)
+            for (;;)
             {
                 const Rhs = EAG.NextMemb;
 
@@ -226,7 +226,7 @@ void Specification()
             {
                 int Cnt = 0;
 
-                while (true)
+                for (;;)
                 {
                     short Uneq;
                     int Num;
@@ -294,7 +294,7 @@ void Specification()
                 bool isFormal = lexer.front == '+' || lexer.front == '-';
 
                 P.Params = EAG.NextParam;
-                while (true)
+                for (;;)
                 {
                     char Dir;
                     int Sym;
@@ -388,7 +388,7 @@ void Specification()
 
                 First = null;
                 Last = null;
-                while (true)
+                for (;;)
                 {
                     if (lexer.front == Token.name)
                     {
@@ -487,7 +487,7 @@ void Specification()
             EAG.Alt Last = null;
 
             HExpr = null;
-            while (true)
+            for (;;)
             {
                 EAG.ParamsDesc Actual;
                 EAG.ParamsDesc Formal;

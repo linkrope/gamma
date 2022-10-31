@@ -695,7 +695,7 @@ public class Parser
         SymbolNode[] symbolNodes = null;
         Variable[] variables = null;
 
-        while (true)
+        for (;;)
         {
             if (this.lexer.front == Token.string_)
             {

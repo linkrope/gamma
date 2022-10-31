@@ -488,7 +488,7 @@ private void ComputeDir()
         do
         {
             F = A.Sub;
-            while (true)
+            for (;;)
             {
                 if (F is null)
                     break;
@@ -588,7 +588,7 @@ private void ComputeDir()
             else
                 Alt[A.Ind].Dir[] = false;
             F = A.Sub;
-            while (true)
+            for (;;)
             {
                 if (F is null)
                     break;

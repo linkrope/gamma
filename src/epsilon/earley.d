@@ -87,7 +87,7 @@ void EndAffixform(Position Pos) nothrow @safe
 void CopyAffixform(int From, ref int To) nothrow @safe
 {
     To = NextMSym;
-    while (true)
+    for (;;)
     {
         AppMSym(MSymBuf[From].Sym, MSymBuf[From].Num, MSymBuf[From].Pos);
         if (MSymBuf[From].Sym == end)

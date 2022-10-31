@@ -45,7 +45,7 @@ struct Lexer
 
     private void readToken()
     {
-        while (true)
+        for (;;)
         {
             while (input.next.isWhite)
                 input.popFront;
@@ -160,7 +160,7 @@ struct Lexer
         size_t level = 1;
         dchar prev = 0;
 
-        while (true)
+        for (;;)
         {
             input.popFront;
             if (prev == '/' && input.next == '*')

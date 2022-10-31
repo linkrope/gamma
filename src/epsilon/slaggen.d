@@ -1084,7 +1084,7 @@ public void GenPredProcs()
 
         if (EAG.DomBuf[Dom] != EAG.nil)
         {
-            while (true)
+            for (;;)
             {
                 GenVar(i);
                 ++Dom;
@@ -1103,7 +1103,7 @@ public void GenPredProcs()
         if (EAG.DomBuf[Dom] != EAG.nil)
         {
             output.write("if (");
-            while (true)
+            for (;;)
             {
                 GenVar(i);
                 output.write(" != errVal");
@@ -1235,7 +1235,7 @@ public void GenPredProcs()
             ++AltLevel;
         }
         A = Node.Sub;
-        while (true)
+        for (;;)
         {
             if (AltLevel > 0)
             {
@@ -1860,7 +1860,7 @@ public void GenFormalParams(size_t N, Flag!"parNeeded" parNeeded)
     {
         if (!parNeeded)
             output.write(", ");
-        while (true)
+        for (;;)
         {
             if (EAG.DomBuf[Dom] > 0)
                 output.write("ref ");
@@ -1918,7 +1918,7 @@ public void GenActualParams(int P, bool ParNeeded) @safe
     {
         if (!ParNeeded)
             output.write(", ");
-        while (true)
+        for (;;)
         {
             assert(AffixName[P] >= 0);
 

@@ -173,7 +173,7 @@ void Comment()
 {
     int Level = 1;
 
-    while (true)
+    for (;;)
     {
         if (Ch == eot)
         {
