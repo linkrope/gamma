@@ -16,8 +16,11 @@ import gamma.grammar.Nonterminal;
 import gamma.grammar.Rule;
 import gamma.grammar.SymbolNode;
 import gamma.grammar.Terminal;
+import gamma.input.earley.AffixForm;
 import gamma.util.Position;
 import io;
+import log;
+import std.range;
 import std.typecons;
 import symbols;
 
@@ -86,7 +89,7 @@ public class Parser
             }
             else if (this.lexer.front == Token.name)
             {
-                const representation = this.symbolTable.symbol(this.lexer.value);
+                const value = this.lexer.value;
                 const position = this.lexer.position;
                 bool starred = false;
 
@@ -109,8 +112,8 @@ public class Parser
                 }
                 if (this.lexer.front == '=')
                 {
-                    Nonterminal nonterminal = this.metaGrammarBuilder.buildNonterminal(representation);
-                    SymbolNode lhs = new SymbolNode(nonterminal, position);
+                    auto nonterminal = metaNonterminal(value);
+                    auto lhs = new SymbolNode(nonterminal, position);
 
                     if (starred)
                         this.lexicalMetaNonterminals[nonterminal] = true;
@@ -119,8 +122,8 @@ public class Parser
                 }
                 else if (this.lexer.front == ':' || this.lexer.front == '<')
                 {
-                    Nonterminal nonterminal = this.hyperGrammarBuilder.buildNonterminal(representation);
-                    SymbolNode lhs = new HyperSymbolNode(nonterminal, null, position);
+                    auto nonterminal = hyperNonterminal(value);
+                    auto lhs = new HyperSymbolNode(nonterminal, null, position);
 
                     if (starred)
                         this.lexicalHyperNonterminals[nonterminal] = true;
@@ -134,10 +137,14 @@ public class Parser
             else if (this.lexer.empty)
                 break;
             else
-            {  // sync
+            {
                 markError("start of some rule expected");
+                // error recovery
                 while (!this.lexer.empty && this.lexer.front != '.')
+                {
+                    trace!"skipping\n%s"(this.lexer.position);
                     this.lexer.popFront;
+                }
                 if (this.lexer.front == '.')
                     this.lexer.popFront;
             }
@@ -160,10 +167,14 @@ public class Parser
             else
                 markError("white space definition expected");
             if (!this.lexer.empty && this.lexer.front != '|' && this.lexer.front != '.')
-            {  // sync
+            {
                 markError("unexpected symbol");
+                // error recovery
                 do
+                {
+                    trace!"skipping\n%s"(this.lexer.position);
                     this.lexer.popFront;
+                }
                 while (!this.lexer.empty && this.lexer.front != '|' && this.lexer.front != '.');
             }
             if (this.lexer.front == '|')
@@ -177,7 +188,7 @@ public class Parser
         if (this.lexer.front == '.')
             this.lexer.popFront;
         else
-            markError(`symbol "." expected`);
+            markError(`"." expected`);
     }
 
     /**
@@ -228,7 +239,7 @@ public class Parser
         if (this.lexer.front == '.')
             this.lexer.popFront;
         else
-            markError(`symbol "." expected`);
+            markError(`"." expected`);
     }
 
     /**
@@ -243,7 +254,7 @@ public class Parser
         for (;;)
         {
             Node[] rhs = parseMetaTerm;
-            Alternative alternative = new Alternative(lhs, rhs, position);
+            auto alternative = new Alternative(lhs, rhs, position);
 
             this.metaGrammarBuilder.add(alternative);
 
@@ -269,11 +280,7 @@ public class Parser
         for (;;)
             if (this.lexer.front == Token.name)
             {
-                const representation = this.symbolTable.symbol(this.lexer.value);
-                Nonterminal nonterminal = this.metaGrammarBuilder.buildNonterminal(representation);
-                const position = this.lexer.position;
-
-                nodes ~= new SymbolNode(nonterminal, position);
+                nodes ~= new SymbolNode(metaNonterminal(this.lexer.value), this.lexer.position);
                 this.lexer.popFront;
                 if (this.lexer.front == Token.number)
                 {
@@ -283,20 +290,20 @@ public class Parser
             }
             else if (this.lexer.front == Token.string_)
             {
-                const representation = this.symbolTable.symbol(this.lexer.value);
-                Terminal terminal = this.metaGrammarBuilder.buildTerminal(representation);
-                const position = this.lexer.position;
-
-                nodes ~= new SymbolNode(terminal, position);
+                nodes ~= new SymbolNode(metaTerminal(this.lexer.value), this.lexer.position);
                 this.lexer.popFront;
             }
             else if (this.lexer.empty || this.lexer.front == '|' || this.lexer.front == '.')
                 break;
             else
-            {  // sync
+            {
                 markError("unexpected symbol");
+                // error recovery
                 do
+                {
+                    trace!"skipping\n%s"(this.lexer.position);
                     this.lexer.popFront;
+                }
                 while (!this.lexer.empty && this.lexer.front != '|' && this.lexer.front != '.');
             }
 
@@ -317,8 +324,7 @@ public class Parser
 
         if (this.lexer.front == '<')
         {
-            this.lexer.popFront;
-            parseFormalParams;
+            parseParams(Yes.formalParams);
             formalParams = true;
         }
         if (this.lexer.front == ':')
@@ -326,7 +332,7 @@ public class Parser
             position = this.lexer.position;
             this.lexer.popFront;
         } else
-            markError(`symbol ":" expected`);
+            markError(`":" expected`);
 
         Alternative[] alternatives = parseHyperExpr(lhs,
             formalParams ? No.formalParamsAllowed : Yes.formalParamsAllowed, No.repetition,
@@ -341,7 +347,7 @@ public class Parser
         if (this.lexer.front == '.')
             this.lexer.popFront;
         else
-            markError(`symbol "." expected`);
+            markError(`"." expected`);
     }
 
     /**
@@ -367,26 +373,29 @@ public class Parser
             if (this.lexer.front == '<')
             {
                 paramsPosition = this.lexer.position;
-                this.lexer.popFront;
-                if (this.lexer.front == '+' || this.lexer.front == '-')
+
+                with (parseParams)
                 {
-                    parseFormalParams;
-                    if (!formalParamsAllowed || !firstRound && !formalParams)
-                        this.lexer.addError(paramsPosition, "unexpected formal parameters");
+                    if (signature !is null)
+                    {
+                        if (!formalParamsAllowed || !firstRound && !formalParams)
+                            this.lexer.addError(paramsPosition, "unexpected formal parameters");
+                        else
+                            formalParams = true;
+                    }
                     else
-                        formalParams = true;
-                }
-                else
-                {
-                    parseActualParams;
-                    if (formalParams)
-                        this.lexer.addError(paramsPosition, "formal parameters expected");
-                    else
-                        spareActualParams = true;
+                    {
+                        if (formalParams)
+                            this.lexer.addError(paramsPosition, "formal parameters expected");
+                        else
+                            spareActualParams = true;
+                    }
                 }
             }
             else if (formalParams)
+            {
                 markError("formal parameters expected");
+            }
 
             Node[] rhs = parseHyperTerm(spareActualParams, paramsPosition);
 
@@ -450,10 +459,9 @@ public class Parser
                 }
                 if (this.lexer.front == Token.name)
                 {
-                    const representation = this.symbolTable.symbol(this.lexer.value);
-                    Nonterminal nonterminal = this.hyperGrammarBuilder.buildNonterminal(representation);
+                    auto nonterminal = hyperNonterminal(this.lexer.value);
                     const position = this.lexer.position;
-                    Node node = new HyperSymbolNode (nonterminal, null, position);
+                    auto node = new HyperSymbolNode(nonterminal, null, position);
 
                     nodes ~= node;
                     this.lexer.popFront;
@@ -464,25 +472,21 @@ public class Parser
                     }
                     if (this.lexer.front == '<')
                     {
-                        this.lexer.popFront;
-                        parseActualParams;
+                        parseParams(No.formalParams);
                         undecidedActualParams = true;
                     }
                 }
                 else if (this.lexer.front == Token.string_)
                 {
-                    const representation = this.symbolTable.symbol(this.lexer.value);
-                    Terminal terminal = this.hyperGrammarBuilder.buildTerminal(representation);
-                    const position = this.lexer.position;
-                    Node node = new SymbolNode(terminal, position);
+                    auto terminal = hyperTerminal(this.lexer.value);
+                    auto node = new SymbolNode(terminal, this.lexer.position);
 
                     nodes ~= node;
                     this.lexer.popFront;
                 }
                 else if (this.lexer.front == '<')
                 {
-                    this.lexer.popFront;
-                    parseActualParams;
+                    parseParams(No.formalParams);
                     spareActualParams = true;
                     paramsPosition = this.lexer.position;
                 }
@@ -499,7 +503,7 @@ public class Parser
                 Alternative[] alternatives = parseHyperExpr(lhs,
                     Yes.formalParamsAllowed, (open == '{') ? Yes.repetition : No.repetition,
                     position);
-                Rule rule = new Rule(alternatives);
+                auto rule = new Rule(alternatives);
                 Operator operator = null;
 
                 assert(this.lexer.empty || this.lexer.front == '|' || this.lexer.front == '.'
@@ -508,19 +512,19 @@ public class Parser
                 if (open == '(')
                 {
                     if (this.lexer.front != ')')
-                        markError(`symbol ")" expected`);
+                        markError(`")" expected`);
                     operator = new Group(null, rule, position);
                 }
                 else if (open == '[')
                 {
                     if (this.lexer.front != ']')
-                        markError(`symbol "]" expected`);
+                        markError(`"]" expected`);
                     operator = new Option(null, rule, null, position);
                 }
                 else if (open == '{')
                 {
                     if (this.lexer.front != '}')
-                        markError(`symbol "}" expected`);
+                        markError(`"}" expected`);
                     operator = new Repetition(null, rule, null, position);
                 }
                 nodes ~= operator;
@@ -531,8 +535,7 @@ public class Parser
                 {
                     if (this.lexer.front == '<')
                     {
-                        this.lexer.popFront;
-                        parseFormalParams;
+                        parseParams(Yes.formalParams);
                     }
                     else
                         markError("formal parameters expected");
@@ -554,10 +557,14 @@ public class Parser
                 || this.lexer.front == ')' || this.lexer.front == ']' || this.lexer.front == '}')
                 break;
             else
-            {  // sync
+            {
                 markError("unexpected symbol");
+                // error recovery
                 do
+                {
+                    trace!"skipping\n%s"(this.lexer.position);
                     this.lexer.popFront;
+                }
                 while (!this.lexer.empty && this.lexer.front != '|' && this.lexer.front != '.'
                     && this.lexer.front != '(' && this.lexer.front != '[' && this.lexer.front != '{');
             }
@@ -569,84 +576,89 @@ public class Parser
         return nodes;
     }
 
-    /**
-     * ActualParams:
-     *     '<' AffixForm { ',' AffixForm } '>'.
-     */
-    private void parseActualParams()
+    private auto parseParams(Flag!"formalParams" formalParams)
     {
-        for (;;)
-        {
-            if (this.lexer.front == '+' || this.lexer.front == '-')
-            {
-                markError(`symbol "+" or "-" not allowed in actual parameters`);
-                this.lexer.popFront;
-            }
-            parseAffixForm;
-            if (!this.lexer.empty && this.lexer.front != '.'
-                && this.lexer.front != ',' && this.lexer.front != '>')
-            {  // sync
-                markError("unexpected symbol");
-                do
-                    this.lexer.popFront;
-                while (!this.lexer.empty && this.lexer.front != '.'
-                    && this.lexer.front != ',' && this.lexer.front != '>');
-            }
-            if (this.lexer.front == ',')
-                this.lexer.popFront;
-            else
-                break;
-        }
-
-        assert(this.lexer.empty || this.lexer.front == '>' || this.lexer.front == '.');
-
-        if (this.lexer.front == '>')
-            this.lexer.popFront;
-        else
-            markError(`symbol ">" expected`);
+        return parseParams(formalParams ? true.nullable : false.nullable);
     }
 
     /**
      * FormalParams:
      *     '<' ( '+' | '-' ) ( AffixForm ':' ident | Variable )
      *     { ',' ( '+' | '-' ) ( AffixForm ':' ident | Variable ) } '>'.
+     * ActualParams:
+     *     '<' AffixForm { ',' AffixForm } '>'.
      */
-    private void parseFormalParams()
+    private auto parseParams(Nullable!bool formalParams = Nullable!bool())
+    in (this.lexer.front == '<')
     {
+        import gamma.grammar.affixes.Direction : Direction;
+        import gamma.grammar.affixes.Signature : Signature;
+
+        Direction[] directions = null;
+        Nonterminal[] domains = null;
+        const position = this.lexer.position;
+
+        this.lexer.popFront;
         for (;;)
         {
             if (this.lexer.front == '+' || this.lexer.front == '-')
             {
+                directions ~= (this.lexer.front == '-') ? Direction.input : Direction.output;
+                if (formalParams.isNull)
+                    formalParams = true;
+                if (!formalParams.get)
+                    markError(`"+" or "-" unexpected for actual parameters`);
                 this.lexer.popFront;
             }
             else
-                markError(`symbol "+" or "-" expected`);
-
-            const isVariable = parseAffixForm;
-
-            if (this.lexer.front == ':')
             {
-                this.lexer.popFront;
-                if (this.lexer.front == Token.name)
+                if (formalParams.isNull)
+                    formalParams = false;
+                if (formalParams.get)
+                    markError(`"+" or "-" expected for formal parameters`);
+            }
+
+            AffixForm affixForm = parseAffixForm;
+
+            if (formalParams.get)
+            {
+                if (this.lexer.front == ':')
                 {
                     this.lexer.popFront;
-                    if (this.lexer.front == Token.number)
+                    if (this.lexer.front == Token.name)
                     {
-                        markError("unexpected number");
+                        auto nonterminal = metaNonterminal(this.lexer.value);
+
+                        domains ~= nonterminal;
                         this.lexer.popFront;
+                        if (this.lexer.front == Token.number)
+                        {
+                            markError("unexpected number");
+                            this.lexer.popFront;
+                        }
                     }
+                    else
+                        markError("meta-nonterminal expected");
+                }
+                else if (affixForm.isSingleVariable)
+                {
+                    domains ~= affixForm.variables.front.nonterminal;
                 }
                 else
-                    markError("meta-nonterminal expected");
+                {
+                    markError(`":" expected for formal parameters`);
+                }
             }
-            else if (!isVariable)
-                markError(`symbol ":" expected`);
             if (!this.lexer.empty && this.lexer.front != '.'
                 && this.lexer.front != ',' && this.lexer.front != '>')
-            {  // sync
+            {
                 markError("unexpected symbol");
+                // error recovery
                 do
+                {
+                    trace!"skipping\n%s"(this.lexer.position);
                     this.lexer.popFront;
+                }
                 while (!this.lexer.empty && this.lexer.front != '.'
                     && this.lexer.front != ',' && this.lexer.front != '>');
             }
@@ -658,52 +670,119 @@ public class Parser
         if (this.lexer.front == '>')
             this.lexer.popFront;
         else
-            markError(`symbol ">" expected`);
+            markError(`">" expected`);
+
+        Signature signature = null;
+
+        if (formalParams.get)
+        {
+            if (directions.length == domains.length)
+                signature = new Signature(directions, domains, position);
+            else
+                signature = new Signature(position);
+        }
+        return tuple!("signature")(signature);
     }
 
     /**
      * AffixForm:
      *     { string | Variable }.
+     * Variable:
+     *     [ '!' ] ident [ number ].
      */
-    private bool parseAffixForm()
+    private AffixForm parseAffixForm()
     {
-        bool isVariable = false;
+        SymbolNode[] symbolNodes = null;
+        Variable[] variables = null;
 
-        for (bool firstRound = true;; firstRound = false)
+        while (true)
         {
             if (this.lexer.front == Token.string_)
             {
+                symbolNodes ~= new SymbolNode(metaTerminal(this.lexer.value), this.lexer.position);
                 this.lexer.popFront;
-                isVariable = false;
             }
             else if (this.lexer.front == '!' || this.lexer.front == Token.name)
             {
-                parseVariable;
-                isVariable = firstRound;
+                const position = this.lexer.position;
+                bool unequal = false;
+
+                if (this.lexer.front == '!')
+                {
+                    unequal = true;
+                    this.lexer.popFront;
+                }
+                if (this.lexer.front == Token.name)
+                {
+                    auto nonterminal = metaNonterminal(this.lexer.value);
+
+                    symbolNodes ~= new SymbolNode(nonterminal, this.lexer.position);
+                    this.lexer.popFront;
+
+                    const number = parseNumber;
+
+                    variables ~= new Variable(unequal, nonterminal, number, position);
+                }
+                else
+                {
+                    markError("meta-variable expected");
+                }
             }
             else
                 break;
         }
-        return isVariable;
+        return new AffixForm(symbolNodes, variables);
     }
 
-    /**
-     * Variable:
-     *     [ '!' ] ident [ number ].
-     */
-    private void parseVariable()
-    in (this.lexer.front == '!' || this.lexer.front == Token.name)
+    private Nullable!int parseNumber()
     {
-        if (this.lexer.front == '!')
-            this.lexer.popFront;
-        if (this.lexer.front == Token.name)
+        import std.conv : ConvException, to;
+
+        Nullable!int number;
+
+        if (this.lexer.front == Token.number)
         {
+            const representation = this.symbolTable.symbol(this.lexer.value);
+
+            try
+            {
+                number = representation.to!int;
+            }
+            catch (ConvException)
+            {
+                markError("number out of range");
+            }
             this.lexer.popFront;
-            if (this.lexer.front == Token.number)
-                this.lexer.popFront;
         }
-        else
-            markError("meta-variable expected");
+        return number;
+    }
+
+    private Nonterminal metaNonterminal(size_t value)
+    {
+        const representation = this.symbolTable.symbol(value);
+
+        return this.metaGrammarBuilder.buildNonterminal(representation);
+    }
+
+    private Terminal metaTerminal(size_t value)
+    {
+        const representation = this.symbolTable.symbol(value);
+
+        return this.metaGrammarBuilder.buildTerminal(representation);
+    }
+
+    private Nonterminal hyperNonterminal(size_t value)
+    {
+        const representation = this.symbolTable.symbol(value);
+
+        return this.hyperGrammarBuilder.buildNonterminal(representation);
+    }
+
+    private Terminal hyperTerminal(size_t value)
+    {
+        const representation = this.symbolTable.symbol(value);
+
+        return this.hyperGrammarBuilder.buildTerminal(representation);
     }
 
     public int getErrorCount() const

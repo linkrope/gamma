@@ -1,50 +1,41 @@
 module gamma.grammar.affixes.Signature;
 
-import gamma.grammar.affixes.Mode;
+import gamma.grammar.affixes.Direction;
 import gamma.grammar.Nonterminal;
 import gamma.util.Position;
 import std.range;
 
 public class Signature
 {
-    private const Mode[] modes_;
+    private Direction[] directions_;
 
     private Nonterminal[] domains_;
 
     private Position position_;
 
-    public this(Mode[] modes, Nonterminal[] domains, Position position)
-    in (modes.length == domains.length)
+    public this(Direction[] directions, Nonterminal[] domains, Position position)
+    in (directions.length == domains.length)
     {
-        this.modes_ = modes.dup;
+        this.directions_ = directions.dup;
         this.domains_ = domains.dup;
         this.position_ = position;
     }
 
     public this(Position position)
     {
-        this.modes_ = null;
         this.position_ = position;
     }
 
     public override string toString() const
     {
-        import std.array : appender;
-        import std.conv : to;
+        import std.format : format;
 
-        auto buffer = appender!string();
+        string[] items = null;
 
-        buffer.put('<');
-        foreach (i; 0 .. length)
-        {
-            if (i > 0)
-                buffer.put(", ");
-            buffer.put(this.modes_[i].to!string);
-            buffer.put(' ');
-            buffer.put(this.domains_[i].toString);
-        }
-        buffer.put('>');
-        return buffer[];
+        foreach (direction, domain; lockstep(this.directions_, this.domains_))
+            items ~= format!"%s %s"((direction == Direction.input) ? `-` : `+`, domain);
+
+        return format!"<%-(%s, %)>"(items);
     }
 
     public size_t length() const
@@ -57,9 +48,9 @@ public class Signature
         return this.domains_.empty;
     }
 
-    public const(Mode)[] modes() const
+    public Direction[] direction()
     {
-        return this.modes_;
+        return this.directions_;
     }
 
     public Nonterminal[] domains()

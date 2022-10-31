@@ -3,6 +3,13 @@ module gamma.input.earley.AffixForm;
 import gamma.grammar.affixes.Variable;
 import gamma.grammar.SymbolNode;
 
+/**
+ * This immutable value object represents a possible affix form.
+ * The sentential form is represented as a sequence of symbol nodes
+ * of terminals and nonterminals of a grammar.
+ * In addition, for each nonterminal occurrence,
+ * the corresponding affix variable is specified.
+ */
 public class AffixForm
 {
     private SymbolNode[] symbolNodes_;

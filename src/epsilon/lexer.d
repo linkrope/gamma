@@ -45,8 +45,6 @@ struct Lexer
 
     private void readToken()
     {
-        scope (exit)
-            addTrace;
         while (true)
         {
             while (input.next.isWhite)
@@ -418,30 +416,6 @@ struct Lexer
             assert(lexer.front == Token.number);
             assert(symbolTable.symbol(lexer.value) == "42");
             assert(lexer.ok);
-        }
-    }
-
-    private void addTrace()
-    {
-        import log : trace;
-
-        switch (token) with (Token)
-        {
-            case end:
-                trace!"end\n%s"(position_);
-                break;
-            case string_:
-                trace!"string: %s\n%s"(symbolTable.symbol(value_), position_);
-                break;
-            case name:
-                trace!"name: %s\n%s"(symbolTable.symbol(value_), position_);
-                break;
-            case number:
-                trace!"number: %s\n%s"(symbolTable.symbol(value_), position_);
-                break;
-            default:
-                trace!"%s\n%s"(token, position_);
-                break;
         }
     }
 
