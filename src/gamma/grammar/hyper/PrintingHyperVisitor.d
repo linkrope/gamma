@@ -1,5 +1,6 @@
 module gamma.grammar.hyper.PrintingHyperVisitor;
 
+import gamma.grammar.affixes.Variable;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.hyper.Group;
@@ -10,6 +11,7 @@ import gamma.grammar.hyper.RepetitionAlternative;
 import gamma.grammar.Node;
 import gamma.grammar.Rule;
 import gamma.grammar.SymbolNode;
+import gamma.input.earley.AffixForm;
 import std.range;
 
 version (unittest) import gamma.grammar.GrammarBuilder;
@@ -67,9 +69,25 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
 
     public void visit(SymbolNode symbolNode)
     {
-        // auto hyperSymbolNode = cast(HyperSymbolNode) symbolNode;
+        import gamma.grammar.hyper.HyperSymbolNode : HyperSymbolNode;
 
         this.writer.put(symbolNode.symbol.toString);
+        if (cast(HyperSymbolNode) symbolNode)
+        {
+            auto hyperSymbolNode = cast(HyperSymbolNode) symbolNode;
+
+            if (hyperSymbolNode.params !is null)
+            {
+                this.writer.put(" <");
+                foreach (i, affixForm; hyperSymbolNode.params.affixForms.enumerate)
+                {
+                    if (i > 0)
+                        this.writer.put(", ");
+                    this.writer.write(affixForm);
+                }
+                this.writer.put(">");
+            }
+        }
     }
 
     public void visit(Rule rule)
@@ -171,4 +189,39 @@ unittest
 
         assert(grammar.toPrettyString == expected);
     }
+}
+
+private void write(Writer)(Writer writer, AffixForm affixForm)
+{
+    import gamma.grammar.Nonterminal : Nonterminal;
+
+    auto variables = affixForm.variables;
+
+    foreach (i, symbolNode; affixForm.symbolNodes.enumerate)
+    {
+        if (i > 0)
+            writer.put(" ");
+        if (cast(Nonterminal) symbolNode.symbol)
+        {
+            assert(!variables.empty);
+
+            writer.write(variables.front);
+            variables.popFront;
+        }
+        else
+        {
+            writer.put(symbolNode.symbol.toString);
+        }
+    }
+}
+
+private void write(Writer)(Writer writer, Variable variable)
+{
+    import std.conv : to;
+
+    if (variable.unequal)
+        writer.put("!");
+    writer.put(variable.nonterminal.toString);
+    if (!variable.number.isNull)
+        writer.put(variable.number.get.to!string);
 }

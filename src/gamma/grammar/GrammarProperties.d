@@ -300,8 +300,8 @@ public class GrammarProperties
             }
         }
 
-        trace!"nullable nonterminals:%-(\n%s%)"
-            (this.grammar_.nonterminals.filter!(nonterminal => isNullable(nonterminal)));
+        trace!"nullable nonterminals:%-(\n%s%)"(this.grammar_.nonterminals
+            .filter!(nonterminal => isNullable(nonterminal)));
 
         /*
          * Compute productive nonterminals.
@@ -382,8 +382,8 @@ public class GrammarProperties
             }
         }
 
-        trace!"productive nonterminals:%-(\n%s%)"
-            (this.grammar_.nonterminals.filter!(nonterminal => isProductive(nonterminal)));
+        trace!"productive nonterminals:%-(\n%s%)"(this.grammar_.nonterminals
+            .filter!(nonterminal => isProductive(nonterminal)));
     }
 
     /**
@@ -399,10 +399,10 @@ public class GrammarProperties
 
         traverseReachables(this.grammar_.startSymbol);
 
-        trace!"reachable nonterminals:%-(\n%s%)"
-            (this.grammar_.nonterminals.filter!(nonterminal => isReachable(nonterminal)));
-        trace!"reachable terminals:%-(\n%s%)"
-            (this.grammar_.terminals.filter!(terminal => isReachable(terminal)));
+        trace!"reachable nonterminals:%-(\n%s%)"(this.grammar_.nonterminals
+            .filter!(nonterminal => isReachable(nonterminal)));
+        trace!"reachable terminals:%-(\n%s%)"(this.grammar_.terminals
+            .filter!(terminal => isReachable(terminal)));
     }
 
     /**
@@ -449,8 +449,8 @@ public class GrammarProperties
             if (value)
                 traverseLexicalNonterminals(nonterminal);
 
-        trace!"lexical nonterminals:%-(\n%s%)"
-            (this.grammar_.nonterminals.filter!(nonterminal => isLexicalNonterminal(nonterminal)));
+        trace!"lexical nonterminals:%-(\n%s%)"(this.grammar_.nonterminals
+            .filter!(nonterminal => isLexicalNonterminal(nonterminal)));
     }
 
     private void traverseLexicalNonterminals(Nonterminal nonterminal)
@@ -522,8 +522,8 @@ public class GrammarProperties
         this.predicateNonterminals = this.productiveNonterminals.dup;
         this.predicateNonterminals -= nonStrongNullables;
 
-        trace!"predicates:%-(\n%s%)"
-            (this.grammar_.nonterminals.filter!(nonterminal => isStrongNullable(nonterminal)));
+        trace!"predicates:%-(\n%s%)"(this.grammar_.nonterminals
+            .filter!(nonterminal => isStrongNullable(nonterminal)));
     }
 
     public Grammar grammar()

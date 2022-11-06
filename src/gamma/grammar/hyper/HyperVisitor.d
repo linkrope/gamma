@@ -8,11 +8,11 @@ import gamma.grammar.Visitor;
 
 public interface HyperVisitor : Visitor
 {
-    public void visit(Group group);
+    public void visit(Group);
 
-    public void visit(Option option);
+    public void visit(Option);
 
-    public void visit(Repetition repetition);
+    public void visit(Repetition);
 
-    public void visit(RepetitionAlternative alternative);
+    public void visit(RepetitionAlternative);
 }

@@ -2,6 +2,7 @@
 dub.selections.json
 core
 /gamma*
+/parser-tables.json
 tmp
 *.exe
 *.lst
