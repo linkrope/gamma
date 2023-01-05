@@ -199,7 +199,6 @@ void main(string[] args)
     bool info;
     bool verbose;
     bool write;
-    bool ignoreContentBeforeEof;
     GetoptResult result;
 
     try
@@ -208,8 +207,6 @@ void main(string[] args)
                 "info|i", "Show heap usage information.", &info,
                 "verbose|v", "Print verbose parser error messages.", &verbose,
                 "write|w", "Toggle default for writing output.", &write,
-                "trailingTokens|t", "allowing arbitrary trailing content before EOF (Oberon2 like behavior)", 
-                    &ignoreContentBeforeEof,
         );
     }
     catch (Exception exception)
@@ -230,12 +227,12 @@ void main(string[] args)
     if (verbose)
         levels |= Level.trace;
     if (args.dropOne.empty)
-        Compile(read("stdin", stdin), info, verbose, write, ignoreContentBeforeEof);
+        Compile(read("stdin", stdin), info, verbose, write);
 
     try
     {
         foreach (arg; args.dropOne)
-            Compile(read(arg), info, verbose, write, ignoreContentBeforeEof);
+            Compile(read(arg), info, verbose, write);
     }
     catch (ErrnoException exception)
     {
@@ -245,7 +242,7 @@ void main(string[] args)
 
 }
 
-void Compile(Input input, bool info_, bool verbose, bool write, bool ignoreContentBeforeEof)
+void Compile(Input input, bool info_, bool verbose, bool write)
 {
     HeapType V1;
 
@@ -256,24 +253,19 @@ void Compile(Input input, bool info_, bool verbose, bool write, bool ignoreConte
         S.Init(input);
         S.Get(Tok);
         $(V1);
-        if (!ignoreContentBeforeEof)
-            recognizeEof();
+        recognizeEof;
         $
     }
 }
 
 private void recognizeEof() 
 {
-    while (Tok != endTok) 
-    {
-        if (Tok == sepTok) 
-            continue;
-        else {
-            ErrorCounter++;
-            error!"syntax error, unexpected token(s) before end of file\n%s"(S.Pos);
-            break;
-        }
+    while (Tok == sepTok)
         S.Get(Tok);
+    if (Tok != endTok)
+    {
+        ++ErrorCounter;
+        error!"syntax error, unexpected content before end of file\n%s"(S.Pos);
     }
 }
 

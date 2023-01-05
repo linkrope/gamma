@@ -26,23 +26,6 @@ unittest
         run!"cat <<EOF | ./gamma --output-directory %s%sEOF"(directory, eag)
             .shouldPassWith("NoEOF grammar is SLAG");
         run!"cd %s && echo x yy zzz | ./NoEOF"(directory)
-            .shouldFailWith("syntax error, unexpected token\\(s\\) before end of file");
-    }
-}
-
-@("issue #11: allow trailing content before EOF at LL(1) parser if option -t has been passeed")
-unittest
-{
-    with (sandbox)
-    {
-        const eag = `
-            NoEOF<+ 'Done': Done>: 'x'.
-            Done = 'Done'.
-            `.outdent;
-
-        run!"cat <<EOF | ./gamma --output-directory %s%sEOF"(directory, eag)
-            .shouldPassWith("NoEOF grammar is SLAG");
-        run!"cd %s && echo x yy zzz | ./NoEOF -t"(directory)
-            .shouldPassWith("Done");
+            .shouldFailWith("error: syntax error, unexpected content before end of file");
     }
 }

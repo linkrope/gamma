@@ -11,11 +11,11 @@ unittest
     {
         run!"./gamma example/frontend.eag --output-directory %s"(directory)
             .shouldPassWith("OberonO grammar is SLAG");
-        run!"cd %s && ./OberonO -t %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
+        run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
             .shouldPassWith("^done$");
-        run!"cd %s && ./OberonO -t %s"(directory, absolutePath("test/oberon0/BigSample.Mod"))
+        run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/BigSample.Mod"))
             .shouldPassWith("^done$");
-        run!"cd %s && ./OberonO -t %s"(directory, absolutePath("test/oberon0/Error.Mod"))
+        run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/Error.Mod"))
             .shouldFailWith("^info: errors detected: 31$");
     }
 }
@@ -28,11 +28,11 @@ static foreach (eag; ["oberon0.eag", "unequal.eag"])
         {
             run!"./gamma --space example/%s --output-directory %s"(eag, directory)
                 .shouldPassWith("OberonO grammar is SLAG");
-            run!"cd %s && ./OberonO -t %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
+            run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
                 .shouldPassWith("^L1 .* RET 0 $");
-            run!"cd %s && ./OberonO -t %s"(directory, absolutePath("test/oberon0/BigSample.Mod"))
+            run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/BigSample.Mod"))
                 .shouldPassWith("^^L1 .* RET 0 $$");
-            run!"cd %s && ./OberonO -t %s"(directory, absolutePath("test/oberon0/Error.Mod"))
+            run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/Error.Mod"))
                 .shouldFailWith("^info: errors detected: 31$");
         }
     }
@@ -55,17 +55,17 @@ unittest
         run!"./gamma --space example/type-check.eag --output-directory %s"(directory)
             .shouldPassWith("OberonOf grammar is single sweep");
 
-        run!"cd %s && ./OberonOa -t -v -w %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
+        run!"cd %s && ./OberonOa -v -w %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
             .shouldPassWith("OberonOa compiler: compiling...");
-        run!"cd %s && ./OberonOb -t -v -w OberonOa.Out"(directory)
+        run!"cd %s && ./OberonOb -v -w OberonOa.Out"(directory)
             .shouldPassWith("OberonOb compiler: compiling...");
-        run!"cd %s && ./OberonOc -t -v -w OberonOb.Out"(directory)
+        run!"cd %s && ./OberonOc -v -w OberonOb.Out"(directory)
             .shouldPassWith("OberonOc compiler: compiling...");
-        run!"cd %s && ./OberonOd -t -v -w OberonOc.Out"(directory)
+        run!"cd %s && ./OberonOd -v -w OberonOc.Out"(directory)
             .shouldPassWith("OberonOd compiler: compiling...");
-        run!"cd %s && ./OberonOe -t -v -w OberonOd.Out"(directory)
+        run!"cd %s && ./OberonOe -v -w OberonOd.Out"(directory)
             .shouldPassWith("OberonOe compiler: compiling...");
-        run!"cd %s && ./OberonOf -t -v -w OberonOe.Out"(directory)
+        run!"cd %s && ./OberonOf -v -w OberonOe.Out"(directory)
             .shouldPassWith("OberonOf compiler: compiling...");
         run!"cd %s && cat OberonOf.Out"(directory)
             .shouldPassWith("ID M u l t i p l y PROC");
