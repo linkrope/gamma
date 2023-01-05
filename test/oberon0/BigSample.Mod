@@ -1718,6 +1718,7 @@ MODULE BigSample;
 
 END BigSample.
 
+(*
 OSP.Compile @
 OSP.Decode
 OSP.Load
@@ -1725,3 +1726,4 @@ OSP.Exec Multiply 47 11
 OSP.Exec Divide 47 11
 OSP.Exec BinSearch 5  1 3 5 7 9  4
 OSP.Exec BinSearch 5  1 3 5 7 9  5
+*)
