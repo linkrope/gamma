@@ -13,19 +13,23 @@ unittest
     }
 }
 
-@("issue #11: disallow trailing content before EOF at LL(1) parser, by default")
+@("issue #11: ensure trailing content before EOF is reported as syntax error by LL(1) parser")
 unittest
 {
     with (sandbox)
     {
         const eag = `
-            NoEOF<+ 'Done': Done>: 'x'.
-            Done = 'Done'.
+            N = | '1' N.
+
+            S<+  : N>:
+                .
+            S<+ '1' N: N>: 
+                'a' S<N> 'b'.
             `.outdent;
 
         run!"cat <<EOF | ./gamma --output-directory %s%sEOF"(directory, eag)
-            .shouldPassWith("NoEOF grammar is SLAG");
-        run!"cd %s && echo x yy zzz | ./NoEOF"(directory)
+            .shouldPassWith("S grammar is SLAG");
+        run!"cd %s && echo aa bbb | ./S"(directory)
             .shouldFailWith("error: syntax error, unexpected content before end of file");
     }
 }
