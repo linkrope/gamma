@@ -30,6 +30,6 @@ unittest
         run!"cat <<EOF | ./gamma --output-directory %s%sEOF"(directory, eag)
             .shouldPassWith("S grammar is SLAG");
         run!"cd %s && echo aa bbb | ./S"(directory)
-            .shouldFailWith("error: syntax error, unexpected content before end of file");
+            .shouldFailWith("syntax error, unexpected content before end of file");
     }
 }
