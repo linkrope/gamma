@@ -253,19 +253,19 @@ void Compile(Input input, bool info_, bool verbose, bool write)
         S.Init(input);
         S.Get(Tok);
         $(V1);
-        recognizeEnd;
+        checkEnd;
         $
     }
 }
 
-private void recognizeEnd() 
+private void checkEnd() 
 {
     while (Tok == sepTok)
         S.Get(Tok);
     if (Tok != endTok)
     {
         ++ErrorCounter;
-        error!"syntax error, unexpected content before end of file (or end of text)\n%s"(S.Pos);
+        error!"syntax error, end expected\n%s"(S.Pos);
     }
 }
 
