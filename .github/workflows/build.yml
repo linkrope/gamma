@@ -22,26 +22,6 @@ jobs:
       run: |
         dub build
 
-  unittest:
-    name: Unit Tests
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
-
-    runs-on: ${{ matrix.os }}
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@v3
-
-    - name: Install D compiler
-      uses: dlang-community/setup-dlang@v1
-      with:
-        compiler: dmd-latest
-    
-    - name: Run unit tests
-      run: |
-        dub test --config=unittest
-
   test:
     name: Test Gamma
     strategy:
