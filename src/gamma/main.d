@@ -240,9 +240,28 @@ void build(string[] fileNames, string outputDirectory)
 
     if (!outputDirectory.empty)
     {
+        version(Windows)
+        {
+            auto executableName = format!"%s.exe"(fileNames.front.stripExtension);
+        } 
+        else 
+        {
+            auto executableName = fileNames.front.stripExtension;
+        }
         args ~= format!"-od=%s"(outputDirectory);
-        args ~= format!"-of=%s"(fileNames.front.stripExtension);
+        args ~= format!"-of=%s"(executableName);
     }
+
+    version(Windows) 
+    {
+        import std.string : translate;
+        for(int i; i < args.length; i++) 
+        {
+            dchar[dchar] translation = ['/': '\\'];
+            args[i] = translate(args[i], translation);
+        }
+    }
+
     info!"%s"(args.join(' '));
 
     auto pid = spawnProcess(args);
