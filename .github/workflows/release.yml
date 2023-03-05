@@ -1,0 +1,66 @@
+name: Release
+on: 
+  release:
+    types: [published]
+
+jobs:
+
+  test:
+    name: Test Gamma
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout source codet
+      uses: actions/checkout@v3
+
+    - name: Install D compiler
+      uses: dlang-community/setup-dlang@v1
+      with:
+        compiler: dmd-2.103.1
+    
+    - name: Run tests
+      run: |
+        dub test --config=example
+
+  build:
+    name: Build Gamma
+    needs: test
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        include:
+          - os: windows-latest
+            rename: Rename-Item gamma.exe
+            exe: gamma.windows-amd64.exe
+          - os: ubuntu-latest
+            rename: mv ./gamma
+            exe: gamma.linux-amd64
+          - os: macOS-latest
+            rename: mv ./gamma
+            exe: gamma.macos-amd64
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v3
+
+    - name: Install D compiler
+      uses: dlang-community/setup-dlang@v1
+      with:
+        compiler: ldc-1.33.0
+    
+    - name: Run build
+      run: |
+        dub build
+  
+    - name: Rename binary
+      run:  ${{ matrix.rename }} ${{ matrix.exe }}
+
+    - name: Upload release binary
+      uses: AButler/upload-release-assets@v3.0
+      with:
+        files: ${{ matrix.exe }}
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
