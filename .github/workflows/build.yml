@@ -16,7 +16,7 @@ jobs:
     - name: Install D compiler
       uses: dlang-community/setup-dlang@v1
       with:
-        compiler: dmd-latest
+        compiler: ldc-latest
     
     - name: Run build
       run: |
@@ -36,7 +36,7 @@ jobs:
     - name: Install D compiler
       uses: dlang-community/setup-dlang@v1
       with:
-        compiler: dmd-latest
+        compiler: ldc-latest
     
     - name: Run tests
       run: |
