@@ -9,8 +9,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Setup
-      uses: dlang-community/setup-dlang@v1.3.0
+    - uses: dlang-community/setup-dlang@v1.3.0
       with:
         compiler: dmd-latest
 
@@ -27,11 +26,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Setup
-      uses: dlang-community/setup-dlang@v1.3.0
+    - uses: dlang-community/setup-dlang@v1.3.0
       with:
         compiler: dmd-latest
-      run: |
+
+    - run: |
         dub fetch dscanner@0.14.0
 
     - name: Check Style
