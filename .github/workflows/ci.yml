@@ -31,7 +31,7 @@ jobs:
         compiler: dmd-latest
 
     - run: |
-        dub fetch dscanner@0.14.0
+        dub fetch dscanner@0.12.2
 
     - name: Check Style
       run: |
