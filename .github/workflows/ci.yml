@@ -1,0 +1,39 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup
+      uses: dlang-community/setup-dlang@v1.3.0
+      with:
+        compiler: dmd-latest
+
+    - name: Build
+      run: |
+        dub build --compiler=$DC
+
+    - name: Test
+      run: |
+        dub test --compiler=$DC --config=example
+
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup
+      uses: dlang-community/setup-dlang@v1.3.0
+      with:
+        compiler: dmd-latest
+      run: |
+        dub fetch dscanner@0.14.0
+
+    - name: Check Style
+      run: |
+        dub run dscanner -- --styleCheck src test
