@@ -32,7 +32,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
         include:
           - os: windows-latest
-            rename: rename gamma.exe
+            rename: Rename-Item gamma.exe
             exe: gamma.windows-amd64.exe
           - os: ubuntu-latest
             rename: mv ./gamma
