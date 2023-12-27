@@ -54,7 +54,9 @@ jobs:
       with:
         compiler: dmd-2.103.1
     
+    - run: |
+        dub fetch dscanner@0.14.0
+
     - name: Check style
       run: |
-        dub fetch dscanner --version=0.12.2
         dub run dscanner -- --styleCheck src test
