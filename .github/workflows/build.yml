@@ -1,9 +1,9 @@
 name: Build on Push & PR
 on: 
-  pull_request:
   push:
     tags-ignore:
       - v*
+  pull_request:
 
 jobs:
   build:
