@@ -32,11 +32,14 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
         include:
           - os: windows-latest
-            exe: "gamma.exe"
+            rename: rename gamma.exe
+            exe: gamma.windows-amd64.exe
           - os: ubuntu-latest
-            exe: "./gamma"
+            rename: mv ./gamma
+            exe: gamma.linux-amd64
           - os: macOS-latest
-            exe: "./gamma"
+            rename: mv ./gamma
+            exe: gamma.macos-amd64
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -52,7 +55,10 @@ jobs:
       run: |
         dub build
   
-    - name: Upload release binaries
+    - name: Rename binary
+      run:  ${{ matrix.rename }} ${{ matrix.exe }}
+
+    - name: Upload release binary
       uses: AButler/upload-release-assets@v3.0
       with:
         files: ${{ matrix.exe }}
