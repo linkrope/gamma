@@ -1,0 +1,62 @@
+name: Build on Push & PR
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build Gamma
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v3
+
+    - name: Install D compiler
+      uses: dlang-community/setup-dlang@v1
+      with:
+        compiler: ldc-1.33.0
+    
+    - name: Run build
+      run: |
+        dub build
+
+  test:
+    name: Test Gamma
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout source codet
+      uses: actions/checkout@v3
+
+    - name: Install D compiler
+      uses: dlang-community/setup-dlang@v1
+      with:
+        compiler: dmd-2.103.1
+    
+    - name: Run tests
+      run: |
+        dub test --config=example
+
+  check:
+    name: Check Style
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v3
+
+    - name: Install D compiler
+      uses: dlang-community/setup-dlang@v1
+      with:
+        compiler: dmd-2.103.1
+    
+    - run: |
+        dub fetch dscanner@0.14.0
+
+    - name: Check style
+      run: |
+        dub run dscanner -- --styleCheck src test
