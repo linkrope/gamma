@@ -240,16 +240,8 @@ void build(string[] fileNames, string outputDirectory)
 
     if (!outputDirectory.empty)
     {
-        version(Windows)
-        {
-            auto executableName = format!"%s.exe"(fileNames.front.stripExtension);
-        } 
-        else 
-        {
-            auto executableName = fileNames.front.stripExtension;
-        }
         args ~= format!"-od=%s"(outputDirectory);
-        args ~= format!"-of=%s"(executableName);
+        args ~= format!"-of=%s"(fileNames.front.stripExtension.executableName);
     }
 
     version(Windows) 
@@ -269,4 +261,12 @@ void build(string[] fileNames, string outputDirectory)
 
     if (status)
         exit(status);
+}
+
+private string executableName(const string name)
+{
+    version(Windows)
+        return name ~ ".exe";
+    else
+        return name;
 }
