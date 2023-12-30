@@ -2,7 +2,7 @@
 
 # Extended Affix Grammar Compiler Generator
 
-[![D](https://github.com/linkrope/gamma/actions/workflows/d.yml/badge.svg)](https://github.com/linkrope/gamma/actions/workflows/d.yml)
+[![D](https://github.com/linkrope/gamma/actions/workflows/ci.yml/badge.svg)](https://github.com/linkrope/gamma/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-BSL_1.0-blue.svg)](https://raw.githubusercontent.com/linkrope/gamma/master/LICENSE_1_0.txt)
 [![Dub Version](https://img.shields.io/dub/v/gamma.svg)](https://code.dlang.org/packages/gamma)
 

@@ -36,7 +36,7 @@ in (MaxAffInRule > 0)
     int Exp;
     int i;
     // Exp = SHORT(ENTIER(Math.ln(MaxAffInRule) / Math.ln(2)) + 1);
-    Exp = log2(MaxAffInRule).to!int + 1;
+    Exp = log2(MaxAffInRule.to!double).to!int + 1;
     MaxHashTabIndex = 2;
     for (i = 2; i <= Exp; ++i)
         MaxHashTabIndex = MaxHashTabIndex * 2;
