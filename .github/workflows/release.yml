@@ -25,7 +25,7 @@ jobs:
         include:
           - os: windows
             exe-name: gamma.windows-amd64.exe
-            rename: Rename-Item gamma.exe
+            rename: mv ./gamma.exe
           - os: linux
             exe-name: gamma.linux-amd64
             rename: mv ./gamma
