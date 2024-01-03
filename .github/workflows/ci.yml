@@ -4,9 +4,15 @@ on: [push, pull_request]
 jobs:
   build:
     uses: ./.github/workflows/build.yml
+    with:
+      lcd_compiler_version: ldc-1.33.0
 
   test:
     uses: ./.github/workflows/test.yml
+    with:
+      dmd_compiler_version: dmd-2.103.1
 
   check:
     uses: ./.github/workflows/check.yml
+    with:
+      dmd_compiler_version: dmd-2.103.1

@@ -1,7 +1,11 @@
-name: Check Gamma project
+name: Check Gamma Project
 
 on:
-  workflow_call
+  workflow_call:
+    inputs:
+      dmd_compiler_version:
+        type: string
+        required: true
 
 jobs:
   check:
@@ -14,7 +18,7 @@ jobs:
     - name: Install D compiler
       uses: dlang-community/setup-dlang@v1
       with:
-        compiler: dmd-2.103.1
+        compiler: ${{ inputs.dmd_compiler_version }}
     
     - run: |
         dub fetch dscanner@0.14.0
