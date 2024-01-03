@@ -13,6 +13,16 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
+        include:
+          - os: windows-latest
+            upload-path: windows/gamma.exe
+            upload-name: windows-exe
+          - os: ubuntu-latest
+            upload-path: linux/gamma
+            upload-name: linux-exe
+          - os: macOS-latest
+            upload-path: macos/gamma
+            upload-name: macos-exe
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -27,4 +37,11 @@ jobs:
     - name: Run build
       run: |
         dub build
+
+    - name: Upload executables
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.upload-name }}
+        path: ${{ matrix.upload-path }}
+        retention-days: 7
 
