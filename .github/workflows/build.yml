@@ -39,7 +39,7 @@ jobs:
         dub build
 
     - name: Upload executables
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.upload-name }}
         path: ${{ matrix.upload-path }}
