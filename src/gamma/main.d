@@ -244,16 +244,6 @@ void build(string[] fileNames, string outputDirectory)
         args ~= format!"-of=%s"(fileNames.front.stripExtension.executableName);
     }
 
-    version(Windows) 
-    {
-        import std.string : translate;
-        for(int i; i < args.length; i++) 
-        {
-            dchar[dchar] translation = ['/': '\\'];
-            args[i] = translate(args[i], translation);
-        }
-    }
-
     info!"%s"(args.join(' '));
 
     auto pid = spawnProcess(args);
