@@ -2,12 +2,8 @@ name: Upload release binaries
 
 on:
   workflow_call:
-    secrets:
-      GITHUB_TOKEN:
-        required: true
 
 jobs:
-
   upload:
     name: Upload release binary
     strategy:
