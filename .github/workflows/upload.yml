@@ -1,0 +1,41 @@
+name: Upload release binaries
+
+on:
+  workflow_call:
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+
+  upload:
+    name: Upload release binary
+    strategy:
+      matrix:
+        os: [Windows, Linux, MacOS]
+        include:
+          - os: Windows
+            exe-name: gamma.windows-amd64.exe
+            rename: mv ./gamma.exe
+          - os: Linux
+            exe-name: gamma.linux-amd64
+            rename: mv ./gamma
+          - os: MacOS
+            exe-name: gamma.macos-amd64
+            rename: mv ./gamma
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download binary from previous build job
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.exe-name }}
+
+      - name: Give binary a unique name 
+        run:  ${{ matrix.rename }} ${{ matrix.exe-name }}
+      
+      - name: Upload release binary
+        uses: AButler/upload-release-assets@v3.0
+        with:
+          files: ${{ matrix.exe-name }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
