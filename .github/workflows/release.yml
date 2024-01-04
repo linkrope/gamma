@@ -21,15 +21,15 @@ jobs:
     needs: build
     strategy:
       matrix:
-        os: [windows, linux, macos]
+        os: [Windows, Linux, MacOS]
         include:
-          - os: windows
+          - os: Windows
             exe-name: gamma.windows-amd64.exe
             rename: mv ./gamma.exe
-          - os: linux
+          - os: Linux
             exe-name: gamma.linux-amd64
             rename: mv ./gamma
-          - os: macos
+          - os: MacOS
             exe-name: gamma.macos-amd64
             rename: mv ./gamma
 
