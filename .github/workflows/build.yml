@@ -12,19 +12,22 @@ jobs:
     name: Build Gamma
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [Windows, Linux, MacOS]
         include:
-          - os: windows-latest
+          - os: Windows
+            runner: windows-latest
             upload-path: ./gamma.exe
             upload-name: gamma.windows-amd64.exe
-          - os: ubuntu-latest
+          - os: Linux
+            runner: ubuntu-latest
             upload-path: ./gamma
             upload-name: gamma.linux-amd64
-          - os: macOS-latest
+          - os: MacOS
+            runner: macOS-latest
             upload-path: ./gamma
             upload-name: gamma.macos-amd64
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     steps:
     - name: Checkout source code
       uses: actions/checkout@v3
@@ -44,4 +47,3 @@ jobs:
         name: ${{ matrix.upload-name }}
         path: ${{ matrix.upload-path }}
         retention-days: 1
-
