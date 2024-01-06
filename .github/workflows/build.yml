@@ -1,0 +1,49 @@
+name: Build Gamma
+
+on:
+  workflow_call:
+    inputs:
+      lcd_compiler_version:
+        type: string
+        required: true
+
+jobs:
+  build:
+    name: Build Gamma
+    strategy:
+      matrix:
+        os: [Windows, Linux, MacOS]
+        include:
+          - os: Windows
+            runner: windows-latest
+            upload-path: ./gamma.exe
+            upload-name: gamma.windows-amd64.exe
+          - os: Linux
+            runner: ubuntu-latest
+            upload-path: ./gamma
+            upload-name: gamma.linux-amd64
+          - os: MacOS
+            runner: macOS-latest
+            upload-path: ./gamma
+            upload-name: gamma.macos-amd64
+
+    runs-on: ${{ matrix.runner }}
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v3
+
+    - name: Install D compiler
+      uses: dlang-community/setup-dlang@v1
+      with:
+        compiler: ${{ inputs.lcd_compiler_version }}
+    
+    - name: Run build
+      run: |
+        dub build
+
+    - name: Upload executables
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.upload-name }}
+        path: ${{ matrix.upload-path }}
+        retention-days: 1

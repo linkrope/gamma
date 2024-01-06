@@ -1,0 +1,37 @@
+name: Test Gamma
+
+on:
+  workflow_call:
+    inputs:
+      dmd_compiler_version:
+        type: string
+        required: true
+
+jobs:
+  test:
+    name: Test Gamma
+    strategy:
+      matrix:
+        os: [Windows, Linux, MacOS]
+        include:
+          - os: Windows
+            runner: windows-latest
+          - os: Linux
+            runner: ubuntu-latest
+          - os: MacOS
+            runner: macOS-latest
+
+    runs-on: ${{ matrix.runner }}
+    
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v3
+    
+    - name: Install D compiler
+      uses: dlang-community/setup-dlang@v1
+      with:
+        compiler: ${{ inputs.dmd_compiler_version }}
+    
+    - name: Run tests
+      run: |
+        dub test --config=example

@@ -1,0 +1,23 @@
+name: Release
+
+on: 
+  release:
+    types: [published]
+
+jobs:
+
+  verify:
+    uses: ./.github/workflows/test.yml
+    with:
+      dmd_compiler_version: dmd-2.103.1
+
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      lcd_compiler_version: ldc-1.33.0
+    needs: verify
+
+  upload:
+    uses: ./.github/workflows/upload.yml
+    secrets: inherit
+    needs: build

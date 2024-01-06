@@ -230,18 +230,22 @@ void build(string[] fileNames, string outputDirectory)
 {
     import core.stdc.stdlib : exit;
     import std.format : format;
-    import std.path : stripExtension;
+    import std.path : buildPath, stripExtension;
     import std.process : spawnProcess, wait;
     import std.string : join;
 
-    auto args = "dmd" ~ fileNames ~ "-g" ~ "include/runtime.d"
-        ~ "src/io.d" ~ "src/log.d" ~ "src/epsilon/soag/listacks.d";
+    auto args = "dmd" ~ fileNames ~ "-g" 
+        ~ buildPath("include", "runtime.d")
+        ~ buildPath("src", "io.d") 
+        ~ buildPath("src", "log.d") 
+        ~ buildPath("src", "epsilon", "soag", "listacks.d"); 
 
     if (!outputDirectory.empty)
     {
         args ~= format!"-od=%s"(outputDirectory);
-        args ~= format!"-of=%s"(fileNames.front.stripExtension);
+        args ~= format!"-of=%s"(fileNames.front.stripExtension.executableName);
     }
+
     info!"%s"(args.join(' '));
 
     auto pid = spawnProcess(args);
@@ -249,4 +253,12 @@ void build(string[] fileNames, string outputDirectory)
 
     if (status)
         exit(status);
+}
+
+private string executableName(const string name)
+{
+    version(Windows)
+        return name ~ ".exe";
+    else
+        return name;
 }

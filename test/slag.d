@@ -126,15 +126,22 @@ unittest
     }
 }
 
-@("compile lexer-test.eag as SLAG and run compiler")
-unittest
+version(Windows)
 {
-    with (sandbox)
+    // Unicode characters are not really supported on Windows command line...
+}
+else
+{
+    @("compile lexer-test.eag as SLAG and run compiler")
+    unittest
     {
-        run!"./gamma --space example/lexer-test.eag --output-directory %s"(directory)
-            .shouldPassWith("ε grammar is SLAG");
-        run!`cd %s && echo α β α β \\\\n α β β α| ./ε`(directory)
-            .shouldPassWith("^α α β β \n α α β β $");
+        with (sandbox)
+        {
+            run!"./gamma --space example/lexer-test.eag --output-directory %s"(directory)
+                .shouldPassWith("ε grammar is SLAG");
+            run!`cd %s && echo α β α β \\\\n α β β α| ./ε`(directory)
+                .shouldPassWith("^α α β β \n α α β β $");
+        }
     }
 }
 
@@ -159,10 +166,20 @@ unittest
     {
         run!"./gamma --space example/ebnf.eag --output-directory %s"(directory)
             .shouldPassWith("S grammar is SLAG");
-        run!`cd %s && echo 'a, , ab' | ./S`(directory)
-            .shouldPassWith("^a , , a b $");
-        run!`cd %s && echo '"a", "", "ab"' | ./S`(directory)
-            .shouldPassWith("^a , , a b $");
+        version(Windows)
+        {
+            run!`cd %s && echo a, , ab | ./S`(directory)
+                .shouldPassWith("^a , , a b $");
+            run!`cd %s && echo "a", "", "ab" | ./S`(directory)
+                .shouldPassWith("^a , , a b $");
+        }
+        else
+        {
+            run!`cd %s && echo 'a, , ab' | ./S`(directory)
+                .shouldPassWith("^a , , a b $");
+            run!`cd %s && echo '"a", "", "ab"' | ./S`(directory)
+                .shouldPassWith("^a , , a b $");
+        }
     }
 }
 
@@ -173,9 +190,19 @@ unittest
     {
         run!"./gamma --space example/bnf/ebnf.eag --output-directory %s"(directory)
             .shouldPassWith("S grammar is SLAG");
-        run!`cd %s && echo 'a, , ab' | ./S`(directory)
-            .shouldPassWith("^a , , a b $");
-        run!`cd %s && echo '"a", "", "ab"' | ./S`(directory)
-            .shouldPassWith("^a , , a b $");
+        version(Windows) 
+        {
+            run!`cd %s && echo a, , ab | ./S`(directory)
+                .shouldPassWith("^a , , a b $");
+            run!`cd %s && echo "a", "", "ab" | ./S`(directory)
+                .shouldPassWith("^a , , a b $");
+        }
+        else
+        {
+            run!`cd %s && echo 'a, , ab' | ./S`(directory)
+                .shouldPassWith("^a , , a b $");
+            run!`cd %s && echo '"a", "", "ab"' | ./S`(directory)
+                .shouldPassWith("^a , , a b $");
+        }
     }
 }

@@ -1,38 +1,24 @@
 name: CI
+
 on:
   push:
+    branches:
+      - "*"
   pull_request:
 
 jobs:
+
   build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
+    uses: ./.github/workflows/build.yml
+    with:
+      lcd_compiler_version: ldc-1.33.0
 
-    - uses: dlang-community/setup-dlang@v1
-      with:
-        compiler: dmd-2.103.1
-
-    - name: Build
-      run: |
-        dub build --compiler=$DC
-
-    - name: Test
-      run: |
-        dub test --compiler=$DC --config=example
+  test:
+    uses: ./.github/workflows/test.yml
+    with:
+      dmd_compiler_version: dmd-2.103.1
 
   check:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-
-    - uses: dlang-community/setup-dlang@v1
-      with:
-        compiler: dmd-latest
-
-    - run: |
-        dub fetch dscanner@0.14.0
-
-    - name: Check Style
-      run: |
-        dub run dscanner -- --styleCheck src test
+    uses: ./.github/workflows/check.yml
+    with:
+      dmd_compiler_version: dmd-2.103.1

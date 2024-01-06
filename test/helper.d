@@ -28,7 +28,18 @@ Result run(string fmt, A...)(lazy A args)
     import std.process : executeShell;
     import std.stdio : writeln;
 
-    const command = format!fmt(args);
+    auto command = format!fmt(args);
+
+    version(Windows) 
+    {
+        import std.string : translate;
+        dchar[dchar] translation = ['/': '\\'];
+        command = translate(command, translation);
+
+        import std.regex : regex, replaceAll, replaceFirst;
+        command = replaceFirst(command, regex("echo\\s+\\|"), "echo. |");
+        command = replaceAll(command, regex("\\bcat\\b"), "type");
+    }
 
     writeln(command);
     return executeShell(command);
@@ -56,4 +67,12 @@ Result shouldFailWith(Result result, string pattern)
         assert(output.matchFirst(regex(pattern, "m")), output);
     }
     return result;
+}
+
+string asSingleLineDosInput(string multiLineInput) 
+{
+    import std.string : translate;
+
+    string[dchar] translation = ['\n' : " ", '|' : "^|", '<' : "^<", '>' : "^>"];
+    return translate(multiLineInput, translation);
 }
