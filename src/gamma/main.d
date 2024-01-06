@@ -255,7 +255,7 @@ void build(string[] fileNames, string outputDirectory)
         exit(status);
 }
 
-string executableName(const string name)
+private string executableName(const string name)
 {
     version(Windows)
         return name ~ ".exe";
