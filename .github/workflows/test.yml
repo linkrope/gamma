@@ -3,10 +3,18 @@ name: Test Gamma
 on:
   workflow_call:
     inputs:
-      dmd_compiler_version:
+      ldc_compiler_version:
         type: string
         required: true
-
+      gamma_used_dmd_compiler_version:
+          type: string
+          required: false
+          default: "dmd-2.103.1"
+      build_type:
+        type: string
+        required: false
+        default: "debug"
+  
 jobs:
   test:
     name: Test Gamma
@@ -25,13 +33,20 @@ jobs:
     
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
-    - name: Install D compiler
+    - name: Install D compiler for building gamma
       uses: dlang-community/setup-dlang@v1
       with:
-        compiler: ${{ inputs.dmd_compiler_version }}
+        compiler: ${{ inputs.ldc_compiler_version }}
+    
+    - name: Install DMD compiler if not installed yet, called by gamma during unittests
+      uses: dlang-community/setup-dlang@v1
+      with:
+        compiler: ${{ inputs.gamma_used_dmd_compiler_version }}
     
     - name: Run tests
       run: |
-        dub test --config=example
+        dub build --compiler=ldc2 --build=${{inputs.build_type}}
+        dub test --compiler=ldc2 --build=unittest --config=example
+

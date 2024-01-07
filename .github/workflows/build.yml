@@ -3,9 +3,13 @@ name: Build Gamma
 on:
   workflow_call:
     inputs:
-      lcd_compiler_version:
+      compiler_version:
         type: string
         required: true
+      build_type:
+        type: string
+        required: false
+        default: "debug"
 
 jobs:
   build:
@@ -30,16 +34,16 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install D compiler
       uses: dlang-community/setup-dlang@v1
       with:
-        compiler: ${{ inputs.lcd_compiler_version }}
+        compiler: ${{ inputs.compiler_version }}
     
     - name: Run build
       run: |
-        dub build
+        dub build --build=${{inputs.build_type}}
 
     - name: Upload executables
       uses: actions/upload-artifact@v4
