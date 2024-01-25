@@ -1,19 +1,23 @@
-name: Build Gamma
+name: Build & Test Gamma
 
 on:
   workflow_call:
     inputs:
-      compiler_version:
+      ldc_compiler_version:
         type: string
         required: true
+      gamma_used_dmd_compiler_version:
+          type: string
+          required: false
+          default: "dmd-2.103.1"
       build_type:
         type: string
         required: false
         default: "debug"
-
+  
 jobs:
   build:
-    name: Build Gamma
+    name: build & test Gamma
     strategy:
       matrix:
         os: [Windows, Linux, MacOS]
@@ -32,22 +36,29 @@ jobs:
             upload-name: gamma.macos-amd64
 
     runs-on: ${{ matrix.runner }}
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@v4
-
-    - name: Install D compiler
-      uses: dlang-community/setup-dlang@v1
-      with:
-        compiler: ${{ inputs.compiler_version }}
     
-    - name: Run build
-      run: |
-        dub build --build=${{inputs.build_type}}
-
-    - name: Upload executables
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.upload-name }}
-        path: ${{ matrix.upload-path }}
-        retention-days: 1
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+      
+      - name: Install LDC compiler for building gamma
+        uses: dlang-community/setup-dlang@v1
+        with:
+          compiler: ${{ inputs.ldc_compiler_version }}
+      
+      - name: Install DMD compiler, called by gamma during unittests
+        uses: dlang-community/setup-dlang@v1
+        with:
+          compiler: ${{ inputs.gamma_used_dmd_compiler_version }}
+      
+      - name: Build & run tests
+        run: |
+          dub build --compiler=ldc2 --build=${{inputs.build_type}}
+          dub test --compiler=ldc2 --build=unittest --config=example
+  
+      - name: Upload executables to workflow run page
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.upload-name }}
+          path: ${{ matrix.upload-path }}
+          retention-days: 1

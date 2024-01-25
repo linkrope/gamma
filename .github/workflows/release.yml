@@ -6,19 +6,13 @@ on:
 
 jobs:
 
-  verify:
-    uses: ./.github/workflows/test.yml
+  build:
+    name: build & test
+    uses: ./.github/workflows/build.yml
     with:
       ldc_compiler_version: ldc-1.33.0
       gamma_used_dmd_compiler_version: dmd-2.103.1
       build_type: release-gamma
-
-  build:
-    uses: ./.github/workflows/build.yml
-    with:
-      compiler_version: ldc-1.33.0
-      build_type: release-gamma
-    needs: verify
 
   upload:
     uses: ./.github/workflows/upload.yml
