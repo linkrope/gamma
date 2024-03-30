@@ -231,10 +231,11 @@ void build(string[] fileNames, string outputDirectory)
     import core.stdc.stdlib : exit;
     import std.format : format;
     import std.path : stripExtension;
-    import std.process : spawnProcess, wait;
+    import std.process : environment, spawnProcess, wait;
     import std.string : join;
 
-    auto args = "dmd" ~ fileNames ~ "-g" ~ "include/runtime.d"
+    const compiler = environment.get("DC", "dmd");
+    auto args = compiler ~ fileNames ~ "-g" ~ "include/runtime.d"
         ~ "src/io.d" ~ "src/log.d" ~ "src/epsilon/soag/listacks.d";
 
     if (!outputDirectory.empty)
