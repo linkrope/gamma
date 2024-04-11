@@ -10,8 +10,7 @@ jobs:
     name: build & test
     uses: ./.github/workflows/build.yml
     with:
-      ldc_compiler_version: ldc-1.33.0
-      gamma_used_dmd_compiler_version: dmd-2.103.1
+      compiler_version: ldc-1.33.0
       build_type: release-gamma
 
   upload:

@@ -3,13 +3,9 @@ name: Build & Test Gamma
 on:
   workflow_call:
     inputs:
-      ldc_compiler_version:
+      compiler_version:
         type: string
         required: true
-      gamma_used_dmd_compiler_version:
-          type: string
-          required: false
-          default: "dmd-2.103.1"
       build_type:
         type: string
         required: false
@@ -44,18 +40,13 @@ jobs:
       - name: Install LDC compiler for building gamma
         uses: dlang-community/setup-dlang@v1
         with:
-          compiler: ${{ inputs.ldc_compiler_version }}
-      
-      - name: Install DMD compiler, called by gamma during unittests
-        uses: dlang-community/setup-dlang@v1
-        with:
-          compiler: ${{ inputs.gamma_used_dmd_compiler_version }}
+          compiler: ${{ inputs.compiler_version }}
       
       - name: Build & run tests
         run: |
-          dub build --compiler=ldc2 --build=${{inputs.build_type}}
-          dub test --compiler=ldc2 --build=unittest --config=example
-  
+          dub build --build=${{inputs.build_type}}
+          dub test --build=unittest --config=example
+    
       - name: Upload executables to workflow run page
         uses: actions/upload-artifact@v4
         with:
