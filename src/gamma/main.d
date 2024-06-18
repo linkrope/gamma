@@ -241,8 +241,9 @@ void build(string[] fileNames, string outputDirectory)
     if (!outputDirectory.empty)
     {
         args ~= format!"-od=%s"(outputDirectory);
-        args ~= format!"-of=%s"(fileNames.front.stripExtension);
+        args ~= format!"-of=%s"(fileNames.front.stripExtension.executableName);
     }
+
     info!"%s"(args.join(' '));
 
     auto pid = spawnProcess(args);
@@ -250,4 +251,12 @@ void build(string[] fileNames, string outputDirectory)
 
     if (status)
         exit(status);
+}
+
+private string executableName(const string name)
+{
+    version(Windows)
+        return name ~ ".exe";
+    else
+        return name;
 }

@@ -8,6 +8,11 @@
     "importPaths": ["include", "src"],
     "mainSourceFile": "src/gamma/main.d",
     "stringImportPaths": ["fix/epsilon"],
+    "buildTypes": {
+        "release-gamma": {
+            "buildOptions": ["debugMode", "optimize", "inline", "debugInfo"]
+        }
+    },
     "configurations": [
         {
             "name": "gamma",

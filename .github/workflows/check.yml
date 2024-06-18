@@ -1,0 +1,28 @@
+name: Check Gamma Project
+
+on:
+  workflow_call:
+    inputs:
+      compiler_version:
+        type: string
+        required: true
+
+jobs:
+  check:
+    name: Check Style
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v4
+
+    - name: Install D compiler
+      uses: dlang-community/setup-dlang@v1
+      with:
+        compiler: ${{ inputs.compiler_version }}
+    
+    - run: |
+        dub fetch dscanner@0.14.0
+
+    - name: Check style
+      run: |
+        dub run dscanner -- --styleCheck src test
