@@ -1,5 +1,7 @@
 module test.issues;
 
+import std.file;
+import std.path;
 import std.string;
 import test.helper;
 
@@ -8,6 +10,7 @@ unittest
 {
     with (sandbox)
     {
+        const name = buildPath(directory, "test.eag");
         const eag = `
             S = .
 
@@ -15,17 +18,9 @@ unittest
             A: 'a' A.
             `.outdent;
 
-        version(Windows)
-        {
-            run!"mkdir %s & echo %s > %s\\input.eag && type %s\\input.eag | ./gamma --output-directory %s"
-                (directory, eag.asSingleLineDosInput, directory, directory, directory)
-                .shouldFailWith("error: start symbol S is unproductive");
-        }
-        else
-        {
-            run!"cat <<EOF | ./gamma --output-directory %s%sEOF"(directory, eag)
-                .shouldFailWith("error: start symbol S is unproductive");
-        }
+        write(name, eag);
+        run!"./gamma --output-directory %s %s"(directory, name)
+            .shouldFailWith("error: start symbol S is unproductive");
     }
 }
 
@@ -34,24 +29,17 @@ unittest
 {
     with (sandbox)
     {
+        const name = buildPath(directory, "test.eag");
         const eag = `
             S = .
 
             S <+ : S>: A | 'b'.
             A: 'a' A.
             `.outdent;
-        
-        version(Windows)
-        {
-            run!"mkdir %s & echo %s > %s\\input.eag && type %s\\input.eag | ./gamma --output-directory %s"
-                (directory, eag.asSingleLineDosInput, directory, directory, directory)
-                .shouldPassWith("warn: A is unproductive");
-        }
-        else
-        {
-            run!"cat <<EOF | ./gamma --output-directory %s%sEOF"(directory, eag)
-                .shouldPassWith("warn: A is unproductive");
-        }
+
+        write(name, eag);
+        run!"./gamma --output-directory %s %s"(directory, name)
+            .shouldPassWith("warn: A is unproductive");
     }
 }
 
@@ -60,26 +48,19 @@ unittest
 {
     with (sandbox)
     {
+        const name = buildPath(directory, "test.eag");
         const eag = `
             N = | '1' N.
 
             S<+  : N>:
                 .
-            S<+ '1' N: N>: 
+            S<+ '1' N: N>:
                 'a' S<N> 'b'.
             `.outdent;
-        
-        version(Windows)
-        {
-            run!"mkdir %s & echo %s > %s\\input.eag && type %s\\input.eag | ./gamma --output-directory %s"
-                (directory, eag.asSingleLineDosInput, directory, directory, directory)
-                .shouldPassWith("S grammar is SLAG");
-        }
-        else
-        {
-            run!"cat <<EOF | ./gamma --output-directory %s%sEOF"(directory, eag)
-                .shouldPassWith("S grammar is SLAG");
-        }
+
+        write(name, eag);
+        run!"./gamma --output-directory %s %s"(directory, name)
+            .shouldPassWith("S grammar is SLAG");
         run!"cd %s && echo aa bbb | ./S"(directory)
             .shouldFailWith("syntax error, end expected");
     }

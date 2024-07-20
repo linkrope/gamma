@@ -4,6 +4,7 @@ import std.typecons;
 
 Sandbox sandbox()
 {
+    import std.file : mkdirRecurse;
     import std.format : format;
     import std.path : buildPath;
 
@@ -11,7 +12,10 @@ Sandbox sandbox()
 
     synchronized
     {
-        return Sandbox(buildPath("tmp", format!"%s"(count++)));
+        const directory = buildPath("tmp", format!"%s"(count++));
+
+        mkdirRecurse(directory);
+        return Sandbox(directory);
     }
 }
 
@@ -30,13 +34,14 @@ Result run(string fmt, A...)(lazy A args)
 
     auto command = format!fmt(args);
 
-    version(Windows) 
+    version (Windows)
     {
-        import std.string : translate;
-        dchar[dchar] translation = ['/': '\\'];
-        command = translate(command, translation);
-
         import std.regex : regex, replaceAll, replaceFirst;
+        import std.string : translate;
+
+        dchar[dchar] translation = ['/': '\\'];
+
+        command = translate(command, translation);
         command = replaceFirst(command, regex("echo\\s+\\|"), "echo. |");
         command = replaceAll(command, regex("\\bcat\\b"), "type");
     }
@@ -67,12 +72,4 @@ Result shouldFailWith(Result result, string pattern)
         assert(output.matchFirst(regex(pattern, "m")), output);
     }
     return result;
-}
-
-string asSingleLineDosInput(string multiLineInput) 
-{
-    import std.string : translate;
-
-    string[dchar] translation = ['\n' : " ", '|' : "^|", '<' : "^<", '>' : "^>"];
-    return translate(multiLineInput, translation);
 }

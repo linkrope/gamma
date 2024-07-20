@@ -255,8 +255,10 @@ void build(string[] fileNames, string outputDirectory)
 
 private string executableName(const string name)
 {
-    version(Windows)
-        return name ~ ".exe";
+    import std.path : setExtension;
+
+    version (Windows)
+        return setExtension(name, "exe");
     else
         return name;
 }

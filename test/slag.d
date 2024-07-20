@@ -1,5 +1,7 @@
 module test.slag;
 
+import std.file;
+import std.path;
 import test.helper;
 
 @("compile abc.eag as SLAG and run compiler")
@@ -126,9 +128,9 @@ unittest
     }
 }
 
-version(Windows)
+version (Windows)
 {
-    // Unicode characters are not really supported on Windows command line...
+    pragma(msg, "skip lexer-test.eag because of missing Unicode support");
 }
 else
 {
@@ -164,22 +166,13 @@ unittest
 {
     with (sandbox)
     {
+        write(buildPath(directory, "input"), `"a", "", "ab"`);
         run!"./gamma --space example/ebnf.eag --output-directory %s"(directory)
             .shouldPassWith("S grammar is SLAG");
-        version(Windows)
-        {
-            run!`cd %s && echo a, , ab | ./S`(directory)
-                .shouldPassWith("^a , , a b $");
-            run!`cd %s && echo "a", "", "ab" | ./S`(directory)
-                .shouldPassWith("^a , , a b $");
-        }
-        else
-        {
-            run!`cd %s && echo 'a, , ab' | ./S`(directory)
-                .shouldPassWith("^a , , a b $");
-            run!`cd %s && echo '"a", "", "ab"' | ./S`(directory)
-                .shouldPassWith("^a , , a b $");
-        }
+        run!`cd %s && echo a, , ab | ./S`(directory)
+            .shouldPassWith("^a , , a b $");
+        run!`cd %s && ./S input`(directory)
+            .shouldPassWith("^a , , a b $");
     }
 }
 
@@ -188,21 +181,12 @@ unittest
 {
     with (sandbox)
     {
+        write(buildPath(directory, "input"), `"a", "", "ab"`);
         run!"./gamma --space example/bnf/ebnf.eag --output-directory %s"(directory)
             .shouldPassWith("S grammar is SLAG");
-        version(Windows) 
-        {
-            run!`cd %s && echo a, , ab | ./S`(directory)
-                .shouldPassWith("^a , , a b $");
-            run!`cd %s && echo "a", "", "ab" | ./S`(directory)
-                .shouldPassWith("^a , , a b $");
-        }
-        else
-        {
-            run!`cd %s && echo 'a, , ab' | ./S`(directory)
-                .shouldPassWith("^a , , a b $");
-            run!`cd %s && echo '"a", "", "ab"' | ./S`(directory)
-                .shouldPassWith("^a , , a b $");
-        }
+        run!`cd %s && echo a, , ab | ./S`(directory)
+            .shouldPassWith("^a , , a b $");
+        run!`cd %s && ./S input`(directory)
+            .shouldPassWith("^a , , a b $");
     }
 }
