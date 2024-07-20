@@ -10,7 +10,7 @@ on:
         type: string
         required: false
         default: "debug"
-  
+
 jobs:
   build:
     name: build & test Gamma
@@ -20,6 +20,7 @@ jobs:
         include:
           - os: Windows
             runner: windows-latest
+            shell: pwsh
             upload-path: ./gamma.exe
             upload-name: gamma.windows-amd64.exe
           - os: Linux
@@ -32,21 +33,21 @@ jobs:
             upload-name: gamma.macos-amd64
 
     runs-on: ${{ matrix.runner }}
-    
+
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
-      
+
       - name: Install LDC compiler for building gamma
         uses: dlang-community/setup-dlang@v1
         with:
           compiler: ${{ inputs.compiler_version }}
-      
+
       - name: Build & run tests
         run: |
           dub build --build=${{inputs.build_type}}
           dub test --build=unittest --config=example
-    
+
       - name: Upload executables to workflow run page
         uses: actions/upload-artifact@v4
         with:
