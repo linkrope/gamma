@@ -2,7 +2,7 @@
     "name": "gamma",
     "description": "Extended Affix Grammar compiler compiler",
     "authors": ["Mario Kröplin"],
-    "copyright": "Copyright © 2021, Mario Kröplin",
+    "copyright": "Copyright © 2024, Mario Kröplin",
     "license" : "BSL-1.0",
     "sourcePaths": ["include", "src"],
     "importPaths": ["include", "src"],

@@ -19,7 +19,7 @@ unittest
             `.outdent;
 
         write(name, eag);
-        run!"./gamma --output-directory %s %s"(directory, name)
+        run!"%s --output-directory %s %s"(gamma, directory, name)
             .shouldFailWith("error: start symbol S is unproductive");
     }
 }
@@ -38,7 +38,7 @@ unittest
             `.outdent;
 
         write(name, eag);
-        run!"./gamma --output-directory %s %s"(directory, name)
+        run!"%s --output-directory %s %s"(gamma, directory, name)
             .shouldPassWith("warn: A is unproductive");
     }
 }
@@ -59,9 +59,9 @@ unittest
             `.outdent;
 
         write(name, eag);
-        run!"./gamma --output-directory %s %s"(directory, name)
+        run!"%s --output-directory %s %s"(gamma, directory, name)
             .shouldPassWith("S grammar is SLAG");
-        run!"cd %s && echo aa bbb | ./S"(directory)
+        run!"cd %s && echo aa bbb | %s"(directory, dotSlash("S"))
             .shouldFailWith("syntax error, end expected");
     }
 }

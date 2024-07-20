@@ -8,7 +8,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma %s --output-directory %s"(buildPath("example", "left-recursion.eag"), directory)
+        run!"%s %s --output-directory %s"(gamma, buildPath("example", "left-recursion.eag"), directory)
             .shouldFailWith("left recursion");
     }
 }

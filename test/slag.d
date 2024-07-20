@@ -9,9 +9,9 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space %s --output-directory %s"(buildPath("example", "abc.eag"), directory)
+        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "abc.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
-        run!"cd %s && echo a a a b b b c c c | ./S"(directory)
+        run!"cd %s && echo a a a b b b c c c | %s"(directory, dotSlash("S"))
             .shouldPassWith(`^1 1 1 $`);
     }
 }
@@ -21,9 +21,9 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space %s --output-directory %s"(buildPath("example", "ab.eag"), directory)
+        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "ab.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
-        run!"cd %s && echo a a a b b b | ./S"(directory)
+        run!"cd %s && echo a a a b b b | %s"(directory, dotSlash("S"))
             .shouldPassWith("^1 1 1 $");
     }
 }
@@ -33,9 +33,9 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space %s --output-directory %s"(buildPath("example", "bnf", "ab.eag"), directory)
+        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "bnf", "ab.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
-        run!"cd %s && echo a a a b b b | ./S"(directory)
+        run!"cd %s && echo a a a b b b | %s"(directory, dotSlash("S"))
             .shouldPassWith("^1 1 1 $");
     }
 }
@@ -45,9 +45,9 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space %s --output-directory %s"(buildPath("example", "w-w.eag"), directory)
+        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "w-w.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
-        run!"cd %s && echo a b a b c a b a b | ./S"(directory)
+        run!"cd %s && echo a b a b c a b a b | %s"(directory, dotSlash("S"))
             .shouldPassWith("^a b a b $");
     }
 }
@@ -58,9 +58,9 @@ unittest
     with (sandbox)
     {
         write(buildPath(directory, "input"), null);
-        run!"./gamma %s --output-directory %s"(buildPath("example", "hello-world.eag"), directory)
+        run!"%s %s --output-directory %s"(gamma, buildPath("example", "hello-world.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
-        run!"cd %s && ./S input"(directory)
+        run!"cd %s && %s input"(directory, dotSlash("S"))
             .shouldPassWith("^Hello World!$");
     }
 }
@@ -70,9 +70,9 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space %s --output-directory %s"(buildPath("example", "count1.eag"), directory)
+        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "count1.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
-        run!"cd %s && echo 1 1 1 1 1 1 1 1 1 1 1 1 1 | ./S"(directory)
+        run!"cd %s && echo 1 1 1 1 1 1 1 1 1 1 1 1 1 | %s"(directory, dotSlash("S"))
             .shouldPassWith("^Number 1 3 $");
     }
 }
@@ -82,9 +82,9 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma %s --output-directory %s"(buildPath("example", "count6.eag"), directory)
+        run!"%s %s --output-directory %s"(gamma, buildPath("example", "count6.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
-        run!"cd %s && echo a a a b b b | ./S"(directory)
+        run!"cd %s && echo a a a b b b | %s"(directory, dotSlash("S"))
             .shouldPassWith("^3$");
     }
 }
@@ -94,13 +94,13 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space %s --output-directory %s"(buildPath("example", "decl-appl.eag"), directory)
+        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "decl-appl.eag"), directory)
             .shouldPassWith("DeclAppl grammar is SLAG");
-        run!"cd %s && echo DECL ab DECL ba APPL ab | ./DeclAppl"(directory)
+        run!"cd %s && echo DECL ab DECL ba APPL ab | %s"(directory, dotSlash("DeclAppl"))
             .shouldPassWith("^ba ; ab ; $");
-        run!"cd %s && echo DECL ab DECL ab | ./DeclAppl"(directory)
+        run!"cd %s && echo DECL ab DECL ab | %s"(directory, dotSlash("DeclAppl"))
             .shouldFailWith("^error: predicate 'NotAlreadyDeclared' failed$");
-        run!"cd %s && echo DECL ba APPL ab | ./DeclAppl"(directory)
+        run!"cd %s && echo DECL ba APPL ab | %s"(directory, dotSlash("DeclAppl"))
             .shouldFailWith("^error: predicate 'Declared' failed$");
     }
 }
@@ -110,9 +110,9 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space %s --output-directory %s"(buildPath("example", "expr.eag"), directory)
+        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "expr.eag"), directory)
             .shouldPassWith("Expr grammar is SLAG");
-        run!"cd %s && echo 1 + 0 + 1 | ./Expr"(directory)
+        run!"cd %s && echo 1 + 0 + 1 | %s"(directory, dotSlash("Expr"))
             .shouldPassWith("^1 ENTER 0 ENTER ADD 1 ENTER ADD $");
     }
 }
@@ -122,9 +122,9 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space %s --output-directory %s"(buildPath("example", "ident-list.eag"), directory)
+        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "ident-list.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
-        run!"cd %s && echo ab ba | ./S"(directory)
+        run!"cd %s && echo ab ba | %s"(directory, dotSlash("S"))
             .shouldPassWith("^ab ba $");
     }
 }
@@ -140,9 +140,9 @@ else
     {
         with (sandbox)
         {
-            run!"./gamma --space %s --output-directory %s"(buildPath("example", "lexer-test.eag"), directory)
+            run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "lexer-test.eag"), directory)
                 .shouldPassWith("ε grammar is SLAG");
-            run!`cd %s && echo α β α β \\\\n α β β α| ./ε`(directory)
+            run!`cd %s && echo α β α β \\\\n α β β α| %s`(directory, dotSlash("ε"))
                 .shouldPassWith("^α α β β \n α α β β $");
         }
     }
@@ -153,7 +153,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma %s --output-directory %s"(buildPath("example", "non-slag.eag"), directory)
+        run!"%s %s --output-directory %s"(gamma, buildPath("example", "non-slag.eag"), directory)
             .shouldPassWith("cannot analyze bottom up")
             .shouldPassWith("cannot synthesize 2 times bottom up")
             .shouldPassWith("cannot check for equality bottom up")
@@ -168,11 +168,11 @@ unittest
     with (sandbox)
     {
         write(buildPath(directory, "input"), `"a", "", "ab"`);
-        run!"./gamma --space %s --output-directory %s"(buildPath("example", "ebnf.eag"), directory)
+        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "ebnf.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
-        run!`cd %s && echo a, , ab | ./S`(directory)
+        run!`cd %s && echo a, , ab | %s`(directory, dotSlash("S"))
             .shouldPassWith("^a , , a b $");
-        run!`cd %s && ./S input`(directory)
+        run!`cd %s && %s input`(directory, dotSlash("S"))
             .shouldPassWith("^a , , a b $");
     }
 }
@@ -183,11 +183,11 @@ unittest
     with (sandbox)
     {
         write(buildPath(directory, "input"), `"a", "", "ab"`);
-        run!"./gamma --space %s --output-directory %s"(buildPath("example", "bnf", "ebnf.eag"), directory)
+        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "bnf", "ebnf.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
-        run!`cd %s && echo a, , ab | ./S`(directory)
+        run!`cd %s && echo a, , ab | %s`(directory, dotSlash("S"))
             .shouldPassWith("^a , , a b $");
-        run!`cd %s && ./S input`(directory)
+        run!`cd %s && %s input`(directory, dotSlash("S"))
             .shouldPassWith("^a , , a b $");
     }
 }
