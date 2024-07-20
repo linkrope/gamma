@@ -1,5 +1,7 @@
 module test.sweep;
 
+import std.file;
+import std.path;
 import test.helper;
 
 @("compile abc.eag as Single-Sweep and run compiler")
@@ -7,9 +9,9 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep --space example/abc.eag --output-directory %s"(directory)
+        run!"%s --sweep --space %s --output-directory %s"(gamma, buildPath("example", "abc.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
-        run!"cd %s && echo a a a b b b c c c | ./S"(directory)
+        run!"cd %s && echo a a a b b b c c c | %s"(directory, dotSlash("S"))
             .shouldPassWith(`^1 1 1 $`);
     }
 }
@@ -19,21 +21,21 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep --space example/ab.eag --output-directory %s"(directory)
+        run!"%s --sweep --space %s --output-directory %s"(gamma, buildPath("example", "ab.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
-        run!"cd %s && echo a a a b b b | ./S"(directory)
+        run!"cd %s && echo a a a b b b | %s"(directory, dotSlash("S"))
             .shouldPassWith("^1 1 1 $");
     }
 }
 
-@("compile ab.eag as Single-Sweep and run compiler")
+@("compile bnf/ab.eag as Single-Sweep and run compiler")
 unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep --space example/ab.eag --output-directory %s"(directory)
+        run!"%s --sweep --space %s --output-directory %s"(gamma, buildPath("example", "bnf", "ab.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
-        run!"cd %s && echo a a a b b b | ./S"(directory)
+        run!"cd %s && echo a a a b b b | %s"(directory, dotSlash("S"))
             .shouldPassWith("^1 1 1 $");
     }
 }
@@ -43,9 +45,9 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep --space example/w-w.eag --output-directory %s"(directory)
+        run!"%s --sweep --space %s --output-directory %s"(gamma, buildPath("example", "w-w.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
-        run!"cd %s && echo a b a b c a b a b | ./S"(directory)
+        run!"cd %s && echo a b a b c a b a b | %s"(directory, dotSlash("S"))
             .shouldPassWith("^a b a b $");
     }
 }
@@ -55,9 +57,10 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep example/hello-world.eag --output-directory %s"(directory)
+        write(buildPath(directory, "input"), null);
+        run!"%s --sweep %s --output-directory %s"(gamma, buildPath("example", "hello-world.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
-        run!"cd %s && echo | ./S"(directory)
+        run!"cd %s && %s input"(directory, dotSlash("S"))
             .shouldPassWith("^Hello World!$");
     }
 }
@@ -67,9 +70,9 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep --space example/count1.eag --output-directory %s"(directory)
+        run!"%s --sweep --space %s --output-directory %s"(gamma, buildPath("example", "count1.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
-        run!"cd %s && echo 1 1 1 1 1 1 1 1 1 1 1 1 1 | ./S"(directory)
+        run!"cd %s && echo 1 1 1 1 1 1 1 1 1 1 1 1 1 | %s"(directory, dotSlash("S"))
             .shouldPassWith("^Number 1 3 $");
     }
 }
@@ -79,9 +82,9 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep example/count6.eag --output-directory %s"(directory)
+        run!"%s --sweep %s --output-directory %s"(gamma, buildPath("example", "count6.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
-        run!"cd %s && echo a a a b b b | ./S"(directory)
+        run!"cd %s && echo a a a b b b | %s"(directory, dotSlash("S"))
             .shouldPassWith("^3$");
     }
 }
@@ -91,9 +94,9 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep --space example/decl-appl.eag --output-directory %s"(directory)
+        run!"%s --sweep --space %s --output-directory %s"(gamma, buildPath("example", "decl-appl.eag"), directory)
             .shouldPassWith("DeclAppl grammar is single sweep");
-        run!"cd %s && echo DECL ab DECL ba APPL ab | ./DeclAppl"(directory)
+        run!"cd %s && echo DECL ab DECL ba APPL ab | %s"(directory, dotSlash("DeclAppl"))
             .shouldPassWith("^ba ; ab ; $");
     }
 }
@@ -103,9 +106,9 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep example/single-sweep.eag --output-directory %s"(directory)
+        run!"%s --sweep %s --output-directory %s"(gamma, buildPath("example", "single-sweep.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
-        run!"cd %s && echo a b c d e | ./S"(directory)
+        run!"cd %s && echo a b c d e | %s"(directory, dotSlash("S"))
             .shouldPassWith("^$");
     }
 }

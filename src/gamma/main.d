@@ -1,4 +1,4 @@
-//          Copyright Mario Kröplin 2022.
+//          Copyright Mario Kröplin 2024.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
@@ -255,8 +255,10 @@ void build(string[] fileNames, string outputDirectory)
 
 private string executableName(const string name)
 {
-    version(Windows)
-        return name ~ ".exe";
+    import std.path : setExtension;
+
+    version (Windows)
+        return setExtension(name, "exe");
     else
         return name;
 }

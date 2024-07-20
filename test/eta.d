@@ -10,13 +10,13 @@ static foreach (eag; ["eta.eag", "eta-utf8.eag"])
     {
         with (sandbox)
         {
-            run!"./gamma --space example/%s --output-directory %s"(eag, directory)
+            run!"%s --space %s --output-directory %s"(gamma, buildPath("example", eag), directory)
                 .shouldPassWith("Eta grammar is SLAG");
-            run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Pico.Cola"))
+            run!"cd %s && %s %s"(directory, dotSlash("Eta"), absolutePath("test/cola/Pico.Cola"))
                 .shouldPassWith(`^program < \+ 'ok' : CODE > : $`);
-            run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Mikro.Cola"))
+            run!"cd %s && %s %s"(directory, dotSlash("Eta"), absolutePath("test/cola/Mikro.Cola"))
                 .shouldPassWith(`^programm < \+ CODE 'ret' ';' : CODE > : $`);
-            run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/PL0.Cola"))
+            run!"cd %s && %s %s"(directory, dotSlash("Eta"), absolutePath("test/cola/PL0.Cola"))
                 .shouldPassWith(`^programm < \+ CODE : CODE > : $`);
         }
     }
@@ -27,13 +27,13 @@ static foreach (eag; ["eta.eag", "eta-utf8.eag"])
     {
         with (sandbox)
         {
-            run!"./gamma --soag -o --space example/%s --output-directory %s"(eag, directory)
+            run!"%s --soag -o --space %s --output-directory %s"(gamma, buildPath("example", eag), directory)
                 .shouldPassWith("grammar is SOAG");
-            run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Pico.Cola"))
+            run!"cd %s && %s %s"(directory, dotSlash("Eta"), absolutePath("test/cola/Pico.Cola"))
                 .shouldPassWith(`^program < \+ 'ok' : CODE > : $`);
-            run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/Mikro.Cola"))
+            run!"cd %s && %s %s"(directory, dotSlash("Eta"), absolutePath("test/cola/Mikro.Cola"))
                 .shouldPassWith(`^programm < \+ CODE 'ret' ';' : CODE > : $`);
-            run!"cd %s && ./Eta %s"(directory, absolutePath("test/cola/PL0.Cola"))
+            run!"cd %s && %s %s"(directory, dotSlash("Eta"), absolutePath("test/cola/PL0.Cola"))
                 .shouldPassWith(`^programm < \+ CODE : CODE > : $`);
         }
     }
