@@ -22,6 +22,8 @@ Sandbox sandbox()
 private struct Sandbox
 {
     const string directory;
+
+    const string gamma = dotSlash("gamma");
 }
 
 alias Result = Tuple!(int, "status", string, "output");
@@ -29,37 +31,45 @@ alias Result = Tuple!(int, "status", string, "output");
 Result run(string fmt, A...)(lazy A args)
 {
     import std.format : format;
-    import std.path : dirSeparator;
     import std.process : executeShell;
     import std.stdio : writeln;
-    import std.string : translate;
 
-    auto command = format!fmt(args).translate(['/': dirSeparator]);
+    auto command = format!fmt(args);
 
     writeln(command);
     return executeShell(command);
 }
 
+string dotSlash(string name)
+{
+    import std.path : buildPath;
+
+    return buildPath(".", name);
+}
+
 Result shouldPassWith(Result result, string pattern)
 {
-    import std.regex : matchFirst, regex;
-
     with (result)
     {
         assert(status == 0, output);
-        assert(output.matchFirst(regex(pattern, "m")), output);
+        assert(output.matches(pattern), output);
     }
     return result;
 }
 
 Result shouldFailWith(Result result, string pattern)
 {
-    import std.regex : matchFirst, regex;
-
     with (result)
     {
         assert(status != 0, output);
-        assert(output.matchFirst(regex(pattern, "m")), output);
+        assert(output.matches(pattern), output);
     }
     return result;
+}
+
+bool matches(string input, string pattern)
+{
+    import std.regex : matchFirst, regex;
+
+    return cast(bool) input.matchFirst(regex(pattern, "m"));
 }
