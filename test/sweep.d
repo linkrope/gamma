@@ -1,5 +1,7 @@
 module test.sweep;
 
+import std.file;
+import std.path;
 import test.helper;
 
 @("compile abc.eag as Single-Sweep and run compiler")
@@ -7,7 +9,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep --space example/abc.eag --output-directory %s"(directory)
+        run!"./gamma --sweep --space %s --output-directory %s"(buildPath("example", "abc.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         run!"cd %s && echo a a a b b b c c c | ./S"(directory)
             .shouldPassWith(`^1 1 1 $`);
@@ -19,19 +21,19 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep --space example/ab.eag --output-directory %s"(directory)
+        run!"./gamma --sweep --space %s --output-directory %s"(buildPath("example", "ab.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldPassWith("^1 1 1 $");
     }
 }
 
-@("compile ab.eag as Single-Sweep and run compiler")
+@("compile bnf/ab.eag as Single-Sweep and run compiler")
 unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep --space example/ab.eag --output-directory %s"(directory)
+        run!"./gamma --sweep --space %s --output-directory %s"(buildPath("example", "bnf", "ab.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldPassWith("^1 1 1 $");
@@ -43,7 +45,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep --space example/w-w.eag --output-directory %s"(directory)
+        run!"./gamma --sweep --space %s --output-directory %s"(buildPath("example", "w-w.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         run!"cd %s && echo a b a b c a b a b | ./S"(directory)
             .shouldPassWith("^a b a b $");
@@ -55,9 +57,10 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep example/hello-world.eag --output-directory %s"(directory)
+        write(buildPath(directory, "input"), null);
+        run!"./gamma --sweep %s --output-directory %s"(buildPath("example", "hello-world.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
-        run!"cd %s && echo | ./S"(directory)
+        run!"cd %s && ./S input"(directory)
             .shouldPassWith("^Hello World!$");
     }
 }
@@ -67,7 +70,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep --space example/count1.eag --output-directory %s"(directory)
+        run!"./gamma --sweep --space %s --output-directory %s"(buildPath("example", "count1.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         run!"cd %s && echo 1 1 1 1 1 1 1 1 1 1 1 1 1 | ./S"(directory)
             .shouldPassWith("^Number 1 3 $");
@@ -79,7 +82,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep example/count6.eag --output-directory %s"(directory)
+        run!"./gamma --sweep %s --output-directory %s"(buildPath("example", "count6.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldPassWith("^3$");
@@ -91,7 +94,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep --space example/decl-appl.eag --output-directory %s"(directory)
+        run!"./gamma --sweep --space %s --output-directory %s"(buildPath("example", "decl-appl.eag"), directory)
             .shouldPassWith("DeclAppl grammar is single sweep");
         run!"cd %s && echo DECL ab DECL ba APPL ab | ./DeclAppl"(directory)
             .shouldPassWith("^ba ; ab ; $");
@@ -103,7 +106,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --sweep example/single-sweep.eag --output-directory %s"(directory)
+        run!"./gamma --sweep %s --output-directory %s"(buildPath("example", "single-sweep.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         run!"cd %s && echo a b c d e | ./S"(directory)
             .shouldPassWith("^$");

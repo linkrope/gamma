@@ -2,6 +2,8 @@ module test.soag;
 
 import core.exception;
 import std.exception;
+import std.file;
+import std.path;
 import test.helper;
 
 @("compile abc.eag as SOAG and run compiler")
@@ -9,7 +11,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --soag --space example/abc.eag --output-directory %s"(directory)
+        run!"./gamma --soag --space %s --output-directory %s"(buildPath("example", "abc.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo a a a b b b c c c | ./S"(directory)
             .shouldPassWith(`^1 1 1 $`);
@@ -21,19 +23,19 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --soag --space example/ab.eag --output-directory %s"(directory)
+        run!"./gamma --soag --space %s --output-directory %s"(buildPath("example", "ab.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldPassWith("^1 1 1 $");
     }
 }
 
-@("compile ab.eag as SOAG and run compiler")
+@("compile bnf/ab.eag as SOAG and run compiler")
 unittest
 {
     with (sandbox)
     {
-        run!"./gamma --soag --space example/ab.eag --output-directory %s"(directory)
+        run!"./gamma --soag --space %s --output-directory %s"(buildPath("example", "bnf", "ab.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldPassWith("^1 1 1 $");
@@ -45,7 +47,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --soag --space example/w-w.eag --output-directory %s"(directory)
+        run!"./gamma --soag --space %s --output-directory %s"(buildPath("example", "w-w.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo a b a b c a b a b | ./S"(directory)
             .shouldPassWith("^a b a b $");
@@ -57,7 +59,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --soag --space example/w-w-soag.eag --output-directory %s"(directory)
+        run!"./gamma --soag --space %s --output-directory %s"(buildPath("example", "w-w-soag.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo a b a b c a b a b | ./S"(directory)
             .shouldPassWith("^a b a b $");
@@ -69,9 +71,10 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --soag example/hello-world.eag --output-directory %s"(directory)
+        write(buildPath(directory, "input"), null);
+        run!"./gamma --soag %s --output-directory %s"(buildPath("example", "hello-world.eag"), directory)
             .shouldPassWith("grammar is SOAG");
-        run!"cd %s && echo | ./S"(directory)
+        run!"cd %s && ./S input"(directory)
             .shouldPassWith("^Hello World!$");
     }
 }
@@ -81,7 +84,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --soag --space example/count1.eag --output-directory %s"(directory)
+        run!"./gamma --soag --space %s --output-directory %s"(buildPath("example", "count1.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo 1 1 1 1 1 1 1 1 1 1 1 1 1 | ./S"(directory)
             .shouldPassWith("^Number 1 3 $");
@@ -93,7 +96,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma example/count2.eag --output-directory %s"(directory)
+        run!"./gamma %s --output-directory %s"(buildPath("example", "count2.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo a a a a a a a a a a a a a | ./S"(directory)
             .shouldPassWith("^13$");
@@ -105,9 +108,10 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma example/count3.eag --output-directory %s"(directory)
+        write(buildPath(directory, "input"), null);
+        run!"./gamma %s --output-directory %s"(buildPath("example", "count3.eag"), directory)
             .shouldPassWith("grammar is SOAG");
-        run!"cd %s && echo | ./S"(directory)
+        run!"cd %s && ./S input"(directory)
             .shouldPassWith("^0$");
     }
 }
@@ -117,7 +121,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma example/count4.eag --output-directory %s"(directory)
+        run!"./gamma %s --output-directory %s"(buildPath("example", "count4.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo a a a | ./S"(directory)
             .shouldPassWith("^3$");
@@ -129,7 +133,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --soag example/count5.eag --output-directory %s"(directory)
+        run!"./gamma --soag %s --output-directory %s"(buildPath("example", "count5.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo a a a | ./S"(directory)
             .shouldPassWith("^3$");
@@ -141,7 +145,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --soag example/count6.eag --output-directory %s"(directory)
+        run!"./gamma --soag %s --output-directory %s"(buildPath("example", "count6.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldPassWith("^3$");
@@ -153,7 +157,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --soag --space example/decl-appl.eag --output-directory %s"(directory)
+        run!"./gamma --soag --space %s --output-directory %s"(buildPath("example", "decl-appl.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo DECL ab DECL ba APPL ab | ./DeclAppl"(directory)
             .shouldPassWith("^ba ; ab ; $");
@@ -165,7 +169,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --soag example/example.eag --output-directory %s"(directory)
+        run!"./gamma --soag %s --output-directory %s"(buildPath("example", "example.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo a b e 1 | ./P"(directory)
             .shouldPassWith("^1$");
@@ -177,7 +181,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --soag example/single-sweep.eag --output-directory %s"(directory)
+        run!"./gamma --soag %s --output-directory %s"(buildPath("example", "single-sweep.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo a b c d e | ./S"(directory)
             .shouldPassWith("^$");
@@ -189,7 +193,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --soag -o example/single-sweep.eag --output-directory %s"(directory)
+        run!"./gamma --soag -o %s --output-directory %s"(buildPath("example", "single-sweep.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo a b c d e | ./S"(directory)
             .shouldPassWith("^$");
@@ -201,7 +205,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma example/non-oag1.eag --output-directory %s"(directory)
+        run!"./gamma %s --output-directory %s"(buildPath("example", "non-oag1.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo b c | ./S"(directory)
             .shouldPassWith("^0$");
@@ -213,7 +217,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma example/non-oag2.eag --output-directory %s"(directory)
+        run!"./gamma %s --output-directory %s"(buildPath("example", "non-oag2.eag"), directory)
             .shouldPassWith(`grammar is SOAG \(backtracked\)`);
         run!"cd %s && echo b c c | ./S"(directory)
             .shouldPassWith("^0$");
@@ -225,7 +229,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma example/non-oag3.eag --output-directory %s"(directory)
+        run!"./gamma %s --output-directory %s"(buildPath("example", "non-oag3.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo b a a | ./S"(directory)
             .shouldPassWith("^0$");
@@ -237,7 +241,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma example/non-oag4.eag --output-directory %s"(directory)
+        run!"./gamma %s --output-directory %s"(buildPath("example", "non-oag4.eag"), directory)
             .shouldPassWith("grammar is SOAG");
         run!"cd %s && echo b a a | ./S"(directory)
             .shouldPassWith("^0$");

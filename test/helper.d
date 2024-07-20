@@ -29,22 +29,12 @@ alias Result = Tuple!(int, "status", string, "output");
 Result run(string fmt, A...)(lazy A args)
 {
     import std.format : format;
+    import std.path : dirSeparator;
     import std.process : executeShell;
     import std.stdio : writeln;
+    import std.string : translate;
 
-    auto command = format!fmt(args);
-
-    version (Windows)
-    {
-        import std.regex : regex, replaceAll, replaceFirst;
-        import std.string : translate;
-
-        dchar[dchar] translation = ['/': '\\'];
-
-        command = translate(command, translation);
-        command = replaceFirst(command, regex("echo\\s+\\|"), "echo. |");
-        command = replaceAll(command, regex("\\bcat\\b"), "type");
-    }
+    auto command = format!fmt(args).translate(['/': dirSeparator]);
 
     writeln(command);
     return executeShell(command);

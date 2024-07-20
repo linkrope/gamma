@@ -9,7 +9,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space example/abc.eag --output-directory %s"(directory)
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "abc.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
         run!"cd %s && echo a a a b b b c c c | ./S"(directory)
             .shouldPassWith(`^1 1 1 $`);
@@ -21,19 +21,19 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space example/ab.eag --output-directory %s"(directory)
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "ab.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldPassWith("^1 1 1 $");
     }
 }
 
-@("compile ab.eag as SLAG and run compiler")
+@("compile bnf/ab.eag as SLAG and run compiler")
 unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space example/ab.eag --output-directory %s"(directory)
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "bnf", "ab.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldPassWith("^1 1 1 $");
@@ -45,7 +45,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space example/w-w.eag --output-directory %s"(directory)
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "w-w.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
         run!"cd %s && echo a b a b c a b a b | ./S"(directory)
             .shouldPassWith("^a b a b $");
@@ -57,9 +57,10 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma example/hello-world.eag --output-directory %s"(directory)
+        write(buildPath(directory, "input"), null);
+        run!"./gamma %s --output-directory %s"(buildPath("example", "hello-world.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
-        run!"cd %s && echo | ./S"(directory)
+        run!"cd %s && ./S input"(directory)
             .shouldPassWith("^Hello World!$");
     }
 }
@@ -69,10 +70,10 @@ unittest
 {
     with (sandbox)
     {
-    run!"./gamma --space example/count1.eag --output-directory %s"(directory)
-        .shouldPassWith("S grammar is SLAG");
-    run!"cd %s && echo 1 1 1 1 1 1 1 1 1 1 1 1 1 | ./S"(directory)
-        .shouldPassWith("^Number 1 3 $");
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "count1.eag"), directory)
+            .shouldPassWith("S grammar is SLAG");
+        run!"cd %s && echo 1 1 1 1 1 1 1 1 1 1 1 1 1 | ./S"(directory)
+            .shouldPassWith("^Number 1 3 $");
     }
 }
 
@@ -81,7 +82,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma example/count6.eag --output-directory %s"(directory)
+        run!"./gamma %s --output-directory %s"(buildPath("example", "count6.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
         run!"cd %s && echo a a a b b b | ./S"(directory)
             .shouldPassWith("^3$");
@@ -93,7 +94,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space example/decl-appl.eag --output-directory %s"(directory)
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "decl-appl.eag"), directory)
             .shouldPassWith("DeclAppl grammar is SLAG");
         run!"cd %s && echo DECL ab DECL ba APPL ab | ./DeclAppl"(directory)
             .shouldPassWith("^ba ; ab ; $");
@@ -109,7 +110,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space example/expr.eag --output-directory %s"(directory)
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "expr.eag"), directory)
             .shouldPassWith("Expr grammar is SLAG");
         run!"cd %s && echo 1 + 0 + 1 | ./Expr"(directory)
             .shouldPassWith("^1 ENTER 0 ENTER ADD 1 ENTER ADD $");
@@ -121,7 +122,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma --space example/ident-list.eag --output-directory %s"(directory)
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "ident-list.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
         run!"cd %s && echo ab ba | ./S"(directory)
             .shouldPassWith("^ab ba $");
@@ -139,7 +140,7 @@ else
     {
         with (sandbox)
         {
-            run!"./gamma --space example/lexer-test.eag --output-directory %s"(directory)
+            run!"./gamma --space %s --output-directory %s"(buildPath("example", "lexer-test.eag"), directory)
                 .shouldPassWith("ε grammar is SLAG");
             run!`cd %s && echo α β α β \\\\n α β β α| ./ε`(directory)
                 .shouldPassWith("^α α β β \n α α β β $");
@@ -152,7 +153,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma example/non-slag.eag --output-directory %s"(directory)
+        run!"./gamma %s --output-directory %s"(buildPath("example", "non-slag.eag"), directory)
             .shouldPassWith("cannot analyze bottom up")
             .shouldPassWith("cannot synthesize 2 times bottom up")
             .shouldPassWith("cannot check for equality bottom up")
@@ -167,7 +168,7 @@ unittest
     with (sandbox)
     {
         write(buildPath(directory, "input"), `"a", "", "ab"`);
-        run!"./gamma --space example/ebnf.eag --output-directory %s"(directory)
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "ebnf.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
         run!`cd %s && echo a, , ab | ./S`(directory)
             .shouldPassWith("^a , , a b $");
@@ -182,7 +183,7 @@ unittest
     with (sandbox)
     {
         write(buildPath(directory, "input"), `"a", "", "ab"`);
-        run!"./gamma --space example/bnf/ebnf.eag --output-directory %s"(directory)
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "bnf", "ebnf.eag"), directory)
             .shouldPassWith("S grammar is SLAG");
         run!`cd %s && echo a, , ab | ./S`(directory)
             .shouldPassWith("^a , , a b $");

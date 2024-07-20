@@ -1,5 +1,6 @@
 module test.oberon0;
 
+import std.file;
 import std.format;
 import std.path;
 import test.helper;
@@ -9,7 +10,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"./gamma example/frontend.eag --output-directory %s"(directory)
+        run!"./gamma %s --output-directory %s"(buildPath("example", "frontend.eag"), directory)
             .shouldPassWith("OberonO grammar is SLAG");
         run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
             .shouldPassWith("^done$");
@@ -26,7 +27,7 @@ static foreach (eag; ["oberon0.eag", "unequal.eag"])
     {
         with (sandbox)
         {
-            run!"./gamma --space example/%s --output-directory %s"(eag, directory)
+            run!"./gamma --space %s --output-directory %s"(buildPath("example", eag), directory)
                 .shouldPassWith("OberonO grammar is SLAG");
             run!"cd %s && ./OberonO %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
                 .shouldPassWith("^L1 .* RET 0 $");
@@ -40,19 +41,21 @@ static foreach (eag; ["oberon0.eag", "unequal.eag"])
 @("compile and run Oberon-0 compiler pipeline")
 unittest
 {
+    import std.regex : matchFirst, regex;
+
     with (sandbox)
     {
-        run!"./gamma --space example/abstract-syntax.eag --output-directory %s"(directory)
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "abstract-syntax.eag"), directory)
             .shouldPassWith("OberonOa grammar is single sweep");
-        run!"./gamma --space example/type-tables.eag --output-directory %s"(directory)
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "type-tables.eag"), directory)
             .shouldPassWith("OberonOb grammar is SLAG");
-        run!"./gamma --space example/type-resolution.eag --output-directory %s"(directory)
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "type-resolution.eag"), directory)
             .shouldPassWith("OberonOc grammar is single sweep");
-        run!"./gamma --space example/symbol-tables.eag --output-directory %s"(directory)
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "symbol-tables.eag"), directory)
             .shouldPassWith("OberonOd grammar is SLAG");
-        run!"./gamma --space example/symbol-resolution.eag --output-directory %s"(directory)
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "symbol-resolution.eag"), directory)
             .shouldPassWith("OberonOe grammar is SLAG");
-        run!"./gamma --space example/type-check.eag --output-directory %s"(directory)
+        run!"./gamma --space %s --output-directory %s"(buildPath("example", "type-check.eag"), directory)
             .shouldPassWith("OberonOf grammar is single sweep");
 
         run!"cd %s && ./OberonOa -v -w %s"(directory, absolutePath("test/oberon0/Sample.Mod"))
@@ -67,7 +70,9 @@ unittest
             .shouldPassWith("OberonOe compiler: compiling...");
         run!"cd %s && ./OberonOf -v -w OberonOe.Out"(directory)
             .shouldPassWith("OberonOf compiler: compiling...");
-        run!"cd %s && cat OberonOf.Out"(directory)
-            .shouldPassWith("ID M u l t i p l y PROC");
+
+        const output = readText(buildPath(directory, "OberonOf.Out"));
+
+        assert(output.matchFirst(regex("ID M u l t i p l y PROC", "m")), output);
     }
 }
