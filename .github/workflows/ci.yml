@@ -12,9 +12,9 @@ jobs:
     name: build & test
     uses: ./.github/workflows/build.yml
     with:
-      compiler_version: ldc-1.37.0
+      compiler_version: ldc-1.39.0
 
   check:
     uses: ./.github/workflows/check.yml
     with:
-      compiler_version: dmd-2.107.1
+      compiler_version: dmd-2.109.1

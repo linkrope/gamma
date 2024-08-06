@@ -16,12 +16,12 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Install D compiler
-      uses: dlang-community/setup-dlang@v1
+      uses: dlang-community/setup-dlang@v2
       with:
         compiler: ${{ inputs.compiler_version }}
-    
+
     - run: |
-        dub fetch dscanner@0.14.0
+        dub fetch dscanner@0.15.2
 
     - name: Check style
       run: |
