@@ -3,7 +3,7 @@ module gamma.grammar.hyper.Params;
 import gamma.input.earley.AffixForm;
 import gamma.util.Position;
 
-// TODO: may gamma.grammar depend on gamma.input.earley?
+// FXIME: gamma.grammar max not depend on gamma.input.earley
 public class Params
 {
     private AffixForm[] affixForms_;

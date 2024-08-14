@@ -5,13 +5,13 @@ import gamma.grammar.affixes.Variable;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.GrammarBuilder;
+import gamma.grammar.hyper.ActualParams;
 import gamma.grammar.hyper.Group;
-import gamma.grammar.hyper.HyperSymbolNode;
+import gamma.grammar.hyper.HyperAlternative;
 import gamma.grammar.hyper.Operator;
 import gamma.grammar.hyper.Option;
 import gamma.grammar.hyper.Params;
 import gamma.grammar.hyper.Repetition;
-import gamma.grammar.hyper.RepetitionAlternative;
 import gamma.grammar.Node;
 import gamma.grammar.Nonterminal;
 import gamma.grammar.Rule;
@@ -34,10 +34,6 @@ public class Parser
     private char token;
 
     private Position lastPosition;
-
-    private Params spareActualParams;
-
-    private Params undecidedActualParams;
 
     private GrammarBuilder metaGrammarBuilder;
 
@@ -65,9 +61,14 @@ public class Parser
 
         if (position != this.lastPosition)
         {
-            this.lexer.addError(position, message);
+            markError(position, message);
             this.lastPosition = position;
         }
+    }
+
+    private void markError(Position position, string message)
+    {
+        this.lexer.addError(position, message);
     }
 
     /**
@@ -120,7 +121,7 @@ public class Parser
                 else if (this.lexer.front == ':' || this.lexer.front == '<')
                 {
                     auto nonterminal = hyperNonterminal(value);
-                    auto lhs = new HyperSymbolNode(nonterminal, null, position);  // TODO: which params?
+                    auto lhs = new SymbolNode(nonterminal, position);
 
                     if (starred)
                         this.lexicalHyperNonterminals[nonterminal] = true;
@@ -220,8 +221,6 @@ public class Parser
     /**
      * MetaRule:
      *     ident [ '*' ] '=' MetaExpr '.'.
-     *
-     * @param lhs  the identifier occurrence for the left-hand side
      */
     private void parseMetaRule(SymbolNode lhs)
     in (this.lexer.front == '=')
@@ -242,9 +241,6 @@ public class Parser
     /**
      * MetaExpr:
      *     MetaTerm { '|' MetaTerm }.
-     *
-     * @param lhs       the identifier occurrence for the left-hand side
-     * @param position  the position for the first alternative
      */
     private void parseMetaExpr(SymbolNode lhs, Position position)
     {
@@ -267,8 +263,6 @@ public class Parser
     /**
      * MetaTerm:
      *     { ident | string }.
-     *
-     * @return  the list of occurrences of identifiers and strings
      */
     private Node[] parseMetaTerm()
     {
@@ -310,32 +304,34 @@ public class Parser
     /**
      * HyperRule:
      *     ident [ '*' ] [ FormalParams ] ':' HyperExpr '.'.
-     *
-     * @param lhs  the identifier occurrence for the left-hand side
      */
-    private void parseHyperRule(HyperSymbolNode lhs)
+    private void parseHyperRule(SymbolNode lhs)
     in (this.lexer.front == ':' || this.lexer.front == '<')
     {
-        Position position;
+        Params formalParams;
 
         if (this.lexer.front == '<')
         {
             with (parseParams(Yes.formalParams))
             {
-                // TODO: rewriting lhs requires cast to Nonterminal
-                lhs = new HyperSymbolNode(cast(Nonterminal) lhs.symbol, params, lhs.position);
+                // TODO: check signature
+                formalParams = params;
             }
         }
+
+        Position position;
+
         if (this.lexer.front == ':')
         {
             position = this.lexer.position;
             this.lexer.popFront;
-        } else
+        }
+        else
+        {
             markError(`":" expected`);
+        }
 
-        Alternative[] alternatives = parseHyperExpr(lhs,
-            No.repetition,
-            position);
+        Alternative[] alternatives = parseHyperExpr(lhs, formalParams, position);
 
         foreach (alternative; alternatives)
             this.hyperGrammarBuilder.add(alternative);
@@ -353,72 +349,39 @@ public class Parser
      * HyperExpr:
      *     [ FormalParams ] HyperTerm [ ActualParams ]
      *     { '|' [ FormalParams ] HyperTerm [ ActualParams ] }.
-     *
-     * @param lhs  the identifier occurrence for the left-hand side
-     * @return     the list of alternatives
      */
-    private Alternative[] parseHyperExpr(HyperSymbolNode lhs,
-        Flag!"repetition" repetition,
-        Position position)
+    private Alternative[] parseHyperExpr(SymbolNode lhs, Params lhsParams, Position position)
     {
         Alternative[] alternatives;
-        Params formalParams = null;
 
-        for (bool firstRound = true;; firstRound = false)
+        for (;;)
         {
-            auto alternativeLhs = lhs;
-            Params spareActualParams = null;
+            Params formalParams = lhsParams;
+            Node[] rhs;
 
             if (this.lexer.front == '<')
             {
+                const paramsPosition = this.lexer.position;
+
                 with (parseParams)
                 {
                     if (signature !is null)
                     {
-                        if (lhs.params !is null || !firstRound && formalParams is null)
-                        {
-                            this.lexer.addError(params.position, "unexpected formal parameters");
-                        }
+                        if (lhsParams !is null)
+                            markError(paramsPosition, "unexpected formal parameters");
                         else
-                        {
-                            // TODO: rewriting lhs requires cast to Nonterminal
-                            alternativeLhs = new HyperSymbolNode(cast(Nonterminal) lhs.symbol, params, lhs.position);
+                            // TODO: check signature
                             formalParams = params;
-                        }
                     }
                     else
                     {
-                        if (formalParams !is null)
-                            this.lexer.addError(params.position, "formal parameters expected");
-                        else
-                            spareActualParams = params;
+                        rhs ~= new ActualParams(params);
                     }
                 }
             }
-            else if (formalParams !is null)
-            {
-                markError("formal parameters expected");
-            }
 
-            Node[] rhs = parseHyperTerm(spareActualParams);
-            Alternative alternative;
-
-            if (repetition)
-                alternative = new RepetitionAlternative(alternativeLhs, rhs, null, position);  // TODO: which params?
-            else
-                alternative = new Alternative(alternativeLhs, rhs, position);
-            alternatives ~= alternative;
-
-            if (repetition && formalParams !is null)
-            {
-                if (this.undecidedActualParams is null && this.spareActualParams is null)
-                    markError("actual parameters expected");
-            }
-            else
-            {
-                if (this.spareActualParams !is null)
-                    this.lexer.addError(this.spareActualParams.position, "unexpected actual parameters");
-            }
+            rhs ~= parseHyperTerm;
+            alternatives ~= new HyperAlternative(lhs, formalParams, rhs, position);
 
             assert(this.lexer.empty || this.lexer.front == '|' || this.lexer.front == '.'
                 || this.lexer.front == ')' || this.lexer.front == ']' || this.lexer.front == '}');
@@ -434,66 +397,52 @@ public class Parser
     /**
      * HyperTerm:
      *     { ident [ ActualParams ]
-     *   | string
-     *   | [ ActualParams ] ( '(' HyperExpr ')'
-     *                      | '[' HyperExpr ']' [ FormalParams ]
-     *                      | '{' HyperExpr '}' [ FormalParams ]
-     *                      )
-     *   }.
-     *
-     * @return  the list of occurrences of identifiers and strings
+     *     | string
+     *     | [ ActualParams ] ( '(' HyperExpr ')'
+     *                        | '[' HyperExpr ']' [ FormalParams ]
+     *                        | '{' HyperExpr '}' [ FormalParams ]
+     *                        )
+     *     }.
      */
-    private Node[] parseHyperTerm(Params spareActualParams)
+    private Node[] parseHyperTerm()
     {
         Node[] nodes;
-        Params undecidedActualParams = null;
 
         for (;;)
         {
             if (this.lexer.front == Token.name || this.lexer.front == Token.string_ || this.lexer.front == '<')
             {
-                undecidedActualParams = null;
-                if (spareActualParams !is null)
-                {
-                    this.lexer.addError(spareActualParams.position, "unexpected actual parameters");
-                    spareActualParams = null;
-                }
                 if (this.lexer.front == Token.name)
                 {
                     auto nonterminal = hyperNonterminal(this.lexer.value);
                     const position = this.lexer.position;
-                    auto node = new HyperSymbolNode(nonterminal, null, position);  // TODO: which params?
 
-                    nodes ~= node;
+                    nodes ~= new SymbolNode(nonterminal, position);
                     this.lexer.popFront;
                     if (this.lexer.front == Token.number)
                     {
                         markError("unexpected number");
                         this.lexer.popFront;
                     }
-                    if (this.lexer.front == '<')
-                    {
-                        with (parseParams(No.formalParams))
-                        {
-                            // formal parameters following a nonterminal
-                            // can also belong to the next EBNF expression
-                            undecidedActualParams = params;
-                        }
-                    }
                 }
                 else if (this.lexer.front == Token.string_)
                 {
                     auto terminal = hyperTerminal(this.lexer.value);
-                    auto node = new SymbolNode(terminal, this.lexer.position);
+                    const position = this.lexer.position;
 
-                    nodes ~= node;
+                    nodes ~= new SymbolNode(terminal, position);
                     this.lexer.popFront;
                 }
                 else if (this.lexer.front == '<')
                 {
-                    with (parseParams(No.formalParams))
+                    const position = this.lexer.position;
+
+                    with (parseParams)
                     {
-                        spareActualParams = params;
+                        if (signature !is null)
+                            markError(position, "unexpected formal parameters");
+                        else
+                            nodes ~= new ActualParams(params);
                     }
                 }
             }
@@ -505,60 +454,56 @@ public class Parser
                 this.lexer.popFront;
 
                 Nonterminal identifier = hyperGrammarBuilder.buildAnonymousNonterminal;
-                auto lhs = new HyperSymbolNode (identifier, null, position);  // TODO: which params?
-                Alternative[] alternatives = parseHyperExpr(lhs,
-                    (open == '{') ? Yes.repetition : No.repetition,
-                    position);
+                auto lhs = new SymbolNode (identifier, position);
+                Alternative[] alternatives = parseHyperExpr(lhs, null, position);
                 auto rule = new Rule(alternatives);
-                Operator operator = null;
 
-                assert(this.lexer.empty || this.lexer.front == '|' || this.lexer.front == '.'
+                assert(this.lexer.empty || this.lexer.front == '.'
                     || this.lexer.front == ')' || this.lexer.front == ']' || this.lexer.front == '}');
 
-                if (open == '(')
-                {
-                    if (this.lexer.front != ')')
-                        markError(`")" expected`);
-                    operator = new Group(null, rule, position);
-                }
-                else if (open == '[')
-                {
-                    if (this.lexer.front != ']')
-                        markError(`"]" expected`);
-                    operator = new Option(null, rule, null, position);
-                }
-                else if (open == '{')
-                {
-                    if (this.lexer.front != '}')
+                if (open == '(' && this.lexer.front != ')')
+                    markError(`")" expected`);
+                else if (open == '[' && this.lexer.front != ']')
+                    markError(`"]" expected`);
+                else if (open == '{' && this.lexer.front != '}')
                         markError(`"}" expected`);
-                    operator = new Repetition(null, rule, null, position);
-                }
-                nodes ~= operator;
 
                 if (this.lexer.front == ')' || this.lexer.front == ']' || this.lexer.front == '}')
-                    this.lexer.popFront;
-                if (open != '(' && (cast(HyperSymbolNode) rule.lhs).params !is null)
                 {
+                    Params endParams;
+                    ActualParams actualParams;
+
+                    this.lexer.popFront;
                     if (this.lexer.front == '<')
                     {
-                        parseParams(Yes.formalParams);
+                        const paramsPosition = this.lexer.position;
+
+                        with (parseParams)
+                        {
+                            if (signature !is null)
+                            {
+                                // TODO: check signature
+                                if (open == '(')
+                                    markError(paramsPosition, "unexpected formal parameters");
+                                endParams = params;
+                            }
+                            else
+                            {
+                                actualParams= new ActualParams(params);
+                            }
+                        }
                     }
-                    else
-                        markError("formal parameters expected");
+
+                    if (open == '(')
+                        nodes ~= new Group(rule, position);
+                    else if (open == '[')
+                        nodes ~= new Option(rule, endParams, position);
+                    else if (open == '{')
+                        nodes ~= new Repetition(rule, endParams, position);
+
+                    if (actualParams !is null)
+                        nodes ~= actualParams;
                 }
-                if ((cast(HyperSymbolNode) rule.lhs).params !is null)
-                {
-                    // FIXME: also OK for EBNF expression at beginning when LHS has no formal parameter
-                    if (undecidedActualParams is null && spareActualParams is null && false)
-                        this.lexer.addError(position, "actual parameters expected");
-                }
-                else
-                {
-                    if (spareActualParams !is null)
-                        this.lexer.addError(spareActualParams.position, "unexpected actual parameters");
-                }
-                undecidedActualParams = null;
-                spareActualParams = null;
             }
             else if (this.lexer.empty || this.lexer.front == '|' || this.lexer.front == '.'
                 || this.lexer.front == ')' || this.lexer.front == ']' || this.lexer.front == '}')
@@ -579,8 +524,6 @@ public class Parser
             }
         }
 
-        this.spareActualParams = spareActualParams;
-        this.undecidedActualParams = undecidedActualParams;
         return nodes;
     }
 
@@ -602,9 +545,9 @@ public class Parser
         import gamma.grammar.affixes.Direction : Direction;
         import gamma.grammar.affixes.Signature : Signature;
 
-        Direction[] directions = null;
-        Nonterminal[] domains = null;
-        AffixForm[] affixForms = null;
+        Direction[] directions;
+        Nonterminal[] domains;
+        AffixForm[] affixForms;
         const position = this.lexer.position;
 
         this.lexer.popFront;
@@ -689,7 +632,7 @@ public class Parser
         else
             markError(`">" expected`);
 
-        Signature signature = null;
+        Signature signature;
         auto params = new Params(affixForms, position);
 
         if (formalParams.get)
@@ -707,8 +650,8 @@ public class Parser
      */
     private AffixForm parseAffixForm()
     {
-        SymbolNode[] symbolNodes = null;
-        Variable[] variables = null;
+        SymbolNode[] symbolNodes;
+        Variable[] variables;
 
         for (;;)
         {

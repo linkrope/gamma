@@ -3,11 +3,13 @@ module gamma.grammar.hyper.PrintingHyperVisitor;
 import gamma.grammar.affixes.Variable;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
+import gamma.grammar.hyper.ActualParams;
 import gamma.grammar.hyper.Group;
+import gamma.grammar.hyper.HyperAlternative;
 import gamma.grammar.hyper.HyperVisitor;
 import gamma.grammar.hyper.Option;
+import gamma.grammar.hyper.Params;
 import gamma.grammar.hyper.Repetition;
-import gamma.grammar.hyper.RepetitionAlternative;
 import gamma.grammar.Node;
 import gamma.grammar.Rule;
 import gamma.grammar.SymbolNode;
@@ -46,62 +48,68 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
 
     public void visit(Grammar grammar)
     {
-        foreach (i, rule; grammar.rules.enumerate)
+        import std.algorithm : each;
+
+        grammar.rules.each!(rule => rule.accept(this));
+    }
+
+    public void visit(Rule rule)
+    {
+        foreach (alternative; rule.alternatives)
         {
-            if (i > 0)
+            alternative.lhs.accept(this);
+            this.writer.put(":");
+            this.indentation = "    ";
+            alternative.accept(this);
+            if (alternative.rhs.empty)
+            {
                 this.writer.put("\n");
-            rule.accept(this);
+                this.writer.put(this.indentation);
+            }
+            this.writer.put(".\n");
         }
     }
 
     public void visit(Alternative alternative)
     {
-        foreach (i, node; alternative.rhs.enumerate)
+        if (auto hyperAlternative = cast(HyperAlternative) alternative)
         {
-            if (i > 0)
-            {
-                this.writer.put("\n");
-                this.writer.put(this.indentation);
-            }
+            visit(hyperAlternative);
+            return;
+        }
+
+        foreach (node; alternative.rhs)
+        {
+            this.writer.put("\n");
+            this.writer.put(this.indentation);
+            node.accept(this);
+        }
+    }
+
+    public void visit(HyperAlternative alternative)
+    {
+        if (alternative.params !is null)
+        {
+            this.writer.put(" ");
+            this.writer.write(alternative.params);
+        }
+
+        foreach (node; alternative.rhs)
+        {
+            this.writer.put("\n");
+            this.writer.put(this.indentation);
             node.accept(this);
         }
     }
 
     public void visit(SymbolNode symbolNode)
     {
-        import gamma.grammar.hyper.HyperSymbolNode : HyperSymbolNode;
-
         this.writer.put(symbolNode.symbol.toString);
-        if (cast(HyperSymbolNode) symbolNode)
-        {
-            auto hyperSymbolNode = cast(HyperSymbolNode) symbolNode;
-
-            if (hyperSymbolNode.params !is null)
-            {
-                this.writer.put(" <");
-                foreach (i, affixForm; hyperSymbolNode.params.affixForms.enumerate)
-                {
-                    if (i > 0)
-                        this.writer.put(", ");
-                    this.writer.write(affixForm);
-                }
-                this.writer.put(">");
-            }
-        }
     }
 
-    public void visit(Rule rule)
+    public void visit(ActualParams actualParams)
     {
-        Alternative alternative = rule.alternatives.front;
-
-        alternative.lhs.accept(this);
-        this.writer.put(":");
-        this.indentation = null;
-        printHyperExpr(rule.alternatives);
-        if (!rule.alternatives.back.rhs.empty)
-            this.writer.put(".\n");
-        else
-            this.writer.put(" .\n");
+        this.writer.write(actualParams.params);
     }
 
     public void visit(Group group)
@@ -120,6 +128,11 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
         this.writer.put("\n");
         this.writer.put(this.indentation);
         this.writer.put("]");
+        if (option.endParams !is null)
+        {
+            this.writer.put(" ");
+            this.writer.write(option.endParams);
+        }
     }
 
     public void visit(Repetition repetition)
@@ -129,11 +142,11 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
         this.writer.put("\n");
         this.writer.put(this.indentation);
         this.writer.put("}");
-    }
-
-    public void visit(RepetitionAlternative alternative)
-    {
-        visit(cast(Alternative) alternative);
+        if (repetition.endParams !is null)
+        {
+            this.writer.put(" ");
+            this.writer.write(repetition.endParams);
+        }
     }
 
     private void printHyperExpr(Alternative[] alternatives)
@@ -146,22 +159,11 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
         this.indentation ~= "    ";
         foreach (i, alternative; alternatives.enumerate)
         {
-            if (i == 0)
-            {
-                if (!alternative.rhs.empty)
-                {
-                    this.writer.put("\n");
-                    this.writer.put(this.indentation);
-                }
-            }
-            else
+            if (i > 0)
             {
                 this.writer.put("\n");
                 this.writer.put(indentation);
-                if (!alternative.rhs.empty)
-                    this.writer.put("  | ");
-                else
-                    this.writer.put("  |");
+                this.writer.put("|");
             }
             alternative.accept(this);
         }
@@ -180,15 +182,30 @@ unittest
 
         const expected = `
             A:
-                A
-              | .
-
+                A.
+            A:
+                .
             B:
-              | B.
+                .
+            B:
+                B.
             `.outdent.stripLeft;
 
         assert(grammar.toPrettyString == expected);
     }
+}
+
+private void write(Writer)(Writer writer, Params params)
+in (params !is null)
+{
+    writer.put("<");
+    foreach (i, affixForm; params.affixForms.enumerate)
+    {
+        if (i > 0)
+            writer.put(", ");
+        writer.write(affixForm);
+    }
+    writer.put(">");
 }
 
 private void write(Writer)(Writer writer, AffixForm affixForm)

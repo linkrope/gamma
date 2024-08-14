@@ -12,9 +12,9 @@ public class Repetition : Operator
 
     private Params endParams_;
 
-    public this(Params params, Rule rule, Params endParams, Position position)
+    public this(Rule rule, Params endParams, Position position)
     {
-        super(params, rule, position);
+        super(rule, position);
         this.endParams_ = endParams;
     }
 

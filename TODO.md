@@ -9,7 +9,7 @@
   - we finish `gamma.input`
   (handling of affix forms)
   - we transform the gamma grammar model into the epsilon grammar model
-  (to reuse the compiler generation)
+    (to reuse the compiler generation)
   - we remove the epsilon analyzer and move the lexer to `gamma.input.epsilang`
 
 ## Escape Sequences

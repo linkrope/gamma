@@ -62,7 +62,7 @@ private class PrintingVisitor(Writer) : Visitor
         this.writer.put(symbolNode.symbol.toString);
     }
 
-    public void visit(Rule rule)
+   public void visit(Rule rule)
     {
         rule.alternatives.front.lhs.accept(this);
         this.writer.put(" =");
