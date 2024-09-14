@@ -10,11 +10,11 @@ jobs:
 
   build:
     name: build & test
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/subworkflow-build.yml
     with:
       compiler_version: ldc-1.39.0
 
   check:
-    uses: ./.github/workflows/check.yml
+    uses: ./.github/workflows/subworkflow-check.yml
     with:
       compiler_version: dmd-2.109.1
