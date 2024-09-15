@@ -10,11 +10,11 @@ jobs:
 
   build:
     name: build & test
-    uses: ./.github/actions/build.yml
+    uses: ./.github/workflows/actions-build.yml
     with:
       compiler_version: ldc-1.39.0
 
   check:
-    uses: ./.github/actions/check.yml
+    uses: ./.github/workflows/actions-check.yml
     with:
       compiler_version: dmd-2.109.1
