@@ -8,12 +8,12 @@ jobs:
 
   build:
     name: build & test
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/actions/build.yml
     with:
       compiler_version: ldc-1.39.0
       build_type: release-gamma
 
   upload:
-    uses: ./.github/workflows/upload.yml
+    uses: ./.github/actions/upload.yml
     secrets: inherit
     needs: build
