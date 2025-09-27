@@ -21,7 +21,7 @@
         {
             "name": "unittest",
             "dependencies": {
-                "silly": ">=1.0.2"
+                "silly": ">=1.1.1"
             }
         },
         {
@@ -30,11 +30,11 @@
             "importPaths": ["test"],
             "preBuildCommands": ["$DUB build"],
             "dependencies": {
-                "silly": ">=1.0.2"
+                "silly": ">=1.1.1"
             }
         }
     ],
     "dependencies": {
-        "argparse": ">=1.1.0"
+        "argparse": "~>2.0.0"
     }
 }
