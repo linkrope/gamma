@@ -1,8 +1,8 @@
 {
     "name": "gamma",
-    "description": "Extended Affix Grammar compiler compiler",
+    "description": "Extended Affix Grammar compiler generator",
     "authors": ["Mario Kröplin"],
-    "copyright": "Copyright © 2024, Mario Kröplin",
+    "copyright": "Copyright © 2025, Mario Kröplin",
     "license" : "BSL-1.0",
     "sourcePaths": ["include", "src"],
     "importPaths": ["include", "src"],
@@ -36,5 +36,15 @@
     ],
     "dependencies": {
         "argparse": "~>2.0.0"
-    }
+    },
+    "subPackages": [
+        {
+            "name": "runtime",
+            "description": "runtime library for generated compiler",
+            "targetType": "staticLibrary",
+            "sourcePaths": ["include"],
+            "importPaths": ["include", "src"],
+            "sourceFiles": ["src/io.d", "src/log.d", "src/epsilon/soag/listacks.d"]
+        }
+    ]
 }

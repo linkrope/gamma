@@ -1,4 +1,4 @@
-//          Copyright Mario Kröplin 2024.
+//          Copyright Mario Kröplin 2025.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          https://www.boost.org/LICENSE_1_0.txt)
@@ -131,6 +131,7 @@ void compile(Input input, const Arguments arguments)
     import SOAGGen = epsilon.soag.soaggen;
     import Sweep = epsilon.sweep;
     import std.exception : enforce;
+    import std.path : baseName;
 
     check(input, arguments);
     if (arguments.lalr)
@@ -189,8 +190,34 @@ void compile(Input input, const Arguments arguments)
 
     enforce(success);
 
-    if (!fileNames.empty && !arguments.generate)
+    const name = fileNames.front.baseName(".d");
+
+    generateRecipe(name, settings.outputDirectory);
+
+    if (!arguments.generate)
         build(fileNames, settings.outputDirectory);
+}
+
+void generateRecipe(const string name, const string outputDirectory)
+{
+    import std.file : write;
+    import std.path : buildPath;
+    import std.string : format, outdent, stripLeft;
+
+    enum content = `
+        {
+            "name": "compiler",
+            "targetName": "%s",
+            "targetType": "executable",
+            "sourcePaths": ["."],
+            "dependencies": {
+                "gamma:runtime": "*"
+            }
+        }
+        `.outdent.stripLeft;
+    const path = buildPath(outputDirectory, "dub.json");
+
+    write(path, format!content(name));
 }
 
 // check hyper-grammar with new gamma Analyzer
@@ -209,8 +236,24 @@ void check(Input input, const Arguments arguments)
     }
 }
 
-Settings createSettings(const Arguments arguments) @nogc nothrow
+Settings createSettings(const Arguments arguments)
 {
+    string ensureDirectory(const string directory)
+    {
+        import std.file : mkdirRecurse, tempDir;
+        import std.format : format;
+        import std.path : buildPath;
+        import std.process : thisProcessID;
+
+        if (!directory.empty)
+            return directory;
+
+        const tempDirectory = buildPath(tempDir, format!"gamma-%s"(thisProcessID));
+
+        mkdirRecurse(tempDirectory);
+        return tempDirectory;
+    }
+
     with (arguments)
     {
         Settings settings;
@@ -221,7 +264,7 @@ Settings createSettings(const Arguments arguments) @nogc nothrow
         settings.r = r;
         settings.space = space;
         settings.write = write;
-        settings.outputDirectory = outputDirectory;
+        settings.outputDirectory = ensureDirectory(outputDirectory);
         return settings;
     }
 }
