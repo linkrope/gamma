@@ -266,9 +266,9 @@ string createTempDirectory()
 {
     import std.exception : collectException;
     import std.file : mkdirRecurse, rmdirRecurse, tempDir;
+    import std.format : format;
     import std.path : buildPath;
     import std.process : thisProcessID;
-    import std.format : format;
 
     import std.stdio : writeln;
 
