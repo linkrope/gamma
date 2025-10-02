@@ -196,7 +196,7 @@ void compile(Input input, const Arguments arguments)
 void generateRecipe(const string tempDirectory, const string name, const string outputDirectory)
 {
     import std.file : write;
-    import std.path : absolutePath, buildPath;
+    import std.path : absolutePath, buildPath, relativePath;
     import std.string : format, outdent, stripLeft;
 
     enum content = `
@@ -211,7 +211,7 @@ void generateRecipe(const string tempDirectory, const string name, const string 
             }
         }
         `.outdent.stripLeft;
-    const targetPath = absolutePath(outputDirectory.empty ? "." : outputDirectory);
+    const targetPath = relativePath(absolutePath(outputDirectory.empty ? "." : outputDirectory), tempDirectory);
 
     buildPath(tempDirectory, "dub.json").write(format!content(name, targetPath));
 }
@@ -274,6 +274,7 @@ string createTempDirectory()
 
     const tempDirectory = buildPath(tempDir, format!"gamma-%s"(thisProcessID));
 
+    trace!"temp directory: %s"(tempDirectory);
     collectException(rmdirRecurse(tempDirectory));
     mkdirRecurse(tempDirectory);
     return tempDirectory;
