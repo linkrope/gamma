@@ -700,7 +700,7 @@ public void GenDeclarations(Settings settings)
             }
         }
 
-        File Tab = File(settings.outputPath(name), "w");
+        File Tab = File(settings.path(name), "w");
 
         Tab.writefln!"long %s"(magic);
         Tab.writefln!"long %s"(TabTimeStamp);

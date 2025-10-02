@@ -45,7 +45,7 @@ jobs:
       - name: Build & run tests
         run: |
           dub build --build=${{inputs.build_type}}
-          dub test --build=unittest --config=example -- --threads 1
+          dub test --build=unittest --config=example
 
       - name: Upload executables to workflow run page
         uses: actions/upload-artifact@v4

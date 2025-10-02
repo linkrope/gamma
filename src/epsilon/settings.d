@@ -20,22 +20,12 @@ struct Settings
     /// write compilation output as default
     bool write;
 
-    string outputDirectory; // FIXME: import table files in executable
-
-    string tempDirectory;
-
-    string outputPath(string fileName) nothrow pure @safe
-    {
-        import std.path : buildPath;
-        import std.range : empty;
-
-        return buildPath(outputDirectory.empty ? "." : outputDirectory, fileName);
-    }
+    string outputDirectory;
 
     string path(string fileName) nothrow pure @safe
     {
         import std.path : buildPath;
 
-        return buildPath(tempDirectory, fileName);
+        return buildPath(outputDirectory, fileName);
     }
 }

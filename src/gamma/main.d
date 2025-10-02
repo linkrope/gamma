@@ -70,6 +70,9 @@ struct Arguments
 
     @(NamedArgument.Description("Show error positions language-server friendly as offsets"))
     bool offset;
+
+    @(NamedArgument.Description("Use dub to build compiled compiler"))
+    bool dub;
 }
 
 void command(Arguments arguments)
@@ -125,14 +128,12 @@ void compile(Input input, const Arguments arguments)
     import SOAGGen = epsilon.soag.soaggen;
     import Sweep = epsilon.sweep;
     import std.exception : enforce;
-    import std.path : baseName;
 
     check(input, arguments);
     if (arguments.lalr)
         return;
 
-    const tempDirectory = createTempDirectory;
-    const settings = createSettings(arguments, tempDirectory);
+    const settings = createSettings(arguments);
 
     analyzer.Analyse(input);
 
@@ -185,35 +186,10 @@ void compile(Input input, const Arguments arguments)
 
     enforce(success);
 
-    const name = fileNames.front.baseName(".d");
-
-    settings.tempDirectory.generateRecipe(name, arguments.outputDirectory);
+    settings.outputDirectory.generateRecipe(fileNames, arguments);
 
     if (!arguments.generate)
-        settings.tempDirectory.build;
-}
-
-void generateRecipe(const string tempDirectory, const string name, const string outputDirectory)
-{
-    import std.file : write;
-    import std.path : absolutePath, buildPath, relativePath;
-    import std.string : format, outdent, stripLeft;
-
-    enum content = `
-        {
-            "name": "compiler",
-            "targetName": "%s",
-            "targetPath": "%s",
-            "targetType": "executable",
-            "sourcePaths": ["."],
-            "dependencies": {
-                "gamma:runtime": "*"
-            }
-        }
-        `.outdent.stripLeft;
-    const targetPath = relativePath(absolutePath(outputDirectory.empty ? "." : outputDirectory), tempDirectory);
-
-    buildPath(tempDirectory, "dub.json").write(format!content(name, targetPath));
+        settings.outputDirectory.build(fileNames, arguments);
 }
 
 // check hyper-grammar with new gamma Analyzer
@@ -232,7 +208,7 @@ void check(Input input, const Arguments arguments)
     }
 }
 
-Settings createSettings(const Arguments arguments, const string tempDirectory)
+Settings createSettings(const Arguments arguments)
 {
     with (arguments)
     {
@@ -244,28 +220,14 @@ Settings createSettings(const Arguments arguments, const string tempDirectory)
         settings.r = r;
         settings.space = space;
         settings.write = write;
-        settings.outputDirectory = outputDirectory;
-        settings.tempDirectory = tempDirectory;
+        settings.outputDirectory = outputDirectory.empty ? createTempDirectory : outputDirectory;
         return settings;
     }
 }
 
-void build(const string outputDirectory)
-{
-    import core.stdc.stdlib : exit;
-    import std.process : spawnProcess, wait;
-
-    const args = ["dub", "build"];
-    const status = wait(spawnProcess(args, workDir: outputDirectory));
-
-    if (status)
-        exit(status);
-}
-
 string createTempDirectory()
 {
-    import std.exception : collectException;
-    import std.file : mkdirRecurse, rmdirRecurse, tempDir;
+    import std.file : mkdirRecurse, tempDir;
     import std.format : format;
     import std.path : buildPath;
     import std.process : thisProcessID;
@@ -274,8 +236,77 @@ string createTempDirectory()
 
     const tempDirectory = buildPath(tempDir, format!"gamma-%s"(thisProcessID));
 
-    trace!"temp directory: %s"(tempDirectory);
-    collectException(rmdirRecurse(tempDirectory));
+    trace!"using temp directory: %s"(tempDirectory);
     mkdirRecurse(tempDirectory);
     return tempDirectory;
+}
+
+void generateRecipe(const string outputDirectory, const string[] fileNames, const Arguments arguments)
+{
+    import std.algorithm : map;
+    import std.file : write;
+    import std.path : absolutePath, baseName, buildPath;
+    import std.string : format, outdent, stripLeft;
+
+    enum content = `
+        {
+            "name": "compiler",
+            "targetName": "%s",
+            "targetPath": "%s",
+            "targetType": "executable",
+            "sourceFiles": [%(%s, %)],
+            "dependencies": {
+                "gamma:runtime": "*"
+            }
+        }
+        `.outdent.stripLeft;
+    const name = fileNames.front.baseName(".d");
+    const targetPath = absolutePath(arguments.outputDirectory.empty ? "." : arguments.outputDirectory);
+
+    buildPath(outputDirectory, "dub.json").write(format!content(name, targetPath, fileNames.dup.map!baseName));
+}
+
+void build(const string outputDirectory, const string[] fileNames, const Arguments arguments)
+{
+    import core.stdc.stdlib : exit;
+    import std.algorithm : map;
+    import std.array : array;
+    import std.format : format;
+    import std.path : absolutePath, baseName, buildPath;
+    import std.process : environment, spawnProcess, wait;
+
+    string[] args;
+
+    if (arguments.dub)
+    {
+        args = ["dub", "build"];
+    }
+    else
+    {
+        const compiler = environment.get("DC", "dmd");
+        const name = fileNames.front.baseName(".d");
+        const targetPath = absolutePath(arguments.outputDirectory.empty ? "." : arguments.outputDirectory);
+
+        args = compiler ~ fileNames.dup.map!baseName.array ~ "-g"
+            ~ absolutePath("include/runtime.d")
+            ~ absolutePath("src/io.d") ~ absolutePath("src/log.d") ~ absolutePath("src/epsilon/soag/listacks.d")
+            ~ format!"-of=%s"(buildPath(targetPath, name.executableName));
+    }
+
+    trace!"%-(%s %)"(args);
+
+    const status = wait(spawnProcess(args, workDir: outputDirectory));
+
+    if (status)
+        exit(status);
+}
+
+string executableName(const string name)
+{
+    import std.path : setExtension;
+
+    version (Windows)
+        return setExtension(name, "exe");
+    else
+        return name;
 }
