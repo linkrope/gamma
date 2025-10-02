@@ -1260,7 +1260,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     {
         const magicNumber = 827_092_037;
         size_t m;
-        File Tab = File(settings.path(name), "w");
+        File Tab = File(settings.outputPath(name), "w");
 
         Tab.writefln!"long %s"(magicNumber);
         Tab.writefln!"long %s"(TabTimeStamp);

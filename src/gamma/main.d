@@ -89,12 +89,6 @@ void command(Arguments arguments)
             sweep = true;
             soag = true;
         }
-        if (!outputDirectory.empty)
-        {
-            import std.file : mkdirRecurse;
-
-            mkdirRecurse(outputDirectory);
-        }
     }
     try
     {
@@ -137,7 +131,8 @@ void compile(Input input, const Arguments arguments)
     if (arguments.lalr)
         return;
 
-    const settings = createSettings(arguments);
+    const tempDirectory = createTempDirectory;
+    const settings = createSettings(arguments, tempDirectory);
 
     analyzer.Analyse(input);
 
@@ -192,22 +187,23 @@ void compile(Input input, const Arguments arguments)
 
     const name = fileNames.front.baseName(".d");
 
-    generateRecipe(name, settings.outputDirectory);
+    settings.tempDirectory.generateRecipe(name, arguments.outputDirectory);
 
     if (!arguments.generate)
-        build(fileNames, settings.outputDirectory);
+        settings.tempDirectory.build;
 }
 
-void generateRecipe(const string name, const string outputDirectory)
+void generateRecipe(const string tempDirectory, const string name, const string outputDirectory)
 {
     import std.file : write;
-    import std.path : buildPath;
+    import std.path : absolutePath, buildPath;
     import std.string : format, outdent, stripLeft;
 
     enum content = `
         {
             "name": "compiler",
             "targetName": "%s",
+            "targetPath": "%s",
             "targetType": "executable",
             "sourcePaths": ["."],
             "dependencies": {
@@ -215,9 +211,9 @@ void generateRecipe(const string name, const string outputDirectory)
             }
         }
         `.outdent.stripLeft;
-    const path = buildPath(outputDirectory, "dub.json");
+    const targetPath = absolutePath(outputDirectory.empty ? "." : outputDirectory);
 
-    write(path, format!content(name));
+    buildPath(tempDirectory, "dub.json").write(format!content(name, targetPath));
 }
 
 // check hyper-grammar with new gamma Analyzer
@@ -236,24 +232,8 @@ void check(Input input, const Arguments arguments)
     }
 }
 
-Settings createSettings(const Arguments arguments)
+Settings createSettings(const Arguments arguments, const string tempDirectory)
 {
-    string ensureDirectory(const string directory)
-    {
-        import std.file : mkdirRecurse, tempDir;
-        import std.format : format;
-        import std.path : buildPath;
-        import std.process : thisProcessID;
-
-        if (!directory.empty)
-            return directory;
-
-        const tempDirectory = buildPath(tempDir, format!"gamma-%s"(thisProcessID));
-
-        mkdirRecurse(tempDirectory);
-        return tempDirectory;
-    }
-
     with (arguments)
     {
         Settings settings;
@@ -264,44 +244,37 @@ Settings createSettings(const Arguments arguments)
         settings.r = r;
         settings.space = space;
         settings.write = write;
-        settings.outputDirectory = ensureDirectory(outputDirectory);
+        settings.outputDirectory = outputDirectory;
+        settings.tempDirectory = tempDirectory;
         return settings;
     }
 }
 
-void build(string[] fileNames, string outputDirectory)
+void build(const string outputDirectory)
 {
     import core.stdc.stdlib : exit;
-    import std.format : format;
-    import std.path : stripExtension;
-    import std.process : environment, spawnProcess, wait;
-    import std.string : join;
+    import std.process : spawnProcess, wait;
 
-    const compiler = environment.get("DC", "dmd");
-    auto args = compiler ~ fileNames ~ "-g" ~ "include/runtime.d"
-        ~ "src/io.d" ~ "src/log.d" ~ "src/epsilon/soag/listacks.d";
-
-    if (!outputDirectory.empty)
-    {
-        args ~= format!"-od=%s"(outputDirectory);
-        args ~= format!"-of=%s"(fileNames.front.stripExtension.executableName);
-    }
-
-    info!"%s"(args.join(' '));
-
-    auto pid = spawnProcess(args);
-    const status = wait(pid);
+    const args = ["dub", "build"];
+    const status = wait(spawnProcess(args, workDir: outputDirectory));
 
     if (status)
         exit(status);
 }
 
-private string executableName(const string name)
+string createTempDirectory()
 {
-    import std.path : setExtension;
+    import std.exception : collectException;
+    import std.file : mkdirRecurse, rmdirRecurse, tempDir;
+    import std.path : buildPath;
+    import std.process : thisProcessID;
+    import std.format : format;
 
-    version (Windows)
-        return setExtension(name, "exe");
-    else
-        return name;
+    import std.stdio : writeln;
+
+    const tempDirectory = buildPath(tempDir, format!"gamma-%s"(thisProcessID));
+
+    collectException(rmdirRecurse(tempDirectory));
+    mkdirRecurse(tempDirectory);
+    return tempDirectory;
 }
