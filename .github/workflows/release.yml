@@ -10,7 +10,7 @@ jobs:
     name: build & test
     uses: ./.github/workflows/actions-build.yml
     with:
-      compiler_version: ldc-1.39.0
+      compiler_version: ldc-1.41.0
       build_type: release-gamma
 
   upload:
