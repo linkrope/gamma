@@ -255,6 +255,7 @@ void generateRecipe(const string outputDirectory, const string[] fileNames, cons
             "targetPath": "%s",
             "targetType": "executable",
             "sourceFiles": [%(%s, %)],
+            "stringImportPaths": ["."],
             "dependencies": {
                 "gamma:runtime": "*"
             }
@@ -287,7 +288,7 @@ void build(const string outputDirectory, const string[] fileNames, const Argumen
         const name = fileNames.front.baseName(".d");
         const targetPath = absolutePath(arguments.outputDirectory.empty ? "." : arguments.outputDirectory);
 
-        args = compiler ~ fileNames.dup.map!baseName.array ~ "-g"
+        args = compiler ~ fileNames.dup.map!baseName.array ~ "-g" ~ "-J."
             ~ absolutePath("include/runtime.d")
             ~ absolutePath("src/io.d") ~ absolutePath("src/log.d") ~ absolutePath("src/epsilon/soag/listacks.d")
             ~ format!"-of=%s"(buildPath(targetPath, name.executableName));

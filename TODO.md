@@ -36,10 +36,6 @@
 
 - create abstract syntax tree instead of writing code fragments
 
-## Table Files
-
-- include .Tab and .EvalTab files in executable
-
 ## Code Generation
 
 - create intermediate language nodes

@@ -218,12 +218,12 @@ void UnEq(HeapType Ptr1, HeapType Ptr2, string ErrMsg)
 bool EvalInitSucceeds()
 {
     import std.exception : ErrnoException;
-    import std.stdio : File;
+    import std.format : formattedRead;
 
     const magic = 1_818_326_597;
-    const name = "$";
+    enum name = "$";
     const tabTimeStamp = $;
-    File Tab;
+    auto table = import(name);
     long l;
 
     void LoadError(string msg)
@@ -231,28 +231,19 @@ bool EvalInitSucceeds()
         error!"loading evaluator table %s failed: %s"(name, msg);
     }
 
-    try
-    {
-        Tab = File(name, "r");
-    }
-    catch (ErrnoException)
-    {
-        LoadError("cannot be opened");
-        return false;
-    }
-    Tab.readf!"long %s\n"(l);
+    formattedRead!"long %s\n"(table, l);
     if (l != magic)
     {
         LoadError("not an evaluator table");
         return false;
     }
-    Tab.readf!"long %s\n"(l);
+    formattedRead!"long %s\n"(table, l);
     if (l != tabTimeStamp)
     {
         LoadError("wrong time stamp");
         return false;
     }
-    Tab.readf!"long %s\n"(l);
+    formattedRead!"long %s\n"(table, l);
     if (l != predefined)
     {
         LoadError("wrong heap size");
@@ -264,16 +255,15 @@ bool EvalInitSucceeds()
         EvalExpand;
     for (size_t i = 0; i <= predefined; ++i)
     {
-        Tab.readf!"long %s\n"(l);
+        formattedRead!"long %s\n"(table, l);
         Heap[i] = l;
     }
-    Tab.readf!"long %s\n"(l);
+    formattedRead!"long %s\n"(table, l);
     if (l != tabTimeStamp)
     {
         LoadError("file corrupt");
         return false;
     }
-    Tab.close;
     for (size_t i = 0; i < maxArity; ++i)
         FreeList[i] = 0;
     NextHeap = predefined + 1;

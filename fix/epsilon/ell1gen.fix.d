@@ -45,14 +45,14 @@ void ParserExpand()
     }
 }
 
-void ReadParserTab(string name)
+void ReadParserTab(string name)()
 {
     import std.exception : ErrnoException;
-    import std.stdio : File;
+    import std.format : formattedRead;
 
     const magicNumber = 827_092_037;
     const tabTimeStamp = $;
-    File Tab;
+    auto table = import(name);
     long l;
     size_t s;
 
@@ -61,34 +61,25 @@ void ReadParserTab(string name)
         error!"loading parser table %s failed: %s"(name, message);
     }
 
-    try
-    {
-        Tab = File(name, "r");
-    }
-    catch (ErrnoException)
-    {
-        LoadError("cannot be opened");
-        return;
-    }
-    Tab.readf!"long %s\n"(l);
+    formattedRead!"long %s\n"(table, l);
     if (l != magicNumber)
     {
         LoadError("no or corrupt parser table");
         return;
     }
-    Tab.readf!"long %s\n"(l);
+    formattedRead!"long %s\n"(table, l);
     if (l != tabTimeStamp)
     {
         LoadError("wrong time stamp");
         return;
     }
-    Tab.readf!"long %s\n"(l);
+    formattedRead!"long %s\n"(table, l);
     if (l != M)
     {
         LoadError("incompatible MAX(SET) in table");
         return;
     }
-    Tab.readf!"set %s\n"(s);
+    formattedRead!"set %s\n"(table, s);
     if (s != 0b10110010_01000100_00111000_11011001)
     {
         LoadError("incompatible SET format in table");
@@ -96,18 +87,17 @@ void ReadParserTab(string name)
     }
     for (size_t i = 0; i < nSetT; ++i)
         for (size_t j = 0; j < nToks; ++j)
-            Tab.readf!"set %s\n"(SetT[i][j]);
+            formattedRead!"set %s\n"(table, SetT[i][j]);
     for (size_t i = 0; i < nSet; ++i)
         for (size_t j = 0; j < tokSetLen; ++j)
-            Tab.readf!"set %s\n"(Set[i][j]);
-    Tab.readf!"long %s\n"(l);
+            formattedRead!"set %s\n"(table, Set[i][j]);
+    formattedRead!"long %s\n"(table, l);
     if (l != magicNumber)
     {
         LoadError("corrupt parser table");
         return;
     }
     ParserTabIsLoaded = true;
-    Tab.close;
 }
 
 void ParserInit()
@@ -258,7 +248,7 @@ void Compile(Input input, bool info_, bool verbose, bool write)
     }
 }
 
-private void checkEnd() 
+private void checkEnd()
 {
     while (Tok == sepTok)
         S.Get(Tok);
@@ -274,7 +264,7 @@ static this()
     info!"$ compiler (generated with epsilon)";
     RecStack = new int[500];
     ParserTabIsLoaded = false;
-    ReadParserTab("$");
+    ReadParserTab!"$";
     Reset;
 }
 
