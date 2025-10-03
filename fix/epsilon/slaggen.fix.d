@@ -226,6 +226,14 @@ bool EvalInitSucceeds()
     auto table = import(name);
     long l;
 
+    version (Windows)
+    {
+        import std.string : replace;
+
+        // dos2unix
+        table = table.replace("\r\n", "\n");
+    }
+
     void LoadError(string msg)
     {
         error!"loading evaluator table %s failed: %s"(name, msg);

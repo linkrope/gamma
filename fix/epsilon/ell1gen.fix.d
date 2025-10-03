@@ -56,6 +56,14 @@ void ReadParserTab(string name)()
     long l;
     size_t s;
 
+    version (Windows)
+    {
+        import std.string : replace;
+
+        // dos2unix
+        table = table.replace("\r\n", "\n");
+    }
+
     void LoadError(string message)
     {
         error!"loading parser table %s failed: %s"(name, message);
