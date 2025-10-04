@@ -4,7 +4,7 @@ import io : Input, Position, read;
 import log;
 import runtime;
 import S = $;
-import std.stdio;
+import std.stdio : File, stdout;
 
 const nToks = $;
 const tokSetLen = $;
@@ -47,21 +47,21 @@ void ParserExpand()
 
 void ReadParserTab(string name)()
 {
-    import std.exception : ErrnoException;
-    import std.format : formattedRead;
+    import std.string : lineSplitter;
 
     const magicNumber = 827_092_037;
     const tabTimeStamp = $;
-    auto table = import(name);
+    auto table = import(name).lineSplitter;
     long l;
     size_t s;
 
-    version (Windows)
+    void readln(string fmt, Range, T)(ref Range range, ref T value)
     {
-        import std.string : replace;
+        import std.format : formattedRead;
+        import std.range : front, popFront;
 
-        // dos2unix
-        table = table.replace("\r\n", "\n");
+        range.front.formattedRead!fmt(value);
+        range.popFront;
     }
 
     void LoadError(string message)
@@ -69,25 +69,25 @@ void ReadParserTab(string name)()
         error!"loading parser table %s failed: %s"(name, message);
     }
 
-    formattedRead!"long %s\n"(table, l);
+    readln!"long %s"(table, l);
     if (l != magicNumber)
     {
         LoadError("no or corrupt parser table");
         return;
     }
-    formattedRead!"long %s\n"(table, l);
+    readln!"long %s"(table, l);
     if (l != tabTimeStamp)
     {
         LoadError("wrong time stamp");
         return;
     }
-    formattedRead!"long %s\n"(table, l);
+    readln!"long %s"(table, l);
     if (l != M)
     {
         LoadError("incompatible MAX(SET) in table");
         return;
     }
-    formattedRead!"set %s\n"(table, s);
+    readln!"set %s"(table, s);
     if (s != 0b10110010_01000100_00111000_11011001)
     {
         LoadError("incompatible SET format in table");
@@ -95,11 +95,11 @@ void ReadParserTab(string name)()
     }
     for (size_t i = 0; i < nSetT; ++i)
         for (size_t j = 0; j < nToks; ++j)
-            formattedRead!"set %s\n"(table, SetT[i][j]);
+            readln!"set %s"(table, SetT[i][j]);
     for (size_t i = 0; i < nSet; ++i)
         for (size_t j = 0; j < tokSetLen; ++j)
-            formattedRead!"set %s\n"(table, Set[i][j]);
-    formattedRead!"long %s\n"(table, l);
+            readln!"set %s"(table, Set[i][j]);
+    readln!"long %s"(table, l);
     if (l != magicNumber)
     {
         LoadError("corrupt parser table");
