@@ -6,7 +6,6 @@ import runtime;
 import std.bitmanip : BitArray;
 
 void Check()
-in (EAG.Performed(EAG.analysed))
 {
     struct EdgeRecord
     {
@@ -80,7 +79,6 @@ in (EAG.Performed(EAG.analysed))
         }
     }
 
-    EAG.History &= ~EAG.predicates;
     HNont = new int[EAG.NextHNont];
     Edge = new  EdgeRecord[EAG.NONont + 1];
     NextEdge = 0;
@@ -93,12 +91,10 @@ in (EAG.Performed(EAG.analysed))
     Pred = EAG.Prod - CoPred;
     Pred[EAG.StartSym] = false;
     EAG.Pred = Pred;
-    EAG.History |= EAG.predicates;
     List;
 }
 
 private void List()
-in (EAG.Performed(EAG.analysed | EAG.predicates))
 {
     import std.algorithm : map;
     import std.format : format;

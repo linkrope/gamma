@@ -12,7 +12,6 @@ private bool[256] IsIdent;
 private bool[256] IsSymbol;
 
 public string Generate(Settings settings)
-in (EAG.Performed(EAG.analysed))
 {
     import std.stdio : File;
 

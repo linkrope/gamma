@@ -48,13 +48,11 @@ private int[] ActualName;
 private BitArray RepVar;
 private BitArray EmptySet;
 
-public void Test()
-in (EAG.Performed(EAG.analysed | EAG.predicates))
+public bool Test()
 {
     auto type = Type.slag;
 
     info!"SLAG testing %s"(EAG.BaseName);
-    EAG.History &= ~EAG.isSLAG;
 
     InitTest;
     scope (exit)
@@ -68,14 +66,13 @@ in (EAG.Performed(EAG.analysed | EAG.predicates))
     {
         case neither:
             info!"%s grammar is no LAG"(EAG.BaseName);
-            break;
+            return false;
         case lag:
             info!"%s grammar is no SLAG but LAG"(EAG.BaseName);
-            break;
+            return false;
         case slag:
             info!"%s grammar is SLAG"(EAG.BaseName);
-            EAG.History |= EAG.isSLAG;
-            break;
+            return true;
     }
 }
 

@@ -8,7 +8,6 @@ import symbols : SymbolTable;
 
 const nil = 0;
 const empty = 0;
-size_t History;
 const firstParam = 0;
 const firstHAlt = 0;
 const firstHFactor = 0;
@@ -740,28 +739,6 @@ public string NamedHNontRepr(size_t Nont) @nogc nothrow @safe
     return symbolTable.symbol(HNont[Nont].NamedId);
 }
 
-bool Performed(size_t Needed) @safe
-{
-    import log : error;
-
-    Needed = Needed & ~History;
-    if (Needed == 0)
-        return true;
-    if (Needed & analysed)
-        error!"analyse a specification first";
-    if (Needed & predicates)
-        error!"check for predicates first";
-    if (Needed & parsable)
-        error!"test for ELL1 attribute first";
-    if (Needed & isSLAG)
-        error!"test for SLAG attribute first";
-    if (Needed & isSweep)
-        error!"test for single-sweep attribute first";
-    if (Needed & hasEvaluator)
-        error!"generate an evaluator first";
-    return false;
-}
-
 void Init() nothrow
 {
     ParamBuf = new ParamRecord[1023];
@@ -812,7 +789,6 @@ void Init() nothrow
     NOGrp = 0;
     NOOpt = 0;
     NORep = 0;
-    History = 0;
     BaseName = "nothing";
     MaxMArity = 0;
 
@@ -823,7 +799,6 @@ static this() @safe
 {
     import log : info;
 
-    History = 0;
     BaseName = "nothing";
     info!"Epsilon 1.02   JoDe/SteWe  22.11.96";
 }

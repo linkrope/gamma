@@ -988,12 +988,10 @@ void Analyse(Input input)
     }
     if (ErrorCounter == 0)
     {
-        EAG.History |= EAG.analysed;
         info!"%s grammar is valid"(EAG.BaseName);
     }
     else
     {
-        EAG.History &= ~EAG.analysed;
         if (NameNotified)
             info!"errors in %s"(EAG.BaseName);
         else

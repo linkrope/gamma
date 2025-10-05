@@ -35,7 +35,6 @@ private bool Close;
  * SEM: Steuerung der Generierung
  */
 public string Generate(Settings settings)
-in (EAG.Performed(EAG.analysed | EAG.predicates))
 {
     UseConst = !settings.c;
     UseRefCnt = !settings.r;
@@ -53,8 +52,6 @@ in (EAG.Performed(EAG.analysed | EAG.predicates))
 
     const fileName = GenerateModule(settings);
 
-    EAG.History |= EAG.isSweep;
-    EAG.History |= EAG.hasEvaluator;
     return fileName;
 }
 

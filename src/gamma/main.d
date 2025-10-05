@@ -120,7 +120,6 @@ void command(Arguments arguments)
 void compile(Input input, const Arguments arguments)
 {
     import analyzer = epsilon.analyzer;
-    import EAG = epsilon.eag;
     import ELL1Gen = epsilon.ell1gen;
     import LexGen = epsilon.lexgen;
     import Predicates = epsilon.predicates;
@@ -141,17 +140,18 @@ void compile(Input input, const Arguments arguments)
 
     Predicates.Check;
 
-    ELL1Gen.Test(settings);
+    const isELL1 = ELL1Gen.Test(settings);
 
-    enforce(!ELL1Gen.Error);
+    enforce(isELL1);
 
     string[] fileNames;
     bool success = false;
 
     if (arguments.slag)
     {
-        SLAGGen.Test;
-        if (EAG.History & EAG.isSLAG)
+        const isSLAG = SLAGGen.Test;
+
+        if (isSLAG)
         {
             fileNames = LexGen.Generate(settings) ~ fileNames;
             fileNames = ELL1Gen.Generate(settings) ~ fileNames;
@@ -160,8 +160,9 @@ void compile(Input input, const Arguments arguments)
     }
     if (!success && arguments.sweep)
     {
-        Sweep.Test(settings);
-        if (EAG.History & EAG.isSweep)
+        const isSweep = Sweep.Test(settings);
+
+        if (isSweep)
         {
             fileNames = LexGen.Generate(settings) ~ fileNames;
             fileNames = Sweep.Generate(settings) ~ fileNames;

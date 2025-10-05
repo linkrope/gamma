@@ -40,10 +40,6 @@
 
 - create intermediate language nodes
 
-## History Set
-
-- remove history state, tailored for Oberon's command execution
-
 ## UTF-8
 
 - rewrite decision-tree implementation in generated lexer

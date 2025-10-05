@@ -17,48 +17,31 @@ private BitArray GenNonts;
 private BitArray GenFactors;
 private bool Error;
 
-public void Test(Settings settings)
-in (EAG.Performed(EAG.analysed | EAG.predicates))
+public bool Test(Settings settings)
 {
     info!"single-sweep testing %s"(EAG.BaseName);
-    EAG.History &= ~EAG.isSweep;
+
     Init;
     scope (exit)
         Finit;
 
-    const SaveHistory = EAG.History;
-
-    EAG.History = 0;
     GenerateMod(No.createMod, settings);
-    EAG.History = SaveHistory;
-    if (!Error)
-    {
-        info!"%s grammar is single sweep"(EAG.BaseName);
-        EAG.History |= EAG.isSweep;
-    }
+    if (Error)
+        return false;
+
+    info!"%s grammar is single sweep"(EAG.BaseName);
+    return true;
 }
 
 public string Generate(Settings settings)
-in (EAG.Performed(EAG.analysed | EAG.predicates))
 {
     info!"single-sweep writing %s"(EAG.BaseName);
-    EAG.History &= ~EAG.isSweep;
     Init;
     scope (exit)
         Finit;
 
-    const SaveHistory = EAG.History;
-
-    EAG.History = 0;
-
     const fileName = GenerateMod(Yes.createMod, settings);
 
-    EAG.History = SaveHistory;
-    if (!Error)
-    {
-        EAG.History |= EAG.isSweep;
-        EAG.History |= EAG.hasEvaluator;
-    }
     return fileName;
 }
 

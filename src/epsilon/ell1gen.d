@@ -74,31 +74,32 @@ public bool Error;
 private bool Warning;
 private bool UseReg;
 
-public void Test(Settings settings)
-in (EAG.Performed(EAG.analysed | EAG.predicates))
+public bool Test(Settings settings)
 {
     info!"ELL(1) testing %s"(EAG.BaseName);
-    EAG.History &= ~EAG.parsable;
+
     Init(settings);
     scope (exit)
         Finit;
+
     if (!GrammarOk)
-        return;
+        return false;
     ComputeDir;
     if (Error || Warning)
-        return;
+        return !Error;
+
     info!"%s grammar is ELL(1)"(EAG.BaseName);
-    EAG.History |= EAG.parsable;
+    return true;
 }
 
 public string Generate(Settings settings)
-in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.isSLAG))
 {
     info!"ELL(1) writing %s"(EAG.BaseName);
-    EAG.History &= ~EAG.parsable;
+
     Init(settings);
     scope (exit)
         Finit;
+
     if (!GrammarOk)
         assert(0, "TODO: error handling for parser generator");
     ComputeDir;
@@ -109,21 +110,19 @@ in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.isSLAG))
 
     const fileName = GenerateMod(No.parsePass, settings);
 
-    EAG.History |= EAG.parsable;
     return fileName;
 }
 
 public string GenerateParser(Settings settings)
-in (EAG.Performed(EAG.analysed | EAG.predicates | EAG.hasEvaluator))
 {
     info!"ELL(1) writing parser of %s"(EAG.BaseName);
-    EAG.History &= ~EAG.parsable;
+
     Init(settings);
     scope (exit)
         Finit;
+
     if (!GrammarOk)
         assert(0, "TODO: error handling for parser generator");
-    EAG.History = 0;
     Shift.Shift;
     ComputeDir;
     if (Error)
