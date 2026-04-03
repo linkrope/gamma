@@ -62,6 +62,8 @@ public class Parser
      */
     public Term parse(Nonterminal startSymbol, AffixForm affixForm)
     {
+        import log : error;
+
         Node[] rhs;
 
         rhs ~= new SymbolNode(startSymbol, Position());
@@ -80,7 +82,11 @@ public class Parser
 
             itemSet = ItemSet.nextItemSet(itemSet, symbol, grammar);
 
-            // TODO: report syntax errors
+            if (itemSet.items.empty)
+            {
+                error!"syntax error: unexpected %s\n%s"(symbol, symbolNode.position);
+                return null;
+            }
         }
         if (affixForm.variables !is null)
             this.variablesIterator = affixForm.variables;
@@ -113,5 +119,64 @@ public class Parser
             terms = terms.retro.array;
             return new Composite(item.alternative, terms);
         }
+    }
+}
+
+@("parse affix form")
+unittest
+{
+    import gamma.grammar.GrammarBuilder : TestGrammarBuilder;
+    import gamma.input.earley.AffixForm : affixForm;
+
+    with (TestGrammarBuilder())
+    {
+        rule("S:");
+        rule("S: a S b");
+
+        Nonterminal startSymbol = cast(Nonterminal) symbol("S");
+        const term = new Parser(grammar)
+            .parse(startSymbol, grammar.affixForm("a S b"));
+
+        assert(term !is null);
+        assert(cast(Composite) term !is null);
+    }
+}
+
+@("parse single variable")
+unittest
+{
+    import gamma.grammar.GrammarBuilder : TestGrammarBuilder;
+    import gamma.input.earley.AffixForm : affixForm;
+
+    with (TestGrammarBuilder())
+    {
+        rule("S:");
+        rule("S: a S b");
+
+        Nonterminal startSymbol = cast(Nonterminal) symbol("S");
+        const term = new Parser(grammar)
+            .parse(startSymbol, grammar.affixForm("!S1"));
+
+        assert(term !is null);
+        assert(cast(Variable) term !is null);
+    }
+}
+
+@("parse syntax error")
+unittest
+{
+    import gamma.grammar.GrammarBuilder : TestGrammarBuilder;
+    import gamma.input.earley.AffixForm : affixForm;
+
+    with (TestGrammarBuilder())
+    {
+        rule("S:");
+        rule("S: a S b");
+
+        Nonterminal startSymbol = cast(Nonterminal) symbol("S");
+        const term = new Parser(grammar)
+            .parse(startSymbol, grammar.affixForm("b"));
+
+        assert(term is null);
     }
 }
