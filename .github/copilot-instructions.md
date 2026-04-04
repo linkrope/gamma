@@ -16,10 +16,12 @@ The `:example` suite is the primary regression check; run it before committing.
 
 Two source trees that are being progressively merged:
 
-| Directory | Role | Status |
-|-----------|------|--------|
-| `src/gamma/` | Modern grammar model, LALR(1) gen, Earley parser, EBNF lowering | **Active development** |
-| `src/epsilon/` | Complete LL(1)-based pipeline (lexer → analyzer → code generators) | **Legacy; being replaced** |
+| Directory | Role | Origin | Status |
+|-----------|------|--------|---------|
+| `src/gamma/` | Modern grammar model, LALR(1) gen, Earley parser, EBNF lowering | Transpiled from Java | **Active development** |
+| `src/epsilon/` | Complete LL(1)-based pipeline (lexer → analyzer → code generators) | Transpiled from Oberon | **Legacy; being replaced** |
+
+> **Neither tree is idiomatic D.** Both carry patterns inherited from their source languages. New code should follow idiomatic D conventions; transpilation-era patterns (e.g. the Visitor pattern inherited from Java) should be replaced with idiomatic D solutions as the merger progresses.
 
 ### Current data flow
 
@@ -45,7 +47,7 @@ See [plan-replaceEpsilonAnalyzer.md](../plan-replaceEpsilonAnalyzer.md), [TODO.m
 ### Code style
 - Copyright header: `//          Copyright Mario Kröplin <year>.` + BSL-1.0 boilerplate
 - Public APIs: `/** javadoc-style block comments */`
-- Visitor pattern is pervasive — new grammar node types must implement `accept(Visitor)`
+- Visitor pattern is pervasive in legacy code (inherited from the Java transpilation) — prefer idiomatic D alternatives (e.g. pattern matching via `cast`, template dispatch) in new code instead of extending it
 - Defensive copies in constructors: use `.dup` on arrays
 - D `in`-contracts for preconditions (e.g. `in (lexer.front == Token.string_)`)
 - **No bare `true`/`false` arguments** — use `std.typecons.Flag` instead. Declare parameters as `Flag!"name"` and pass `Yes!"name"` / `No!"name"` at call sites. `Yes!` and `No!` convert implicitly to `bool`, so the function body needs no changes (see `Variable`'s `Unequal` flag for an example).

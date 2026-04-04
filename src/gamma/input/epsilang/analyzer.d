@@ -58,6 +58,8 @@ class Analyzer
             log.trace!"converted hyper grammar:\n%s"(this.hyperGrammar.toPrettyString);
         }
 
+        // TODO: wire Term[][] in Phase 1 step 3
+
         this.hyperGrammarProperties = new GrammarProperties(this.hyperGrammar, this.parser.getLexicalHyperNonterminals);
         if (this.hyperGrammarProperties.isReduced)
         {

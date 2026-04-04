@@ -1,17 +1,20 @@
 module gamma.grammar.hyper.PrintingHyperVisitor;
 
+import gamma.grammar.affixes.Composite;
+import gamma.grammar.affixes.Term;
 import gamma.grammar.affixes.Variable;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.hyper.Group;
+import gamma.grammar.hyper.HyperGrammar;
 import gamma.grammar.hyper.HyperVisitor;
 import gamma.grammar.hyper.Option;
 import gamma.grammar.hyper.Repetition;
 import gamma.grammar.hyper.RepetitionAlternative;
 import gamma.grammar.Node;
+import gamma.grammar.Nonterminal;
 import gamma.grammar.Rule;
 import gamma.grammar.SymbolNode;
-import gamma.input.earley.AffixForm;
 import std.range;
 
 version (unittest) import gamma.grammar.GrammarBuilder;
@@ -27,10 +30,21 @@ public string toPrettyString(Grammar grammar)
     return writer[];
 }
 
-public auto printingHyperVisitor(Writer)(Writer writer)
+public string toPrettyString(HyperGrammar hyperGrammar)
+{
+    import std.array : appender;
+
+    auto writer = appender!string;
+    auto visitor = printingHyperVisitor(writer, hyperGrammar.terms);
+
+    visitor.visit(hyperGrammar.grammar);
+    return writer[];
+}
+
+public auto printingHyperVisitor(Writer)(Writer writer, Term[][] termsByKey = null)
 out (visitor; visitor !is null)
 {
-    return new PrintingHyperVisitor!Writer(writer);
+    return new PrintingHyperVisitor!Writer(writer, termsByKey);
 }
 
 private class PrintingHyperVisitor(Writer) : HyperVisitor
@@ -39,9 +53,12 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
 
     private string indentation;
 
-    public this(Writer writer)
+    private Term[][] termsByKey;
+
+    public this(Writer writer, Term[][] termsByKey)
     {
         this.writer = writer;
+        this.termsByKey = termsByKey;
     }
 
     public void visit(Grammar grammar)
@@ -78,12 +95,16 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
 
             if (hyperSymbolNode.params !is null)
             {
+
+                const key = hyperSymbolNode.params.key;
+                auto terms = (key < this.termsByKey.length) ? this.termsByKey[key] : null;
+
                 this.writer.put(" <");
-                foreach (i, affixForm; hyperSymbolNode.params.affixForms.enumerate)
+                foreach (i, term; terms.enumerate)
                 {
                     if (i > 0)
                         this.writer.put(", ");
-                    this.writer.write(affixForm);
+                    this.writer.write(term);
                 }
                 this.writer.put(">");
             }
@@ -191,26 +212,32 @@ unittest
     }
 }
 
-private void write(Writer)(Writer writer, AffixForm affixForm)
+private void write(Writer)(Writer writer, Term term)
 {
-    import gamma.grammar.Nonterminal : Nonterminal;
-
-    auto variables = affixForm.variables;
-
-    foreach (i, symbolNode; affixForm.symbolNodes.enumerate)
+    if (auto variable = cast(Variable) term)
     {
-        if (i > 0)
-            writer.put(" ");
-        if (cast(Nonterminal) symbolNode.symbol)
-        {
-            assert(!variables.empty);
+        writer.write(variable);
+    }
+    else if (auto composite = cast(Composite) term)
+    {
+        auto terms = composite.terms;
 
-            writer.write(variables.front);
-            variables.popFront;
-        }
-        else
+        foreach (i, node; composite.alternative.rhs.enumerate)
         {
-            writer.put(symbolNode.symbol.toString);
+            if (i > 0)
+                writer.put(" ");
+
+            SymbolNode symbolNode = cast(SymbolNode) node;
+
+            if (cast(Nonterminal) symbolNode.symbol)
+            {
+                writer.write(terms.front);
+                terms.popFront;
+            }
+            else
+            {
+                writer.put(symbolNode.symbol.toString);
+            }
         }
     }
 }

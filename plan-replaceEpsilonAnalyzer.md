@@ -7,7 +7,7 @@ Four phases. Integrate gamma's dormant Earley parser into gamma's analyzer (phas
 - Affix approach: Option B — integrate gamma's Earley parser first, skip epsilon's CheckSemantics; transform gamma's Term trees to epsilon's NodeBuf format
 - Scope: replace ALL three phases of epsilon.analyzer (Specification + CheckSemantics + ComputeEAGSets)
 - Transformer location: `src/gamma/input/EAGBuilder.d` (gamma already imports epsilon; dependency goes gamma→epsilon; independent of concrete syntax so NOT in epsilang/)
-- EAGBuilder strategy: dual-mode compare→store; builder carries its own internal EAG representation; each sub-phase has a `compareX()` (diffs vs live EAG globals) that later becomes `storeX()`, enabling automatic regression diffing on every `dub test :example`
+- EAGBuilder strategy: dual-mode compare→store; builder carries its own internal EAG representation; each sub-phase has a `compareX()` (diffs vs live EAG globals) that later becomes `storeX()`, enabling automatic regression diffing on every `dub test --build=unittest --config=example`
 - EAGBuilder granularity: iterative sub-phases (meta first, then hyper, then affixes, then sets); single file with distinct methods rather than separate files
 
 ---
@@ -17,10 +17,10 @@ Four phases. Integrate gamma's dormant Earley parser into gamma's analyzer (phas
 
 Steps:
 - [x] `src/gamma/input/earley/Parser.d` — implement the error reporting TODO at line 72; surface parse failures with position info
+- [x] Ensure gamma's grammar model structs (Signature, HyperSymbolNode, Operator params in `src/gamma/grammar/affixes/`) can carry the validated `Term` trees — `Params` refactored to `size_t key + Position`; `HyperGrammar` created bundling `Grammar + Term[][]`; `PrintingHyperVisitor` updated; `epsilang/parser.d` collects `AffixForm[][] affixFormsByKey_`
 - [ ] `src/gamma/input/epsilang/analyzer.d` — after `parseSpecification()`, iterate over all nonterminal occurrences that carry Signatures; for each affix form call `earleyParser.parse(domain, affixForm)`; attach returned `Term` tree back to the model; report error on `null` return
-- [ ] Ensure gamma's grammar model structs (Signature, HyperSymbolNode, Operator params in `src/gamma/grammar/affixes/`) can carry the validated `Term` trees (add field if missing)
 
-Checkpoint: `dub test :example` — all tests pass (epsilon.analyzer still active, this only changes gamma's side validation)
+Checkpoint: `dub test --build=unittest --config=example` — all tests pass (epsilon.analyzer still active, this only changes gamma's side validation)
 
 ---
 
@@ -37,7 +37,7 @@ Items to verify systematically:
 
 File to patch if gaps found: `src/gamma/input/epsilang/parser.d`, `src/gamma/input/epsilang/analyzer.d`
 
-Checkpoint: manual review + `dub test :example`
+Checkpoint: manual review + `dub test --build=unittest --config=example`
 
 ---
 
@@ -49,7 +49,7 @@ Checkpoint: manual review + `dub test :example`
 - `buildX(...)` — fills the builder's own fields from gamma's Grammar model
 - `compareX()` — diffs the builder's fields against the live EAG globals (already populated by epsilon.analyzer) and reports mismatches
 
-Because epsilon.analyzer still runs first in `main.d`, the comparison runs automatically on every `dub test :example` invocation with zero extra tooling.
+Because epsilon.analyzer still runs first in `main.d`, the comparison runs automatically on every `dub test --build=unittest --config=example` invocation with zero extra tooling.
 
 **Integration wiring in `main.d` during Phase 3:**
 ```
@@ -84,19 +84,19 @@ builder.compareMeta();         // logs/asserts diffs — free regression check
 - [ ] `storeSets()`: replace `compareSets()` once zero diffs confirmed
 - Reference: epsilon/analyzer.d ComputeEAGSets()
 
-Checkpoint per sub-phase: `dub test :example` — compare functions run automatically; mismatch output drives the next fix iteration
+Checkpoint per sub-phase: `dub test --build=unittest --config=example` — compare functions run automatically; mismatch output drives the next fix iteration
 
 ---
 
 ## Phase 4: Replace epsilon.analyzer in main.d
 - [ ] `src/gamma/main.d`: `check()` already calls gamma's analyzer; refactor so the analyzed Grammar models are accessible to `compile()`
 - [ ] In `compile()`: replace `analyzer.Analyse(input)` (line ~96) with call to `EAGBuilder.storeAll(metaGrammar, hyperGrammar)`
-- [ ] Remove `epsilon.analyzer` import once confirmed
 - [ ] Move the dual-use lexer (`src/epsilon/lexer.d`) into `src/gamma/`; update all imports
 - [ ] Remove `src/gamma/input/epsilang/Scanner.d` (marked unused) now that the epsilon lexer is superseded
+- [ ] Remove `epsilon.analyzer` import once confirmed
 - [ ] Verify `Predicates.Check()` and all downstream generators still work unchanged (they read EAG globals, which are now populated by the transformer)
 
-Checkpoint: `dub test :example` with epsilon.analyzer removed — all tests pass
+Checkpoint: `dub test --build=unittest --config=example` with epsilon.analyzer removed — all tests pass
 
 ---
 
@@ -114,8 +114,8 @@ Checkpoint: `dub test :example` with epsilon.analyzer removed — all tests pass
 
 ## Verification
 
-> **Note**: `dub test :example` must be run from a **WSL terminal**. The `preBuildCommands` in `dub.json` use `$DUB` (a Unix environment variable) and the generated binaries are Linux ELF executables.
+> **Note**: `dub test --build=unittest --config=example` must be run from a **WSL terminal**. The `preBuildCommands` in `dub.json` use `$DUB` (a Unix environment variable) and the generated binaries are Linux ELF executables.
 
-1. `dub test :example` after each phase and each 3x sub-phase
+1. `dub test --build=unittest --config=example` after each phase and each 3x sub-phase
 2. `compareX()` methods in Phase 3 make diffs automatic on every test run — no separate tooling needed
-3. After Phase 4: full `dub test :example` with epsilon.analyzer removed
+3. After Phase 4: full `dub test --build=unittest --config=example` with epsilon.analyzer removed

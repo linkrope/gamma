@@ -39,6 +39,8 @@ public class Parser
 
     private Params undecidedActualParams;
 
+    private AffixForm[][] affixFormsByKey_;
+
     private GrammarBuilder metaGrammarBuilder;
 
     private GrammarBuilder hyperGrammarBuilder;
@@ -690,7 +692,9 @@ public class Parser
             markError(`">" expected`);
 
         Signature signature = null;
-        auto params = new Params(affixForms, position);
+        auto params = new Params(this.affixFormsByKey_.length, position);
+
+        this.affixFormsByKey_ ~= affixForms;
 
         if (formalParams.get)
         {
@@ -803,6 +807,11 @@ public class Parser
     public int getErrorCount() const
     {
         return this.lexer.ok ? 0 : 42; // FIXME
+    }
+
+    public AffixForm[][] affixFormsByKey()
+    {
+        return this.affixFormsByKey_;
     }
 
     public Grammar yieldMetaGrammar()
