@@ -18,9 +18,25 @@ Four phases. Integrate gamma's dormant Earley parser into gamma's analyzer (phas
 Steps:
 - [x] `src/gamma/input/earley/Parser.d` — implement the error reporting TODO at line 72; surface parse failures with position info
 - [x] Ensure gamma's grammar model structs (Signature, HyperSymbolNode, Operator params in `src/gamma/grammar/affixes/`) can carry the validated `Term` trees — `Params` refactored to `size_t key + Position`; `HyperGrammar` created bundling `Grammar + Term[][]`; `PrintingHyperVisitor` updated; `epsilang/parser.d` collects `AffixForm[][] affixFormsByKey_`
-- [ ] `src/gamma/input/epsilang/analyzer.d` — after `parseSpecification()`, iterate over all nonterminal occurrences that carry Signatures; for each affix form call `earleyParser.parse(domain, affixForm)`; attach returned `Term` tree back to the model; report error on `null` return
+- [x] `src/gamma/input/epsilang/analyzer.d` — after `parseSpecification()`, iterate over all nonterminal occurrences that carry Signatures; for each affix form call `earleyParser.parse(domain, affixForm)`; attach returned `Term` tree back to the model; report error on `null` return
 
 Checkpoint: `dub test --build=unittest --config=example` — all tests pass (epsilon.analyzer still active, this only changes gamma's side validation)
+
+---
+
+## Phase 1½: Wire actual/end params through the parser and fix the hyper printer
+**Goal**: EBNF expressions with params (`{ <…> … <…> }`, `[ <…> … <…> ]`) round-trip correctly through the model and are pretty-printed faithfully
+
+Background: The parser currently passes `null` for `Operator.params` (actual params before `{`/`[`) and `Operator.endParams` (actual params after `}`/`]`), and `RepetitionAlternative` is also constructed with `null` for the closing params. Consequently `PrintingHyperVisitor` cannot print them. The `EBNFConverter` does push `repetition.rule.lhs` (which has the formal params key) into the outer RHS, so converted output is partially correct, but the actual params wrapping the EBNF expression are lost.
+
+Steps:
+- [ ] **Parser TODO — `Operator.params`**: in `parseHyperTerm`, when an EBNF open bracket is preceded by actual params (`spareActualParams`), pass them to the `Group`/`Option`/`Repetition` constructor (first argument, currently `null`)
+- [ ] **Parser TODO — `Operator.endParams`**: in `parseHyperTerm`, after parsing the closing `]`/`}`, parse the following actual params (if present) and pass them as `endParams` to `Option`/`Repetition` (third argument, currently `null`)
+- [ ] **Parser TODO — `RepetitionAlternative.params`**: in `parseHyperExpr`, pass the trailing actual params (`undecidedActualParams` / `spareActualParams`) to `RepetitionAlternative` (third argument, currently `null`)
+- [ ] **Parser TODO — `HyperSymbolNode` lhs**: resolve all remaining `// TODO: which params?` comments in `parseHyperRule` and `parseHyperTerm` — for named symbols the trailing `undecidedActualParams` belongs to that node
+- [ ] **Printer fix — EBNF operator params**: in `PrintingHyperVisitor.visit(Repetition)` / `visit(Option)` / `visit(Group)`, print `operator.params` (actual params before `{`) and `operator.endParams` (actual params after `}`) using the same `<…>` format as `visit(SymbolNode)`, looking up terms via `termsByKey`
+
+Checkpoint: `dub run -- example/abc.eag` pretty-prints the hyper grammar with all params visible; `dub test --build=unittest --config=example` still passes
 
 ---
 

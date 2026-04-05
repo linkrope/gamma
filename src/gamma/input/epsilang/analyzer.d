@@ -2,6 +2,7 @@ module gamma.input.epsilang.analyzer;
 
 import gamma.grammar.Grammar;
 import gamma.grammar.GrammarProperties;
+import gamma.grammar.hyper.HyperGrammar;
 import gamma.input.epsilang.parser;
 import io;
 import log;
@@ -10,9 +11,7 @@ class Analyzer
 {
     private Parser parser;
 
-    private Grammar metaGrammar;
-
-    private Grammar hyperGrammar;
+    private HyperGrammar plainHyperGrammar_;
 
     private GrammarProperties hyperGrammarProperties;
 
@@ -26,15 +25,16 @@ class Analyzer
 
         enforce(this.parser.getErrorCount == 0);
 
-        this.metaGrammar = this.parser.yieldMetaGrammar;
-        if (this.metaGrammar)
+        auto metaGrammar = this.parser.buildMetaGrammar;
+
+        if (metaGrammar)
         {
             import gamma.grammar.PrintingVisitor : toPrettyString;
 
-            log.trace!"meta grammar:\n%s"(this.metaGrammar.toPrettyString);
+            log.trace!"meta grammar:\n%s"(metaGrammar.toPrettyString);
         }
 
-        auto hyperEBNFGrammar = parser.yieldHyperGrammar;
+        auto hyperEBNFGrammar = parser.buildHyperGrammar;
 
         if (hyperEBNFGrammar)
         {
@@ -43,56 +43,59 @@ class Analyzer
             log.trace!"hyper grammar:\n%s"(hyperEBNFGrammar.toPrettyString);
         }
 
-        enforce(this.metaGrammar && hyperEBNFGrammar,
+        enforce(metaGrammar && hyperEBNFGrammar,
             "grammar not well defined");
 
-        if (hyperEBNFGrammar.isPlain)
+        if (hyperEBNFGrammar.grammar.isPlain)
         {
-            this.hyperGrammar = hyperEBNFGrammar;
+            this.plainHyperGrammar_ = hyperEBNFGrammar;
         }
         else
         {
             import gamma.grammar.hyper.PrintingHyperVisitor : toPrettyString;
 
-            this.hyperGrammar = convert(hyperEBNFGrammar);
-            log.trace!"converted hyper grammar:\n%s"(this.hyperGrammar.toPrettyString);
+            this.plainHyperGrammar_ = new HyperGrammar(convert(hyperEBNFGrammar.grammar), hyperEBNFGrammar.terms);
+            log.trace!"converted hyper grammar:\n%s"(this.plainHyperGrammar_.toPrettyString);
         }
 
-        // TODO: wire Term[][] in Phase 1 step 3
-
-        this.hyperGrammarProperties = new GrammarProperties(this.hyperGrammar, this.parser.getLexicalHyperNonterminals);
+        this.hyperGrammarProperties = new GrammarProperties(this.plainHyperGrammar_.grammar, this.parser.getLexicalHyperNonterminals);
         if (this.hyperGrammarProperties.isReduced)
         {
             trace!"hyper grammar is reduced";
         }
-        if (!this.hyperGrammarProperties.isProductive(this.hyperGrammar.startSymbol))
+        if (!this.hyperGrammarProperties.isProductive(this.plainHyperGrammar_.grammar.startSymbol))
         {
-            error!"start symbol %s is unproductive"(this.hyperGrammar.startSymbol);
+            error!"start symbol %s is unproductive"(this.plainHyperGrammar_.grammar.startSymbol);
 
             enforce(false);
         }
-        foreach (nonterminal; this.hyperGrammar.nonterminals)
+        foreach (nonterminal; this.plainHyperGrammar_.grammar.nonterminals)
             if (!this.hyperGrammarProperties.isProductive(nonterminal))
             {
                 import gamma.grammar.hyper.AnonymousNonterminal : AnonymousNonterminal;
 
-                const position = this.hyperGrammar.ruleOf(nonterminal).lhs.position;
+                const position = this.plainHyperGrammar_.grammar.ruleOf(nonterminal).lhs.position;
 
                 if (cast(AnonymousNonterminal) nonterminal)
                     warn!"EBNF expression is unproductive\n%s"(position);
                 else
                     warn!"%s is unproductive\n%s"(nonterminal, position);
             }
-        foreach (nonterminal; this.hyperGrammar.nonterminals)
+        foreach (nonterminal; this.plainHyperGrammar_.grammar.nonterminals)
             if (!this.hyperGrammarProperties.isReachable(nonterminal))
             {
                 import gamma.grammar.hyper.AnonymousNonterminal : AnonymousNonterminal;
 
-                const position = this.hyperGrammar.ruleOf(nonterminal).lhs.position;
+                const position = this.plainHyperGrammar_.grammar.ruleOf(nonterminal).lhs.position;
 
                 if (!cast(AnonymousNonterminal) nonterminal)
                     warn!"%s is unreachable\n%s"(nonterminal, position);
             }
+    }
+
+    public HyperGrammar plainHyperGrammar()
+    {
+        return this.plainHyperGrammar_;
     }
 
     public Grammar parserGrammar()
@@ -109,11 +112,11 @@ class Analyzer
         bool isPredicate(Symbol symbol)
         {
             // bad things happen when the start symbol is taken as a predicate
-            return symbol != this.hyperGrammar.startSymbol
+            return symbol != this.plainHyperGrammar_.grammar.startSymbol
                 && this.hyperGrammarProperties.isStrongNullable(symbol);
         }
 
-        auto parserGrammar = this.hyperGrammar
+        auto parserGrammar = this.plainHyperGrammar_.grammar
             .toExtendedParserGrammar(&isTerminal, &isPredicate);
 
         // TODO

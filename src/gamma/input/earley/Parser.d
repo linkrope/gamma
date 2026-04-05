@@ -34,13 +34,8 @@ public class Parser
 {
     private Grammar grammar;
 
-    private Variable[] variablesIterator;
-
-    // TODO: eliminate attributes 'startSymbol' and 'endSymbol'
-
-    private Nonterminal startSymbol;
-
-    private Terminal endSymbol;
+    // variables from the affix form, consumed back-to-front
+    private Variable[] variables;
 
     /**
      * @param grammar
@@ -48,11 +43,6 @@ public class Parser
     public this(Grammar grammar)
     {
         this.grammar = grammar;
-
-        GrammarBuilder grammarBuilder;
-
-        this.startSymbol = grammarBuilder.buildNonterminal("S'");
-        this.endSymbol = grammarBuilder.buildTerminal("$");
     }
 
     /**
@@ -64,15 +54,18 @@ public class Parser
     {
         import log : error;
 
+        GrammarBuilder grammarBuilder;
+        Terminal endSymbol = grammarBuilder.buildTerminal("$");
         Node[] rhs;
 
         rhs ~= new SymbolNode(startSymbol, Position());
-        rhs ~= new SymbolNode(this.endSymbol, Position());
+        rhs ~= new SymbolNode(endSymbol, Position());
 
-        Alternative alternative = new Alternative(new SymbolNode(this.startSymbol, Position()), rhs, Position());
+        Nonterminal augmentedStartSymbol = grammarBuilder.buildNonterminal("S'");
+        Alternative alternative = new Alternative(new SymbolNode(augmentedStartSymbol, Position()), rhs, Position());
         SymbolNode[] symbolNodes = affixForm.symbolNodes;
 
-        symbolNodes ~= new SymbolNode(this.endSymbol, Position());
+        symbolNodes ~= new SymbolNode(endSymbol, Position());
 
         ItemSet itemSet = ItemSet.initialItemSet(alternative, grammar);
 
@@ -89,7 +82,7 @@ public class Parser
             }
         }
         if (affixForm.variables !is null)
-            this.variablesIterator = affixForm.variables;
+            this.variables = affixForm.variables;
         if (itemSet.items.empty)
             return null;
         else
@@ -103,10 +96,10 @@ public class Parser
 
         if (item.subItem is null)
         {
-            Variable variable = this.variablesIterator.back;
+            Variable variable = this.variables.back;
 
             assert(cast(Nonterminal) item.prevItem.symbol == variable.nonterminal);
-
+            this.variables.popBack;
             return variable;
         }
         else

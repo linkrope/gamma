@@ -41,7 +41,7 @@ See [plan-replaceEpsilonAnalyzer.md](../plan-replaceEpsilonAnalyzer.md), [TODO.m
 ### Naming
 - Classes/types: `PascalCase`, one class per file, filename matches class name
 - Methods and local variables: `camelCase`
-- Private fields: `camelCase_` (trailing underscore)
+- Private fields: `camelCase` — trailing underscore (`camelCase_`) only when the field name conflicts with a getter or setter of the same name
 - Module names: lowercase dot-separated packages (e.g. `gamma.grammar.Nonterminal`)
 
 ### Code style

@@ -1,11 +1,14 @@
 module gamma.input.epsilang.parser;
 
 import epsilon.lexer;
+import gamma.grammar.affixes.Signature;
+import gamma.grammar.affixes.Term;
 import gamma.grammar.affixes.Variable;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.GrammarBuilder;
 import gamma.grammar.hyper.Group;
+import gamma.grammar.hyper.HyperGrammar;
 import gamma.grammar.hyper.HyperSymbolNode;
 import gamma.grammar.hyper.Operator;
 import gamma.grammar.hyper.Option;
@@ -27,6 +30,18 @@ import symbols;
 
 public class Parser
 {
+    private static struct ParamsInfo
+    {
+        Params params;
+
+        // null for actual params
+        Signature signature;
+
+        AffixForm[] affixForms;
+
+        Term[] terms;
+    }
+
     private SymbolTable symbolTable;
 
     private Lexer lexer;
@@ -39,9 +54,11 @@ public class Parser
 
     private Params undecidedActualParams;
 
-    private AffixForm[][] affixFormsByKey_;
+    private ParamsInfo[] paramsByKey;
 
     private GrammarBuilder metaGrammarBuilder;
+
+    private Nullable!Grammar metaGrammar;
 
     private GrammarBuilder hyperGrammarBuilder;
 
@@ -146,6 +163,33 @@ public class Parser
                 }
                 if (this.lexer.front == '.')
                     this.lexer.popFront;
+            }
+        }
+        parseAffixForms;
+    }
+
+    private void parseAffixForms()
+    {
+        import gamma.input.earley.Parser : Parser;
+
+        auto metaGrammar = buildMetaGrammar;
+
+        if (metaGrammar is null)
+            return;
+
+        auto parser = new Parser(metaGrammar);
+
+        foreach (ref paramsInfo; this.paramsByKey) with (paramsInfo)
+        {
+            if (signature is null)
+                continue;
+            foreach (i, affixForm; affixForms)
+            {
+                auto term = parser.parse(signature.domains[i], affixForm);
+
+                terms ~= term;
+                if (term is null)
+                    this.lexer.addError(params.position, "affix form does not match domain");
             }
         }
     }
@@ -586,7 +630,7 @@ public class Parser
         return nodes;
     }
 
-    private auto parseParams(Flag!"formalParams" formalParams)
+    private ParamsInfo parseParams(Flag!"formalParams" formalParams)
     {
         return parseParams(formalParams ? true.nullable : false.nullable);
     }
@@ -598,7 +642,7 @@ public class Parser
      * ActualParams:
      *     '<' AffixForm { ',' AffixForm } '>'.
      */
-    private auto parseParams(Nullable!bool formalParams = Nullable!bool())
+    private ParamsInfo parseParams(Nullable!bool formalParams = Nullable!bool())
     in (this.lexer.front == '<')
     {
         import gamma.grammar.affixes.Direction : Direction;
@@ -692,15 +736,17 @@ public class Parser
             markError(`">" expected`);
 
         Signature signature = null;
-        auto params = new Params(this.affixFormsByKey_.length, position);
-
-        this.affixFormsByKey_ ~= affixForms;
+        auto params = new Params(this.paramsByKey.length, position);
 
         if (formalParams.get)
         {
             signature = new Signature(directions, domains, position);
         }
-        return tuple!("signature", "params")(signature, params);
+
+        auto paramsInfo = ParamsInfo(params, signature, affixForms);
+
+        this.paramsByKey ~= paramsInfo;
+        return paramsInfo;
     }
 
     /**
@@ -809,29 +855,29 @@ public class Parser
         return this.lexer.ok ? 0 : 42; // FIXME
     }
 
-    public AffixForm[][] affixFormsByKey()
+    public Grammar buildMetaGrammar()
     {
-        return this.affixFormsByKey_;
+        if (this.metaGrammar.isNull)
+        {
+            Grammar grammar = this.lexer.ok ? this.metaGrammarBuilder.getGrammar : null;
+
+            this.metaGrammar = grammar;
+            if (grammar is null)
+                this.metaGrammarBuilder.markErrors;
+        }
+        return this.metaGrammar.get;
     }
 
-    public Grammar yieldMetaGrammar()
+    public HyperGrammar buildHyperGrammar()
     {
-        if (this.lexer.ok && this.metaGrammarBuilder.grammarIsWellDefined)
-        {
-            return this.metaGrammarBuilder.getGrammar;
-        }
-        else
-        {
-            this.metaGrammarBuilder.markErrors;
-            return null;
-        }
-    }
+        import std.algorithm : map;
+        import std.array : array;
 
-    public Grammar yieldHyperGrammar()
-    {
         if (this.lexer.ok && this.startSymbol !is null && this.hyperGrammarBuilder.grammarIsWellDefined)
         {
-            return this.hyperGrammarBuilder.getGrammar(this.startSymbol);
+            Term[][] termsByKey = this.paramsByKey.map!"a.terms".array;
+
+            return new HyperGrammar(this.hyperGrammarBuilder.getGrammar(this.startSymbol), termsByKey);
         }
         else
         {
