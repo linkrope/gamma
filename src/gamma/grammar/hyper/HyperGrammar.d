@@ -7,8 +7,10 @@ import gamma.grammar.Grammar;
  * Bundles a hyper grammar with its validated affix trees.
  * Affix trees are referenced indirectly via a key stored in each Params.
  */
-public class HyperGrammar
+class HyperGrammar
 {
+    alias grammar this;
+
     private Grammar grammar_;
 
     private Term[][] terms_;
