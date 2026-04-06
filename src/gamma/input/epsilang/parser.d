@@ -879,8 +879,9 @@ public class Parser
         if (this.lexer.ok && this.startSymbol !is null && this.hyperGrammarBuilder.grammarIsWellDefined)
         {
             Term[][] termsByKey = this.paramsByKey.map!"a.terms".array;
+            Signature[] signaturesByKey = this.paramsByKey.map!"a.signature".array;
 
-            return new HyperGrammar(this.hyperGrammarBuilder.getGrammar(this.startSymbol), termsByKey);
+            return new HyperGrammar(this.hyperGrammarBuilder.getGrammar(this.startSymbol), termsByKey, signaturesByKey);
         }
         else
         {

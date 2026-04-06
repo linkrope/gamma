@@ -34,9 +34,35 @@ Steps:
 - [x] **Parser TODO — `Operator.endParams`**: in `parseHyperTerm`, after parsing the closing `]`/`}`, parse the following formal params (if present) and pass them as `endParams` to `Option`/`Repetition` (third argument, currently `null`)
 - [x] **Parser TODO — `RepetitionAlternative.params`**: in `parseHyperExpr`, pass the trailing actual params (`undecidedActualParams` / `spareActualParams`) to `RepetitionAlternative` (third argument, currently `null`)
 - [x] **Parser TODO — `HyperSymbolNode` lhs**: resolve all remaining `// TODO: which params?` comments in `parseHyperRule` and `parseHyperTerm` — for named symbols the trailing `undecidedActualParams` belongs to that node
-- [ ] **Printer fix — EBNF operator params**: in `PrintingHyperVisitor.visit(Repetition)` / `visit(Option)` / `visit(Group)`, print `operator.params` (actual params before `{`) and `operator.endParams` (actual params after `}`) using the same `<…>` format as `visit(SymbolNode)`, looking up terms via `termsByKey`
+- [x] **Printer fix — EBNF operator params**: in `PrintingHyperVisitor.visit(Repetition)` / `visit(Option)` / `visit(Group)`, print `operator.params` (actual params before `{`) and `operator.endParams` (actual params after `}`) using the same `<…>` format as `visit(SymbolNode)`, looking up terms via `termsByKey`; signature info (`+`/`-`) interleaved for formal params; `HyperGrammar` extended with `signaturesByKey` array; `RepetitionAlternative` lhs and trailing params printed
 
 Checkpoint: `dub run -- example/abc.eag` pretty-prints the hyper grammar with all params visible; `dub test --build=unittest --config=example` still passes
+
+---
+
+## Phase 1¾: Per-nonterminal signatures — model, conflict checking, actual-vs-formal validation
+**Goal**: the signature belongs to the nonterminal, not to an individual params occurrence; conflicts and arity errors are reported by gamma's analyzer; printing uses the signature directly
+
+### Background — what epsilon does
+- `EAG.HNont[Sym].Sig` — one signature (pointer into `DomBuf`) stored per hyper nonterminal; initially `-1`
+- `SigOK(Sym)` — on every formal-params occurrence for `Sym`, compare the new signature against the stored one; if first occurrence, store it; if mismatch, return `false` → caller reports "formal params differ"
+- `CheckParamList(HNont[x].Sig, actual, …)` — on every actual-params occurrence, verify arity matches the stored signature and direction is compatible
+
+### What currently exists in gamma
+- `Signature` is stored per params-key inside the parser's private `ParamsInfo`; exposed via `HyperGrammar.signaturesByKey` (flat array indexed by key, one entry per occurrence — wrong granularity)
+- `Params` carries only `key + position`; no reference to the nonterminal's canonical signature
+- No per-nonterminal signature map, no conflict check, no actual-vs-formal arity check
+
+### Steps
+
+- [ ] **`FormalParams` class**: add `src/gamma/grammar/hyper/FormalParams.d` — extends `Params`, adds `Signature signature()` property; actual params remain plain `Params`; the two types are distinguishable by `cast`
+- [ ] **Parser uses `FormalParams`**: in `parseParams(Yes.formalParams)`, construct `new FormalParams(key, signature, position)` instead of bare `Params`; keep `Params` for actual params; update `ParamsInfo.params` accordingly
+- [ ] **`HyperGrammar.signaturesByKey` removal**: drop the `signaturesByKey_` field and its constructor parameter added in Phase 1½; the printer will look up the signature from the `FormalParams` node itself (see printer step below)
+- [ ] **`Analyzer` — per-nonterminal signature map**: after `parseSpecification`, walk all hyper rules; for each `HyperSymbolNode` whose `params` is a `FormalParams`, look up the nonterminal by index in a `Signature[size_t]` map; if absent, store; if present and not structurally equal, report error "formal params differ" (use `addError` at `params.position`)
+- [ ] **`Analyzer` — actual-vs-formal arity check**: for each `HyperSymbolNode` whose `params` is a plain `Params` (actual params), look up the nonterminal's signature; if found, verify `terms[key].length == signature.length`; report error "number of affixforms differs from signature" on mismatch
+- [ ] **Printer update**: in `PrintingHyperVisitor.printParams`, check `if (auto fp = cast(FormalParams) params)` and use `fp.signature.direction` for `+`/`-` prefixes; remove the `signaturesByKey` field and constructor parameter
+
+Checkpoint: `dub test --build=unittest --config=example` — all tests pass; `dub run -- example/count1.eag` (or any grammar with formal params) reports no spurious errors
 
 ---
 

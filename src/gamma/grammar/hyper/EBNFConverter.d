@@ -73,16 +73,19 @@ private class EBNFConverter : HyperVisitor
 
     void visit(Group group)
     {
-        this.rhsStack.back ~= group.rule.lhs;
+        auto nonterminal = cast(Nonterminal) group.rule.lhs.symbol;
+
+        this.rhsStack.back ~= new HyperSymbolNode(nonterminal, group.params, group.position);
         group.rule.accept(this);
     }
 
     void visit(Option option)
     {
-        this.rhsStack.back ~= option.rule.lhs;
+        auto nonterminal = cast(Nonterminal) option.rule.lhs.symbol;
+
+        this.rhsStack.back ~= new HyperSymbolNode(nonterminal, option.params, option.position);
         option.rule.accept(this);
 
-        auto nonterminal = cast(Nonterminal) option.rule.lhs.symbol;
         SymbolNode symbolNode = new HyperSymbolNode(nonterminal, option.endParams, option.position);
 
         this.alternatives ~= new Alternative(symbolNode, null, option.position);
@@ -90,10 +93,11 @@ private class EBNFConverter : HyperVisitor
 
     void visit(Repetition repetition)
     {
-        this.rhsStack.back ~= repetition.rule.lhs;
+        auto nonterminal = cast(Nonterminal) repetition.rule.lhs.symbol;
+
+        this.rhsStack.back ~= new HyperSymbolNode(nonterminal, repetition.params, repetition.position);
         repetition.rule.accept(this);
 
-        auto nonterminal = cast(Nonterminal) repetition.rule.lhs.symbol;
         SymbolNode symbolNode = new HyperSymbolNode(nonterminal, repetition.endParams, repetition.position);
 
         this.alternatives ~= new Alternative(symbolNode, null, repetition.position);
