@@ -30,10 +30,10 @@ Checkpoint: `dub test --build=unittest --config=example` — all tests pass (eps
 Background: The parser currently passes `null` for `Operator.params` (actual params before `{`/`[`) and `Operator.endParams` (actual params after `}`/`]`), and `RepetitionAlternative` is also constructed with `null` for the closing params. Consequently `PrintingHyperVisitor` cannot print them. The `EBNFConverter` does push `repetition.rule.lhs` (which has the formal params key) into the outer RHS, so converted output is partially correct, but the actual params wrapping the EBNF expression are lost.
 
 Steps:
-- [ ] **Parser TODO — `Operator.params`**: in `parseHyperTerm`, when an EBNF open bracket is preceded by actual params (`spareActualParams`), pass them to the `Group`/`Option`/`Repetition` constructor (first argument, currently `null`)
-- [ ] **Parser TODO — `Operator.endParams`**: in `parseHyperTerm`, after parsing the closing `]`/`}`, parse the following actual params (if present) and pass them as `endParams` to `Option`/`Repetition` (third argument, currently `null`)
-- [ ] **Parser TODO — `RepetitionAlternative.params`**: in `parseHyperExpr`, pass the trailing actual params (`undecidedActualParams` / `spareActualParams`) to `RepetitionAlternative` (third argument, currently `null`)
-- [ ] **Parser TODO — `HyperSymbolNode` lhs**: resolve all remaining `// TODO: which params?` comments in `parseHyperRule` and `parseHyperTerm` — for named symbols the trailing `undecidedActualParams` belongs to that node
+- [x] **Parser TODO — `Operator.params`**: in `parseHyperTerm`, when an EBNF open bracket is preceded by actual params (`spareActualParams`), pass them to the `Group`/`Option`/`Repetition` constructor (first argument, currently `null`)
+- [x] **Parser TODO — `Operator.endParams`**: in `parseHyperTerm`, after parsing the closing `]`/`}`, parse the following formal params (if present) and pass them as `endParams` to `Option`/`Repetition` (third argument, currently `null`)
+- [x] **Parser TODO — `RepetitionAlternative.params`**: in `parseHyperExpr`, pass the trailing actual params (`undecidedActualParams` / `spareActualParams`) to `RepetitionAlternative` (third argument, currently `null`)
+- [x] **Parser TODO — `HyperSymbolNode` lhs**: resolve all remaining `// TODO: which params?` comments in `parseHyperRule` and `parseHyperTerm` — for named symbols the trailing `undecidedActualParams` belongs to that node
 - [ ] **Printer fix — EBNF operator params**: in `PrintingHyperVisitor.visit(Repetition)` / `visit(Option)` / `visit(Group)`, print `operator.params` (actual params before `{`) and `operator.endParams` (actual params after `}`) using the same `<…>` format as `visit(SymbolNode)`, looking up terms via `termsByKey`
 
 Checkpoint: `dub run -- example/abc.eag` pretty-prints the hyper grammar with all params visible; `dub test --build=unittest --config=example` still passes
