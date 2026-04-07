@@ -55,14 +55,14 @@ Checkpoint: `dub run -- example/abc.eag` pretty-prints the hyper grammar with al
 
 ### Steps
 
-- [ ] **`FormalParams` class**: add `src/gamma/grammar/hyper/FormalParams.d` — extends `Params`, adds `Signature signature()` property; actual params remain plain `Params`; the two types are distinguishable by `cast`
-- [ ] **Parser uses `FormalParams`**: in `parseParams(Yes.formalParams)`, construct `new FormalParams(key, signature, position)` instead of bare `Params`; keep `Params` for actual params; update `ParamsInfo.params` accordingly
-- [ ] **`HyperGrammar.signaturesByKey` removal**: drop the `signaturesByKey_` field and its constructor parameter added in Phase 1½; the printer will look up the signature from the `FormalParams` node itself (see printer step below)
-- [ ] **`Analyzer` — per-nonterminal signature map**: after `parseSpecification`, walk all hyper rules; for each `HyperSymbolNode` whose `params` is a `FormalParams`, look up the nonterminal by index in a `Signature[size_t]` map; if absent, store; if present and not structurally equal, report error "formal params differ" (use `addError` at `params.position`)
-- [ ] **`Analyzer` — actual-vs-formal arity check**: for each `HyperSymbolNode` whose `params` is a plain `Params` (actual params), look up the nonterminal's signature; if found, verify `terms[key].length == signature.length`; report error "number of affixforms differs from signature" on mismatch
-- [ ] **Printer update**: in `PrintingHyperVisitor.printParams`, check `if (auto fp = cast(FormalParams) params)` and use `fp.signature.direction` for `+`/`-` prefixes; remove the `signaturesByKey` field and constructor parameter
+- [x] **`HyperLhsNode` and `LhsNode`** (approach taken instead of `FormalParams extends Params`): `LhsNode : Node` stores `Nonterminal` directly; `HyperLhsNode : LhsNode` adds `Signature signature()` and `Params params()`; `Alternative.lhs` changed from `SymbolNode` to `LhsNode`; all `.lhs.symbol` casts replaced by `.lhs.nonterminal`; `HyperGrammar.signaturesByKey` removed
+- [x] **Parser `FormalParams` struct** (parser-private, not a grammar model class): `parseHyperRule` / `parseHyperExpr` thread a `Nullable!FormalParams lhsFormal` pair instead of two separate `Signature` + `Params` variables; the struct exists only inside `parser.d`; formal params continue to produce a plain `Params` in the model, with the signature attached via `HyperLhsNode`
+- [x] **Printer update**: `PrintingHyperVisitor` reads `HyperLhsNode.signature()` directly; two methods `printParams(Params)` / `printFormalParams(Signature, Params)` replace the old single method with a null-signature branch; `signaturesByKey` field and constructor parameter removed
+- [ ] **`Analyzer` — per-nonterminal signature map**: after `parseSpecification`, walk all hyper rules; for each alternative whose `lhs` is a `HyperLhsNode` with a non-null signature, look up the nonterminal in a `Signature[Nonterminal]` map; if absent, store; if present and not structurally equal, report error "formal params differ"
+- [ ] **`parseAffixForms` — parse actual params**: after the per-nonterminal signature map is built, iterate over `paramsByKey` entries where `signature is null` (actual params); look up the nonterminal's signature from the map; if found, parse each affix form against the corresponding domain and fill `termsByKey[key]`; report error on `null` term — this is what makes the printer emit actual params correctly
+- [ ] **`Analyzer` — actual-vs-formal arity check**: for actual params entries, verify `affixForms.length == signature.length`; report error "number of affixforms differs from signature" on mismatch
 
-Checkpoint: `dub test --build=unittest --config=example` — all tests pass; `dub run -- example/count1.eag` (or any grammar with formal params) reports no spurious errors
+Checkpoint: `dub test --build=unittest --config=example` — all tests pass; `dub run -- example/count1.eag` (or any grammar with formal params) reports no spurious errors; actual params are printed with their affix forms
 
 ---
 

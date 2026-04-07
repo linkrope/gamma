@@ -38,16 +38,16 @@ public string toPrettyString(HyperGrammar hyperGrammar)
     import std.array : appender;
 
     auto writer = appender!string;
-    auto visitor = printingHyperVisitor(writer, hyperGrammar.terms, hyperGrammar.signaturesByKey);
+    auto visitor = printingHyperVisitor(writer, hyperGrammar.terms);
 
     visitor.visit(hyperGrammar.grammar);
     return writer[];
 }
 
-public auto printingHyperVisitor(Writer)(Writer writer, Term[][] termsByKey = null, Signature[] signaturesByKey = null)
+public auto printingHyperVisitor(Writer)(Writer writer, Term[][] termsByKey = null)
 out (visitor; visitor !is null)
 {
-    return new PrintingHyperVisitor!Writer(writer, termsByKey, signaturesByKey);
+    return new PrintingHyperVisitor!Writer(writer, termsByKey);
 }
 
 private class PrintingHyperVisitor(Writer) : HyperVisitor
@@ -58,13 +58,10 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
 
     private Term[][] termsByKey;
 
-    private Signature[] signaturesByKey;
-
-    public this(Writer writer, Term[][] termsByKey, Signature[] signaturesByKey)
+    public this(Writer writer, Term[][] termsByKey)
     {
         this.writer = writer;
         this.termsByKey = termsByKey;
-        this.signaturesByKey = signaturesByKey;
     }
 
     public void visit(Grammar grammar)
@@ -84,7 +81,7 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
         if (auto lhs = cast(HyperLhsNode) alternative.lhs)
             if (lhs.params !is null)
             {
-                printParams(lhs.params);
+                printFormalParams(lhs.signature, lhs.params);
                 if (!alternative.rhs.empty)
                     this.writer.put(" ");
             }
@@ -126,7 +123,7 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
             if (lhs !is null && lhs.params !is null)
             {
                 this.writer.put(" ");
-                printParams(lhs.params);
+                printFormalParams(lhs.signature, lhs.params);
             }
             this.writer.put(":");
             this.indentation = null;
@@ -182,6 +179,8 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
 
     public void visit(Option option)
     {
+        import gamma.grammar.hyper.HyperLhsNode : HyperLhsNode;
+
         if (option.params !is null)
         {
             printParams(option.params);
@@ -194,13 +193,17 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
         this.writer.put("]");
         if (option.endParams !is null)
         {
+            auto signature = (cast(HyperLhsNode) option.rule.lhs).signature;
+
             this.writer.put(" ");
-            printParams(option.endParams);
+            printFormalParams(signature, option.endParams);
         }
     }
 
     public void visit(Repetition repetition)
     {
+        import gamma.grammar.hyper.HyperLhsNode : HyperLhsNode;
+
         if (repetition.params !is null)
         {
             printParams(repetition.params);
@@ -213,8 +216,10 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
         this.writer.put("}");
         if (repetition.endParams !is null)
         {
+            auto signature = (cast(HyperLhsNode) repetition.rule.lhs).signature;
+
             this.writer.put(" ");
-            printParams(repetition.endParams);
+            printFormalParams(signature, repetition.endParams);
         }
     }
 
@@ -229,28 +234,38 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
     }
 
     private void printParams(Params params)
+    in (params !is null)
     {
         const key = params.key;
         auto terms = (key < this.termsByKey.length) ? this.termsByKey[key] : null;
-        auto signature = (key < this.signaturesByKey.length) ? this.signaturesByKey[key] : null;
 
         this.writer.put("<");
         foreach (i, term; terms.enumerate)
         {
             if (i > 0)
                 this.writer.put(", ");
-            if (signature !is null)
-            {
-                this.writer.put((signature.direction[i] == Direction.input) ? "-" : "+");
-                this.writer.put(" ");
-                this.writer.write(term);
-                this.writer.put(": ");
-                this.writer.put(signature.domains[i].toString);
-            }
-            else
-            {
-                this.writer.write(term);
-            }
+            this.writer.write(term);
+        }
+        this.writer.put(">");
+    }
+
+    private void printFormalParams(Signature signature, Params params)
+    in (signature !is null)
+    in (params !is null)
+    {
+        const key = params.key;
+        auto terms = (key < this.termsByKey.length) ? this.termsByKey[key] : null;
+
+        this.writer.put("<");
+        foreach (i, direction, domain, term; lockstep(iota(size_t.max), signature.direction, signature.domains, terms))
+        {
+            if (i > 0)
+                this.writer.put(", ");
+            this.writer.put((direction == Direction.input) ? "-" : "+");
+            this.writer.put(" ");
+            this.writer.write(term);
+            this.writer.put(": ");
+            this.writer.put(domain.toString);
         }
         this.writer.put(">");
     }

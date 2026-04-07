@@ -1,6 +1,5 @@
 module gamma.grammar.hyper.HyperGrammar;
 
-import gamma.grammar.affixes.Signature;
 import gamma.grammar.affixes.Term;
 import gamma.grammar.Grammar;
 
@@ -16,13 +15,10 @@ class HyperGrammar
 
     private Term[][] terms_;
 
-    private Signature[] signaturesByKey_;  // FIXME: remove
-
-    public this(Grammar grammar, Term[][] terms, Signature[] signaturesByKey = null)
+    public this(Grammar grammar, Term[][] terms)
     {
         this.grammar_ = grammar;
         this.terms_ = terms;
-        this.signaturesByKey_ = signaturesByKey;
     }
 
     public Grammar grammar()
@@ -39,10 +35,5 @@ class HyperGrammar
     in (key < this.terms_.length)
     {
         return this.terms_[key];
-    }
-
-    public Signature[] signaturesByKey()
-    {
-        return this.signaturesByKey_;
     }
 }

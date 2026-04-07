@@ -54,8 +54,7 @@ class Analyzer
         {
             import gamma.grammar.hyper.PrintingHyperVisitor : toPrettyString;
 
-            this.plainHyperGrammar_ =
-                new HyperGrammar(convert(hyperEBNFGrammar), hyperEBNFGrammar.terms, hyperEBNFGrammar.signaturesByKey);
+            this.plainHyperGrammar_ = new HyperGrammar(convert(hyperEBNFGrammar), hyperEBNFGrammar.terms);
             log.trace!"converted hyper grammar:\n%s"(this.plainHyperGrammar_.toPrettyString);
         }
 

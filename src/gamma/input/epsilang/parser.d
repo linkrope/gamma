@@ -40,8 +40,13 @@ public class Parser
         Signature signature;
 
         AffixForm[] affixForms;
+    }
 
-        Term[] terms;
+    private static struct FormalParams
+    {
+        Signature signature;
+
+        Params params;
     }
 
     private SymbolTable symbolTable;
@@ -57,6 +62,8 @@ public class Parser
     private Params undecidedActualParams;
 
     private ParamsInfo[] paramsByKey;
+
+    private Term[][] termsByKey;
 
     private GrammarBuilder metaGrammarBuilder;
 
@@ -181,7 +188,8 @@ public class Parser
 
         auto parser = new Parser(metaGrammar);
 
-        foreach (ref paramsInfo; this.paramsByKey) with (paramsInfo)
+        this.termsByKey = new Term[][](this.paramsByKey.length);
+        foreach (key, ref paramsInfo; this.paramsByKey) with (paramsInfo)
         {
             if (signature is null)
                 continue;
@@ -189,7 +197,7 @@ public class Parser
             {
                 auto term = parser.parse(signature.domains[i], affixForm);
 
-                terms ~= term;
+                this.termsByKey[key] ~= term;
                 if (term is null)
                     this.lexer.addError(params.position, "affix form does not match domain");
             }
@@ -362,17 +370,11 @@ public class Parser
     private void parseHyperRule(Nonterminal lhsNonterminal, Position lhsPosition)
     in (this.lexer.front == ':' || this.lexer.front == '<')
     {
-        Signature lhsSignature = null;
-        Params lhsParams = null;
+        Nullable!FormalParams lhsFormalParams;
 
         if (this.lexer.front == '<')
-        {
             with (parseParams(Yes.formalParams))
-            {
-                lhsSignature = signature;
-                lhsParams = params;
-            }
-        }
+                lhsFormalParams = FormalParams(signature, params);
 
         Position position;
 
@@ -383,8 +385,7 @@ public class Parser
         } else
             markError(`":" expected`);
 
-        Alternative[] alternatives = parseHyperExpr(lhsNonterminal,
-            lhsSignature, lhsParams, lhsPosition,
+        Alternative[] alternatives = parseHyperExpr(lhsNonterminal, lhsFormalParams, lhsPosition,
             No.repetition,
             position);
 
@@ -406,17 +407,16 @@ public class Parser
      *     { '|' [ FormalParams ] HyperTerm [ ActualParams ] }.
      */
     private Alternative[] parseHyperExpr(Nonterminal lhsNonterminal,
-        Signature lhsSignature, Params lhsParams, Position lhsPosition,
+        Nullable!FormalParams lhsFormalParams, Position lhsPosition,
         Flag!"repetition" repetition,
         Position position)
     {
         Alternative[] alternatives;
-        Params formalParams = null;
+        Nullable!FormalParams formalParams;
 
         for (bool firstRound = true;; firstRound = false)
         {
-            Signature alternativeSignature = lhsSignature;
-            Params alternativeLhsParams = lhsParams;
+            Nullable!FormalParams alternativeFormalParams = lhsFormalParams;
             Params spareActualParams = null;
 
             if (this.lexer.front == '<')
@@ -425,33 +425,34 @@ public class Parser
                 {
                     if (signature !is null)
                     {
-                        if (lhsParams !is null || !firstRound && formalParams is null)
+                        if (!lhsFormalParams.isNull || !firstRound && formalParams.isNull)
                         {
                             this.lexer.addError(params.position, "unexpected formal parameters");
                         }
                         else
                         {
-                            alternativeSignature = signature;
-                            alternativeLhsParams = params;
-                            formalParams = params;
+                            alternativeFormalParams = FormalParams(signature, params);
+                            formalParams = alternativeFormalParams;
                         }
                     }
                     else
                     {
-                        if (formalParams !is null)
+                        if (!formalParams.isNull)
                             this.lexer.addError(params.position, "formal parameters expected");
                         else
                             spareActualParams = params;
                     }
                 }
             }
-            else if (formalParams !is null)
+            else if (!formalParams.isNull)
             {
                 markError("formal parameters expected");
             }
 
             auto alternativeLhs = new HyperLhsNode(lhsNonterminal,
-                alternativeSignature, alternativeLhsParams, lhsPosition);
+                alternativeFormalParams.apply!"a.signature".get(null),
+                alternativeFormalParams.apply!"a.params".get(null),
+                lhsPosition);
             Node[] rhs = parseHyperTerm(spareActualParams);
             Alternative alternative;
 
@@ -465,7 +466,7 @@ public class Parser
                 alternative = new Alternative(alternativeLhs, rhs, position);
             alternatives ~= alternative;
 
-            if (repetition && formalParams !is null)
+            if (repetition && !formalParams.isNull)
             {
                 if (this.undecidedActualParams is null && this.spareActualParams is null)
                     markError("actual parameters expected");
@@ -561,7 +562,7 @@ public class Parser
                 this.lexer.popFront;
 
                 Nonterminal identifier = hyperGrammarBuilder.buildAnonymousNonterminal;
-                Alternative[] alternatives = parseHyperExpr(identifier, null, null, position,
+                Alternative[] alternatives = parseHyperExpr(identifier, Nullable!FormalParams(), position,
                     (open == '{') ? Yes.repetition : No.repetition,
                     position);
                 auto rule = new Rule(alternatives);
@@ -887,15 +888,9 @@ public class Parser
 
     public HyperGrammar buildHyperGrammar()
     {
-        import std.algorithm : map;
-        import std.array : array;
-
         if (this.lexer.ok && this.startSymbol !is null && this.hyperGrammarBuilder.grammarIsWellDefined)
         {
-            Term[][] termsByKey = this.paramsByKey.map!"a.terms".array;
-            Signature[] signaturesByKey = this.paramsByKey.map!"a.signature".array;
-
-            return new HyperGrammar(this.hyperGrammarBuilder.getGrammar(this.startSymbol), termsByKey, signaturesByKey);
+            return new HyperGrammar(this.hyperGrammarBuilder.getGrammar(this.startSymbol), this.termsByKey);
         }
         else
         {
