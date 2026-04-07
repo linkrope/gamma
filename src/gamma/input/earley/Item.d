@@ -111,7 +111,7 @@ class Item
         with (this.alternative_)
         {
             writer.put("[ ");
-            writer.put(lhs.symbol.toString);
+            writer.put(lhs.nonterminal.toString);
             writer.put(" ->");
             foreach (i; 0 .. this.index)
             {

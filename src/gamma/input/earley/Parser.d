@@ -6,6 +6,7 @@ import gamma.grammar.affixes.Variable;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.GrammarBuilder;
+import gamma.grammar.LhsNode;
 import gamma.grammar.Node;
 import gamma.grammar.Nonterminal;
 import gamma.grammar.Symbol;
@@ -62,7 +63,7 @@ public class Parser
         rhs ~= new SymbolNode(endSymbol, Position());
 
         Nonterminal augmentedStartSymbol = grammarBuilder.buildNonterminal("S'");
-        Alternative alternative = new Alternative(new SymbolNode(augmentedStartSymbol, Position()), rhs, Position());
+        Alternative alternative = new Alternative(new LhsNode(augmentedStartSymbol, Position()), rhs, Position());
         SymbolNode[] symbolNodes = affixForm.symbolNodes;
 
         symbolNodes ~= new SymbolNode(endSymbol, Position());

@@ -3,6 +3,7 @@ module gamma.grammar.GrammarBuilder;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.hyper.AnonymousNonterminal;
+import gamma.grammar.LhsNode;
 import gamma.grammar.Nonterminal;
 import gamma.grammar.Rule;
 import gamma.grammar.Symbol;
@@ -81,9 +82,8 @@ public struct GrammarBuilder
     }
 
     public void add(Alternative alternative)
-    in(cast(Nonterminal) alternative.lhs.symbol)
     {
-        Nonterminal lhs = cast(Nonterminal) alternative.lhs.symbol;
+        Nonterminal lhs = alternative.lhs.nonterminal;
         const index = lhs.index;
 
         this.undefinedNonterminals.remove(lhs);
@@ -152,7 +152,7 @@ public struct GrammarBuilder
             Nonterminal B = buildNonterminal("B");
             Node[] rhs = [new SymbolNode(B, position)];
 
-            add(new Alternative(new SymbolNode(A, position), rhs , position));
+            add(new Alternative(new LhsNode(A, position), rhs , position));
 
             markErrors;
 
@@ -214,13 +214,13 @@ struct TestGrammarBuilder
 
         if (auto result = line.findSplit(":"))
         {
-            auto lhs = symbolNode(result[0].strip);
+            auto lhs = cast(Nonterminal) symbolNode(result[0].strip).symbol;
 
             if (startSymbol is null)
-                startSymbol = cast(Nonterminal) lhs.symbol;
+                startSymbol = lhs;
 
             if (result[2].empty)
-                add(new Alternative(lhs, [], position));
+                add(new Alternative(new LhsNode(lhs, position), [], position));
             foreach (parts; result[2].split("|"))
             {
                 auto rhs = parts.split
@@ -228,7 +228,7 @@ struct TestGrammarBuilder
                     .map!(representation => cast(Node) symbolNode(representation))
                     .array;
 
-                add(new Alternative(lhs, rhs, position));
+                add(new Alternative(new LhsNode(lhs, position), rhs, position));
             }
         }
     }

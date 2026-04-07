@@ -47,8 +47,8 @@ public class SimpleLR1ConflictResolver : LR1ConflictResolver
             .markError(format!"reduce/reduce conflict with '%s' for look-ahead %s"(alternative2,
                 (terminal !is null) ? terminal.toString : "(null)"));
 
-        const n1 = (cast(Nonterminal) alternative1.lhs.symbol).index;
-        const n2 = (cast(Nonterminal) alternative2.lhs.symbol).index;
+        const n1 = alternative1.lhs.nonterminal.index;
+        const n2 = alternative2.lhs.nonterminal.index;
 
         if (n1 < n2)
             return alternative1;

@@ -151,7 +151,7 @@ public class GrammarProperties
         if (productiveNonterminals.empty)
             computeNullablesAndProductives;
 
-        return firstProductiveAlternative[(cast(Nonterminal) alternative.lhs.symbol).index] == alternative;
+        return firstProductiveAlternative[alternative.lhs.nonterminal.index] == alternative;
     }
 
     /**
@@ -168,7 +168,7 @@ public class GrammarProperties
         if (alternatives.empty)
             return null;
 
-        return firstProductiveAlternative[(cast(Nonterminal) alternatives.front.lhs.symbol).index];
+        return firstProductiveAlternative[alternatives.front.lhs.nonterminal.index];
     }
 
     /**
@@ -285,9 +285,7 @@ public class GrammarProperties
                 if (count == 0) // the alternative is nullable
                 {
                     // mark the lhs nonterminal and put it on the stack
-                    assert(cast(Nonterminal) alternative.lhs.symbol);
-
-                    auto lhs = cast(Nonterminal) alternative.lhs.symbol;
+                    auto lhs = alternative.lhs.nonterminal;
 
                     if (!nullableNonterminals[lhs.index])
                     {
@@ -367,9 +365,7 @@ public class GrammarProperties
                 // the alternative is productive, mark the lhs nonterminal and
                 // put it on the stack
                 {
-                    assert(cast(Nonterminal) alternative.lhs.symbol);
-
-                    auto lhs = cast(Nonterminal) alternative.lhs.symbol;
+                    auto lhs = alternative.lhs.nonterminal;
 
                     if (!productiveNonterminals[lhs.index])
                     {
@@ -482,7 +478,7 @@ public class GrammarProperties
 
         foreach (rule; this.grammar_.rules)
         {
-            Nonterminal lhs = cast(Nonterminal) rule.lhs.symbol;
+            Nonterminal lhs = rule.lhs.nonterminal;
 
             foreach (alternative; rule.alternatives)
                 foreach (node; alternative.rhs)
@@ -508,8 +504,7 @@ public class GrammarProperties
             nonStrongNullableStack.popBack;
             foreach (alternative; this.nontOccurrences[nonterminal.index])
             {
-                // assert alternative.lhs.symbol instanceof Nonterminal
-                auto lhs = cast(Nonterminal) alternative.lhs.symbol;
+                auto lhs = alternative.lhs.nonterminal;
 
                 if (!nonStrongNullables[lhs.index])
                 {

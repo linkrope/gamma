@@ -3,6 +3,7 @@ module gamma.grammar.hyper.RepetitionAlternative;
 import gamma.grammar.Alternative;
 import gamma.grammar.hyper.HyperVisitor;
 import gamma.grammar.hyper.Params;
+import gamma.grammar.LhsNode;
 import gamma.grammar.Node;
 import gamma.grammar.SymbolNode;
 import gamma.grammar.Visitor;
@@ -12,7 +13,7 @@ public class RepetitionAlternative : Alternative
 {
     private Params params_;
 
-    public this(SymbolNode lhs, Node[] rhs, Params params, Position position)
+    public this(LhsNode lhs, Node[] rhs, Params params, Position position)
     {
         super(lhs, rhs, position);
         this.params_ = params;

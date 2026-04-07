@@ -79,9 +79,9 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
 
     public void visit(Alternative alternative)
     {
-        import gamma.grammar.hyper.HyperSymbolNode : HyperSymbolNode;
+        import gamma.grammar.hyper.HyperLhsNode : HyperLhsNode;
 
-        if (auto lhs = cast(HyperSymbolNode) alternative.lhs)
+        if (auto lhs = cast(HyperLhsNode) alternative.lhs)
             if (lhs.params !is null)
             {
                 printParams(lhs.params);
@@ -114,13 +114,13 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
 
     public void visit(Rule rule)
     {
-        import gamma.grammar.hyper.HyperSymbolNode : HyperSymbolNode;
+        import gamma.grammar.hyper.HyperLhsNode : HyperLhsNode;
 
-        const name = rule.alternatives.front.lhs.symbol.toString;
+        const name = rule.alternatives.front.lhs.nonterminal.toString;
 
         foreach (alternative; rule.alternatives)
         {
-            auto lhs = cast(HyperSymbolNode) alternative.lhs;
+            auto lhs = cast(HyperLhsNode) alternative.lhs;
 
             this.writer.put(name);
             if (lhs !is null && lhs.params !is null)
@@ -289,11 +289,11 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
 
 private bool hasContent(Alternative alternative)
 {
-    import gamma.grammar.hyper.HyperSymbolNode : HyperSymbolNode;
+    import gamma.grammar.hyper.HyperLhsNode : HyperLhsNode;
 
     if (!alternative.rhs.empty)
         return true;
-    if (auto lhs = cast(HyperSymbolNode) alternative.lhs)
+    if (auto lhs = cast(HyperLhsNode) alternative.lhs)
         if (lhs.params !is null)
             return true;
     if (auto repetitionAlternative = cast(RepetitionAlternative) alternative)

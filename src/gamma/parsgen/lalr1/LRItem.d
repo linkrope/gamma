@@ -46,7 +46,7 @@ class LRItem : Indexed
 
         auto writer = appender!string;
 
-        writer.put(this.alt.lhs.symbol.toString);
+        writer.put(this.alt.lhs.nonterminal.toString);
         if (this.altIsInContinuationGrammar)
             writer.put(" =>");
         else

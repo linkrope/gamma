@@ -9,12 +9,14 @@ import gamma.grammar.Grammar;
 import gamma.grammar.GrammarBuilder;
 import gamma.grammar.hyper.Group;
 import gamma.grammar.hyper.HyperGrammar;
+import gamma.grammar.hyper.HyperLhsNode;
 import gamma.grammar.hyper.HyperSymbolNode;
 import gamma.grammar.hyper.Operator;
 import gamma.grammar.hyper.Option;
 import gamma.grammar.hyper.Params;
 import gamma.grammar.hyper.Repetition;
 import gamma.grammar.hyper.RepetitionAlternative;
+import gamma.grammar.LhsNode;
 import gamma.grammar.Node;
 import gamma.grammar.Nonterminal;
 import gamma.grammar.Rule;
@@ -129,7 +131,7 @@ public class Parser
                 if (this.lexer.front == '=')
                 {
                     auto nonterminal = metaNonterminal(value);
-                    auto lhs = new SymbolNode(nonterminal, position);
+                    auto lhs = new LhsNode(nonterminal, position);
 
                     if (starred)
                         this.lexicalMetaNonterminals[nonterminal] = true;
@@ -269,7 +271,7 @@ public class Parser
      *
      * @param lhs  the identifier occurrence for the left-hand side
      */
-    private void parseMetaRule(SymbolNode lhs)
+    private void parseMetaRule(LhsNode lhs)
     in (this.lexer.front == '=')
     {
         const position = this.lexer.position;
@@ -292,7 +294,7 @@ public class Parser
      * @param lhs       the identifier occurrence for the left-hand side
      * @param position  the position for the first alternative
      */
-    private void parseMetaExpr(SymbolNode lhs, Position position)
+    private void parseMetaExpr(LhsNode lhs, Position position)
     {
         for (;;)
         {
@@ -360,10 +362,17 @@ public class Parser
     private void parseHyperRule(Nonterminal lhsNonterminal, Position lhsPosition)
     in (this.lexer.front == ':' || this.lexer.front == '<')
     {
+        Signature lhsSignature = null;
         Params lhsParams = null;
 
         if (this.lexer.front == '<')
-            lhsParams = parseParams(Yes.formalParams).params;
+        {
+            with (parseParams(Yes.formalParams))
+            {
+                lhsSignature = signature;
+                lhsParams = params;
+            }
+        }
 
         Position position;
 
@@ -374,7 +383,8 @@ public class Parser
         } else
             markError(`":" expected`);
 
-        Alternative[] alternatives = parseHyperExpr(lhsNonterminal, lhsParams, lhsPosition,
+        Alternative[] alternatives = parseHyperExpr(lhsNonterminal,
+            lhsSignature, lhsParams, lhsPosition,
             No.repetition,
             position);
 
@@ -395,7 +405,8 @@ public class Parser
      *     [ FormalParams ] HyperTerm [ ActualParams ]
      *     { '|' [ FormalParams ] HyperTerm [ ActualParams ] }.
      */
-    private Alternative[] parseHyperExpr(Nonterminal lhsNonterminal, Params lhsParams, Position lhsPosition,
+    private Alternative[] parseHyperExpr(Nonterminal lhsNonterminal,
+        Signature lhsSignature, Params lhsParams, Position lhsPosition,
         Flag!"repetition" repetition,
         Position position)
     {
@@ -404,6 +415,7 @@ public class Parser
 
         for (bool firstRound = true;; firstRound = false)
         {
+            Signature alternativeSignature = lhsSignature;
             Params alternativeLhsParams = lhsParams;
             Params spareActualParams = null;
 
@@ -419,6 +431,7 @@ public class Parser
                         }
                         else
                         {
+                            alternativeSignature = signature;
                             alternativeLhsParams = params;
                             formalParams = params;
                         }
@@ -437,7 +450,8 @@ public class Parser
                 markError("formal parameters expected");
             }
 
-            auto alternativeLhs = new HyperSymbolNode(lhsNonterminal, alternativeLhsParams, lhsPosition);
+            auto alternativeLhs = new HyperLhsNode(lhsNonterminal,
+                alternativeSignature, alternativeLhsParams, lhsPosition);
             Node[] rhs = parseHyperTerm(spareActualParams);
             Alternative alternative;
 
@@ -547,11 +561,11 @@ public class Parser
                 this.lexer.popFront;
 
                 Nonterminal identifier = hyperGrammarBuilder.buildAnonymousNonterminal;
-                Alternative[] alternatives = parseHyperExpr(identifier, null, position,
+                Alternative[] alternatives = parseHyperExpr(identifier, null, null, position,
                     (open == '{') ? Yes.repetition : No.repetition,
                     position);
                 auto rule = new Rule(alternatives);
-                const hasFormalParams = (cast(HyperSymbolNode) rule.lhs).params !is null;
+                const hasFormalParams = (cast(HyperLhsNode) rule.lhs).params !is null;
                 Params params = (spareActualParams !is null)
                     ? spareActualParams
                     : hasFormalParams ? undecidedActualParams : null;

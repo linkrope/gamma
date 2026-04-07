@@ -64,7 +64,7 @@ private class PrintingVisitor(Writer) : Visitor
 
     public void visit(Rule rule)
     {
-        rule.alternatives.front.lhs.accept(this);
+        this.writer.put(rule.alternatives.front.lhs.nonterminal.toString);
         this.writer.put(" =");
         foreach (i, alternative; rule.alternatives.enumerate)
         {
