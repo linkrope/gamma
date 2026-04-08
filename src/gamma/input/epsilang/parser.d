@@ -826,22 +826,29 @@ public class Parser
         import gamma.input.earley.Parser : Parser;
 
         auto parser = new Parser(this.metaGrammar);
-        auto paramsOccurrences = this.hyperGrammar.paramsOccurrences;
+        auto signatureByKey = this.hyperGrammar.signatureByKey;
 
         this.termsByKey = new Term[][](this.paramsByKey.length);
         foreach (key, paramsInfo; this.paramsByKey) with (paramsInfo)
         {
-            if (auto nonterminal = key in paramsOccurrences.nonterminalByKey)
-                if (auto signature = *nonterminal in paramsOccurrences.signatureByNonterminal)
-                    foreach (i, affixForm; affixForms)
-                    {
-                        auto term = parser.parse((*signature).domains[i], affixForm);
+            Signature signature = signatureByKey.get(key, null);
 
-                        this.termsByKey[key] ~= term;
-                        if (term is null)
-                            // TODO: improve error position
-                            this.lexer.addError(params.position, "affix form does not match domain");
-                    }
+            if (signature is null)
+                // TODO: error message?
+                continue;
+
+            foreach (affixForm, domain; zip(affixForms, signature.domains))
+            {
+                auto term = parser.parse(domain, affixForm);
+
+                this.termsByKey[key] ~= term;
+                if (term is null)
+                    // TODO: improve error position
+                    this.lexer.addError(params.position, "affix form does not match domain");
+            }
+
+            if (affixForms.length != signature.domains.length)
+                this.lexer.addError(params.position, "number of affix forms differs from signature");
         }
     }
 
@@ -902,56 +909,65 @@ public class Parser
     }
 }
 
-private auto paramsOccurrences(Grammar hyperGrammar)
+private Signature[size_t] signatureByKey(Grammar hyperGrammar)
 in (hyperGrammar !is null)
 {
     import std.algorithm : each;
 
-    Nonterminal[size_t] nonterminalByKey;
     Signature[Nonterminal] signatureByNonterminal;
 
-    void addParamsOccurrences(Rule rule)
+    foreach (rule; hyperGrammar.rules)
+        foreach (alternative; rule.alternatives)
+            if (auto lhs = cast(HyperLhsNode) alternative.lhs)
+                if (lhs.params !is null)
+                    signatureByNonterminal[lhs.nonterminal] = lhs.signature;
+
+    Signature[size_t] signatureByKey;
+
+    void addSignatures(Rule rule)
     {
         foreach (alternative; rule.alternatives)
         {
             if (auto lhs = cast(HyperLhsNode) alternative.lhs)
-            {
-                if (lhs.signature !is null)
-                    signatureByNonterminal[lhs.nonterminal] = lhs.signature;
                 if (lhs.params !is null)
-                    nonterminalByKey[lhs.params.key] = lhs.nonterminal;
-            }
+                    signatureByKey[lhs.params.key] = lhs.signature;
             if (auto repetitionAlternative = cast(RepetitionAlternative) alternative)
                 if (repetitionAlternative.params !is null)
-                    nonterminalByKey[repetitionAlternative.params.key] = alternative.lhs.nonterminal;
+                    if (auto lhs = cast(HyperLhsNode) alternative.lhs)
+                        if (lhs.signature !is null)
+                            signatureByKey[repetitionAlternative.params.key] = lhs.signature;
             foreach (node; alternative.rhs)
             {
                 if (auto symbolNode = cast(HyperSymbolNode) node)
                 {
                     if (symbolNode.params !is null)
-                        nonterminalByKey[symbolNode.params.key] = cast(Nonterminal) symbolNode.symbol;
+                        if (auto signature = (cast(Nonterminal) symbolNode.symbol) in signatureByNonterminal)
+                            signatureByKey[symbolNode.params.key] = *signature;
                 }
                 else if (auto operator = cast(Operator) node)
                 {
-                    if (operator.params !is null)
-                        nonterminalByKey[operator.params.key] = operator.rule.lhs.nonterminal;
-                    if (auto option = cast(Option) operator)
+                    if (auto lhs = cast(HyperLhsNode) operator.rule.lhs)
                     {
-                        if (option.endParams !is null)
-                            nonterminalByKey[option.endParams.key] = operator.rule.lhs.nonterminal;
+                        if (operator.params !is null && lhs.signature !is null)
+                            signatureByKey[operator.params.key] = lhs.signature;
+                        if (auto option = cast(Option) operator)
+                        {
+                            if (option.endParams !is null && lhs.signature !is null)
+                                signatureByKey[option.endParams.key] = lhs.signature;
+                        }
+                        else if (auto repetition = cast(Repetition) operator)
+                        {
+                            if (repetition.endParams !is null && lhs.signature !is null)
+                                signatureByKey[repetition.endParams.key] = lhs.signature;
+                        }
                     }
-                    else if (auto repetition = cast(Repetition) operator)
-                    {
-                        if (repetition.endParams !is null)
-                            nonterminalByKey[repetition.endParams.key] = operator.rule.lhs.nonterminal;
-                    }
-                    addParamsOccurrences(operator.rule);
+                    addSignatures(operator.rule);
                 }
             }
         }
     }
 
-    hyperGrammar.rules.each!((rule) => addParamsOccurrences(rule));
+    hyperGrammar.rules.each!((rule) => addSignatures(rule));
 
-    return tuple!("nonterminalByKey", "signatureByNonterminal")(nonterminalByKey, signatureByNonterminal);
+    return signatureByKey;
 }
