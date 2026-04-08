@@ -39,7 +39,7 @@ private class PrintingVisitor(Writer) : Visitor
     public void visit(Grammar grammar)
     in (grammar.isPlain)
     {
-        foreach (i, rule; grammar.rules.enumerate)
+        foreach (i, rule; grammar.rules)
         {
             if (i > 0)
                 this.writer.put("\n");
@@ -49,7 +49,7 @@ private class PrintingVisitor(Writer) : Visitor
 
     public void visit(Alternative alternative)
     {
-        foreach (i, node; alternative.rhs.enumerate)
+        foreach (i, node; alternative.rhs)
         {
             if (i > 0)
                 this.writer.put(" ");
@@ -66,7 +66,7 @@ private class PrintingVisitor(Writer) : Visitor
     {
         this.writer.put(rule.alternatives.front.lhs.nonterminal.toString);
         this.writer.put(" =");
-        foreach (i, alternative; rule.alternatives.enumerate)
+        foreach (i, alternative; rule.alternatives)
         {
             if (i == 0)
             {

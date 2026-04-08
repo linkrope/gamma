@@ -67,9 +67,11 @@ public class Parser
 
     private GrammarBuilder metaGrammarBuilder;
 
-    private Nullable!Grammar metaGrammar;
+    private Grammar metaGrammar;
 
     private GrammarBuilder hyperGrammarBuilder;
+
+    private Grammar hyperGrammar;
 
     private Nonterminal startSymbol;
 
@@ -174,34 +176,12 @@ public class Parser
                     this.lexer.popFront;
             }
         }
-        parseAffixForms;
-    }
 
-    private void parseAffixForms()
-    {
-        import gamma.input.earley.Parser : Parser;
-
-        auto metaGrammar = buildMetaGrammar;
-
-        if (metaGrammar is null)
-            return;
-
-        auto parser = new Parser(metaGrammar);
-
-        this.termsByKey = new Term[][](this.paramsByKey.length);
-        foreach (key, ref paramsInfo; this.paramsByKey) with (paramsInfo)
-        {
-            if (signature is null)
-                continue;
-            foreach (i, affixForm; affixForms)
-            {
-                auto term = parser.parse(signature.domains[i], affixForm);
-
-                this.termsByKey[key] ~= term;
-                if (term is null)
-                    this.lexer.addError(params.position, "affix form does not match domain");
-            }
-        }
+        this.metaGrammar = this.metaGrammarBuilder.getGrammar;
+        if (this.startSymbol !is null)
+            this.hyperGrammar = this.hyperGrammarBuilder.getGrammar(this.startSymbol);
+        if (this.metaGrammar !is null && this.hyperGrammar !is null)
+            resolveAffixForms;
     }
 
     /**
@@ -840,6 +820,31 @@ public class Parser
         return number;
     }
 
+    private void resolveAffixForms()
+    in (this.metaGrammar !is null && this.hyperGrammar !is null)
+    {
+        import gamma.input.earley.Parser : Parser;
+
+        auto parser = new Parser(this.metaGrammar);
+        auto paramsOccurrences = this.hyperGrammar.paramsOccurrences;
+
+        this.termsByKey = new Term[][](this.paramsByKey.length);
+        foreach (key, paramsInfo; this.paramsByKey) with (paramsInfo)
+        {
+            if (auto nonterminal = key in paramsOccurrences.nonterminalByKey)
+                if (auto signature = *nonterminal in paramsOccurrences.signatureByNonterminal)
+                    foreach (i, affixForm; affixForms)
+                    {
+                        auto term = parser.parse((*signature).domains[i], affixForm);
+
+                        this.termsByKey[key] ~= term;
+                        if (term is null)
+                            // TODO: improve error position
+                            this.lexer.addError(params.position, "affix form does not match domain");
+                    }
+        }
+    }
+
     private Nonterminal metaNonterminal(size_t value)
     {
         const representation = this.symbolTable.symbol(value);
@@ -875,32 +880,78 @@ public class Parser
 
     public Grammar buildMetaGrammar()
     {
-        if (this.metaGrammar.isNull)
-        {
-            Grammar grammar = this.lexer.ok ? this.metaGrammarBuilder.getGrammar : null;
+        if (this.metaGrammar is null)
+            this.metaGrammarBuilder.markErrors;
 
-            this.metaGrammar = grammar;
-            if (grammar is null)
-                this.metaGrammarBuilder.markErrors;
-        }
-        return this.metaGrammar.get;
+        return this.lexer.ok ? this.metaGrammar : null;
     }
 
     public HyperGrammar buildHyperGrammar()
     {
-        if (this.lexer.ok && this.startSymbol !is null && this.hyperGrammarBuilder.grammarIsWellDefined)
-        {
-            return new HyperGrammar(this.hyperGrammarBuilder.getGrammar(this.startSymbol), this.termsByKey);
-        }
-        else
-        {
+        if (this.hyperGrammar is null)
             this.hyperGrammarBuilder.markErrors;
-            return null;
-        }
+
+        return( this.lexer.ok && this.hyperGrammar !is null)
+            ? new HyperGrammar(this.hyperGrammar, this.termsByKey)
+            : null;
     }
 
     public bool[Nonterminal] getLexicalHyperNonterminals()
     {
         return lexicalHyperNonterminals;
     }
+}
+
+private auto paramsOccurrences(Grammar hyperGrammar)
+in (hyperGrammar !is null)
+{
+    import std.algorithm : each;
+
+    Nonterminal[size_t] nonterminalByKey;
+    Signature[Nonterminal] signatureByNonterminal;
+
+    void addParamsOccurrences(Rule rule)
+    {
+        foreach (alternative; rule.alternatives)
+        {
+            if (auto lhs = cast(HyperLhsNode) alternative.lhs)
+            {
+                if (lhs.signature !is null)
+                    signatureByNonterminal[lhs.nonterminal] = lhs.signature;
+                if (lhs.params !is null)
+                    nonterminalByKey[lhs.params.key] = lhs.nonterminal;
+            }
+            if (auto repetitionAlternative = cast(RepetitionAlternative) alternative)
+                if (repetitionAlternative.params !is null)
+                    nonterminalByKey[repetitionAlternative.params.key] = alternative.lhs.nonterminal;
+            foreach (node; alternative.rhs)
+            {
+                if (auto symbolNode = cast(HyperSymbolNode) node)
+                {
+                    if (symbolNode.params !is null)
+                        nonterminalByKey[symbolNode.params.key] = cast(Nonterminal) symbolNode.symbol;
+                }
+                else if (auto operator = cast(Operator) node)
+                {
+                    if (operator.params !is null)
+                        nonterminalByKey[operator.params.key] = operator.rule.lhs.nonterminal;
+                    if (auto option = cast(Option) operator)
+                    {
+                        if (option.endParams !is null)
+                            nonterminalByKey[option.endParams.key] = operator.rule.lhs.nonterminal;
+                    }
+                    else if (auto repetition = cast(Repetition) operator)
+                    {
+                        if (repetition.endParams !is null)
+                            nonterminalByKey[repetition.endParams.key] = operator.rule.lhs.nonterminal;
+                    }
+                    addParamsOccurrences(operator.rule);
+                }
+            }
+        }
+    }
+
+    hyperGrammar.rules.each!((rule) => addParamsOccurrences(rule));
+
+    return tuple!("nonterminalByKey", "signatureByNonterminal")(nonterminalByKey, signatureByNonterminal);
 }

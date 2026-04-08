@@ -43,16 +43,18 @@ See [plan-replaceEpsilonAnalyzer.md](../plan-replaceEpsilonAnalyzer.md), [TODO.m
 - Methods and local variables: `camelCase`
 - Private fields: `camelCase` — trailing underscore (`camelCase_`) only when the field name conflicts with a getter or setter of the same name
 - Module names: lowercase dot-separated packages (e.g. `gamma.grammar.Nonterminal`)
+- Do not abbreviate names — write `nonterminal` not `nt`, `alternative` not `alt`; exceptions: well-known domain abbreviations such as `lhs`, `rhs`, `eag`
 
 ### Code style
-- Copyright header: `//          Copyright Mario Kröplin <year>.` + BSL-1.0 boilerplate
-- Public APIs: `/** javadoc-style block comments */`
 - Visitor pattern is pervasive in legacy code (inherited from the Java transpilation) — prefer idiomatic D alternatives (e.g. pattern matching via `cast`, template dispatch) in new code instead of extending it
 - Defensive copies in constructors: use `.dup` on arrays
 - D `in`-contracts for preconditions (e.g. `in (lexer.front == Token.string_)`)
 - **No bare `true`/`false` arguments** — use `std.typecons.Flag` instead. Declare parameters as `Flag!"name"` and pass `Yes!"name"` / `No!"name"` at call sites. `Yes!` and `No!` convert implicitly to `bool`, so the function body needs no changes (see `Variable`'s `Unequal` flag for an example).
 - Prefer `.front` over `[0]` for range/array access.
 - Use UFCS when the call reads like a sentence (e.g. `5.minutes` over `minutes(5)`).
+
+### Commit messages
+- Concise verb phrase in imperative mood, e.g. `Add error handling`, `Fix off-by-one in Earley parser`
 
 ### Grammar examples
 - Canonical examples live in `example/*.eag`; add new ones there for regression coverage

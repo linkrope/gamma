@@ -66,7 +66,7 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
 
     public void visit(Grammar grammar)
     {
-        foreach (i, rule; grammar.rules.enumerate)
+        foreach (i, rule; grammar.rules)
         {
             if (i > 0)
                 this.writer.put("\n");
@@ -85,7 +85,7 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
                 if (!alternative.rhs.empty)
                     this.writer.put(" ");
             }
-        foreach (i, node; alternative.rhs.enumerate)
+        foreach (i, node; alternative.rhs)
         {
             if (i > 0)
             {
@@ -146,7 +146,7 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
         {
             this.writer.put("\n");
             this.writer.put(this.indentation);
-            foreach (i, node; alternative.rhs.enumerate)
+            foreach (i, node; alternative.rhs)
             {
                 if (i > 0)
                 {
@@ -240,7 +240,7 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
         auto terms = (key < this.termsByKey.length) ? this.termsByKey[key] : null;
 
         this.writer.put("<");
-        foreach (i, term; terms.enumerate)
+        foreach (i, term; terms)
         {
             if (i > 0)
                 this.writer.put(", ");
@@ -278,7 +278,7 @@ private class PrintingHyperVisitor(Writer) : HyperVisitor
             this.indentation = indentation;
 
         this.indentation ~= "    ";
-        foreach (i, alternative; alternatives.enumerate)
+        foreach (i, alternative; alternatives)
         {
             if (i == 0)
             {
@@ -351,7 +351,7 @@ private void write(Writer)(Writer writer, Term term)
     {
         auto terms = composite.terms;
 
-        foreach (i, node; composite.alternative.rhs.enumerate)
+        foreach (i, node; composite.alternative.rhs)
         {
             if (i > 0)
                 writer.put(" ");
