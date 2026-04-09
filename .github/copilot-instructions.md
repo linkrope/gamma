@@ -46,7 +46,7 @@ See [plan-replaceEpsilonAnalyzer.md](../plan-replaceEpsilonAnalyzer.md), [TODO.m
 - Do not abbreviate names — write `nonterminal` not `nt`, `alternative` not `alt`; exceptions: well-known domain abbreviations such as `lhs`, `rhs`, `eag`
 
 ### Code style
-- Visitor pattern is pervasive in legacy code (inherited from the Java transpilation) — prefer idiomatic D alternatives (e.g. pattern matching via `cast`, template dispatch) in new code instead of extending it
+- Avoid `cast` whenever possible; prefer design choices (templates, interfaces, `std.sumtype`) that eliminate the need for runtime type casting
 - Defensive copies in constructors: use `.dup` on arrays
 - D `in`-contracts for preconditions (e.g. `in (lexer.front == Token.string_)`)
 - **No bare `true`/`false` arguments** — use `std.typecons.Flag` instead. Declare parameters as `Flag!"name"` and pass `Yes!"name"` / `No!"name"` at call sites. `Yes!` and `No!` convert implicitly to `bool`, so the function body needs no changes (see `Variable`'s `Unequal` flag for an example).

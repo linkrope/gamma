@@ -36,6 +36,8 @@ public class Parser
     {
         Params params;
 
+        Nonterminal nonterminal;
+
         // null for actual params
         Signature signature;
 
@@ -63,6 +65,8 @@ public class Parser
 
     private ParamsInfo[] paramsByKey;
 
+    private Signature[Nonterminal] signatureByNonterminal;
+
     private Term[][] termsByKey;
 
     private GrammarBuilder metaGrammarBuilder;
@@ -70,8 +74,6 @@ public class Parser
     private Grammar metaGrammar;
 
     private GrammarBuilder hyperGrammarBuilder;
-
-    private Grammar hyperGrammar;
 
     private Nonterminal startSymbol;
 
@@ -177,11 +179,14 @@ public class Parser
             }
         }
 
+        foreach (ref paramsInfo; this.paramsByKey)
+            if (paramsInfo.signature is null && paramsInfo.nonterminal !is null)
+                if (auto signature = paramsInfo.nonterminal in this.signatureByNonterminal)
+                    paramsInfo.signature = *signature;
+
         this.metaGrammar = this.metaGrammarBuilder.getGrammar;
-        if (this.startSymbol !is null)
-            this.hyperGrammar = this.hyperGrammarBuilder.getGrammar(this.startSymbol);
-        if (this.metaGrammar !is null && this.hyperGrammar !is null)
-            resolveAffixForms;
+        if (this.metaGrammar !is null)
+            metaParseAffixForms;
     }
 
     /**
@@ -354,7 +359,10 @@ public class Parser
 
         if (this.lexer.front == '<')
             with (parseParams(Yes.formalParams))
+            {
                 lhsFormalParams = FormalParams(signature, params);
+                this.signatureByNonterminal[lhsNonterminal] = signature;
+            }
 
         Position position;
 
@@ -413,6 +421,7 @@ public class Parser
                         {
                             alternativeFormalParams = FormalParams(signature, params);
                             formalParams = alternativeFormalParams;
+                            this.signatureByNonterminal[lhsNonterminal] = signature;
                         }
                     }
                     else
@@ -440,6 +449,8 @@ public class Parser
             {
                 Params params = (this.spareActualParams !is null) ? this.spareActualParams : this.undecidedActualParams;
 
+                if (params !is null)
+                    this.paramsByKey[params.key].signature = alternativeLhs.signature;
                 alternative = new RepetitionAlternative(alternativeLhs, rhs, params, position);
             }
             else
@@ -514,6 +525,7 @@ public class Parser
                             // belong to the next EBNF expression (undecided)
                             undecidedActualParams = params;
                         }
+                        this.paramsByKey[undecidedActualParams.key].nonterminal = nonterminal;
                     }
                     // placeholder: the EBNF branch will claim it if hasFormalParams
                     nodes ~= new HyperSymbolNode(nonterminal, undecidedActualParams, position);
@@ -551,6 +563,8 @@ public class Parser
                     ? spareActualParams
                     : hasFormalParams ? undecidedActualParams : null;
 
+                if (params !is null)
+                    this.paramsByKey[params.key].signature = (cast(HyperLhsNode) rule.lhs).signature;
                 // undo placeholder: undecidedActualParams belongs to the operator, not the preceding node
                 if (hasFormalParams && undecidedActualParams !is null && !nodes.empty)
                 {
@@ -586,7 +600,10 @@ public class Parser
                 if ((open == '[' || open == '{') && hasFormalParams)
                 {
                     if (this.lexer.front == '<')
+                    {
                         endParams = parseParams(Yes.formalParams).params;
+                        this.paramsByKey[endParams.key].signature = (cast(HyperLhsNode) rule.lhs).signature;
+                    }
                     else
                         markError("formal parameters expected");
                 }
@@ -741,7 +758,7 @@ public class Parser
             signature = new Signature(directions, domains, position);
         }
 
-        auto paramsInfo = ParamsInfo(params, signature, affixForms);
+        auto paramsInfo = ParamsInfo(params, null, signature, affixForms);
 
         this.paramsByKey ~= paramsInfo;
         return paramsInfo;
@@ -820,19 +837,16 @@ public class Parser
         return number;
     }
 
-    private void resolveAffixForms()
-    in (this.metaGrammar !is null && this.hyperGrammar !is null)
+    private void metaParseAffixForms()
+    in (this.metaGrammar !is null)
     {
         import gamma.input.earley.Parser : Parser;
 
         auto parser = new Parser(this.metaGrammar);
-        auto signatureByKey = this.hyperGrammar.signatureByKey;
 
         this.termsByKey = new Term[][](this.paramsByKey.length);
         foreach (key, paramsInfo; this.paramsByKey) with (paramsInfo)
         {
-            Signature signature = signatureByKey.get(key, null);
-
             if (signature is null)
                 // TODO: error message?
                 continue;
@@ -895,11 +909,15 @@ public class Parser
 
     public HyperGrammar buildHyperGrammar()
     {
-        if (this.hyperGrammar is null)
+        auto hyperGrammar = this.startSymbol !is null
+            ? this.hyperGrammarBuilder.getGrammar(this.startSymbol)
+            : null;
+
+        if (hyperGrammar is null)
             this.hyperGrammarBuilder.markErrors;
 
-        return( this.lexer.ok && this.hyperGrammar !is null)
-            ? new HyperGrammar(this.hyperGrammar, this.termsByKey)
+        return (this.lexer.ok && hyperGrammar !is null)
+            ? new HyperGrammar(hyperGrammar, this.termsByKey)
             : null;
     }
 
@@ -907,67 +925,4 @@ public class Parser
     {
         return lexicalHyperNonterminals;
     }
-}
-
-private Signature[size_t] signatureByKey(Grammar hyperGrammar)
-in (hyperGrammar !is null)
-{
-    import std.algorithm : each;
-
-    Signature[Nonterminal] signatureByNonterminal;
-
-    foreach (rule; hyperGrammar.rules)
-        foreach (alternative; rule.alternatives)
-            if (auto lhs = cast(HyperLhsNode) alternative.lhs)
-                if (lhs.params !is null)
-                    signatureByNonterminal[lhs.nonterminal] = lhs.signature;
-
-    Signature[size_t] signatureByKey;
-
-    void addSignatures(Rule rule)
-    {
-        foreach (alternative; rule.alternatives)
-        {
-            if (auto lhs = cast(HyperLhsNode) alternative.lhs)
-                if (lhs.params !is null)
-                    signatureByKey[lhs.params.key] = lhs.signature;
-            if (auto repetitionAlternative = cast(RepetitionAlternative) alternative)
-                if (repetitionAlternative.params !is null)
-                    if (auto lhs = cast(HyperLhsNode) alternative.lhs)
-                        if (lhs.signature !is null)
-                            signatureByKey[repetitionAlternative.params.key] = lhs.signature;
-            foreach (node; alternative.rhs)
-            {
-                if (auto symbolNode = cast(HyperSymbolNode) node)
-                {
-                    if (symbolNode.params !is null)
-                        if (auto signature = (cast(Nonterminal) symbolNode.symbol) in signatureByNonterminal)
-                            signatureByKey[symbolNode.params.key] = *signature;
-                }
-                else if (auto operator = cast(Operator) node)
-                {
-                    if (auto lhs = cast(HyperLhsNode) operator.rule.lhs)
-                    {
-                        if (operator.params !is null && lhs.signature !is null)
-                            signatureByKey[operator.params.key] = lhs.signature;
-                        if (auto option = cast(Option) operator)
-                        {
-                            if (option.endParams !is null && lhs.signature !is null)
-                                signatureByKey[option.endParams.key] = lhs.signature;
-                        }
-                        else if (auto repetition = cast(Repetition) operator)
-                        {
-                            if (repetition.endParams !is null && lhs.signature !is null)
-                                signatureByKey[repetition.endParams.key] = lhs.signature;
-                        }
-                    }
-                    addSignatures(operator.rule);
-                }
-            }
-        }
-    }
-
-    hyperGrammar.rules.each!((rule) => addSignatures(rule));
-
-    return signatureByKey;
 }
