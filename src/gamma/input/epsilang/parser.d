@@ -196,6 +196,7 @@ public class Parser
     private void parseWhiteSpaceRule()
     in (this.lexer.front == ':')
     {
+        warn!"skipping not yet supported whitespace rule\n%s"(this.lexer.position);
         this.lexer.popFront;
 
         for (;;)
@@ -919,6 +920,11 @@ public class Parser
         return (this.lexer.ok && hyperGrammar !is null)
             ? new HyperGrammar(hyperGrammar, this.termsByKey)
             : null;
+    }
+
+    public bool[Nonterminal] getLexicalMetaNonterminals()
+    {
+        return lexicalMetaNonterminals;
     }
 
     public bool[Nonterminal] getLexicalHyperNonterminals()

@@ -70,12 +70,12 @@ Checkpoint: `dub test --build=unittest --config=example` — all tests pass; `du
 **Goal**: confirm gamma's parser handles every syntactic/semantic case epsilon does, and fix any gaps
 
 Items to verify systematically:
-- [ ] Lexical rules (`*` marker): gamma stores in `lexicalHyperNonterminals` — verify round-trip matches epsilon's treatment
-- [ ] WhiteSpace rules: both warn "not yet supported" — behaviour must be identical (no silent divergence)
-- [ ] Negation (`!` on variables): gamma stores `unequal_` flag on Variable — confirm it is honoured in Earley integration
-- [ ] Nested block comments: verify gamma scanner handles `/* /* */ */` like epsilon lexer does
-- [ ] Error messages: gamma should produce equivalent or better diagnostics for every error path in epsilon's Specification()
-- [ ] Start symbol validation (epsilon checks "exactly one synthesized attribute") — add to gamma if missing
+- [x] Lexical rules (`*` marker): gamma stores in `lexicalHyperNonterminals` — verify round-trip matches epsilon's treatment; `getLexicalMetaNonterminals()` getter added (parallel to hyper); transitive closure in `GrammarProperties` intentionally not applied to meta side (epsilon has none)
+- [x] WhiteSpace rules: both warn "not yet supported" — behaviour must be identical (no silent divergence); gamma was silently discarding; `warn!"skipping not yet supported whitespace rule\n%s"` added to `parseWhiteSpaceRule` to match epsilon exactly
+- [x] Negation (`!` on variables): gamma stores `unequal_` flag on Variable — correctly parsed and carried through the Term tree; Earley parser need not enforce it (epsilon doesn't either — enforcement is a code-generator concern via `VarRecord.Neg`); flag must be consumed in `EAGBuilder.buildAffixes()` (Phase 3c)
+- [x] Nested block comments: nesting logic equivalent — both track depth, handle `/* /* */ */`, error at EOF; gamma additionally tracks line numbers inside comments (advantage); epsilon uses `dchar` vs gamma's `char` but irrelevant for ASCII EAG files; no action needed
+- [x] Error messages: gamma should produce equivalent or better diagnostics for every error path in epsilon's Specification(); wording audit done — most differences are trivial quote-style variations; fixed: `"meta-variable expected"` → `"meta-nonterminal expected"` (after `!` with no name); `"! operator not allowed"` and `"variable never on defining position"` deferred to Phase 3c (require full affix flow analysis); start symbol signature check deferred to step 6
+- [x] Start symbol validation: `error!"start symbol %s must have exactly one synthesized attribute"` added to `src/gamma/input/epsilang/analyzer.d` after the productivity guard; checks `HyperLhsNode` cast (null → zero params), `sig.length != 1`, and `sig.direction[0] != Direction.output`
 
 File to patch if gaps found: `src/gamma/input/epsilang/parser.d`, `src/gamma/input/epsilang/analyzer.d`
 

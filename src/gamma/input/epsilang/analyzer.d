@@ -70,6 +70,7 @@ class Analyzer
 
             enforce(false);
         }
+        checkStartSymbolSignature;
         foreach (nonterminal; this.plainHyperGrammar_.nonterminals)
             if (!this.hyperGrammarProperties.isProductive(nonterminal))
             {
@@ -94,9 +95,26 @@ class Analyzer
             }
     }
 
-    public HyperGrammar plainHyperGrammar()
+    private void checkStartSymbolSignature()
     {
-        return this.plainHyperGrammar_;
+        import gamma.grammar.affixes.Direction : Direction;
+        import gamma.grammar.affixes.Signature : Signature;
+        import gamma.grammar.hyper.HyperLhsNode : HyperLhsNode;
+        import gamma.grammar.Nonterminal : Nonterminal;
+        import std.exception : enforce;
+        import std.range : front;
+
+        Nonterminal startSymbol = this.plainHyperGrammar_.startSymbol;
+        auto startLhs = cast(HyperLhsNode) this.plainHyperGrammar_.ruleOf(startSymbol).lhs;
+        Signature signature = startLhs ? startLhs.signature : null;
+
+        if (signature is null || signature.length != 1 || signature.direction.front != Direction.output)
+        {
+            error!"start symbol %s must have exactly one output affix\n%s"(startSymbol,
+                signature ? signature.position : startLhs ? startLhs.position : UndefPos);
+
+            enforce(false);
+        }
     }
 
     public Grammar parserGrammar()
@@ -127,5 +145,10 @@ class Analyzer
             trace!"parser grammar:\n%s"(parserGrammar.toPrettyString);
         }
         return parserGrammar;
+    }
+
+    public HyperGrammar plainHyperGrammar()
+    {
+        return this.plainHyperGrammar_;
     }
 }
