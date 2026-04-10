@@ -101,32 +101,36 @@ builder.compareMeta();         // logs/asserts diffs — free regression check
 // add buildHyper/compareHyper ... incrementally
 ```
 
-**Transition trigger**: when `compareX()` reports zero diffs consistently → rename to `storeX()` and have it write to EAG globals instead of comparing. When all sub-phases use `storeX`, proceed to Phase 4.
+**Transition trigger**: when ALL `compareX()` sub-phases report zero diffs consistently → implement `storeAll()` (see 3e) that writes all EAG globals in one coordinated pass and replaces all `compareX()` calls. The store sub-phases cannot be activated individually because gamma's index ordering differs from epsilon's: partial stores leave the EAG globals in an inconsistent state.
 
 ### 3a — Meta rules
-- [ ] `buildMeta(Grammar metaGrammar)`: walk meta grammar; intern names; fill builder's `MNontRecord[]`, `MAlt[]`, `MembBuf[]` mirrors
-- [ ] `compareMeta()`: diff builder arrays vs `EAG.MNont[]`, `EAG.MAlt[]`, `EAG.MembBuf[]`; report field + index of each mismatch
-- [ ] `storeMeta()`: replace `compareMeta()` once zero diffs confirmed
+- [x] `buildMeta(Grammar metaGrammar)`: walk meta grammar; intern names; fill builder's `MNontRecord[]`, `MAlt[]`, `MembBuf[]` mirrors
+- [x] `compareMeta()`: diff builder arrays vs `EAG.MNont[]`, `EAG.MAlt[]`, `EAG.MembBuf[]`; report field + index of each mismatch; uses Id-bijection maps (symbolTable Id → array index) so ordering differences between gamma and epsilon are tolerated
 
 ### 3b — Hyper grammar structure
 - [ ] `buildHyper(Grammar hyperGrammar)`: fill builder's `HNontRecord[]`, linked `Alt`/`Factor` lists; replicate exact `Prev`/`Next`/`Sub`/`Last` pointer layout
-- [ ] `compareHyper()`: diff against `EAG.HNont[]`, walking the Alt/Factor chains structurally
-- [ ] `storeHyper()`: replace `compareHyper()` once zero diffs confirmed
+- [ ] `compareHyper()`: diff against `EAG.HNont[]`, walking the Alt/Factor chains structurally; translate embedded MNont/MTerm references through the same Id-bijection maps used in `compareMeta()`
 - Reference: epsilon/analyzer.d Specification() for exact buffer/pointer layout
 
 ### 3c — Affix forms / parameter model
 - [ ] `buildAffixes()`: walk `Term` trees from Phase 1 (Variable/Composite hierarchy); emit builder's `VarRecord[]` (Def, Neg, Num, Sign), `NodeBuf[]`, `MSymBuf[]`, `ParamRecord[]`, `ScopeDesc[]`; pure format conversion — no re-parsing
-- [ ] `compareAffixes()`: diff against EAG globals
-- [ ] `storeAffixes()`: replace `compareAffixes()` once zero diffs confirmed
+- [ ] `compareAffixes()`: diff against EAG globals; translate symbol references through bijection maps
 - Reference: epsilon/analyzer.d CheckSemantics(), epsilon/earley.d, epsilon/eag.d
 
 ### 3d — EAG sets
 - [ ] `buildSets()`: convert gamma's `GrammarProperties` nullable/productive/reachable to builder's BitArray mirrors
-- [ ] `compareSets()`: diff against `EAG.Reach[]`, `EAG.Prod[]`, `EAG.Null[]`
-- [ ] `storeSets()`: replace `compareSets()` once zero diffs confirmed
+- [ ] `compareSets()`: diff against `EAG.Reach[]`, `EAG.Prod[]`, `EAG.Null[]`; translate symbol references through bijection maps
 - Reference: epsilon/analyzer.d ComputeEAGSets()
 
 Checkpoint per sub-phase: `dub test --build=unittest --config=example` — compare functions run automatically; mismatch output drives the next fix iteration
+
+### 3e — Store all (after all compare steps confirm zero diffs)
+Store all sub-phases must happen together in one pass. Storing partial results while epsilon's EAG globals are still intact would leave the arrays in an inconsistent state: epsilon's HNont/Alt/Factor entries embed MNont indices using epsilon's ordering; gamma's storeMeta() would overwrite MNont with gamma's ordering; the cross-references would no longer match.
+
+Therefore, once all `compareX()` report zero diffs on every example grammar:
+- [ ] Implement `storeAll()` that writes ALL EAG globals in a single coordinated pass using a single consistent indexing scheme (gamma's or a newly agreed canonical order); all cross-references (MNont refs inside HNont entries, etc.) are emitted using the same scheme
+- [ ] Remove all `compareX()` calls from `main.d`; replace with single `storeAll()` call
+- [ ] Delete `epsilon.analyzer.Analyse()` call from `main.d`
 
 ---
 

@@ -3,9 +3,21 @@ module gamma.input.epsilang.analyzer;
 import gamma.grammar.Grammar;
 import gamma.grammar.GrammarProperties;
 import gamma.grammar.hyper.HyperGrammar;
+import gamma.grammar.Nonterminal;
 import gamma.input.epsilang.parser;
 import io;
 import log;
+
+struct EAG
+{
+    Grammar metaGrammar;
+
+    HyperGrammar plainHyperGrammar;
+
+    bool[Nonterminal] lexicalMetaNonterminals;
+
+    bool[Nonterminal] lexicalHyperNonterminals;
+}
 
 class Analyzer
 {
@@ -15,7 +27,7 @@ class Analyzer
 
     private GrammarProperties hyperGrammarProperties;
 
-    public void analyze(Input input)
+    public EAG analyze(Input input)
     {
         import gamma.grammar.hyper.EBNFConverter : convert;
         import std.exception : enforce;
@@ -93,6 +105,9 @@ class Analyzer
                 if (!cast(AnonymousNonterminal) nonterminal)
                     warn!"%s is unreachable\n%s"(nonterminal, position);
             }
+
+        return EAG(metaGrammar, this.plainHyperGrammar_,
+            this.parser.getLexicalMetaNonterminals, this.parser.getLexicalHyperNonterminals);
     }
 
     private void checkStartSymbolSignature()
@@ -119,7 +134,6 @@ class Analyzer
 
     public Grammar parserGrammar()
     {
-        import gamma.grammar.Nonterminal : Nonterminal;
         import gamma.grammar.Symbol : Symbol;
         import gamma.parsgen.lalr1.ParserGrammarBuilder : toExtendedParserGrammar;
 
@@ -145,10 +159,5 @@ class Analyzer
             trace!"parser grammar:\n%s"(parserGrammar.toPrettyString);
         }
         return parserGrammar;
-    }
-
-    public HyperGrammar plainHyperGrammar()
-    {
-        return this.plainHyperGrammar_;
     }
 }

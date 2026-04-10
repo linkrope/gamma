@@ -8,6 +8,7 @@ module gamma.main;
 import argparse;
 import epsilon.settings;
 import gamma.grammar.Grammar;
+import gamma.input.epsilang.analyzer : EAG;
 import io : Input, read;
 import log;
 import runtime;
@@ -126,20 +127,25 @@ void compile(Input input, const Arguments arguments)
     import SLAGGen = epsilon.slaggen;
     import SOAGGen = epsilon.soag.soaggen;
     import Sweep = epsilon.sweep;
+    import gamma.input.EAGBuilder : EAGBuilder;
     import std.exception : enforce;
 
-    check(input, arguments);
+    auto eag = check(input, arguments);
+
     if (arguments.lalr)
         return;
 
-    const settings = createSettings(arguments);
 
     analyzer.Analyse(input);
 
+    auto builder = new EAGBuilder(eag);
+
+    enforce(builder.compare == 0, "EAGBuilder: mismatch against epsilon");
     enforce(analyzer.ErrorCounter == 0);
 
     Predicates.Check;
 
+    const settings = createSettings(arguments);
     const isELL1 = ELL1Gen.Test(settings);
 
     enforce(isELL1);
@@ -194,19 +200,20 @@ void compile(Input input, const Arguments arguments)
 }
 
 // check hyper-grammar with new gamma Analyzer
-void check(Input input, const Arguments arguments)
+EAG check(Input input, const Arguments arguments)
 {
     import gamma.input.epsilang.analyzer : Analyzer;
 
     auto analyzer = new Analyzer;
+    auto eag = analyzer.analyze(input);
 
-    analyzer.analyze(input);
     if (arguments.lalr)
     {
         import gamma.parsgen.lalr1.PennelloDeRemer : generateParser;
 
         generateParser(analyzer.parserGrammar);
     }
+    return eag;
 }
 
 Settings createSettings(const Arguments arguments)
