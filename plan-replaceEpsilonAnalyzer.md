@@ -108,8 +108,8 @@ builder.compareMeta();         // logs/asserts diffs — free regression check
 - [x] `compareMeta()`: diff builder arrays vs `EAG.MNont[]`, `EAG.MAlt[]`, `EAG.MembBuf[]`; report field + index of each mismatch; uses Id-bijection maps (symbolTable Id → array index) so ordering differences between gamma and epsilon are tolerated
 
 ### 3b — Hyper grammar structure
-- [ ] `buildHyper(Grammar hyperGrammar)`: fill builder's `HNontRecord[]`, linked `Alt`/`Factor` lists; replicate exact `Prev`/`Next`/`Sub`/`Last` pointer layout
-- [ ] `compareHyper()`: diff against `EAG.HNont[]`, walking the Alt/Factor chains structurally; translate embedded MNont/MTerm references through the same Id-bijection maps used in `compareMeta()`
+- [x] `buildHyper(Grammar hyperGrammar)`: fill builder's `HNontRecord[]`, linked `Alt`/`Factor` lists; replicate exact `Prev`/`Next`/`Sub`/`Last` pointer layout
+- [x] `compareHyper()`: diff against `EAG.HNont[]`, walking the Alt/Factor chains structurally; translate embedded MNont/MTerm references through the same Id-bijection maps used in `compareMeta()`
 - Reference: epsilon/analyzer.d Specification() for exact buffer/pointer layout
 
 ### 3c — Affix forms / parameter model

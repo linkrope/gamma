@@ -12,6 +12,8 @@ struct EAG
 {
     Grammar metaGrammar;
 
+    HyperGrammar hyperEBNFGrammar;
+
     HyperGrammar plainHyperGrammar;
 
     bool[Nonterminal] lexicalMetaNonterminals;
@@ -106,7 +108,7 @@ class Analyzer
                     warn!"%s is unreachable\n%s"(nonterminal, position);
             }
 
-        return EAG(metaGrammar, this.plainHyperGrammar_,
+        return EAG(metaGrammar, hyperEBNFGrammar, this.plainHyperGrammar_,
             this.parser.getLexicalMetaNonterminals, this.parser.getLexicalHyperNonterminals);
     }
 
