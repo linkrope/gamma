@@ -77,10 +77,10 @@ in (line.lineSplitter.drop(1).empty)
 
         auto digits = token.find!isNumber;
         Symbol symbol = grammar.symbolFromGrammar(token.dropBack(digits.length));
-        Nullable!int number;
+        Nullable!string number;
 
         if (!digits.empty)
-            number = digits.to!int;
+            number = digits.idup;
 
         symbolNodes ~= new SymbolNode(symbol, position);
         if (auto nonterminal = cast(Nonterminal) symbol)

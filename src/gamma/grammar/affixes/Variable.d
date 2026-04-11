@@ -18,11 +18,11 @@ public class Variable : Term
 
     private Nonterminal nonterminal_;
 
-    private const Nullable!int number_;
+    private const Nullable!string number_;
 
     private Position position_;
 
-    public this(bool unequal, Nonterminal nonterminal, Nullable!int number, Position position)
+    public this(bool unequal, Nonterminal nonterminal, Nullable!string number, Position position)
     {
         this.unequal_ = unequal;
         this.nonterminal_ = nonterminal;
@@ -40,7 +40,7 @@ public class Variable : Term
         return this.nonterminal_;
     }
 
-    public Nullable!int number() const
+    public Nullable!string number() const
     {
         return this.number_;
     }

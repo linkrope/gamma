@@ -373,11 +373,9 @@ private void write(Writer)(Writer writer, Term term)
 
 private void write(Writer)(Writer writer, Variable variable)
 {
-    import std.conv : to;
-
     if (variable.unequal)
         writer.put("!");
     writer.put(variable.nonterminal.toString);
     if (!variable.number.isNull)
-        writer.put(variable.number.get.to!string);
+        writer.put(variable.number.get);
 }

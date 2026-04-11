@@ -83,6 +83,42 @@ Checkpoint: manual review + `dub test --build=unittest --config=example`
 
 ---
 
+## Phase 2½: Shrink — merge named nonterminal with its sole EBNF operator in the parser
+
+**Goal**: when a named rule's entire RHS is a single EBNF operator (`()`, `[]`, `{}`) with formal params and nothing else, the parser must NOT create a separate anonymous nonterminal. The named nonterminal *is* the operator. Fixing this at the grammar-model level eliminates all downstream workarounds.
+
+### Background — what epsilon does
+
+Epsilon's `Shrink` pass (called from `Specification()`) walks every hyper alternative. If it finds an `EAG.Grp` factor that is the sole factor in the alternative, carries no actual params, and whose body alternatives have formal params (i.e. an anonymous nonterminal whose rule has the shape `<formals>: body <formals>.`), it merges: `HNont[namedSym]` takes the signature and the body alternatives of the anonymous nonterminal directly. The anonymous nonterminal entry is then unused.
+
+### What gamma currently does instead
+
+The parser creates an anonymous nonterminal via `hyperGrammarBuilder.buildAnonymousNonterminal`, uses it as the lhs of the EBNF body, and patches around the two-nonterminal discrepancy:
+- `parser.d` registers the anonymous nonterminal's signature under the named nonterminal via `signatureByNonterminal[enclosingNonterminal]` (signature trick, lines ~574–587)
+- `EAGBuilder.buildAffixes()` contains a `CheckRep` imitation to detect and move `undecided` params that epsilon would never have created
+
+### Plan
+
+- [ ] **Parser — detect the Shrinkable pattern at the point of EBNF operator creation**: after `parseHyperExpr` returns and `rule` is built, check:
+  1. `hasFormalParams` — the anonymous nonterminal's lhs has a signature
+  2. `nodes.empty` — nothing preceded the operator in this alternative (checked *before* `nodes ~= operator`)
+  3. `enclosingNonterminal` is not an `AnonymousNonterminal` — we are inside a named rule
+  4. Nothing follows: current `lexer.front` is a terminator (`|`, `.`, `)`, `]`, `}`, or empty)
+
+  When all four hold: instead of using `identifier` (freshly created anonymous nonterminal), patch the alternatives so their `lhs.nonterminal` is `enclosingNonterminal` (or build them that way from the start by passing `enclosingNonterminal` to `parseHyperExpr`). The `Operator` node inserted into the outer `nodes` then references `enclosingNonterminal` as the operator's rule's lhs — no anonymous nonterminal is created.
+
+- [ ] **Remove signature trick from `parser.d`**: delete the `signatureByNonterminal[enclosingNonterminal]` block (currently lines ~574–587); it is no longer needed because the body alternatives already have the correct lhs nonterminal.
+
+- [ ] **Remove `CheckRep` imitation from `EAGBuilder.buildAffixes()`**: delete the `repActualIsUndecided` block and the `affix_wellMatchedEmpty` helper; with the grammar model correct, the `repAlt.params` situation that triggered the imitation no longer arises.
+
+- [ ] **Remove the `open != '('` guard removal** (the last parser.d fix): the Shrinkable-pattern detection now handles all three bracket types uniformly; the explicit guard is moot.
+
+- [ ] **Simplify `buildHyper` and `compareHyper`** in `EAGBuilder.d`: remove any code paths that special-case named-vs-anonymous nonterminal merging; the grammar model now tells the truth.
+
+Checkpoint: `dub test --build=unittest --config=example` — all tests pass with the Shrink fix in place and workarounds removed
+
+---
+
 ## Phase 3: Build EAGBuilder iteratively — dual-mode compare→store
 
 **New file**: `src/gamma/input/EAGBuilder.d`
@@ -111,6 +147,8 @@ builder.compareMeta();         // logs/asserts diffs — free regression check
 - [x] `buildHyper(Grammar hyperGrammar)`: fill builder's `HNontRecord[]`, linked `Alt`/`Factor` lists; replicate exact `Prev`/`Next`/`Sub`/`Last` pointer layout
 - [x] `compareHyper()`: diff against `EAG.HNont[]`, walking the Alt/Factor chains structurally; translate embedded MNont/MTerm references through the same Id-bijection maps used in `compareMeta()`
 - Reference: epsilon/analyzer.d Specification() for exact buffer/pointer layout
+
+- [ ] **Pending simplification**: once the parser performs Shrink (merging the named nonterminal with its sole-EBNF-operator anonymous nonterminal in the grammar model), the workarounds in `buildHyper` and `buildAffixes` that compensate for the grammar model having two distinct nonterminals where epsilon sees one will need to be removed.
 
 ### 3c — Affix forms / parameter model
 - [ ] `buildAffixes()`: walk `Term` trees from Phase 1 (Variable/Composite hierarchy); emit builder's `VarRecord[]` (Def, Neg, Num, Sign), `NodeBuf[]`, `MSymBuf[]`, `ParamRecord[]`, `ScopeDesc[]`; pure format conversion — no re-parsing
