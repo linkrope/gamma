@@ -2,7 +2,6 @@ module gamma.grammar.GrammarBuilder;
 
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
-import gamma.grammar.hyper.AnonymousNonterminal;
 import gamma.grammar.LhsNode;
 import gamma.grammar.Nonterminal;
 import gamma.grammar.Rule;
@@ -16,15 +15,15 @@ version (unittest) import gamma.util.Position;
 
 public struct GrammarBuilder
 {
-    private Nonterminal[string] nonterminalMap;
+    package(gamma.grammar) Nonterminal[string] nonterminalMap;
 
-    private Nonterminal[] nonterminals;
+    package(gamma.grammar) Nonterminal[] nonterminals;
 
     private Terminal[string] terminalMap;
 
     private Terminal[] terminals;
 
-    private Alternative[][] alternativesMap;
+    package(gamma.grammar) Alternative[][] alternativesMap;
 
     private bool[Nonterminal] undefinedNonterminals;
 
@@ -43,26 +42,6 @@ public struct GrammarBuilder
 
             this.undefinedNonterminals[nonterminal] = true;
         }
-        return nonterminal;
-    }
-
-    public AnonymousNonterminal buildAnonymousNonterminal()
-    {
-        import std.exception : enforce;
-        import std.format : format;
-
-        const index = this.nonterminals.length;
-        auto nonterminal = new AnonymousNonterminal(index);
-
-        enforce(nonterminal.toString !in this.nonterminalMap,
-                format!"generated nonterminal name already defined by the user: %s"(nonterminal));
-
-        this.nonterminalMap[nonterminal.toString] = nonterminal;
-        this.nonterminals ~= nonterminal;
-        this.alternativesMap ~= null;
-
-        // anonymous nonterminals for EBNF expressions are never undefined
-
         return nonterminal;
     }
 

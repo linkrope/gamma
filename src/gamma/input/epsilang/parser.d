@@ -9,13 +9,13 @@ import gamma.grammar.Grammar;
 import gamma.grammar.GrammarBuilder;
 import gamma.grammar.hyper.Group;
 import gamma.grammar.hyper.HyperGrammar;
+import gamma.grammar.hyper.HyperGrammarBuilder;
 import gamma.grammar.hyper.HyperLhsNode;
 import gamma.grammar.hyper.HyperSymbolNode;
 import gamma.grammar.hyper.Operator;
 import gamma.grammar.hyper.Option;
 import gamma.grammar.hyper.Params;
 import gamma.grammar.hyper.Repetition;
-import gamma.grammar.hyper.RepetitionAlternative;
 import gamma.grammar.LhsNode;
 import gamma.grammar.Node;
 import gamma.grammar.Nonterminal;
@@ -73,7 +73,7 @@ public class Parser
 
     private Grammar metaGrammar;
 
-    private GrammarBuilder hyperGrammarBuilder;
+    private HyperGrammarBuilder hyperGrammarBuilder;
 
     private Nonterminal startSymbol;
 
@@ -178,6 +178,8 @@ public class Parser
                     this.lexer.popFront;
             }
         }
+
+        inlineSingleOperators;
 
         foreach (ref paramsInfo; this.paramsByKey)
             if (paramsInfo.signature is null && paramsInfo.nonterminal !is null)
@@ -448,6 +450,8 @@ public class Parser
 
             if (repetition)
             {
+                import gamma.grammar.hyper.RepetitionAlternative : RepetitionAlternative;
+
                 Params params = (this.spareActualParams !is null) ? this.spareActualParams : this.undecidedActualParams;
 
                 if (params !is null)
@@ -489,8 +493,6 @@ public class Parser
      *                      | '{' HyperExpr '}' [ FormalParams ]
      *                      )
      *   }.
-     *
-     * @return  the list of occurrences of identifiers and strings
      */
     private Node[] parseHyperTerm(Params spareActualParams)
     {
@@ -815,26 +817,16 @@ public class Parser
         return new AffixForm(symbolNodes, variables);
     }
 
-    private Nullable!int parseNumber()
+    private Nullable!string parseNumber()
     {
-        import std.conv : ConvException, to;
-
-        Nullable!int number;
-
-        if (this.lexer.front == Token.number)
+        if (this.lexer.front != Token.number)
         {
-            const representation = this.symbolTable.symbol(this.lexer.value);
-
-            try
-            {
-                number = representation.to!int;
-            }
-            catch (ConvException)
-            {
-                markError("number out of range");
-            }
-            this.lexer.popFront;
+            return Nullable!string();
         }
+
+        Nullable!string number = this.symbolTable.symbol(this.lexer.value);
+
+        this.lexer.popFront;
         return number;
     }
 
@@ -865,6 +857,12 @@ public class Parser
             if (affixForms.length != signature.domains.length)
                 this.lexer.addError(params.position, "number of affix forms differs from signature");
         }
+    }
+
+    private void inlineSingleOperators()
+    {
+        foreach (nonterminal, signature; this.hyperGrammarBuilder.inlineSingleOperators)
+            this.signatureByNonterminal[nonterminal] = signature;
     }
 
     private Nonterminal metaNonterminal(size_t value)

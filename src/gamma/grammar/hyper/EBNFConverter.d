@@ -6,6 +6,7 @@ import gamma.grammar.hyper.Group;
 import gamma.grammar.hyper.HyperLhsNode;
 import gamma.grammar.hyper.HyperSymbolNode;
 import gamma.grammar.hyper.HyperVisitor;
+import gamma.grammar.hyper.Operator;
 import gamma.grammar.hyper.Option;
 import gamma.grammar.hyper.Repetition;
 import gamma.grammar.hyper.RepetitionAlternative;
@@ -57,7 +58,8 @@ private class EBNFConverter : HyperVisitor
     {
         this.rhsStack ~= null;
         alternative.rhs.each!(node => node.accept(this));
-        this.alternatives ~= new Alternative(alternative.lhs, this.rhsStack.back, alternative.position);
+        if (!alternative.isInlinedOperator)
+            this.alternatives ~= new Alternative(alternative.lhs, this.rhsStack.back, alternative.position);
         this.rhsStack.popBack;
     }
 
@@ -135,6 +137,17 @@ private class EBNFConverter : HyperVisitor
             if (!alternatives.empty)
                 rules ~= new Rule(alternatives.array);
         }
+
         return new Grammar(this.nonterminals, this.terminals, rules, this.startSymbol);
     }
+}
+
+private bool isInlinedOperator(Alternative alternative)
+{
+    if (alternative.rhs.length != 1)
+        return false;
+
+    auto operator = cast(Operator) alternative.rhs.front;
+
+    return operator !is null && operator.rule.lhs.nonterminal == alternative.lhs.nonterminal;
 }

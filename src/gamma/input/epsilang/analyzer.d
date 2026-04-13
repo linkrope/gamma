@@ -69,7 +69,7 @@ class Analyzer
             import gamma.grammar.hyper.PrintingHyperVisitor : toPrettyString;
 
             this.plainHyperGrammar_ = new HyperGrammar(convert(hyperEBNFGrammar), hyperEBNFGrammar.terms);
-            log.trace!"converted hyper grammar:\n%s"(this.plainHyperGrammar_.toPrettyString);
+            log.trace!"transformed BNF grammar:\n%s"(this.plainHyperGrammar_.toPrettyString);
         }
 
         this.hyperGrammarProperties =

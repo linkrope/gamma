@@ -4,6 +4,7 @@ import gamma.grammar.Nonterminal;
 import gamma.grammar.Rule;
 import gamma.grammar.Terminal;
 import gamma.grammar.Visitor;
+import std.range;
 
 public class Grammar
 {
@@ -24,9 +25,11 @@ public class Grammar
 
         this.nonterminals_ = nonterminals.dup;
         this.terminals_ = terminals.dup;
-        this.rules_ = rules.dup;
+        this.rules_ = new Rule[nonterminals.length]; // null for abandoned nonterminals
+        foreach (rule; rules)
+            this.rules_[rule.alternatives.front.lhs.nonterminal.index] = rule;
         this.startSymbol_ = startSymbol;
-        this.isPlain_ = this.rules_
+        this.isPlain_ = rules
             .all!(rule => rule.alternatives
                 .all!(alternative => alternative.rhs
                     .all!(node => cast(SymbolNode) node !is null)));
@@ -49,7 +52,10 @@ public class Grammar
 
     public Rule[] rules()
     {
-        return this.rules_;
+        import std.algorithm : filter;
+        import std.array : array;
+
+        return this.rules_.filter!(rule => rule !is null).array;
     }
 
     public Nonterminal startSymbol()
