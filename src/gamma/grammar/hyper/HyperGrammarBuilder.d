@@ -72,6 +72,9 @@ public struct HyperGrammarBuilder
             if (operator is null)
                 continue;
 
+            if (operator.params !is null)
+                continue;
+
             auto alternativeLhs = cast(HyperLhsNode) alternative.lhs;
 
             if (alternativeLhs !is null && alternativeLhs.params !is null)

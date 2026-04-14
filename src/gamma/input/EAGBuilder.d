@@ -1,9 +1,16 @@
 module gamma.input.EAGBuilder;
 
 import EAG = epsilon.eag;
+import gamma.grammar.affixes.Composite;
+import gamma.grammar.affixes.Direction;
+import gamma.grammar.affixes.Signature;
+import gamma.grammar.affixes.Term;
+import gamma.grammar.affixes.Variable;
 import gamma.grammar.Alternative;
 import gamma.grammar.hyper.AnonymousNonterminal;
 import gamma.grammar.hyper.HyperLhsNode;
+import gamma.grammar.hyper.HyperSymbolNode;
+import gamma.grammar.hyper.Params;
 import gamma.grammar.LhsNode;
 import gamma.grammar.Node;
 import gamma.grammar.Nonterminal;
@@ -14,6 +21,7 @@ import gamma.input.epsilang.analyzer : GammaEAG = EAG;
 import io : Position;
 import log;
 import std.format : format;
+import std.range;
 
 /**
  * Transforms gamma's validated Grammar models into epsilon's EAG global arrays.
@@ -56,8 +64,6 @@ class EAGBuilder
     private int[int]         hNontById;
     // Every nonterminal object -> its hNont index (covers named and anonymous).
     private int[Nonterminal] hNontByNonterminal;
-    // Parallel to hNont: the original gamma Nonterminal (for Shrink look-up).
-    private Nonterminal[]    hNontNonterminal;
     // HTerm: symbolTable Id -> hTerm index.
     private int[int]         hTermById;
 
@@ -71,6 +77,28 @@ class EAGBuilder
     private int nextHAlt    = EAG.firstHAlt;
     private int nextHFactor = EAG.firstHFactor;
 
+    // -------------------------------------------------------------------------
+    // Phase 3c — affix data mirrors
+    // -------------------------------------------------------------------------
+
+    private int[]             domBuf;      // mirrors EAG.DomBuf
+    private int               nextDom  = 1;
+    private int               curSig   = 1;
+    private EAG.ParamRecord[] paramBuf; // mirrors EAG.ParamBuf
+    private int               nextParam = 1;
+    private int[]             nodeBuf;  // mirrors EAG.NodeBuf
+    private int               nextNode = EAG.firstNode;
+    private EAG.VarRecord[]   varBuf;   // mirrors EAG.Var
+    private int               nextVarBuf = EAG.firstVar;
+    private int               currentScope_ = EAG.firstVar;
+
+    // Maps built during hyper-structure construction (used by buildAffixes)
+    private Alternative[EAG.Alt]  alternativeByAlt;  // EAG.Alt  → gamma Alternative
+    private Rule[int]             ruleByHNontSym;    // hNont idx → grammar Rule
+    private Params[int]           endParamsByHNontSym; // hNont idx → endParams of Opt/Rep operator
+    private EAG.Nont[size_t]      nontByParamsKey;   // params.key → EAG.Nont factor
+    private int[Alternative]      altToGammaMAlt;    // meta Alternative → mAlt index
+
     public this(GammaEAG eag)
     {
         this.eag = eag;
@@ -83,6 +111,7 @@ class EAGBuilder
 
         buildMeta;
         buildHyper;
+        buildAffixes;
     }
 
     /**
@@ -93,7 +122,7 @@ class EAGBuilder
      */
     public int compare()
     {
-        return compareMeta + compareHyper;
+        return compareMeta + compareHyper + compareAffixes;
     }
 
     // =========================================================================
@@ -104,6 +133,7 @@ class EAGBuilder
     {
         foreach (rule; this.eag.metaGrammar.rules)
         {
+            if (rule is null) continue;
             Nonterminal nonterminal = (cast(LhsNode) rule.lhs).nonterminal;
             const lhsSym = internMNont(nonterminal.toString);
 
@@ -112,6 +142,8 @@ class EAGBuilder
             foreach (alternative; rule.alternatives)
             {
                 const rhs = cast(int) this.membBuf.length;
+
+                this.altToGammaMAlt[alternative] = cast(int) this.mAlt.length;
 
                 foreach (node; alternative.rhs)
                 {
@@ -299,12 +331,60 @@ class EAGBuilder
         // operator nodes and processed recursively by buildHyperFactor.
         foreach (rule; this.eag.hyperEBNFGrammar.rules)
         {
+            if (rule is null) continue;
+            import gamma.grammar.hyper.Operator : HyperOperator = Operator;
+
             Nonterminal nonterminal = rule.lhs.nonterminal;
             const int   gammaSym   = findOrCreateHNont(nonterminal);
+            this.ruleByHNontSym[gammaSym] = rule;
 
             this.hNont[gammaSym].IsToken =
                 this.hNont[gammaSym].IsToken ||
                 (nonterminal in this.eag.lexicalHyperNonterminals) !is null;
+
+            // Pre-inlined single-operator wrapper (Phase 2½ step 1):
+            // When the grammar model has already inlined the pattern
+            // (the named nonterminal's rule has a single alt whose sole node is
+            // an EBNF operator whose inner rule's lhs is the named nonterminal
+            // itself, not an anonymous one), build the EBNF body directly under
+            // gammaSym without creating an outer Grp wrapper.
+            if (rule.alternatives.length == 1)
+            {
+                import gamma.grammar.hyper.Group      : HyperGroup = Group;
+                import gamma.grammar.hyper.Option     : HyperOption = Option;
+                import gamma.grammar.hyper.Repetition : HyperRepetition = Repetition;
+
+                auto soleAlt = rule.alternatives.front;
+
+                if (soleAlt.rhs.length == 1)
+                {
+                    auto op = cast(HyperOperator) soleAlt.rhs.front;
+
+                    if (op !is null && !(cast(AnonymousNonterminal) op.rule.lhs.nonterminal))
+                    {
+                        // Call the rule builder directly (not via buildHyperFactor) to avoid
+                        // allocating a dangling EAG.Nont factor that wastes a nextHFactor index.
+                        if (auto rep = cast(HyperRepetition) op)
+                        {
+                            buildHyperRepRule(rep.rule, rep.position);
+                            if (rep.endParams !is null)
+                                this.endParamsByHNontSym[gammaSym] = rep.endParams;
+                        }
+                        else if (auto opt = cast(HyperOption) op)
+                        {
+                            buildHyperOptRule(opt.rule, opt.position);
+                            if (opt.endParams !is null)
+                                this.endParamsByHNontSym[gammaSym] = opt.endParams;
+                        }
+                        else if (auto grp = cast(HyperGroup) op)
+                        {
+                            buildHyperGrpRule(grp.rule);
+                        }
+                        // hNont[gammaSym].Def is now set by the rule builder above.
+                        continue;
+                    }
+                }
+            }
 
             EAG.Alt firstAlt = null;
             EAG.Alt lastAlt  = null;
@@ -330,61 +410,6 @@ class EAGBuilder
                     a.Next = firstAlt;
             }
         }
-
-        // ----------------------------------------------------------------
-        // Shrink: replicate epsilon's Shrink() post-pass.
-        // A named Grp whose single no-formal-params alt references a single
-        // anonymous nonterminal with no actual params has its Def replaced by
-        // the anonymous nonterminal's Def directly (as epsilon does).
-        // ----------------------------------------------------------------
-        foreach (gammaSym; EAG.firstHNont .. cast(int) this.hNont.length)
-        {
-            if (this.hNont[gammaSym].anonymous)
-                continue;
-            if (this.hNont[gammaSym].Def is null)
-                continue;
-
-            auto grp = cast(EAG.Grp) this.hNont[gammaSym].Def;
-
-            if (grp is null)
-                continue;
-
-            EAG.Alt a = grp.Sub;
-
-            if (a is null || a.Next !is null)
-                continue;
-
-            // Check whether the LHS had formal params (if so, Shrink does not apply).
-            auto gammaRule = this.eag.plainHyperGrammar.ruleOf(this.hNontNonterminal[gammaSym]);
-            auto lhsNode   = cast(HyperLhsNode) gammaRule.lhs;
-            const hasFormals = lhsNode !is null && lhsNode.params !is null;
-
-            if (hasFormals)
-                continue;
-
-            if (a.Sub is null)
-                continue;
-
-            auto f = cast(EAG.Nont) a.Sub;
-
-            if (f is null || f.Next !is null)
-                continue;
-
-            if (!this.hNont[f.Sym].anonymous)
-                continue;
-
-            if (f.Actual.Params != EAG.empty)
-                continue;
-
-            // Apply Shrink: move anon's Def up to the named HNont.
-            this.hNont[gammaSym].Def = this.hNont[f.Sym].Def;
-            this.hNont[gammaSym].Sig = this.hNont[f.Sym].Sig;
-            this.hNont[f.Sym].Def   = null;
-
-            // Re-link all alts' Up pointer to the named HNont.
-            for (EAG.Alt alt = this.hNont[gammaSym].Def.Sub; alt !is null; alt = alt.Next)
-                alt.Up = gammaSym;
-        }
     }
 
     private void buildHyperAlt(int lhsSym, Alternative alternative,
@@ -409,6 +434,8 @@ class EAGBuilder
         alt.Ind       = this.nextHAlt++;
         alt.Next      = null;
 
+        this.alternativeByAlt[alt] = alternative;
+
         if (firstAlt is null)
             firstAlt = alt;
         else
@@ -423,19 +450,42 @@ class EAGBuilder
         import gamma.grammar.hyper.Repetition : HyperRepetition = Repetition;
 
         if (auto grp = cast(HyperGroup) node)
+        {
             appendHNont(firstFactor, lastFactor, buildHyperGrpRule(grp.rule), grp.position);
+            if (grp.params !is null)
+                this.nontByParamsKey[grp.params.key] = cast(EAG.Nont) lastFactor;
+        }
         else if (auto opt = cast(HyperOption) node)
-            appendHNont(firstFactor, lastFactor, buildHyperOptRule(opt.rule, opt.position), opt.position);
+        {
+            const anonSym = buildHyperOptRule(opt.rule, opt.position);
+            appendHNont(firstFactor, lastFactor, anonSym, opt.position);
+            if (opt.params !is null)
+                this.nontByParamsKey[opt.params.key] = cast(EAG.Nont) lastFactor;
+            if (opt.endParams !is null)
+                this.endParamsByHNontSym[anonSym] = opt.endParams;
+        }
         else if (auto rep = cast(HyperRepetition) node)
-            appendHNont(firstFactor, lastFactor, buildHyperRepRule(rep.rule, rep.position), rep.position);
+        {
+            const anonSym = buildHyperRepRule(rep.rule, rep.position);
+            appendHNont(firstFactor, lastFactor, anonSym, rep.position);
+            if (rep.params !is null)
+                this.nontByParamsKey[rep.params.key] = cast(EAG.Nont) lastFactor;
+            if (rep.endParams !is null)
+                this.endParamsByHNontSym[anonSym] = rep.endParams;
+        }
         else if (auto sn = cast(SymbolNode) node)
         {
             if (cast(Terminal) sn.symbol)
                 appendHTerm(firstFactor, lastFactor,
                     findOrCreateHTerm(sn.symbol.toString), sn.position);
             else
+            {
                 appendHNont(firstFactor, lastFactor,
                     findOrCreateHNont(cast(Nonterminal) sn.symbol), sn.position);
+                if (auto hsn = cast(HyperSymbolNode) sn)
+                    if (hsn.params !is null)
+                        this.nontByParamsKey[hsn.params.key] = cast(EAG.Nont) lastFactor;
+            }
         }
     }
 
@@ -444,6 +494,8 @@ class EAGBuilder
         const int anonSym = findOrCreateHNont(rule.lhs.nonterminal);
         EAG.Alt firstAlt = null;
         EAG.Alt lastAlt  = null;
+
+        this.ruleByHNontSym[anonSym] = rule;
 
         foreach (alternative; rule.alternatives)
             buildHyperAlt(anonSym, alternative, firstAlt, lastAlt);
@@ -460,6 +512,8 @@ class EAGBuilder
         const int anonSym = findOrCreateHNont(rule.lhs.nonterminal);
         EAG.Alt firstAlt = null;
         EAG.Alt lastAlt  = null;
+
+        this.ruleByHNontSym[anonSym] = rule;
 
         foreach (alternative; rule.alternatives)
             buildHyperAlt(anonSym, alternative, firstAlt, lastAlt);
@@ -481,6 +535,8 @@ class EAGBuilder
         EAG.Alt firstAlt = null;
         EAG.Alt lastAlt  = null;
 
+        this.ruleByHNontSym[anonSym] = rule;
+
         foreach (alternative; rule.alternatives)
             buildHyperAlt(anonSym, alternative, firstAlt, lastAlt);
 
@@ -495,6 +551,718 @@ class EAGBuilder
         return anonSym;
     }
 
+    // =========================================================================
+    // Affix data (Phase 3c)
+    // =========================================================================
+
+    private void buildAffixes()
+    {
+        import gamma.grammar.hyper.RepetitionAlternative : RepetitionAlternative;
+
+        if (this.eag.hyperEBNFGrammar is null)
+            return;
+
+        // Initialise internal buffers (same layout as EAG.Init)
+        this.domBuf               = new int[256];
+        this.domBuf[0]            = EAG.nil;
+        this.nextDom              = 1;
+        this.curSig               = 1;
+        this.paramBuf             = new EAG.ParamRecord[1024];
+        this.paramBuf[0].Affixform = EAG.nil;
+        this.nextParam            = 1;
+        this.nodeBuf              = new int[1024];
+        this.nextNode             = EAG.firstNode;
+        this.varBuf               = new EAG.VarRecord[512];
+        this.nextVarBuf           = EAG.firstVar;
+        this.currentScope_        = EAG.firstVar;
+
+        // Pass 1: build all DomBuf signatures first.
+        // Epsilon sets HNont[Sym].Sig during parsing, before Traverse; we must
+        // replicate that so that forward-referenced nonterminals (e.g. A used in
+        // S before A is defined) already have their Sig when we build params.
+        foreach (gammaSym; EAG.firstHNont .. cast(int) this.hNont.length)
+        {
+            if (this.hNont[gammaSym].Def is null)
+                continue;
+
+            Rule rule = this.ruleByHNontSym.get(gammaSym, null);
+
+            if (rule is null)
+                continue;
+
+            this.hNont[gammaSym].Sig = buildAffix_Sig(gammaSym, rule);
+        }
+
+        // Pass 2: build params, scopes and variables — mirrors epsilon's Traverse.
+        foreach (gammaSym; EAG.firstHNont .. cast(int) this.hNont.length)
+        {
+            if (this.hNont[gammaSym].Def is null)
+                continue;
+
+            Rule rule = this.ruleByHNontSym.get(gammaSym, null);
+
+            if (rule is null)
+                continue;
+
+            int sig = this.hNont[gammaSym].Sig;
+
+            // --- Rep/Opt: build Formal ParamsDesc + Scope ---
+            if (auto rep = cast(EAG.Rep) this.hNont[gammaSym].Def)
+            {
+                this.currentScope_ = this.nextVarBuf;
+                rep.Scope.Beg      = this.nextVarBuf;
+                Params endP = this.endParamsByHNontSym.get(gammaSym, null);
+                if (endP !is null)
+                {
+                    auto terms = this.eag.hyperEBNFGrammar.terms(endP.key);
+                    rep.Formal = buildAffix_TermsParamsDesc(terms, sig, true, endP.position);
+                }
+                rep.Scope.End = this.nextVarBuf;
+            }
+            else if (auto opt = cast(EAG.Opt) this.hNont[gammaSym].Def)
+            {
+                this.currentScope_ = this.nextVarBuf;
+                opt.Scope.Beg      = this.nextVarBuf;
+                Params endP = this.endParamsByHNontSym.get(gammaSym, null);
+                if (endP !is null)
+                {
+                    auto terms = this.eag.hyperEBNFGrammar.terms(endP.key);
+                    opt.Formal = buildAffix_TermsParamsDesc(terms, sig, true, endP.position);
+                }
+                opt.Scope.End = this.nextVarBuf;
+            }
+
+            // --- Walk each Alt ---
+            for (EAG.Alt gammaAlt = this.hNont[gammaSym].Def.Sub;
+                 gammaAlt !is null;
+                 gammaAlt = gammaAlt.Next)
+            {
+                Alternative alternative = this.alternativeByAlt.get(gammaAlt, null);
+
+                if (alternative is null)
+                    continue;
+
+                this.currentScope_  = this.nextVarBuf;
+                gammaAlt.Scope.Beg  = this.nextVarBuf;
+
+                // Formal params on the Alt lhs
+                gammaAlt.Formal = buildAffix_LhsParamsDesc(
+                    alternative.lhs, sig, true, alternative.position);
+
+                // RepetitionAlternative: pick up trailing actual params (mirrors epsilon's
+                // HyperExpr Left=='{' and CheckRep logic).
+                //
+                // repAlt.params originates from either:
+                //   - spareActualParams  (standalone <...> not belonging to any nont) — always
+                //     becomes gammaAlt.Actual, mirroring epsilon's direct Actual assignment.
+                //   - undecidedActualParams (the <...> after the last named nont in the rhs) —
+                //     only becomes gammaAlt.Actual when CheckRep fires, i.e. when that last
+                //     nont's Sig is WellMatched with empty (0-arity).
+                //
+                // Distinguish by checking whether the last rhs node carries the same params key.
+                bool repActualIsUndecided = false;
+
+                if (auto repAlt = cast(RepetitionAlternative) alternative)
+                {
+                    if (repAlt.params !is null)
+                    {
+                        // Check if repAlt.params belongs to the last rhs nont (undecided).
+                        if (!alternative.rhs.empty)
+                        {
+                            import gamma.grammar.hyper.HyperSymbolNode : HyperSymbolNode;
+
+                            if (auto lastHsn = cast(HyperSymbolNode) alternative.rhs.back)
+                                if (lastHsn.params !is null
+                                    && lastHsn.params.key == repAlt.params.key)
+                                    repActualIsUndecided = true;
+                        }
+
+                        if (!repActualIsUndecided)
+                        {
+                            // Spare (standalone): always becomes gammaAlt.Actual.
+                            auto terms = this.eag.hyperEBNFGrammar.terms(repAlt.params.key);
+                            gammaAlt.Actual = buildAffix_TermsParamsDesc(terms, sig, false,
+                                repAlt.params.position);
+                        }
+                    }
+                }
+
+                // Walk factors in parallel with alternative.rhs
+                EAG.Factor f = gammaAlt.Sub;
+
+                foreach (node; alternative.rhs)
+                {
+                    if (f is null)
+                        break;
+
+                    if (auto nont = cast(EAG.Nont) f)
+                        buildAffix_NontFactor(nont, node);
+
+                    f = f.Next;
+                }
+
+                gammaAlt.Scope.End = this.nextVarBuf;
+            }
+        }
+    }
+
+    // Build DomBuf signature for a HNont; returns the Sig index (into domBuf).
+    // Mirrors epsilon's AppDom + SigOK sequence.
+    private int buildAffix_Sig(int gammaSym, Rule rule)
+    {
+        auto lhsNode = cast(HyperLhsNode) rule.lhs;
+        Signature sig = lhsNode !is null ? lhsNode.signature : null;
+
+        if (sig !is null && !sig.isEmpty)
+        {
+            foreach (i, dir; sig.direction)
+            {
+                ensureDomBuf;
+                const mNontSym = internMNont(sig.domains[i].toString);
+                this.domBuf[this.nextDom++] = (dir == Direction.output) ? mNontSym : -mNontSym;
+            }
+        }
+        return affix_SigOK(gammaSym);
+    }
+
+    // Mirrors EAG.SigOK: seals the current DomBuf sequence, sets HNont.Sig.
+    private int affix_SigOK(int gammaSym)
+    {
+        if (this.hNont[gammaSym].Sig < 0)
+        {
+            // First call: record the start of this signature sequence.
+            this.hNont[gammaSym].Sig = this.curSig;
+            ensureDomBuf;
+            this.domBuf[this.nextDom] = EAG.nil;
+            ++this.nextDom;
+            this.curSig = this.nextDom;
+        }
+        else
+        {
+            // Subsequent call: discard tentative entries (reset back to curSig).
+            ensureDomBuf;
+            this.domBuf[this.nextDom] = EAG.nil;
+            this.nextDom = this.curSig;
+        }
+        return this.hNont[gammaSym].Sig;
+    }
+
+    // Build a ParamsDesc from a LhsNode reference (for Alt.lhs dispatch).
+    private EAG.ParamsDesc buildAffix_LhsParamsDesc(
+        LhsNode lhsNode, int sig, bool isLhs, Position fallbackPos)
+    {
+        auto hln = cast(HyperLhsNode) lhsNode;
+
+        if (hln is null || hln.params is null)
+            return EAG.ParamsDesc(EAG.empty, fallbackPos);
+
+        auto terms = this.eag.hyperEBNFGrammar.terms(hln.params.key);
+
+        return buildAffix_TermsParamsDesc(terms, sig, isLhs, hln.params.position);
+    }
+
+    // Build a ParamsDesc from a Term[] slice (already Earley-parsed).
+    private EAG.ParamsDesc buildAffix_TermsParamsDesc(
+        Term[] terms, int sig, bool isLhs, Position pos)
+    {
+        if (terms.length == 0)
+            return EAG.ParamsDesc(EAG.empty, pos);
+
+        const startParam = this.nextParam;
+
+        foreach (i, term; terms)
+        {
+            const bool isDef = affix_IsDef(sig, cast(int) i, isLhs);
+            const int  tree  = buildAffix_Term(term, isDef);
+
+            ensureParamBuf;
+            this.paramBuf[this.nextParam].Affixform = tree;
+            this.paramBuf[this.nextParam].Pos       = pos;
+            this.paramBuf[this.nextParam].isDef     = isDef;
+            ++this.nextParam;
+        }
+        // Nil terminator
+        ensureParamBuf;
+        this.paramBuf[this.nextParam].Affixform = EAG.nil;
+        this.paramBuf[this.nextParam].Pos       = pos;
+        ++this.nextParam;
+
+        return EAG.ParamsDesc(startParam, pos);
+    }
+
+    // Determine isDef for the i-th param given the signature and side (Lhs or not).
+    // Mirrors: isDef = Lhs && DomBuf[Dom] < 0 || !Lhs && DomBuf[Dom] > 0.
+    private bool affix_IsDef(int sig, int index, bool isLhs)
+    {
+        if (sig < 0 || sig >= cast(int) this.domBuf.length)
+            return false;
+
+        int dom = sig;
+        int i   = 0;
+
+        while (this.domBuf[dom] != EAG.nil && i < index)
+        {
+            ++dom;
+            ++i;
+        }
+        if (this.domBuf[dom] == EAG.nil)
+            return false;
+
+        const int entry = this.domBuf[dom];
+
+        return isLhs ? entry < 0 : entry > 0;
+    }
+
+    // Translate a Term tree to a NodeBuf/VarBuf reference.
+    // Returns a non-negative NodeBuf index (Composite) or
+    // a negative VarBuf index (Variable — mirrors the negative convention).
+    // Maps number-strings (e.g. "1", "01") to unique small integers, mirroring
+    // epsilon's use of symbol-table IDs.  Populated on first encounter per grammar.
+    private int[string] numberStringId_;
+
+    private int buildAffix_Term(Term term, bool isDef)
+    {
+        if (auto v = cast(Variable) term)
+        {
+            const mNontSym = internMNont(v.nonterminal.toString);
+            int   num;
+
+            if (v.number.isNull)
+            {
+                num = v.unequal ? -1 : 1;
+            }
+            else
+            {
+                const sign = v.unequal ? -1 : 1;
+                const key  = v.number.get;
+                if (auto idP = key in this.numberStringId_)
+                    num = sign * (*idP + 2);
+                else
+                {
+                    const id = cast(int) this.numberStringId_.length;
+                    this.numberStringId_[key] = id;
+                    num = sign * (id + 2);
+                }
+            }
+
+            return -affix_FindOrCreateVar(mNontSym, num, v.position, isDef);
+        }
+
+        auto c = cast(Composite) term;
+
+        assert(c !is null, "Term must be Variable or Composite");
+
+        const gammaMAltIdx = this.altToGammaMAlt.get(c.alternative, 0);
+        const treeIndex    = this.nextNode;
+
+        ensureNodeBuf;
+        this.nodeBuf[this.nextNode++] = gammaMAltIdx;
+
+        // Allocate node slots for all children (arity = nonterminal members only,
+        // same as epsilon's Arity field), filled left-to-right.
+        foreach (sub; c.terms)
+        {
+            ensureNodeBuf;
+            this.nodeBuf[this.nextNode++] = buildAffix_Term(sub, isDef);
+        }
+        return treeIndex;
+    }
+
+    // Mirrors EAG.FindVar: look up or create a VarRecord for (sym, num)
+    // within the current scope [currentScope_ .. nextVarBuf).
+    private int affix_FindOrCreateVar(int sym, int num, Position pos, bool isDef)
+    {
+        // Search from current scope start.
+        for (int v = this.currentScope_; v < this.nextVarBuf; ++v)
+        {
+            if (this.varBuf[v].Sym == sym && this.varBuf[v].Num == num)
+            {
+                this.varBuf[v].Def = this.varBuf[v].Def || isDef;
+                return v;
+            }
+        }
+        // Also check for the negated partner (Neg linkage).
+        for (int v = this.currentScope_; v < this.nextVarBuf; ++v)
+        {
+            if (this.varBuf[v].Sym == sym && this.varBuf[v].Num == -num)
+            {
+                // Negated partner found — link.
+                const int newV = this.nextVarBuf;
+
+                ensureVarBuf;
+                this.varBuf[newV].Sym  = sym;
+                this.varBuf[newV].Num  = num;
+                this.varBuf[newV].Pos  = pos;
+                this.varBuf[newV].Def  = isDef;
+                this.varBuf[newV].Neg  = v;
+                this.varBuf[v].Neg     = newV;
+                ++this.nextVarBuf;
+                return newV;
+            }
+        }
+        // New variable.
+        const int newV = this.nextVarBuf;
+
+        ensureVarBuf;
+        this.varBuf[newV].Sym  = sym;
+        this.varBuf[newV].Num  = num;
+        this.varBuf[newV].Pos  = pos;
+        this.varBuf[newV].Def  = isDef;
+        this.varBuf[newV].Neg  = EAG.nil;
+        ++this.nextVarBuf;
+        return newV;
+    }
+
+    // Process actual params for a nonterminal RHS factor.
+    // `node` is the grammar RHS node (HyperSymbolNode or Operator).
+    private void buildAffix_NontFactor(EAG.Nont nont, Node node)
+    {
+        import gamma.grammar.hyper.Group      : HyperGroup = Group;
+        import gamma.grammar.hyper.Operator   : Operator;
+        import gamma.grammar.hyper.Option     : HyperOption = Option;
+        import gamma.grammar.hyper.Repetition : HyperRepetition = Repetition;
+
+        const refSig = this.hNont[nont.Sym].Sig;
+
+        if (auto hsn = cast(HyperSymbolNode) node)
+        {
+            if (hsn.params !is null)
+            {
+                auto terms = this.eag.hyperEBNFGrammar.terms(hsn.params.key);
+
+                nont.Actual = buildAffix_TermsParamsDesc(terms, refSig, false,
+                    hsn.params.position);
+            }
+        }
+        else if (auto op = cast(Operator) node)
+        {
+            // Actual params placed before the operator bracket (op.params)
+            if (op.params !is null)
+            {
+                auto terms = this.eag.hyperEBNFGrammar.terms(op.params.key);
+
+                nont.Actual = buildAffix_TermsParamsDesc(terms, refSig, false,
+                    op.params.position);
+            }
+        }
+    }
+
+    // Dynamic array growth helpers — keep arrays large enough.
+    private void ensureDomBuf()
+    {
+        while (this.nextDom + 1 >= this.domBuf.length)
+            this.domBuf.length = this.domBuf.length * 2 + 1;
+    }
+
+    private void ensureParamBuf()
+    {
+        while (this.nextParam + 1 >= this.paramBuf.length)
+            this.paramBuf.length = this.paramBuf.length * 2 + 1;
+    }
+
+    private void ensureNodeBuf()
+    {
+        while (this.nextNode + 1 >= this.nodeBuf.length)
+            this.nodeBuf.length = this.nodeBuf.length * 2 + 1;
+    }
+
+    private void ensureVarBuf()
+    {
+        while (this.nextVarBuf + 1 >= this.varBuf.length)
+            this.varBuf.length = this.varBuf.length * 2 + 1;
+    }
+
+    private int compareAffixes()
+    {
+        int count = 0;
+
+        // ----------------------------------------------------------------
+        // We need the HNont bijection from compareHyper; rebuild it here.
+        // ----------------------------------------------------------------
+        int[int] gammaToEpsilonHNont;
+
+        foreach (gammaSym; EAG.firstHNont .. cast(int) this.hNont.length)
+        {
+            if (this.hNont[gammaSym].anonymous)
+                continue;
+
+            const id = this.hNont[gammaSym].Id;
+            int   epsilonSym = EAG.firstHNont;
+
+            while (epsilonSym < EAG.NextHNont && EAG.HNont[epsilonSym].Id != id)
+                ++epsilonSym;
+
+            if (epsilonSym < EAG.NextHNont)
+                gammaToEpsilonHNont[gammaSym] = epsilonSym;
+        }
+
+        int[] epsilonAnonymList;
+
+        foreach (sym; EAG.firstHNont .. EAG.NextHNont)
+            if (EAG.HNont[sym].Id < 0)
+                epsilonAnonymList ~= sym;
+
+        const pairLen = this.hAnonymNonts.length < epsilonAnonymList.length
+            ? this.hAnonymNonts.length : epsilonAnonymList.length;
+
+        foreach (k; 0 .. pairLen)
+            gammaToEpsilonHNont[this.hAnonymNonts[k]] = epsilonAnonymList[k];
+
+        // MNont bijection (by symbolTable Id)
+        int[int] gammaToEpsilonMNont;
+
+        foreach (gammaSym; EAG.firstMNont .. cast(int) this.mNont.length)
+        {
+            const id = this.mNont[gammaSym].Id;
+            int   esym = EAG.firstMNont;
+
+            while (esym < EAG.NextMNont && EAG.MNont[esym].Id != id)
+                ++esym;
+
+            if (esym < EAG.NextMNont)
+                gammaToEpsilonMNont[gammaSym] = esym;
+        }
+
+        // ----------------------------------------------------------------
+        // Compare DomBuf signatures per HNont.
+        // ----------------------------------------------------------------
+        foreach (gammaSym; EAG.firstHNont .. cast(int) this.hNont.length)
+        {
+            if (this.hNont[gammaSym].Def is null)
+                continue;
+
+            const eSymP = gammaSym in gammaToEpsilonHNont;
+
+            if (eSymP is null)
+                continue;
+
+            const eSym    = *eSymP;
+            const symName = this.hNont[gammaSym].anonymous
+                ? format!"A%s"(-this.hNont[gammaSym].Id)
+                : EAG.symbolTable.symbol(this.hNont[gammaSym].Id);
+
+            const gSig = this.hNont[gammaSym].Sig;
+            const eSig = EAG.HNont[eSym].Sig;
+
+            // Compare the domain sequences symbolically.
+            int gd = (gSig >= 0) ? gSig : 0;
+            int ed = (eSig >= 0) ? eSig : 0;
+
+            for (;;)
+            {
+                const gDom = (gd < cast(int) this.domBuf.length) ? this.domBuf[gd] : EAG.nil;
+                const eDom = (ed < cast(int) EAG.DomBuf.length)  ? EAG.DomBuf[ed]  : EAG.nil;
+
+                if (gDom == EAG.nil && eDom == EAG.nil)
+                    break;
+
+                if (gDom == EAG.nil || eDom == EAG.nil)
+                {
+                    error!"compareAffixes: HNont '%s' signature length differs"(symName);
+                    ++count;
+                    break;
+                }
+
+                // Translate the sign separately.
+                const gDir    = gDom < 0 ? -1 : 1;
+                const eDir    = eDom < 0 ? -1 : 1;
+
+                if (gDir != eDir)
+                {
+                    error!"compareAffixes: HNont '%s' signature direction differs at domain pos"(symName);
+                    ++count;
+                }
+                else
+                {
+                    const gMNont = gDir > 0 ? gDom : -gDom;
+                    const eMNont = eDir > 0 ? eDom : -eDom;
+                    const translated = gammaToEpsilonMNont.get(gMNont, int.min);
+
+                    if (translated != eMNont)
+                    {
+                        error!"compareAffixes: HNont '%s' signature domain '%s' maps to %s, expected %s"(
+                            symName,
+                            EAG.symbolTable.symbol(this.mNont[gMNont].Id),
+                            translated, eMNont);
+                        ++count;
+                    }
+                }
+                ++gd;
+                ++ed;
+            }
+        }
+
+        // ----------------------------------------------------------------
+        // Compare per-Alt Formal/Actual param counts and scope sizes.
+        // ----------------------------------------------------------------
+        foreach (gammaSym; EAG.firstHNont .. cast(int) this.hNont.length)
+        {
+            if (this.hNont[gammaSym].Def is null)
+                continue;
+
+            const eSymP = gammaSym in gammaToEpsilonHNont;
+
+            if (eSymP is null)
+                continue;
+
+            const eSym    = *eSymP;
+            const symName = this.hNont[gammaSym].anonymous
+                ? format!"A%s"(-this.hNont[gammaSym].Id)
+                : EAG.symbolTable.symbol(this.hNont[gammaSym].Id);
+
+            EAG.Alt gammaAlt   = this.hNont[gammaSym].Def.Sub;
+            EAG.Alt epsilonAlt = EAG.HNont[eSym].Def.Sub;
+
+            for (int ai = 0; gammaAlt !is null && epsilonAlt !is null; ++ai)
+            {
+                // Compare Formal param counts
+                const gFormalLen = affix_ParamCount(this.paramBuf, gammaAlt.Formal.Params);
+                const eFormalLen = affix_EpsParamCount(epsilonAlt.Formal.Params);
+
+                if (gFormalLen != eFormalLen)
+                {
+                    error!"compareAffixes: HNont '%s' alt[%s] formal param count gamma=%s EAG=%s"(
+                        symName, ai, gFormalLen, eFormalLen);
+                    ++count;
+                }
+
+                // Compare Actual param counts (for Rep alts)
+                const gActualLen = affix_ParamCount(this.paramBuf, gammaAlt.Actual.Params);
+                const eActualLen = affix_EpsParamCount(epsilonAlt.Actual.Params);
+
+                if (gActualLen != eActualLen)
+                {
+                    error!"compareAffixes: HNont '%s' alt[%s] actual param count gamma=%s EAG=%s"(
+                        symName, ai, gActualLen, eActualLen);
+                    ++count;
+                }
+
+                // Compare scope size (variable count in scope)
+                const gScopeSize = gammaAlt.Scope.End - gammaAlt.Scope.Beg;
+                const eScopeSize = epsilonAlt.Scope.End - epsilonAlt.Scope.Beg;
+
+                if (gScopeSize != eScopeSize)
+                {
+                    error!"compareAffixes: HNont '%s' alt[%s] scope size gamma=%s EAG=%s"(
+                        symName, ai, gScopeSize, eScopeSize);
+                    ++count;
+                }
+
+                gammaAlt   = gammaAlt.Next;
+                epsilonAlt = epsilonAlt.Next;
+            }
+        }
+
+        // ----------------------------------------------------------------
+        // Compare Rep/Opt Formal param counts and scope sizes.
+        // ----------------------------------------------------------------
+        foreach (gammaSym; EAG.firstHNont .. cast(int) this.hNont.length)
+        {
+            const eSymP = gammaSym in gammaToEpsilonHNont;
+
+            if (eSymP is null)
+                continue;
+
+            const eSym    = *eSymP;
+            const symName = this.hNont[gammaSym].anonymous
+                ? format!"A%s"(-this.hNont[gammaSym].Id)
+                : EAG.symbolTable.symbol(this.hNont[gammaSym].Id);
+
+            if (auto rep = cast(EAG.Rep) this.hNont[gammaSym].Def)
+            {
+                if (auto eRep = cast(EAG.Rep) EAG.HNont[eSym].Def)
+                {
+                    const gLen = affix_ParamCount(this.paramBuf, rep.Formal.Params);
+                    const eLen = affix_EpsParamCount(eRep.Formal.Params);
+
+                    if (gLen != eLen)
+                    {
+                        error!"compareAffixes: HNont '%s' Rep Formal param count gamma=%s EAG=%s"(
+                            symName, gLen, eLen);
+                        ++count;
+                    }
+
+                    const gSz = rep.Scope.End - rep.Scope.Beg;
+                    const eSz = eRep.Scope.End - eRep.Scope.Beg;
+
+                    if (gSz != eSz)
+                    {
+                        error!"compareAffixes: HNont '%s' Rep Scope size gamma=%s EAG=%s"(
+                            symName, gSz, eSz);
+                        ++count;
+                    }
+                }
+            }
+            else if (auto opt = cast(EAG.Opt) this.hNont[gammaSym].Def)
+            {
+                if (auto eOpt = cast(EAG.Opt) EAG.HNont[eSym].Def)
+                {
+                    const gLen = affix_ParamCount(this.paramBuf, opt.Formal.Params);
+                    const eLen = affix_EpsParamCount(eOpt.Formal.Params);
+
+                    if (gLen != eLen)
+                    {
+                        error!"compareAffixes: HNont '%s' Opt Formal param count gamma=%s EAG=%s"(
+                            symName, gLen, eLen);
+                        ++count;
+                    }
+
+                    const gSz = opt.Scope.End - opt.Scope.Beg;
+                    const eSz = eOpt.Scope.End - eOpt.Scope.Beg;
+
+                    if (gSz != eSz)
+                    {
+                        error!"compareAffixes: HNont '%s' Opt Scope size gamma=%s EAG=%s"(
+                            symName, gSz, eSz);
+                        ++count;
+                    }
+                }
+            }
+        }
+
+        // ----------------------------------------------------------------
+        // Compare total Var counts.
+        // ----------------------------------------------------------------
+        const gVarCount = this.nextVarBuf - EAG.firstVar;
+        const eVarCount = EAG.NextVar      - EAG.firstVar;
+
+        if (gVarCount != eVarCount)
+        {
+            error!"compareAffixes: total Var count gamma=%s EAG=%s"(gVarCount, eVarCount);
+            ++count;
+        }
+
+        if (count == 0)
+            trace!"compareAffixes: OK";
+        return count;
+    }
+
+    // Count the number of params in a ParamBuf slice (i.e. entries before nil).
+    private static int affix_ParamCount(EAG.ParamRecord[] buf, int start)
+    {
+        if (start == EAG.empty || start >= cast(int) buf.length)
+            return 0;
+
+        int n = 0;
+
+        while (start + n < cast(int) buf.length && buf[start + n].Affixform != EAG.nil)
+            ++n;
+        return n;
+    }
+
+    // Count the number of params in epsilon's EAG.ParamBuf slice.
+    private static int affix_EpsParamCount(int start)
+    {
+        if (start == EAG.empty || start >= cast(int) EAG.ParamBuf.length)
+            return 0;
+
+        int n = 0;
+
+        while (start + n < cast(int) EAG.ParamBuf.length && EAG.ParamBuf[start + n].Affixform != EAG.nil)
+            ++n;
+        return n;
+    }
+
     private int compareHyper()
     {
         int count = 0;
@@ -507,11 +1275,20 @@ class EAGBuilder
         int[int] gammaToEpsilonHNont; // gamma index → epsilon index
 
         // Collect epsilon anonymous HNont indices in index order.
+        // Phase 2½ step 1: anonymous nonterminals that epsilon's Shrink() has nulled
+        // (Def == null) have no counterpart in gamma's grammar model.  Exclude them
+        // from the bijection; track their count to adjust the total-entries check.
         int[] epsilonAnonymList;
+        int   epsilonShrunkAnonymCount = 0;
 
         foreach (sym; EAG.firstHNont .. EAG.NextHNont)
             if (EAG.HNont[sym].Id < 0)
-                epsilonAnonymList ~= sym;
+            {
+                if (EAG.HNont[sym].Def !is null)
+                    epsilonAnonymList ~= sym;
+                else
+                    ++epsilonShrunkAnonymCount;
+            }
 
         // Map named nonterminals.
         foreach (gammaSym; EAG.firstHNont .. cast(int) this.hNont.length)
@@ -553,11 +1330,13 @@ class EAGBuilder
 
         // ----------------------------------------------------------------
         // Compare total HNont count.
+        // Phase 2½ step 1: gamma omits the anonymous nonterminals that epsilon
+        // creates but then Shrinks away (Def = null).  Adjust for that difference.
         // ----------------------------------------------------------------
-        if (cast(int) this.hNont.length != EAG.NextHNont)
+        if (cast(int) this.hNont.length + epsilonShrunkAnonymCount != EAG.NextHNont)
         {
-            error!"compareHyper: gamma has %s HNont entries but EAG has %s"(
-                this.hNont.length, EAG.NextHNont);
+            error!"compareHyper: gamma has %s HNont entries but EAG (excluding shrunk) has %s"(
+                this.hNont.length, EAG.NextHNont - epsilonShrunkAnonymCount);
             ++count;
         }
 
@@ -811,7 +1590,6 @@ class EAGBuilder
         const sym = cast(int) this.hNont.length;
 
         this.hNontByNonterminal[nonterminal] = sym;
-        this.hNontNonterminal ~= nonterminal;
 
         if (cast(AnonymousNonterminal) nonterminal)
         {
