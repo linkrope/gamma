@@ -22,8 +22,8 @@ import gamma.grammar.Terminal;
 import gamma.input.epsilang.analyzer : GammaEAG = EAG;
 import io : Position;
 import log;
-import std.format : format;
 import std.bitmanip : BitArray;
+import std.format : format;
 import std.range;
 
 /**
@@ -145,7 +145,8 @@ class EAGBuilder
             Nonterminal nonterminal = (cast(LhsNode) rule.lhs).nonterminal;
             const lhsSym = internMNont(nonterminal.toString);
 
-            this.mNont[lhsSym].IsToken = this.mNont[lhsSym].IsToken || nonterminal in this.gammaEAG.lexicalMetaNonterminals;
+            this.mNont[lhsSym].IsToken = this.mNont[lhsSym].IsToken
+                || nonterminal in this.gammaEAG.lexicalMetaNonterminals;
 
             foreach (alternative; rule.alternatives)
             {
@@ -1408,7 +1409,9 @@ class EAGBuilder
         if (this.gammaEAG.plainHyperGrammar is null)
             return;
 
-        auto properties = new GrammarProperties(this.gammaEAG.plainHyperGrammar, this.gammaEAG.lexicalHyperNonterminals);
+        auto grammar = this.gammaEAG.plainHyperGrammar;
+        auto lexicalNonterminals = this.gammaEAG.lexicalHyperNonterminals;
+        auto properties = new GrammarProperties(grammar, lexicalNonterminals);
 
         this.reachableHNonterminals.length = this.hNont.length;
         this.productiveHNonterminals.length = this.hNont.length;

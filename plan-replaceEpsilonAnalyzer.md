@@ -244,4 +244,5 @@ Checkpoint: `dub test --build=unittest --config=example` with epsilon.analyzer r
 
 1. `dub test --build=unittest --config=example` after each phase and each 3x sub-phase
 2. `compareX()` methods in Phase 3 make diffs automatic on every test run — no separate tooling needed
-3. After Phase 4: full `dub test --build=unittest --config=example` with epsilon.analyzer removed
+3. `dub run dscanner -- --styleCheck src test` after code changes
+4. After Phase 4: full `dub test --build=unittest --config=example` with epsilon.analyzer removed
