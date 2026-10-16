@@ -7,6 +7,7 @@ import gamma.grammar.affixes.Signature;
 import gamma.grammar.affixes.Term;
 import gamma.grammar.affixes.Variable;
 import gamma.grammar.Alternative;
+import gamma.grammar.GrammarProperties;
 import gamma.grammar.hyper.AnonymousNonterminal;
 import gamma.grammar.hyper.HyperLhsNode;
 import gamma.grammar.hyper.HyperSymbolNode;
@@ -22,6 +23,7 @@ import gamma.input.epsilang.analyzer : GammaEAG = EAG;
 import io : Position;
 import log;
 import std.format : format;
+import std.bitmanip : BitArray;
 import std.range;
 
 /**
@@ -78,20 +80,24 @@ class EAGBuilder
     private int nextHAlt    = EAG.firstHAlt;
     private int nextHFactor = EAG.firstHFactor;
 
-    // -------------------------------------------------------------------------
-    // Phase 3c — affix data mirrors
-    // -------------------------------------------------------------------------
+    // Mirrors epsilon's Reach, Prod, and Null sets.
+    private BitArray reachableHNonterminals;
+    private BitArray productiveHNonterminals;
+    private BitArray nullableHNonterminals;
 
-    private int[]             domBuf;      // mirrors EAG.DomBuf
-    private int               nextDom  = 1;
-    private int               curSig   = 1;
-    private EAG.ParamRecord[] paramBuf; // mirrors EAG.ParamBuf
-    private int               nextParam = 1;
-    private int[]             nodeBuf;  // mirrors EAG.NodeBuf
-    private int               nextNode = EAG.firstNode;
-    private EAG.VarRecord[]   varBuf;   // mirrors EAG.Var
-    private int               nextVarBuf = EAG.firstVar;
-    private int               currentScope_ = EAG.firstVar;
+    // Affix-data mirror.
+
+    private AffixBuilder affixBuilder;
+    private ref int[] domBuf() { return this.affixBuilder.domBuf; }
+    private ref int nextDom() { return this.affixBuilder.nextDom; }
+    private ref int curSig() { return this.affixBuilder.curSig; }
+    private ref EAG.ParamRecord[] paramBuf() { return this.affixBuilder.paramBuf; }
+    private ref int nextParam() { return this.affixBuilder.nextParam; }
+    private ref int[] nodeBuf() { return this.affixBuilder.nodeBuf; }
+    private ref int nextNode() { return this.affixBuilder.nextNode; }
+    private ref EAG.VarRecord[] varBuf() { return this.affixBuilder.varBuf; }
+    private ref int nextVarBuf() { return this.affixBuilder.nextVarBuf; }
+    private ref int currentScope() { return this.affixBuilder.currentScope; }
 
     // Maps built during hyper-structure construction (used by buildAffixes)
     private Alternative[EAG.Alt]  alternativeByAlt;  // EAG.Alt  → gamma Alternative
@@ -113,6 +119,7 @@ class EAGBuilder
         buildMeta;
         buildHyper;
         buildAffixes;
+        buildSets;
     }
 
     /**
@@ -123,7 +130,7 @@ class EAGBuilder
      */
     public int compare()
     {
-        return compareMeta + compareHyper + compareAffixes;
+        return compareMeta + compareHyper + compareAffixes + compareSets;
     }
 
     // =========================================================================
@@ -548,7 +555,7 @@ class EAGBuilder
     }
 
     // =========================================================================
-    // Affix data (Phase 3c)
+    // Affix data
     // =========================================================================
 
     private void buildAffixes()
@@ -558,19 +565,7 @@ class EAGBuilder
         if (this.eag.hyperEBNFGrammar is null)
             return;
 
-        // Initialise internal buffers (same layout as EAG.Init)
-        this.domBuf               = new int[256];
-        this.domBuf[0]            = EAG.nil;
-        this.nextDom              = 1;
-        this.curSig               = 1;
-        this.paramBuf             = new EAG.ParamRecord[1024];
-        this.paramBuf[0].Affixform = EAG.nil;
-        this.nextParam            = 1;
-        this.nodeBuf              = new int[1024];
-        this.nextNode             = EAG.firstNode;
-        this.varBuf               = new EAG.VarRecord[512];
-        this.nextVarBuf           = EAG.firstVar;
-        this.currentScope_        = EAG.firstVar;
+        this.affixBuilder.reset;
 
         // Pass 1: build all DomBuf signatures first.
         // Epsilon sets HNont[Sym].Sig during parsing, before Traverse; we must
@@ -586,7 +581,7 @@ class EAGBuilder
             if (rule is null)
                 continue;
 
-            this.hNont[gammaSym].Sig = buildAffix_Sig(gammaSym, rule);
+            this.hNont[gammaSym].Sig = buildAffixSig(gammaSym, rule);
         }
 
         // Pass 2: build params, scopes and variables — mirrors epsilon's Traverse.
@@ -605,25 +600,25 @@ class EAGBuilder
             // --- Rep/Opt: build Formal ParamsDesc + Scope ---
             if (auto rep = cast(EAG.Rep) this.hNont[gammaSym].Def)
             {
-                this.currentScope_ = this.nextVarBuf;
+                this.currentScope = this.nextVarBuf;
                 rep.Scope.Beg      = this.nextVarBuf;
                 Params endP = this.endParamsByHNontSym.get(gammaSym, null);
                 if (endP !is null)
                 {
                     auto terms = this.eag.hyperEBNFGrammar.terms(endP.key);
-                    rep.Formal = buildAffix_TermsParamsDesc(terms, sig, true, endP.position);
+                    rep.Formal = buildAffixTermsParamsDesc(terms, sig, true, endP.position);
                 }
                 rep.Scope.End = this.nextVarBuf;
             }
             else if (auto opt = cast(EAG.Opt) this.hNont[gammaSym].Def)
             {
-                this.currentScope_ = this.nextVarBuf;
+                this.currentScope = this.nextVarBuf;
                 opt.Scope.Beg      = this.nextVarBuf;
                 Params endP = this.endParamsByHNontSym.get(gammaSym, null);
                 if (endP !is null)
                 {
                     auto terms = this.eag.hyperEBNFGrammar.terms(endP.key);
-                    opt.Formal = buildAffix_TermsParamsDesc(terms, sig, true, endP.position);
+                    opt.Formal = buildAffixTermsParamsDesc(terms, sig, true, endP.position);
                 }
                 opt.Scope.End = this.nextVarBuf;
             }
@@ -638,11 +633,11 @@ class EAGBuilder
                 if (alternative is null)
                     continue;
 
-                this.currentScope_  = this.nextVarBuf;
+                this.currentScope   = this.nextVarBuf;
                 gammaAlt.Scope.Beg  = this.nextVarBuf;
 
                 // Formal params on the Alt lhs
-                gammaAlt.Formal = buildAffix_LhsParamsDesc(
+                gammaAlt.Formal = buildAffixLhsParamsDesc(
                     alternative.lhs, sig, true, alternative.position);
 
                 // RepetitionAlternative: pick up trailing actual params (mirrors epsilon's
@@ -677,7 +672,7 @@ class EAGBuilder
                         {
                             // Spare (standalone): always becomes gammaAlt.Actual.
                             auto terms = this.eag.hyperEBNFGrammar.terms(repAlt.params.key);
-                            gammaAlt.Actual = buildAffix_TermsParamsDesc(terms, sig, false,
+                            gammaAlt.Actual = buildAffixTermsParamsDesc(terms, sig, false,
                                 repAlt.params.position);
                         }
                     }
@@ -692,7 +687,7 @@ class EAGBuilder
                         break;
 
                     if (auto nont = cast(EAG.Nont) f)
-                        buildAffix_NontFactor(nont, node);
+                        buildAffixNontFactor(nont, node);
 
                     f = f.Next;
                 }
@@ -704,7 +699,7 @@ class EAGBuilder
 
     // Build DomBuf signature for a HNont; returns the Sig index (into domBuf).
     // Mirrors epsilon's AppDom + SigOK sequence.
-    private int buildAffix_Sig(int gammaSym, Rule rule)
+    private int buildAffixSig(int gammaSym, Rule rule)
     {
         auto lhsNode = cast(HyperLhsNode) rule.lhs;
         Signature sig = lhsNode !is null ? lhsNode.signature : null;
@@ -718,11 +713,11 @@ class EAGBuilder
                 this.domBuf[this.nextDom++] = (dir == Direction.output) ? mNontSym : -mNontSym;
             }
         }
-        return affix_SigOK(gammaSym);
+        return affixSigOk(gammaSym);
     }
 
     // Mirrors EAG.SigOK: seals the current DomBuf sequence, sets HNont.Sig.
-    private int affix_SigOK(int gammaSym)
+    private int affixSigOk(int gammaSym)
     {
         if (this.hNont[gammaSym].Sig < 0)
         {
@@ -744,7 +739,7 @@ class EAGBuilder
     }
 
     // Build a ParamsDesc from a LhsNode reference (for Alt.lhs dispatch).
-    private EAG.ParamsDesc buildAffix_LhsParamsDesc(
+    private EAG.ParamsDesc buildAffixLhsParamsDesc(
         LhsNode lhsNode, int sig, bool isLhs, Position fallbackPos)
     {
         auto hln = cast(HyperLhsNode) lhsNode;
@@ -754,11 +749,11 @@ class EAGBuilder
 
         auto terms = this.eag.hyperEBNFGrammar.terms(hln.params.key);
 
-        return buildAffix_TermsParamsDesc(terms, sig, isLhs, hln.params.position);
+        return buildAffixTermsParamsDesc(terms, sig, isLhs, hln.params.position);
     }
 
     // Build a ParamsDesc from a Term[] slice (already Earley-parsed).
-    private EAG.ParamsDesc buildAffix_TermsParamsDesc(
+    private EAG.ParamsDesc buildAffixTermsParamsDesc(
         Term[] terms, int sig, bool isLhs, Position pos)
     {
         if (terms.length == 0)
@@ -768,8 +763,8 @@ class EAGBuilder
 
         foreach (i, term; terms)
         {
-            const bool isDef = affix_IsDef(sig, cast(int) i, isLhs);
-            const int  tree  = buildAffix_Term(term, isDef);
+            const bool isDef = affixIsDef(sig, cast(int) i, isLhs);
+            const int  tree  = buildAffixTerm(term, isDef);
 
             ensureParamBuf;
             this.paramBuf[this.nextParam].Affixform = tree;
@@ -788,7 +783,7 @@ class EAGBuilder
 
     // Determine isDef for the i-th param given the signature and side (Lhs or not).
     // Mirrors: isDef = Lhs && DomBuf[Dom] < 0 || !Lhs && DomBuf[Dom] > 0.
-    private bool affix_IsDef(int sig, int index, bool isLhs)
+    private bool affixIsDef(int sig, int index, bool isLhs)
     {
         if (sig < 0 || sig >= cast(int) this.domBuf.length)
             return false;
@@ -812,11 +807,7 @@ class EAGBuilder
     // Translate a Term tree to a NodeBuf/VarBuf reference.
     // Returns a non-negative NodeBuf index (Composite) or
     // a negative VarBuf index (Variable — mirrors the negative convention).
-    // Maps number-strings (e.g. "1", "01") to unique small integers, mirroring
-    // epsilon's use of symbol-table IDs.  Populated on first encounter per grammar.
-    private int[string] numberStringId_;
-
-    private int buildAffix_Term(Term term, bool isDef)
+    private int buildAffixTerm(Term term, bool isDef)
     {
         if (auto v = cast(Variable) term)
         {
@@ -830,18 +821,13 @@ class EAGBuilder
             else
             {
                 const sign = v.unequal ? -1 : 1;
-                const key  = v.number.get;
-                if (auto idP = key in this.numberStringId_)
-                    num = sign * (*idP + 2);
-                else
-                {
-                    const id = cast(int) this.numberStringId_.length;
-                    this.numberStringId_[key] = id;
-                    num = sign * (id + 2);
-                }
+                // Epsilon stores the lexer token's symbol-table id plus two,
+                // rather than the literal integer.  The shared table already
+                // contains this token after epsilon's analysis pass.
+                num = sign * (cast(int) EAG.symbolTable.intern(v.number.get) + 2);
             }
 
-            return -affix_FindOrCreateVar(mNontSym, num, v.position, isDef);
+            return -affixFindOrCreateVar(mNontSym, num, v.position, isDef);
         }
 
         auto c = cast(Composite) term;
@@ -851,25 +837,32 @@ class EAGBuilder
         const gammaMAltIdx = this.altToGammaMAlt.get(c.alternative, 0);
         const treeIndex    = this.nextNode;
 
-        ensureNodeBuf;
-        this.nodeBuf[this.nextNode++] = gammaMAltIdx;
+        assert(gammaMAltIdx > EAG.nil);
+        assert(c.terms.length == this.mAlt[gammaMAltIdx].Arity);
 
-        // Allocate node slots for all children (arity = nonterminal members only,
-        // same as epsilon's Arity field), filled left-to-right.
-        foreach (sub; c.terms)
+        // NodeBuf stores a composite's child roots immediately after its root.
+        // Reserve those slots before recursively emitting a child: a nested
+        // composite otherwise places its own subtree between two parent slots.
+        ensureNodeBuf(c.terms.length + 1);
+        this.nodeBuf[treeIndex] = gammaMAltIdx;
+        this.nextNode += c.terms.length + 1;
+
+        foreach (i, sub; c.terms)
         {
-            ensureNodeBuf;
-            this.nodeBuf[this.nextNode++] = buildAffix_Term(sub, isDef);
+            const childTree = buildAffixTerm(sub, isDef);
+
+            assert(childTree != EAG.nil);
+            this.nodeBuf[treeIndex + i + 1] = childTree;
         }
         return treeIndex;
     }
 
     // Mirrors EAG.FindVar: look up or create a VarRecord for (sym, num)
-    // within the current scope [currentScope_ .. nextVarBuf).
-    private int affix_FindOrCreateVar(int sym, int num, Position pos, bool isDef)
+    // within the current scope [currentScope .. nextVarBuf).
+    private int affixFindOrCreateVar(int sym, int num, Position pos, bool isDef)
     {
         // Search from current scope start.
-        for (int v = this.currentScope_; v < this.nextVarBuf; ++v)
+        for (int v = this.currentScope; v < this.nextVarBuf; ++v)
         {
             if (this.varBuf[v].Sym == sym && this.varBuf[v].Num == num)
             {
@@ -878,7 +871,7 @@ class EAGBuilder
             }
         }
         // Also check for the negated partner (Neg linkage).
-        for (int v = this.currentScope_; v < this.nextVarBuf; ++v)
+        for (int v = this.currentScope; v < this.nextVarBuf; ++v)
         {
             if (this.varBuf[v].Sym == sym && this.varBuf[v].Num == -num)
             {
@@ -911,7 +904,7 @@ class EAGBuilder
 
     // Process actual params for a nonterminal RHS factor.
     // `node` is the grammar RHS node (HyperSymbolNode or Operator).
-    private void buildAffix_NontFactor(EAG.Nont nont, Node node)
+    private void buildAffixNontFactor(EAG.Nont nont, Node node)
     {
         import gamma.grammar.hyper.Group      : HyperGroup = Group;
         import gamma.grammar.hyper.Operator   : Operator;
@@ -926,7 +919,7 @@ class EAGBuilder
             {
                 auto terms = this.eag.hyperEBNFGrammar.terms(hsn.params.key);
 
-                nont.Actual = buildAffix_TermsParamsDesc(terms, refSig, false,
+                nont.Actual = buildAffixTermsParamsDesc(terms, refSig, false,
                     hsn.params.position);
             }
         }
@@ -937,7 +930,7 @@ class EAGBuilder
             {
                 auto terms = this.eag.hyperEBNFGrammar.terms(op.params.key);
 
-                nont.Actual = buildAffix_TermsParamsDesc(terms, refSig, false,
+                nont.Actual = buildAffixTermsParamsDesc(terms, refSig, false,
                     op.params.position);
             }
         }
@@ -956,9 +949,9 @@ class EAGBuilder
             this.paramBuf.length = this.paramBuf.length * 2 + 1;
     }
 
-    private void ensureNodeBuf()
+    private void ensureNodeBuf(size_t needed = 1)
     {
-        while (this.nextNode + 1 >= this.nodeBuf.length)
+        while (this.nextNode + needed >= this.nodeBuf.length)
             this.nodeBuf.length = this.nodeBuf.length * 2 + 1;
     }
 
@@ -966,6 +959,197 @@ class EAGBuilder
     {
         while (this.nextVarBuf + 1 >= this.varBuf.length)
             this.varBuf.length = this.varBuf.length * 2 + 1;
+    }
+
+    private void affixBuildMAltBijection(
+        ref int[int] gammaToEpsilonMAlt, const int[int] gammaToEpsilonMNont)
+    {
+        foreach (gammaSym; EAG.firstMNont .. cast(int) this.mNont.length)
+        {
+            const epsilonSymP = gammaSym in gammaToEpsilonMNont;
+
+            if (epsilonSymP is null)
+                continue;
+
+            int gammaAlt   = this.mNont[gammaSym].MRule;
+            int epsilonAlt = EAG.MNont[*epsilonSymP].MRule;
+
+            while (gammaAlt != EAG.nil && epsilonAlt != EAG.nil)
+            {
+                gammaToEpsilonMAlt[gammaAlt] = epsilonAlt;
+                gammaAlt   = this.mAlt[gammaAlt].Next;
+                epsilonAlt = EAG.MAlt[epsilonAlt].Next;
+            }
+        }
+    }
+
+    private void affixCompareScope(string label, EAG.ScopeDesc gammaScope,
+                                    EAG.ScopeDesc epsilonScope,
+                                    const int[int] gammaToEpsilonMNont,
+                                    ref int[int] gammaToEpsilonVar, ref int count)
+    {
+        const gammaSize   = gammaScope.End - gammaScope.Beg;
+        const epsilonSize = epsilonScope.End - epsilonScope.Beg;
+
+        if (gammaSize != epsilonSize)
+        {
+            error!"compareAffixes: %s scope size gamma=%s EAG=%s"(
+                label, gammaSize, epsilonSize);
+            ++count;
+        }
+
+        const pairLen = gammaSize < epsilonSize ? gammaSize : epsilonSize;
+
+        foreach (offset; 0 .. pairLen)
+            gammaToEpsilonVar[gammaScope.Beg + offset] = epsilonScope.Beg + offset;
+
+        foreach (offset; 0 .. pairLen)
+        {
+            const gammaVarIndex   = gammaScope.Beg + offset;
+            const epsilonVarIndex = epsilonScope.Beg + offset;
+            const gammaVar        = this.varBuf[gammaVarIndex];
+            const epsilonVar      = EAG.Var[epsilonVarIndex];
+            const translatedSym   = gammaToEpsilonMNont.get(gammaVar.Sym, int.min);
+
+            if (translatedSym != epsilonVar.Sym)
+            {
+                error!"compareAffixes: %s var[%s] symbol maps to %s, expected %s"(
+                    label, offset, translatedSym, epsilonVar.Sym);
+                ++count;
+            }
+            if (gammaVar.Num != epsilonVar.Num)
+            {
+                error!"compareAffixes: %s var[%s] Num gamma=%s EAG=%s"(
+                    label, offset, gammaVar.Num, epsilonVar.Num);
+                ++count;
+            }
+            if (gammaVar.Def != epsilonVar.Def)
+            {
+                error!"compareAffixes: %s var[%s] Def gamma=%s EAG=%s"(
+                    label, offset, gammaVar.Def, epsilonVar.Def);
+                ++count;
+            }
+
+            const translatedNeg = gammaVar.Neg == EAG.nil
+                ? EAG.nil
+                : gammaToEpsilonVar.get(gammaVar.Neg, int.min);
+
+            if (translatedNeg != epsilonVar.Neg)
+            {
+                error!"compareAffixes: %s var[%s] Neg maps to %s, expected %s"(
+                    label, offset, translatedNeg, epsilonVar.Neg);
+                ++count;
+            }
+        }
+    }
+
+    private void affixCompareTree(string label, int gammaRoot, int epsilonRoot,
+                                   const int[int] gammaToEpsilonMNont,
+                                   const int[int] gammaToEpsilonMAlt,
+                                   const int[int] gammaToEpsilonVar, ref int count)
+    {
+        const gammaIsVar   = gammaRoot < EAG.nil;
+        const epsilonIsVar = epsilonRoot < EAG.nil;
+
+        if (gammaIsVar != epsilonIsVar)
+        {
+            error!"compareAffixes: %s tree root type gamma=%s EAG=%s"(
+                label, gammaIsVar ? "variable" : "composite",
+                epsilonIsVar ? "variable" : "composite");
+            ++count;
+            return;
+        }
+
+        if (gammaIsVar)
+        {
+            const translatedVar = gammaToEpsilonVar.get(-gammaRoot, int.min);
+
+            if (translatedVar != -epsilonRoot)
+            {
+                error!"compareAffixes: %s variable root maps to %s, expected %s"(
+                    label, translatedVar, -epsilonRoot);
+                ++count;
+            }
+            return;
+        }
+
+        if (gammaRoot <= EAG.nil || epsilonRoot <= EAG.nil
+            || gammaRoot >= cast(int) this.nodeBuf.length
+            || epsilonRoot >= cast(int) EAG.NodeBuf.length)
+        {
+            error!"compareAffixes: %s invalid composite root gamma=%s EAG=%s"(
+                label, gammaRoot, epsilonRoot);
+            ++count;
+            return;
+        }
+
+        const gammaMAlt   = this.nodeBuf[gammaRoot];
+        const epsilonMAlt = EAG.NodeBuf[epsilonRoot];
+        const translatedMAlt = gammaToEpsilonMAlt.get(gammaMAlt, int.min);
+
+        if (translatedMAlt != epsilonMAlt)
+        {
+            error!"compareAffixes: %s composite meta alternative maps to %s, expected %s"(
+                label, translatedMAlt, epsilonMAlt);
+            ++count;
+        }
+
+        if (gammaMAlt <= EAG.nil || gammaMAlt >= cast(int) this.mAlt.length
+            || epsilonMAlt <= EAG.nil || epsilonMAlt >= EAG.NextMAlt)
+            return;
+
+        const gammaArity   = this.mAlt[gammaMAlt].Arity;
+        const epsilonArity = EAG.MAlt[epsilonMAlt].Arity;
+
+        if (gammaArity != epsilonArity)
+        {
+            error!"compareAffixes: %s composite arity gamma=%s EAG=%s"(
+                label, gammaArity, epsilonArity);
+            ++count;
+        }
+
+        const childCount = gammaArity < epsilonArity ? gammaArity : epsilonArity;
+
+        foreach (child; 0 .. childCount)
+            affixCompareTree(format!"%s child[%s]"(label, child),
+                this.nodeBuf[gammaRoot + child + 1], EAG.NodeBuf[epsilonRoot + child + 1],
+                gammaToEpsilonMNont, gammaToEpsilonMAlt, gammaToEpsilonVar, count);
+    }
+
+    private void affixCompareParams(string label, EAG.ParamsDesc gammaParams,
+                                     EAG.ParamsDesc epsilonParams,
+                                     const int[int] gammaToEpsilonMNont,
+                                     const int[int] gammaToEpsilonMAlt,
+                                     const int[int] gammaToEpsilonVar, ref int count)
+    {
+        int gammaParam   = gammaParams.Params;
+        int epsilonParam = epsilonParams.Params;
+
+        for (int index = 0;; ++index, ++gammaParam, ++epsilonParam)
+        {
+            const gammaRoot   = this.paramBuf[gammaParam].Affixform;
+            const epsilonRoot = EAG.ParamBuf[epsilonParam].Affixform;
+
+            if (gammaRoot == EAG.nil && epsilonRoot == EAG.nil)
+                return;
+            if (gammaRoot == EAG.nil || epsilonRoot == EAG.nil)
+            {
+                error!"compareAffixes: %s parameter count differs"(label);
+                ++count;
+                return;
+            }
+
+            if (this.paramBuf[gammaParam].isDef != EAG.ParamBuf[epsilonParam].isDef)
+            {
+                error!"compareAffixes: %s param[%s] isDef gamma=%s EAG=%s"(
+                    label, index, this.paramBuf[gammaParam].isDef,
+                    EAG.ParamBuf[epsilonParam].isDef);
+                ++count;
+            }
+
+            affixCompareTree(format!"%s param[%s]"(label, index), gammaRoot, epsilonRoot,
+                gammaToEpsilonMNont, gammaToEpsilonMAlt, gammaToEpsilonVar, count);
+        }
     }
 
     private int compareAffixes()
@@ -1018,6 +1202,15 @@ class EAGBuilder
             if (esym < EAG.NextMNont)
                 gammaToEpsilonMNont[gammaSym] = esym;
         }
+
+        int[int] gammaToEpsilonMAlt;
+
+        affixBuildMAltBijection(gammaToEpsilonMAlt, gammaToEpsilonMNont);
+
+        // Variables are scoped per alternative (and per Rep/Opt formal list),
+        // so their ordinal position within a corresponding scope provides the
+        // stable bijection used by parameter tree roots and Neg links.
+        int[int] gammaToEpsilonVar;
 
         // ----------------------------------------------------------------
         // Compare DomBuf signatures per HNont.
@@ -1089,7 +1282,8 @@ class EAGBuilder
         }
 
         // ----------------------------------------------------------------
-        // Compare per-Alt Formal/Actual param counts and scope sizes.
+        // Compare per-Alt Formal/Actual descriptors, scoped variables, and
+        // actual descriptors on every nonterminal factor.
         // ----------------------------------------------------------------
         foreach (gammaSym; EAG.firstHNont .. cast(int) this.hNont.length)
         {
@@ -1111,37 +1305,33 @@ class EAGBuilder
 
             for (int ai = 0; gammaAlt !is null && epsilonAlt !is null; ++ai)
             {
-                // Compare Formal param counts
-                const gFormalLen = affix_ParamCount(this.paramBuf, gammaAlt.Formal.Params);
-                const eFormalLen = affix_EpsParamCount(epsilonAlt.Formal.Params);
+                const label = format!"HNont '%s' alt[%s]"(symName, ai);
 
-                if (gFormalLen != eFormalLen)
+                affixCompareScope(label, gammaAlt.Scope, epsilonAlt.Scope,
+                    gammaToEpsilonMNont, gammaToEpsilonVar, count);
+                affixCompareParams(format!"%s Formal"(label), gammaAlt.Formal,
+                    epsilonAlt.Formal, gammaToEpsilonMNont, gammaToEpsilonMAlt,
+                    gammaToEpsilonVar, count);
+                affixCompareParams(format!"%s Actual"(label), gammaAlt.Actual,
+                    epsilonAlt.Actual, gammaToEpsilonMNont, gammaToEpsilonMAlt,
+                    gammaToEpsilonVar, count);
+
+                EAG.Factor gammaFactor   = gammaAlt.Sub;
+                EAG.Factor epsilonFactor = epsilonAlt.Sub;
+
+                for (int fi = 0; gammaFactor !is null && epsilonFactor !is null; ++fi)
                 {
-                    error!"compareAffixes: HNont '%s' alt[%s] formal param count gamma=%s EAG=%s"(
-                        symName, ai, gFormalLen, eFormalLen);
-                    ++count;
-                }
+                    auto gammaNont   = cast(EAG.Nont) gammaFactor;
+                    auto epsilonNont = cast(EAG.Nont) epsilonFactor;
 
-                // Compare Actual param counts (for Rep alts)
-                const gActualLen = affix_ParamCount(this.paramBuf, gammaAlt.Actual.Params);
-                const eActualLen = affix_EpsParamCount(epsilonAlt.Actual.Params);
+                    if (gammaNont !is null && epsilonNont !is null)
+                        affixCompareParams(format!"%s factor[%s] Actual"(label, fi),
+                            gammaNont.Actual, epsilonNont.Actual,
+                            gammaToEpsilonMNont, gammaToEpsilonMAlt,
+                            gammaToEpsilonVar, count);
 
-                if (gActualLen != eActualLen)
-                {
-                    error!"compareAffixes: HNont '%s' alt[%s] actual param count gamma=%s EAG=%s"(
-                        symName, ai, gActualLen, eActualLen);
-                    ++count;
-                }
-
-                // Compare scope size (variable count in scope)
-                const gScopeSize = gammaAlt.Scope.End - gammaAlt.Scope.Beg;
-                const eScopeSize = epsilonAlt.Scope.End - epsilonAlt.Scope.Beg;
-
-                if (gScopeSize != eScopeSize)
-                {
-                    error!"compareAffixes: HNont '%s' alt[%s] scope size gamma=%s EAG=%s"(
-                        symName, ai, gScopeSize, eScopeSize);
-                    ++count;
+                    gammaFactor   = gammaFactor.Next;
+                    epsilonFactor = epsilonFactor.Next;
                 }
 
                 gammaAlt   = gammaAlt.Next;
@@ -1168,50 +1358,26 @@ class EAGBuilder
             {
                 if (auto eRep = cast(EAG.Rep) EAG.HNont[eSym].Def)
                 {
-                    const gLen = affix_ParamCount(this.paramBuf, rep.Formal.Params);
-                    const eLen = affix_EpsParamCount(eRep.Formal.Params);
+                    const label = format!"HNont '%s' Rep"(symName);
 
-                    if (gLen != eLen)
-                    {
-                        error!"compareAffixes: HNont '%s' Rep Formal param count gamma=%s EAG=%s"(
-                            symName, gLen, eLen);
-                        ++count;
-                    }
-
-                    const gSz = rep.Scope.End - rep.Scope.Beg;
-                    const eSz = eRep.Scope.End - eRep.Scope.Beg;
-
-                    if (gSz != eSz)
-                    {
-                        error!"compareAffixes: HNont '%s' Rep Scope size gamma=%s EAG=%s"(
-                            symName, gSz, eSz);
-                        ++count;
-                    }
+                    affixCompareScope(label, rep.Scope, eRep.Scope,
+                        gammaToEpsilonMNont, gammaToEpsilonVar, count);
+                    affixCompareParams(format!"%s Formal"(label), rep.Formal,
+                        eRep.Formal, gammaToEpsilonMNont, gammaToEpsilonMAlt,
+                        gammaToEpsilonVar, count);
                 }
             }
             else if (auto opt = cast(EAG.Opt) this.hNont[gammaSym].Def)
             {
                 if (auto eOpt = cast(EAG.Opt) EAG.HNont[eSym].Def)
                 {
-                    const gLen = affix_ParamCount(this.paramBuf, opt.Formal.Params);
-                    const eLen = affix_EpsParamCount(eOpt.Formal.Params);
+                    const label = format!"HNont '%s' Opt"(symName);
 
-                    if (gLen != eLen)
-                    {
-                        error!"compareAffixes: HNont '%s' Opt Formal param count gamma=%s EAG=%s"(
-                            symName, gLen, eLen);
-                        ++count;
-                    }
-
-                    const gSz = opt.Scope.End - opt.Scope.Beg;
-                    const eSz = eOpt.Scope.End - eOpt.Scope.Beg;
-
-                    if (gSz != eSz)
-                    {
-                        error!"compareAffixes: HNont '%s' Opt Scope size gamma=%s EAG=%s"(
-                            symName, gSz, eSz);
-                        ++count;
-                    }
+                    affixCompareScope(label, opt.Scope, eOpt.Scope,
+                        gammaToEpsilonMNont, gammaToEpsilonVar, count);
+                    affixCompareParams(format!"%s Formal"(label), opt.Formal,
+                        eOpt.Formal, gammaToEpsilonMNont, gammaToEpsilonMAlt,
+                        gammaToEpsilonVar, count);
                 }
             }
         }
@@ -1233,30 +1399,95 @@ class EAGBuilder
         return count;
     }
 
-    // Count the number of params in a ParamBuf slice (i.e. entries before nil).
-    private static int affix_ParamCount(EAG.ParamRecord[] buf, int start)
+    // =========================================================================
+    // EAG sets
+    // =========================================================================
+
+    private void buildSets()
     {
-        if (start == EAG.empty || start >= cast(int) buf.length)
-            return 0;
+        if (this.eag.plainHyperGrammar is null)
+            return;
 
-        int n = 0;
+        auto properties = new GrammarProperties(this.eag.plainHyperGrammar, this.eag.lexicalHyperNonterminals);
 
-        while (start + n < cast(int) buf.length && buf[start + n].Affixform != EAG.nil)
-            ++n;
-        return n;
+        this.reachableHNonterminals.length = this.hNont.length;
+        this.productiveHNonterminals.length = this.hNont.length;
+        this.nullableHNonterminals.length = this.hNont.length;
+
+        foreach (nonterminal; this.eag.plainHyperGrammar.nonterminals)
+        {
+            const gammaSym = this.hNontByNonterminal.get(nonterminal, int.min);
+
+            if (gammaSym == int.min || this.hNont[gammaSym].Def is null)
+                continue;
+
+            this.reachableHNonterminals[gammaSym] = properties.isReachable(nonterminal);
+            this.productiveHNonterminals[gammaSym] = properties.isProductive(nonterminal);
+            this.nullableHNonterminals[gammaSym] = properties.isNullable(nonterminal);
+        }
     }
 
-    // Count the number of params in epsilon's EAG.ParamBuf slice.
-    private static int affix_EpsParamCount(int start)
+    private int compareSets()
     {
-        if (start == EAG.empty || start >= cast(int) EAG.ParamBuf.length)
+        int count = 0;
+        int[int] gammaToEpsilonHNont;
+
+        foreach (gammaSym; EAG.firstHNont .. cast(int) this.hNont.length)
+        {
+            if (this.hNont[gammaSym].anonymous)
+                continue;
+
+            const id = this.hNont[gammaSym].Id;
+            int epsilonSym = EAG.firstHNont;
+
+            while (epsilonSym < EAG.NextHNont && EAG.HNont[epsilonSym].Id != id)
+                ++epsilonSym;
+
+            if (epsilonSym < EAG.NextHNont)
+                gammaToEpsilonHNont[gammaSym] = epsilonSym;
+        }
+
+        int[] epsilonAnonymous;
+
+        foreach (epsilonSym; EAG.firstHNont .. EAG.NextHNont)
+            if (EAG.HNont[epsilonSym].Id < 0 && EAG.HNont[epsilonSym].Def !is null)
+                epsilonAnonymous ~= epsilonSym;
+
+        const anonymousCount = this.hAnonymNonts.length < epsilonAnonymous.length
+            ? this.hAnonymNonts.length : epsilonAnonymous.length;
+
+        foreach (index; 0 .. anonymousCount)
+            gammaToEpsilonHNont[this.hAnonymNonts[index]] = epsilonAnonymous[index];
+
+        foreach (gammaSym; EAG.firstHNont .. cast(int) this.hNont.length)
+        {
+            const epsilonSymP = gammaSym in gammaToEpsilonHNont;
+
+            if (epsilonSymP is null || this.hNont[gammaSym].Def is null)
+                continue;
+
+            const epsilonSym = *epsilonSymP;
+            const symbolName = this.hNont[gammaSym].anonymous
+                ? format!"A%s"(-this.hNont[gammaSym].Id)
+                : EAG.symbolTable.symbol(this.hNont[gammaSym].Id);
+
+            count += compareSet("Reach", symbolName, this.reachableHNonterminals[gammaSym], EAG.Reach[epsilonSym]);
+            count += compareSet("Prod", symbolName, this.productiveHNonterminals[gammaSym], EAG.Prod[epsilonSym]);
+            count += compareSet("Null", symbolName, this.nullableHNonterminals[gammaSym], EAG.Null[epsilonSym]);
+        }
+
+        if (count == 0)
+            trace!"compareSets: OK";
+        return count;
+    }
+
+    private static int compareSet(string setName, string symbolName, bool gammaValue, bool epsilonValue)
+    {
+        if (gammaValue == epsilonValue)
             return 0;
 
-        int n = 0;
-
-        while (start + n < cast(int) EAG.ParamBuf.length && EAG.ParamBuf[start + n].Affixform != EAG.nil)
-            ++n;
-        return n;
+        error!"compareSets: %s['%s'] gamma=%s EAG=%s"(setName, symbolName, gammaValue, epsilonValue);
+        return 1;
     }
 
     private int compareHyper()
@@ -1270,10 +1501,7 @@ class EAGBuilder
         // ----------------------------------------------------------------
         int[int] gammaToEpsilonHNont; // gamma index → epsilon index
 
-        // Collect epsilon anonymous HNont indices in index order.
-        // Phase 2½ step 1: anonymous nonterminals that epsilon's Shrink() has nulled
-        // (Def == null) have no counterpart in gamma's grammar model.  Exclude them
-        // from the bijection; track their count to adjust the total-entries check.
+        // Exclude anonymous nonterminals removed by epsilon's Shrink().
         int[] epsilonAnonymList;
         int   epsilonShrunkAnonymCount = 0;
 
@@ -1324,11 +1552,7 @@ class EAGBuilder
         foreach (k; 0 .. pairLen)
             gammaToEpsilonHNont[this.hAnonymNonts[k]] = epsilonAnonymList[k];
 
-        // ----------------------------------------------------------------
-        // Compare total HNont count.
-        // Phase 2½ step 1: gamma omits the anonymous nonterminals that epsilon
-        // creates but then Shrinks away (Def = null).  Adjust for that difference.
-        // ----------------------------------------------------------------
+        // Ignore anonymous nonterminals removed by epsilon's Shrink().
         if (cast(int) this.hNont.length + epsilonShrunkAnonymCount != EAG.NextHNont)
         {
             error!"compareHyper: gamma has %s HNont entries but EAG (excluding shrunk) has %s"(
@@ -1655,7 +1879,7 @@ class EAGBuilder
         auto f = new EAG.Nont;
 
         f.Sym    = sym;
-        f.Actual = EAG.ParamsDesc.init; // filled in Phase 3c
+        f.Actual = EAG.ParamsDesc.init; // Filled during affix construction.
         f.Pos    = pos;
         f.Ind    = this.nextHFactor++;
         f.Next   = null;
@@ -1667,6 +1891,40 @@ class EAGBuilder
 
         if (firstFactor is null)
             firstFactor = f;
+    }
+}
+
+/**
+ * Owns the mutable EAG-affix mirror buffers.  EAGBuilder supplies the grammar
+ * projection; this component owns the independently resettable affix state.
+ */
+private struct AffixBuilder
+{
+    int[] domBuf;
+    int nextDom;
+    int curSig;
+    EAG.ParamRecord[] paramBuf;
+    int nextParam;
+    int[] nodeBuf;
+    int nextNode;
+    EAG.VarRecord[] varBuf;
+    int nextVarBuf;
+    int currentScope;
+
+    void reset()
+    {
+        this.domBuf = new int[256];
+        this.domBuf[0] = EAG.nil;
+        this.nextDom = 1;
+        this.curSig = 1;
+        this.paramBuf = new EAG.ParamRecord[1024];
+        this.paramBuf[0].Affixform = EAG.nil;
+        this.nextParam = 1;
+        this.nodeBuf = new int[1024];
+        this.nextNode = EAG.firstNode;
+        this.varBuf = new EAG.VarRecord[512];
+        this.nextVarBuf = EAG.firstVar;
+        this.currentScope = EAG.firstVar;
     }
 }
 

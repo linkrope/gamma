@@ -9,6 +9,29 @@ Four phases. Integrate gamma's dormant Earley parser into gamma's analyzer (phas
 - Transformer location: `src/gamma/input/EAGBuilder.d` (gamma already imports epsilon; dependency goes gamma→epsilon; independent of concrete syntax so NOT in epsilang/)
 - EAGBuilder strategy: dual-mode compare→store; builder carries its own internal EAG representation; each sub-phase has a `compareX()` (diffs vs live EAG globals) that later becomes `storeX()`, enabling automatic regression diffing on every `dub test --build=unittest --config=example`
 - EAGBuilder granularity: iterative sub-phases (meta first, then hyper, then affixes, then sets); single file with distinct methods rather than separate files
+- Gamma's grammar model remains faithful to the parsed source.  Compatibility
+  lowering required by epsilon's legacy EAG layout belongs only in `EAGBuilder`;
+  it must not mutate or remove Gamma grammar objects.
+- Migration isolation: treat `EAGBuilder` as the explicit anti-corruption layer
+  between the modern Gamma model and epsilon's global EAG representation.  A
+  legacy layout rule, index convention, or semantic shortcut is implemented
+  there only when a downstream epsilon phase requires it.  A future Gamma
+  normalization/lowering pass is a separate, pure transformation returning a
+  new grammar; it is never folded into parsing or the source-faithful model.
+
+### Regression-test strategy
+
+- Keep small unit tests beside the source module when they exercise a single,
+  local function.
+- Put parser, conversion, EAGBuilder, and other migration regressions in the
+  parallel `unittest/` tree, using the same module hierarchy and the `_test.d`
+  suffix.  `src/` must never import test code.
+- Regression tests use realistic Gamma input and exercise the relevant public
+  pipeline rather than constructing an awkward intermediate grammar object by
+  hand.  Assert the invariant or legacy-EAG comparison that originally failed.
+- Add a regression test before changing a compatibility rule.  Keep it after
+  the migration has moved on: it documents both the required legacy projection
+  and the intended Gamma-model boundary.
 
 ---
 
@@ -83,39 +106,46 @@ Checkpoint: manual review + `dub test --build=unittest --config=example`
 
 ---
 
-## Phase 2½: Inline single EBNF operator — merge named nonterminal with its single EBNF operator in the parser
+## Phase 2½: Direct EBNF wrapper compatibility projection
 
-**Goal**: when a named rule's entire RHS is a single EBNF operator (`()`, `[]`, `{}`) with formal params and nothing else, the parser must NOT create a separate anonymous nonterminal. The named nonterminal *is* the operator. Fixing this at the grammar-model level eliminates all downstream workarounds.
+**Goal**: preserve the source-faithful Gamma model while projecting a named rule
+whose entire RHS is a single EBNF operator (`()`, `[]`, `{}`) into the same
+legacy EAG layout that epsilon's `Shrink` produces.
 
 ### Background — what epsilon does
 
 Epsilon's `Shrink` pass (called from `Specification()`) walks every hyper alternative. If it finds an `EAG.Grp` factor that is the single factor in the alternative, carries no actual params, and whose body alternatives have formal params (i.e. an anonymous nonterminal whose rule has the shape `<formals>: body <formals>.`), it merges: `HNont[namedSym]` takes the signature and the body alternatives of the anonymous nonterminal directly. The anonymous nonterminal entry is then unused.
 
-### What gamma currently does instead
+### Gamma representation
 
-The parser creates an anonymous nonterminal via `hyperGrammarBuilder.buildAnonymousNonterminal`, uses it as the lhs of the EBNF body, and patches around the two-nonterminal discrepancy:
-- `parser.d` registers the anonymous nonterminal's signature under the named nonterminal via `signatureByNonterminal[enclosingNonterminal]` (signature trick, lines ~574–587)
-- `EAGBuilder.buildAffixes()` contains a `CheckRep` imitation to detect and move `undecided` params that epsilon would never have created
+The parser creates an anonymous nonterminal via
+`hyperGrammarBuilder.buildAnonymousNonterminal` for every EBNF operator.  A
+direct wrapper therefore has both a named wrapper rule and an anonymous
+operator-body rule.  This is intentional: the Gamma grammar object represents
+the parsed source and remains suitable for modern lowering passes.
 
-### Plan
+The parser records the anonymous body's signature for the named wrapper too,
+so Gamma-side validation sees the effective signature without changing either
+rule.
 
-- [x] **Parser — detect the single-operator wrapper pattern at the point of EBNF operator creation**: after `parseHyperExpr` returns and `rule` is built, check:
-  1. `hasFormalParams` — the anonymous nonterminal's lhs has a signature
-  2. `nodes.empty` — nothing preceded the operator in this alternative (checked *before* `nodes ~= operator`)
-  3. `enclosingNonterminal` is not an `AnonymousNonterminal` — we are inside a named rule
-  4. Nothing follows: current `lexer.front` is a terminator (`|`, `.`, `)`, `]`, `}`, or empty)
+### Compatibility projection
 
-  When all four hold: instead of using `identifier` (freshly created anonymous nonterminal), patch the alternatives so their `lhs.nonterminal` is `enclosingNonterminal` (or build them that way from the start by passing `enclosingNonterminal` to `parseHyperExpr`). The `Operator` node inserted into the outer `nodes` then references `enclosingNonterminal` as the operator's rule's lhs — no anonymous nonterminal is created.
+- [x] **EAGBuilder — recognise direct wrappers**: `rule.directOperator` matches
+  a named, unparameterized, one-alternative wrapper whose only RHS node is an
+  operator backed by an anonymous rule.
+- [x] **EAGBuilder — lower only the projection**: omit the generated helper
+  from the legacy EAG nonterminal sequence and emit its group, option, or
+  repetition definition under the named nonterminal.
+- [x] **Preserve legacy affix interpretation in EAGBuilder**: any `CheckRep`-
+  equivalent handling belongs to the legacy projection, not to the Gamma
+  grammar model.  Give it targeted tests before changing it.
+- [x] **Regression coverage**: Gamma parser tests use the real input pipeline
+  and cover direct and nested group, option, and repetition wrappers; every
+  converted plain grammar is checked for complete rule coverage and
+  productivity.
 
-- [x] **Remove signature trick from `parser.d`**: delete the `signatureByNonterminal[enclosingNonterminal]` block (currently lines ~574–587); it is no longer needed because the body alternatives already have the correct lhs nonterminal.
-
-- [x] **Remove `CheckRep` imitation from `EAGBuilder.buildAffixes()`**: delete the `repActualIsUndecided` block and the `affix_wellMatchedEmpty` helper; with the grammar model correct, the `repAlt.params` situation that triggered the imitation no longer arises.
-
-- [x] **Remove the `open != '('` guard removal** (the last parser.d fix): the single-operator wrapper detection now handles all three bracket types uniformly; the explicit guard is moot.
-
-- [x] **Simplify `buildHyper` and `compareHyper`** in `EAGBuilder.d`: remove any code paths that special-case named-vs-anonymous nonterminal merging; the grammar model now tells the truth.
-
-Checkpoint: `dub test --build=unittest --config=example` — all tests pass with the single-EBNF-operator inlining in place and workarounds removed
+Checkpoint: `dub test --build=unittest --config=example` — all tests pass
+without a Gamma-side shrink or grammar-object mutation.
 
 ---
 
@@ -148,16 +178,26 @@ builder.compareMeta();         // logs/asserts diffs — free regression check
 - [x] `compareHyper()`: diff against `EAG.HNont[]`, walking the Alt/Factor chains structurally; translate embedded MNont/MTerm references through the same Id-bijection maps used in `compareMeta()`
 - Reference: epsilon/analyzer.d Specification() for exact buffer/pointer layout
 
-- [ ] **Pending simplification**: once the parser inlines the single EBNF operator (merging the named nonterminal with its single-EBNF-operator anonymous nonterminal in the grammar model), the workarounds in `buildHyper` and `buildAffixes` that compensate for the grammar model having two distinct nonterminals where epsilon sees one will need to be removed.
+- [x] **Compatibility lowering for direct wrappers**: `buildHyper` keeps the
+  Gamma model's named wrapper and anonymous helper intact, but projects them
+  as epsilon's single named EAG nonterminal.  The former simplification task
+  was based on parser-side inlining and is superseded; there is no Gamma-model
+  workaround left to remove.
 
 ### 3c — Affix forms / parameter model
-- [ ] `buildAffixes()`: walk `Term` trees from Phase 1 (Variable/Composite hierarchy); emit builder's `VarRecord[]` (Def, Neg, Num, Sign), `NodeBuf[]`, `MSymBuf[]`, `ParamRecord[]`, `ScopeDesc[]`; pure format conversion — no re-parsing
-- [ ] `compareAffixes()`: diff against EAG globals; translate symbol references through bijection maps
+- [x] `buildAffixes()`: walk `Term` trees from Phase 1 (Variable/Composite hierarchy); emit builder's `VarRecord[]` (Def, Neg, Num, Sign), `NodeBuf[]`, `ParamRecord[]`, and parameter/scope descriptors; pure format conversion — no re-parsing
+- [x] **Complete `compareAffixes()` structurally**: preliminary comparison covers
+  signatures, parameter counts, scope sizes, and total variable count.  Extend
+  it to compare `VarRecord` fields (`Def`, `Neg`, `Num`, symbol), parameter
+  descriptors and tree roots, and `NodeBuf` composite/meta-alternative
+  structure, translating symbol references through bijection maps.
+- [x] **Add focused comparison tests**: cover variables, composites, numbered
+  variables, negated variables, and direct EBNF wrappers with affix parameters.
 - Reference: epsilon/analyzer.d CheckSemantics(), epsilon/earley.d, epsilon/eag.d
 
 ### 3d — EAG sets
-- [ ] `buildSets()`: convert gamma's `GrammarProperties` nullable/productive/reachable to builder's BitArray mirrors
-- [ ] `compareSets()`: diff against `EAG.Reach[]`, `EAG.Prod[]`, `EAG.Null[]`; translate symbol references through bijection maps
+- [x] `buildSets()`: convert gamma's `GrammarProperties` nullable/productive/reachable to builder's BitArray mirrors
+- [x] `compareSets()`: diff against `EAG.Reach[]`, `EAG.Prod[]`, `EAG.Null[]`; translate symbol references through bijection maps
 - Reference: epsilon/analyzer.d ComputeEAGSets()
 
 Checkpoint per sub-phase: `dub test --build=unittest --config=example` — compare functions run automatically; mismatch output drives the next fix iteration
@@ -198,7 +238,9 @@ Checkpoint: `dub test --build=unittest --config=example` with epsilon.analyzer r
 
 ## Verification
 
-> **Note**: `dub test --build=unittest --config=example` must be run from a **WSL terminal**. The `preBuildCommands` in `dub.json` use `$DUB` (a Unix environment variable) and the generated binaries are Linux ELF executables.
+> **Toolchain**: development runs on Apple Silicon macOS.  Use LDC (`ldc2`),
+> not DMD, for DUB builds and generated compilers.  `DC` may override the
+> generated-compiler command when necessary.
 
 1. `dub test --build=unittest --config=example` after each phase and each 3x sub-phase
 2. `compareX()` methods in Phase 3 make diffs automatic on every test run — no separate tooling needed
