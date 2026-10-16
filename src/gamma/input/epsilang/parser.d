@@ -7,6 +7,7 @@ import gamma.grammar.affixes.Variable;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.GrammarBuilder;
+import gamma.grammar.hyper.AnonymousNonterminal;
 import gamma.grammar.hyper.Group;
 import gamma.grammar.hyper.HyperGrammar;
 import gamma.grammar.hyper.HyperGrammarBuilder;
@@ -179,7 +180,7 @@ public class Parser
             }
         }
 
-        inlineSingleOperators;
+        registerDirectOperatorSignatures;
 
         foreach (ref paramsInfo; this.paramsByKey)
             if (paramsInfo.signature is null && paramsInfo.nonterminal !is null)
@@ -859,10 +860,41 @@ public class Parser
         }
     }
 
-    private void inlineSingleOperators()
+    private void registerDirectOperatorSignatures()
     {
-        foreach (nonterminal, signature; this.hyperGrammarBuilder.inlineSingleOperators)
-            this.signatureByNonterminal[nonterminal] = signature;
+        if (this.startSymbol is null)
+            return;
+
+        auto grammar = this.hyperGrammarBuilder.getGrammar(this.startSymbol);
+
+        if (grammar is null)
+            return;
+
+        foreach (rule; grammar.rules)
+        {
+            if (cast(AnonymousNonterminal) rule.lhs.nonterminal)
+                continue;
+            if (rule.alternatives.length != 1)
+                continue;
+
+            auto alternative = rule.alternatives.front;
+            auto outerLhs = cast(HyperLhsNode) alternative.lhs;
+
+            if (outerLhs is null || outerLhs.params !is null || alternative.rhs.length != 1)
+                continue;
+
+            auto operator = cast(Operator) alternative.rhs.front;
+
+            if (operator is null || operator.params !is null)
+                continue;
+            if (!cast(AnonymousNonterminal) operator.rule.lhs.nonterminal)
+                continue;
+
+            auto innerLhs = cast(HyperLhsNode) operator.rule.lhs;
+
+            if (innerLhs !is null && innerLhs.signature !is null)
+                this.signatureByNonterminal[rule.lhs.nonterminal] = innerLhs.signature;
+        }
     }
 
     private Nonterminal metaNonterminal(size_t value)

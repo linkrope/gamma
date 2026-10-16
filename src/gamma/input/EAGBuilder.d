@@ -10,6 +10,7 @@ import gamma.grammar.Alternative;
 import gamma.grammar.hyper.AnonymousNonterminal;
 import gamma.grammar.hyper.HyperLhsNode;
 import gamma.grammar.hyper.HyperSymbolNode;
+import gamma.grammar.hyper.Operator;
 import gamma.grammar.hyper.Params;
 import gamma.grammar.LhsNode;
 import gamma.grammar.Node;
@@ -321,18 +322,26 @@ class EAGBuilder
         if (this.eag.hyperEBNFGrammar is null)
             return;
 
-        // Pre-populate hNont for ALL nonterminals in Grammar.nonterminals()
-        // index order.  This ensures hAnonymNonts is built in parse-encounter
-        // order, which matches epsilon's NewAnonymNont call order.
+        // epsilon's Shrink() removes the generated helper of a direct named
+        // EBNF definition.  Keep Gamma's source model intact, but omit that
+        // helper from this legacy projection.
+        bool[Nonterminal] omittedDirectOperatorHelpers;
+
+        foreach (rule; this.eag.hyperEBNFGrammar.rules)
+            if (auto op = rule.directOperator)
+                omittedDirectOperatorHelpers[op.rule.lhs.nonterminal] = true;
+
+        // Pre-populate the projected hNont entries in source encounter order.
+        // This preserves the ordering of live epsilon anonymous nonterminals.
         foreach (nonterminal; this.eag.hyperEBNFGrammar.nonterminals)
-            findOrCreateHNont(nonterminal);
+            if (nonterminal !in omittedDirectOperatorHelpers)
+                findOrCreateHNont(nonterminal);
 
         // Walk only named rules; anonymous nonterminal rules are embedded in
         // operator nodes and processed recursively by buildHyperFactor.
         foreach (rule; this.eag.hyperEBNFGrammar.rules)
         {
             if (rule is null) continue;
-            import gamma.grammar.hyper.Operator : HyperOperator = Operator;
 
             Nonterminal nonterminal = rule.lhs.nonterminal;
             const int   gammaSym   = findOrCreateHNont(nonterminal);
@@ -342,48 +351,10 @@ class EAGBuilder
                 this.hNont[gammaSym].IsToken ||
                 (nonterminal in this.eag.lexicalHyperNonterminals) !is null;
 
-            // Pre-inlined single-operator wrapper (Phase 2½ step 1):
-            // When the grammar model has already inlined the pattern
-            // (the named nonterminal's rule has a single alt whose sole node is
-            // an EBNF operator whose inner rule's lhs is the named nonterminal
-            // itself, not an anonymous one), build the EBNF body directly under
-            // gammaSym without creating an outer Grp wrapper.
-            if (rule.alternatives.length == 1)
+            if (auto op = rule.directOperator)
             {
-                import gamma.grammar.hyper.Group      : HyperGroup = Group;
-                import gamma.grammar.hyper.Option     : HyperOption = Option;
-                import gamma.grammar.hyper.Repetition : HyperRepetition = Repetition;
-
-                auto soleAlt = rule.alternatives.front;
-
-                if (soleAlt.rhs.length == 1)
-                {
-                    auto op = cast(HyperOperator) soleAlt.rhs.front;
-
-                    if (op !is null && !(cast(AnonymousNonterminal) op.rule.lhs.nonterminal))
-                    {
-                        // Call the rule builder directly (not via buildHyperFactor) to avoid
-                        // allocating a dangling EAG.Nont factor that wastes a nextHFactor index.
-                        if (auto rep = cast(HyperRepetition) op)
-                        {
-                            buildHyperRepRule(rep.rule, rep.position);
-                            if (rep.endParams !is null)
-                                this.endParamsByHNontSym[gammaSym] = rep.endParams;
-                        }
-                        else if (auto opt = cast(HyperOption) op)
-                        {
-                            buildHyperOptRule(opt.rule, opt.position);
-                            if (opt.endParams !is null)
-                                this.endParamsByHNontSym[gammaSym] = opt.endParams;
-                        }
-                        else if (auto grp = cast(HyperGroup) op)
-                        {
-                            buildHyperGrpRule(grp.rule);
-                        }
-                        // hNont[gammaSym].Def is now set by the rule builder above.
-                        continue;
-                    }
-                }
+                buildDirectOperatorDefinition(gammaSym, op);
+                continue;
             }
 
             EAG.Alt firstAlt = null;
@@ -451,13 +422,18 @@ class EAGBuilder
 
         if (auto grp = cast(HyperGroup) node)
         {
-            appendHNont(firstFactor, lastFactor, buildHyperGrpRule(grp.rule), grp.position);
+            const sym = findOrCreateHNont(grp.rule.lhs.nonterminal);
+
+            buildHyperGrpDefinition(sym, grp.rule);
+            appendHNont(firstFactor, lastFactor, sym, grp.position);
             if (grp.params !is null)
                 this.nontByParamsKey[grp.params.key] = cast(EAG.Nont) lastFactor;
         }
         else if (auto opt = cast(HyperOption) node)
         {
-            const anonSym = buildHyperOptRule(opt.rule, opt.position);
+            const anonSym = findOrCreateHNont(opt.rule.lhs.nonterminal);
+
+            buildHyperOptDefinition(anonSym, opt.rule, opt.position);
             appendHNont(firstFactor, lastFactor, anonSym, opt.position);
             if (opt.params !is null)
                 this.nontByParamsKey[opt.params.key] = cast(EAG.Nont) lastFactor;
@@ -466,7 +442,9 @@ class EAGBuilder
         }
         else if (auto rep = cast(HyperRepetition) node)
         {
-            const anonSym = buildHyperRepRule(rep.rule, rep.position);
+            const anonSym = findOrCreateHNont(rep.rule.lhs.nonterminal);
+
+            buildHyperRepDefinition(anonSym, rep.rule, rep.position);
             appendHNont(firstFactor, lastFactor, anonSym, rep.position);
             if (rep.params !is null)
                 this.nontByParamsKey[rep.params.key] = cast(EAG.Nont) lastFactor;
@@ -489,34 +467,55 @@ class EAGBuilder
         }
     }
 
-    private int buildHyperGrpRule(Rule rule)
+    private void buildDirectOperatorDefinition(int target, Operator op)
     {
-        const int anonSym = findOrCreateHNont(rule.lhs.nonterminal);
+        import gamma.grammar.hyper.Group      : HyperGroup = Group;
+        import gamma.grammar.hyper.Option     : HyperOption = Option;
+        import gamma.grammar.hyper.Repetition : HyperRepetition = Repetition;
+
+        if (auto group = cast(HyperGroup) op)
+            buildHyperGrpDefinition(target, group.rule);
+        else if (auto option = cast(HyperOption) op)
+        {
+            buildHyperOptDefinition(target, option.rule, option.position);
+            if (option.endParams !is null)
+                this.endParamsByHNontSym[target] = option.endParams;
+        }
+        else if (auto repetition = cast(HyperRepetition) op)
+        {
+            buildHyperRepDefinition(target, repetition.rule, repetition.position);
+            if (repetition.endParams !is null)
+                this.endParamsByHNontSym[target] = repetition.endParams;
+        }
+        else
+            assert(false, "unknown EBNF operator");
+    }
+
+    private void buildHyperGrpDefinition(int target, Rule rule)
+    {
         EAG.Alt firstAlt = null;
         EAG.Alt lastAlt  = null;
 
-        this.ruleByHNontSym[anonSym] = rule;
+        this.ruleByHNontSym[target] = rule;
 
         foreach (alternative; rule.alternatives)
-            buildHyperAlt(anonSym, alternative, firstAlt, lastAlt);
+            buildHyperAlt(target, alternative, firstAlt, lastAlt);
 
         auto grp = new EAG.Grp;
 
         grp.Sub = firstAlt;
-        this.hNont[anonSym].Def = grp;
-        return anonSym;
+        this.hNont[target].Def = grp;
     }
 
-    private int buildHyperOptRule(Rule rule, Position position)
+    private void buildHyperOptDefinition(int target, Rule rule, Position position)
     {
-        const int anonSym = findOrCreateHNont(rule.lhs.nonterminal);
         EAG.Alt firstAlt = null;
         EAG.Alt lastAlt  = null;
 
-        this.ruleByHNontSym[anonSym] = rule;
+        this.ruleByHNontSym[target] = rule;
 
         foreach (alternative; rule.alternatives)
-            buildHyperAlt(anonSym, alternative, firstAlt, lastAlt);
+            buildHyperAlt(target, alternative, firstAlt, lastAlt);
 
         auto opt = new EAG.Opt;
 
@@ -525,20 +524,18 @@ class EAGBuilder
         opt.Scope.Beg   = EAG.nil;
         opt.Scope.End   = EAG.nil;
         opt.Formal      = EAG.ParamsDesc.init;
-        this.hNont[anonSym].Def = opt;
-        return anonSym;
+        this.hNont[target].Def = opt;
     }
 
-    private int buildHyperRepRule(Rule rule, Position position)
+    private void buildHyperRepDefinition(int target, Rule rule, Position position)
     {
-        const int anonSym = findOrCreateHNont(rule.lhs.nonterminal);
         EAG.Alt firstAlt = null;
         EAG.Alt lastAlt  = null;
 
-        this.ruleByHNontSym[anonSym] = rule;
+        this.ruleByHNontSym[target] = rule;
 
         foreach (alternative; rule.alternatives)
-            buildHyperAlt(anonSym, alternative, firstAlt, lastAlt);
+            buildHyperAlt(target, alternative, firstAlt, lastAlt);
 
         auto rep = new EAG.Rep;
 
@@ -547,8 +544,7 @@ class EAGBuilder
         rep.Scope.Beg   = EAG.nil;
         rep.Scope.End   = EAG.nil;
         rep.Formal      = EAG.ParamsDesc.init;
-        this.hNont[anonSym].Def = rep;
-        return anonSym;
+        this.hNont[target].Def = rep;
     }
 
     // =========================================================================
@@ -999,7 +995,7 @@ class EAGBuilder
         int[] epsilonAnonymList;
 
         foreach (sym; EAG.firstHNont .. EAG.NextHNont)
-            if (EAG.HNont[sym].Id < 0)
+            if (EAG.HNont[sym].Id < 0 && EAG.HNont[sym].Def !is null)
                 epsilonAnonymList ~= sym;
 
         const pairLen = this.hAnonymNonts.length < epsilonAnonymList.length
@@ -1672,4 +1668,32 @@ class EAGBuilder
         if (firstFactor is null)
             firstFactor = f;
     }
+}
+
+// A named rule that consists solely of an unparameterized EBNF operator has
+// the same legacy EAG representation as the operator's generated helper rule.
+// The Gamma model deliberately keeps both rules; only this backend elides the
+// helper while producing EAG.
+private Operator directOperator(Rule rule)
+{
+    if (cast(AnonymousNonterminal) rule.lhs.nonterminal)
+        return null;
+
+    if (rule.alternatives.length != 1)
+        return null;
+
+    auto alternative = rule.alternatives.front;
+    auto lhs = cast(HyperLhsNode) alternative.lhs;
+
+    if (lhs is null || lhs.params !is null || alternative.rhs.length != 1)
+        return null;
+
+    auto op = cast(Operator) alternative.rhs.front;
+
+    if (op is null || op.params !is null)
+        return null;
+    if (!cast(AnonymousNonterminal) op.rule.lhs.nonterminal)
+        return null;
+
+    return op;
 }
