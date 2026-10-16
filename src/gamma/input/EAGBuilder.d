@@ -1,6 +1,6 @@
 module gamma.input.EAGBuilder;
 
-import EAG = epsilon.eag;
+import epsilon.eag;
 import gamma.grammar.affixes.Composite;
 import gamma.grammar.affixes.Direction;
 import gamma.grammar.affixes.Signature;
@@ -39,7 +39,7 @@ import std.range;
  */
 class EAGBuilder
 {
-    private GammaEAG eag;
+    private GammaEAG gammaEAG;
 
     // Internal mirrors — plain D dynamic arrays.  The Oberon fixed-size buffer
     // + Expand pattern is unnecessary here; D arrays grow automatically.
@@ -53,15 +53,15 @@ class EAGBuilder
     private int               maxMArity;
 
     // Lookup maps replacing the Oberon sentinel linear-scan trick
-    private int[int] mNontById; // EAG.symbolTable Id -> mNont index
-    private int[int] mTermById; // EAG.symbolTable Id -> mTerm index
+    private int[int] mNontById; // Epsilon symbol-table ID -> mNont index
+    private int[int] mTermById; // Epsilon symbol-table ID -> mTerm index
 
     // -------------------------------------------------------------------------
     // Hyper grammar mirrors — firstHNont = 0, firstHTerm = 0 (no dummy slot 0)
     // -------------------------------------------------------------------------
 
-    private EAG.HNontRecord[] hNont;          // hNont[i] mirrors EAG.HNont[i]
-    private EAG.HTermRecord[] hTerm;          // hTerm[i] mirrors EAG.HTerm[i]
+    private EAG.HNontRecord[] hNont;          // hNont[i] mirrors epsilon HNont[i]
+    private EAG.HTermRecord[] hTerm;          // hTerm[i] mirrors epsilon HTerm[i]
 
     // Named: symbolTable Id -> hNont index.  Anonymous: not tracked here.
     private int[int]         hNontById;
@@ -106,9 +106,9 @@ class EAGBuilder
     private EAG.Nont[size_t]      nontByParamsKey;   // params.key → EAG.Nont factor
     private int[Alternative]      altToGammaMAlt;    // meta Alternative → mAlt index
 
-    public this(GammaEAG eag)
+    public this(GammaEAG gammaEAG)
     {
-        this.eag = eag;
+        this.gammaEAG = gammaEAG;
 
         // Reserve slot 0 in each array so real entries start at index 1
         this.mNont   = new EAG.MNontRecord[1];
@@ -139,13 +139,13 @@ class EAGBuilder
 
     private void buildMeta()
     {
-        foreach (rule; this.eag.metaGrammar.rules)
+        foreach (rule; this.gammaEAG.metaGrammar.rules)
         {
             if (rule is null) continue;
             Nonterminal nonterminal = (cast(LhsNode) rule.lhs).nonterminal;
             const lhsSym = internMNont(nonterminal.toString);
 
-            this.mNont[lhsSym].IsToken = this.mNont[lhsSym].IsToken || nonterminal in this.eag.lexicalMetaNonterminals;
+            this.mNont[lhsSym].IsToken = this.mNont[lhsSym].IsToken || nonterminal in this.gammaEAG.lexicalMetaNonterminals;
 
             foreach (alternative; rule.alternatives)
             {
@@ -174,18 +174,18 @@ class EAGBuilder
         int count = 0;
 
         // Build Id→index maps for epsilon's MNont and MTerm entries.
-        // EAG.symbolTable is shared with gamma: intern() returns the same Id
+        // Epsilon's symbol table is shared with Gamma: intern() returns the same ID
         // for the same string regardless of call order, so Ids are stable across
         // both traversals and serve as a reliable join key.
         int[int] mNontByIdMap;
 
-        foreach (sym; EAG.firstMNont .. EAG.NextMNont)
-            mNontByIdMap[EAG.MNont[sym].Id] = sym;
+        foreach (sym; EAG.firstMNont .. eag.NextMNont)
+            mNontByIdMap[eag.MNont[sym].Id] = sym;
 
         int[int] mTermByIdMap;
 
-        foreach (sym; EAG.firstMTerm .. EAG.NextMTerm)
-            mTermByIdMap[EAG.MTerm[sym].Id] = sym;
+        foreach (sym; EAG.firstMTerm .. eag.NextMTerm)
+            mTermByIdMap[eag.MTerm[sym].Id] = sym;
 
         // Bijection maps: gamma index → epsilon index
         int[int] gammaToMNont;
@@ -197,7 +197,7 @@ class EAGBuilder
             else
             {
                 error!"compareMeta: MNont '%s' not found in EAG"(
-                    EAG.symbolTable.symbol(this.mNont[gammaSym].Id));
+                    eag.symbolTable.symbol(this.mNont[gammaSym].Id));
                 ++count;
             }
         }
@@ -211,7 +211,7 @@ class EAGBuilder
             else
             {
                 error!"compareMeta: MTerm '%s' not found in EAG"(
-                    EAG.symbolTable.symbol(this.mTerm[gammaSym].Id));
+                    eag.symbolTable.symbol(this.mTerm[gammaSym].Id));
                 ++count;
             }
         }
@@ -227,18 +227,18 @@ class EAGBuilder
                 continue; // already reported above
 
             const sym = *symP;
-            const symName = EAG.symbolTable.symbol(this.mNont[gammaSym].Id);
+            const symName = eag.symbolTable.symbol(this.mNont[gammaSym].Id);
 
-            if (this.mNont[gammaSym].IsToken != EAG.MNont[sym].IsToken)
+            if (this.mNont[gammaSym].IsToken != eag.MNont[sym].IsToken)
             {
                 error!"compareMeta: MNont '%s' IsToken %s != %s"(
                     symName,
-                    this.mNont[gammaSym].IsToken, EAG.MNont[sym].IsToken);
+                    this.mNont[gammaSym].IsToken, eag.MNont[sym].IsToken);
                 ++count;
             }
 
             int gammaAlt = this.mNont[gammaSym].MRule;
-            int alt      = EAG.MNont[sym].MRule;
+            int alt      = eag.MNont[sym].MRule;
 
             while (gammaAlt != EAG.nil || alt != EAG.nil)
             {
@@ -252,11 +252,11 @@ class EAGBuilder
                 // Compare member sequences up to the nil sentinel.
                 // The self-reference entry that follows nil is skipped.
                 int gammaI = this.mAlt[gammaAlt].Right;
-                int i      = EAG.MAlt[alt].Right;
+                int i      = eag.MAlt[alt].Right;
 
-                while (this.membBuf[gammaI] != EAG.nil || EAG.MembBuf[i] != EAG.nil)
+                while (this.membBuf[gammaI] != EAG.nil || eag.MembBuf[i] != EAG.nil)
                 {
-                    if (this.membBuf[gammaI] == EAG.nil || EAG.MembBuf[i] == EAG.nil)
+                    if (this.membBuf[gammaI] == EAG.nil || eag.MembBuf[i] == EAG.nil)
                     {
                         error!"compareMeta: MNont '%s' alternative member count differs"(symName);
                         ++count;
@@ -264,7 +264,7 @@ class EAGBuilder
                     }
 
                     const gammaVal = this.membBuf[gammaI];
-                    const val      = EAG.MembBuf[i];
+                    const val      = eag.MembBuf[i];
 
                     // Translate gamma index to epsilon index using the bijection.
                     // Positive values are MNont refs; negative are MTerm refs.
@@ -282,8 +282,8 @@ class EAGBuilder
                     if (translated != val)
                     {
                         const gammaName = gammaVal > 0
-                            ? EAG.symbolTable.symbol(this.mNont[gammaVal].Id)
-                            : EAG.symbolTable.symbol(this.mTerm[-gammaVal].Id);
+                            ? eag.symbolTable.symbol(this.mNont[gammaVal].Id)
+                            : eag.symbolTable.symbol(this.mTerm[-gammaVal].Id);
 
                         error!"compareMeta: MNont '%s' alt member: gamma '%s' maps to %s, expected %s"(
                             symName, gammaName, translated, val);
@@ -295,23 +295,23 @@ class EAGBuilder
                 }
 
                 gammaAlt = this.mAlt[gammaAlt].Next;
-                alt      = EAG.MAlt[alt].Next;
+                alt      = eag.MAlt[alt].Next;
             }
         }
 
-        // EAG.NextMNont may be larger (epsilon creates extra MNont entries for
-        // domain references in hyper rules); only report if the builder has more.
-        if (cast(int) this.mNont.length > EAG.NextMNont)
+        // Epsilon may create extra MNont entries for domain references in hyper
+        // rules; report only when the builder has more.
+        if (cast(int) this.mNont.length > eag.NextMNont)
         {
             error!"compareMeta: builder has %s MNont entries but EAG only has %s"(
-                this.mNont.length - EAG.firstMNont, EAG.NextMNont - EAG.firstMNont);
+                this.mNont.length - EAG.firstMNont, eag.NextMNont - EAG.firstMNont);
             ++count;
         }
 
-        if (cast(int) this.mTerm.length != EAG.NextMTerm)
+        if (cast(int) this.mTerm.length != eag.NextMTerm)
         {
             error!"compareMeta: builder has %s MTerm entries but EAG has %s"(
-                this.mTerm.length - EAG.firstMTerm, EAG.NextMTerm - EAG.firstMTerm);
+                this.mTerm.length - EAG.firstMTerm, eag.NextMTerm - EAG.firstMTerm);
             ++count;
         }
 
@@ -326,7 +326,7 @@ class EAGBuilder
 
     private void buildHyper()
     {
-        if (this.eag.hyperEBNFGrammar is null)
+        if (this.gammaEAG.hyperEBNFGrammar is null)
             return;
 
         // epsilon's Shrink() removes the generated helper of a direct named
@@ -334,19 +334,19 @@ class EAGBuilder
         // helper from this legacy projection.
         bool[Nonterminal] omittedDirectOperatorHelpers;
 
-        foreach (rule; this.eag.hyperEBNFGrammar.rules)
+        foreach (rule; this.gammaEAG.hyperEBNFGrammar.rules)
             if (auto op = rule.directOperator)
                 omittedDirectOperatorHelpers[op.rule.lhs.nonterminal] = true;
 
         // Pre-populate the projected hNont entries in source encounter order.
         // This preserves the ordering of live epsilon anonymous nonterminals.
-        foreach (nonterminal; this.eag.hyperEBNFGrammar.nonterminals)
+        foreach (nonterminal; this.gammaEAG.hyperEBNFGrammar.nonterminals)
             if (nonterminal !in omittedDirectOperatorHelpers)
                 findOrCreateHNont(nonterminal);
 
         // Walk only named rules; anonymous nonterminal rules are embedded in
         // operator nodes and processed recursively by buildHyperFactor.
-        foreach (rule; this.eag.hyperEBNFGrammar.rules)
+        foreach (rule; this.gammaEAG.hyperEBNFGrammar.rules)
         {
             if (rule is null) continue;
 
@@ -356,7 +356,7 @@ class EAGBuilder
 
             this.hNont[gammaSym].IsToken =
                 this.hNont[gammaSym].IsToken ||
-                (nonterminal in this.eag.lexicalHyperNonterminals) !is null;
+                (nonterminal in this.gammaEAG.lexicalHyperNonterminals) !is null;
 
             if (auto op = rule.directOperator)
             {
@@ -562,7 +562,7 @@ class EAGBuilder
     {
         import gamma.grammar.hyper.RepetitionAlternative : RepetitionAlternative;
 
-        if (this.eag.hyperEBNFGrammar is null)
+        if (this.gammaEAG.hyperEBNFGrammar is null)
             return;
 
         this.affixBuilder.reset;
@@ -605,7 +605,7 @@ class EAGBuilder
                 Params endP = this.endParamsByHNontSym.get(gammaSym, null);
                 if (endP !is null)
                 {
-                    auto terms = this.eag.hyperEBNFGrammar.terms(endP.key);
+                    auto terms = this.gammaEAG.hyperEBNFGrammar.terms(endP.key);
                     rep.Formal = buildAffixTermsParamsDesc(terms, sig, true, endP.position);
                 }
                 rep.Scope.End = this.nextVarBuf;
@@ -617,7 +617,7 @@ class EAGBuilder
                 Params endP = this.endParamsByHNontSym.get(gammaSym, null);
                 if (endP !is null)
                 {
-                    auto terms = this.eag.hyperEBNFGrammar.terms(endP.key);
+                    auto terms = this.gammaEAG.hyperEBNFGrammar.terms(endP.key);
                     opt.Formal = buildAffixTermsParamsDesc(terms, sig, true, endP.position);
                 }
                 opt.Scope.End = this.nextVarBuf;
@@ -671,7 +671,7 @@ class EAGBuilder
                         if (!repActualIsUndecided)
                         {
                             // Spare (standalone): always becomes gammaAlt.Actual.
-                            auto terms = this.eag.hyperEBNFGrammar.terms(repAlt.params.key);
+                            auto terms = this.gammaEAG.hyperEBNFGrammar.terms(repAlt.params.key);
                             gammaAlt.Actual = buildAffixTermsParamsDesc(terms, sig, false,
                                 repAlt.params.position);
                         }
@@ -716,7 +716,7 @@ class EAGBuilder
         return affixSigOk(gammaSym);
     }
 
-    // Mirrors EAG.SigOK: seals the current DomBuf sequence, sets HNont.Sig.
+    // Seals the current DomBuf sequence and sets HNont.Sig.
     private int affixSigOk(int gammaSym)
     {
         if (this.hNont[gammaSym].Sig < 0)
@@ -747,7 +747,7 @@ class EAGBuilder
         if (hln is null || hln.params is null)
             return EAG.ParamsDesc(EAG.empty, fallbackPos);
 
-        auto terms = this.eag.hyperEBNFGrammar.terms(hln.params.key);
+        auto terms = this.gammaEAG.hyperEBNFGrammar.terms(hln.params.key);
 
         return buildAffixTermsParamsDesc(terms, sig, isLhs, hln.params.position);
     }
@@ -824,7 +824,7 @@ class EAGBuilder
                 // Epsilon stores the lexer token's symbol-table id plus two,
                 // rather than the literal integer.  The shared table already
                 // contains this token after epsilon's analysis pass.
-                num = sign * (cast(int) EAG.symbolTable.intern(v.number.get) + 2);
+                num = sign * (cast(int) eag.symbolTable.intern(v.number.get) + 2);
             }
 
             return -affixFindOrCreateVar(mNontSym, num, v.position, isDef);
@@ -857,7 +857,7 @@ class EAGBuilder
         return treeIndex;
     }
 
-    // Mirrors EAG.FindVar: look up or create a VarRecord for (sym, num)
+    // Looks up or creates a VarRecord for (sym, num).
     // within the current scope [currentScope .. nextVarBuf).
     private int affixFindOrCreateVar(int sym, int num, Position pos, bool isDef)
     {
@@ -917,7 +917,7 @@ class EAGBuilder
         {
             if (hsn.params !is null)
             {
-                auto terms = this.eag.hyperEBNFGrammar.terms(hsn.params.key);
+                auto terms = this.gammaEAG.hyperEBNFGrammar.terms(hsn.params.key);
 
                 nont.Actual = buildAffixTermsParamsDesc(terms, refSig, false,
                     hsn.params.position);
@@ -928,7 +928,7 @@ class EAGBuilder
             // Actual params placed before the operator bracket (op.params)
             if (op.params !is null)
             {
-                auto terms = this.eag.hyperEBNFGrammar.terms(op.params.key);
+                auto terms = this.gammaEAG.hyperEBNFGrammar.terms(op.params.key);
 
                 nont.Actual = buildAffixTermsParamsDesc(terms, refSig, false,
                     op.params.position);
@@ -972,13 +972,13 @@ class EAGBuilder
                 continue;
 
             int gammaAlt   = this.mNont[gammaSym].MRule;
-            int epsilonAlt = EAG.MNont[*epsilonSymP].MRule;
+            int epsilonAlt = eag.MNont[*epsilonSymP].MRule;
 
             while (gammaAlt != EAG.nil && epsilonAlt != EAG.nil)
             {
                 gammaToEpsilonMAlt[gammaAlt] = epsilonAlt;
                 gammaAlt   = this.mAlt[gammaAlt].Next;
-                epsilonAlt = EAG.MAlt[epsilonAlt].Next;
+                epsilonAlt = eag.MAlt[epsilonAlt].Next;
             }
         }
     }
@@ -1008,7 +1008,7 @@ class EAGBuilder
             const gammaVarIndex   = gammaScope.Beg + offset;
             const epsilonVarIndex = epsilonScope.Beg + offset;
             const gammaVar        = this.varBuf[gammaVarIndex];
-            const epsilonVar      = EAG.Var[epsilonVarIndex];
+            const epsilonVar      = eag.Var[epsilonVarIndex];
             const translatedSym   = gammaToEpsilonMNont.get(gammaVar.Sym, int.min);
 
             if (translatedSym != epsilonVar.Sym)
@@ -1075,7 +1075,7 @@ class EAGBuilder
 
         if (gammaRoot <= EAG.nil || epsilonRoot <= EAG.nil
             || gammaRoot >= cast(int) this.nodeBuf.length
-            || epsilonRoot >= cast(int) EAG.NodeBuf.length)
+            || epsilonRoot >= cast(int) eag.NodeBuf.length)
         {
             error!"compareAffixes: %s invalid composite root gamma=%s EAG=%s"(
                 label, gammaRoot, epsilonRoot);
@@ -1084,7 +1084,7 @@ class EAGBuilder
         }
 
         const gammaMAlt   = this.nodeBuf[gammaRoot];
-        const epsilonMAlt = EAG.NodeBuf[epsilonRoot];
+        const epsilonMAlt = eag.NodeBuf[epsilonRoot];
         const translatedMAlt = gammaToEpsilonMAlt.get(gammaMAlt, int.min);
 
         if (translatedMAlt != epsilonMAlt)
@@ -1095,11 +1095,11 @@ class EAGBuilder
         }
 
         if (gammaMAlt <= EAG.nil || gammaMAlt >= cast(int) this.mAlt.length
-            || epsilonMAlt <= EAG.nil || epsilonMAlt >= EAG.NextMAlt)
+            || epsilonMAlt <= EAG.nil || epsilonMAlt >= eag.NextMAlt)
             return;
 
         const gammaArity   = this.mAlt[gammaMAlt].Arity;
-        const epsilonArity = EAG.MAlt[epsilonMAlt].Arity;
+        const epsilonArity = eag.MAlt[epsilonMAlt].Arity;
 
         if (gammaArity != epsilonArity)
         {
@@ -1112,7 +1112,7 @@ class EAGBuilder
 
         foreach (child; 0 .. childCount)
             affixCompareTree(format!"%s child[%s]"(label, child),
-                this.nodeBuf[gammaRoot + child + 1], EAG.NodeBuf[epsilonRoot + child + 1],
+                this.nodeBuf[gammaRoot + child + 1], eag.NodeBuf[epsilonRoot + child + 1],
                 gammaToEpsilonMNont, gammaToEpsilonMAlt, gammaToEpsilonVar, count);
     }
 
@@ -1128,7 +1128,7 @@ class EAGBuilder
         for (int index = 0;; ++index, ++gammaParam, ++epsilonParam)
         {
             const gammaRoot   = this.paramBuf[gammaParam].Affixform;
-            const epsilonRoot = EAG.ParamBuf[epsilonParam].Affixform;
+            const epsilonRoot = eag.ParamBuf[epsilonParam].Affixform;
 
             if (gammaRoot == EAG.nil && epsilonRoot == EAG.nil)
                 return;
@@ -1139,11 +1139,11 @@ class EAGBuilder
                 return;
             }
 
-            if (this.paramBuf[gammaParam].isDef != EAG.ParamBuf[epsilonParam].isDef)
+            if (this.paramBuf[gammaParam].isDef != eag.ParamBuf[epsilonParam].isDef)
             {
                 error!"compareAffixes: %s param[%s] isDef gamma=%s EAG=%s"(
                     label, index, this.paramBuf[gammaParam].isDef,
-                    EAG.ParamBuf[epsilonParam].isDef);
+                    eag.ParamBuf[epsilonParam].isDef);
                 ++count;
             }
 
@@ -1169,17 +1169,17 @@ class EAGBuilder
             const id = this.hNont[gammaSym].Id;
             int   epsilonSym = EAG.firstHNont;
 
-            while (epsilonSym < EAG.NextHNont && EAG.HNont[epsilonSym].Id != id)
+            while (epsilonSym < eag.NextHNont && eag.HNont[epsilonSym].Id != id)
                 ++epsilonSym;
 
-            if (epsilonSym < EAG.NextHNont)
+            if (epsilonSym < eag.NextHNont)
                 gammaToEpsilonHNont[gammaSym] = epsilonSym;
         }
 
         int[] epsilonAnonymList;
 
-        foreach (sym; EAG.firstHNont .. EAG.NextHNont)
-            if (EAG.HNont[sym].Id < 0 && EAG.HNont[sym].Def !is null)
+        foreach (sym; EAG.firstHNont .. eag.NextHNont)
+            if (eag.HNont[sym].Id < 0 && eag.HNont[sym].Def !is null)
                 epsilonAnonymList ~= sym;
 
         const pairLen = this.hAnonymNonts.length < epsilonAnonymList.length
@@ -1196,10 +1196,10 @@ class EAGBuilder
             const id = this.mNont[gammaSym].Id;
             int   esym = EAG.firstMNont;
 
-            while (esym < EAG.NextMNont && EAG.MNont[esym].Id != id)
+            while (esym < eag.NextMNont && eag.MNont[esym].Id != id)
                 ++esym;
 
-            if (esym < EAG.NextMNont)
+            if (esym < eag.NextMNont)
                 gammaToEpsilonMNont[gammaSym] = esym;
         }
 
@@ -1228,10 +1228,10 @@ class EAGBuilder
             const eSym    = *eSymP;
             const symName = this.hNont[gammaSym].anonymous
                 ? format!"A%s"(-this.hNont[gammaSym].Id)
-                : EAG.symbolTable.symbol(this.hNont[gammaSym].Id);
+                : eag.symbolTable.symbol(this.hNont[gammaSym].Id);
 
             const gSig = this.hNont[gammaSym].Sig;
-            const eSig = EAG.HNont[eSym].Sig;
+            const eSig = eag.HNont[eSym].Sig;
 
             // Compare the domain sequences symbolically.
             int gd = (gSig >= 0) ? gSig : 0;
@@ -1240,7 +1240,7 @@ class EAGBuilder
             for (;;)
             {
                 const gDom = (gd < cast(int) this.domBuf.length) ? this.domBuf[gd] : EAG.nil;
-                const eDom = (ed < cast(int) EAG.DomBuf.length)  ? EAG.DomBuf[ed]  : EAG.nil;
+                const eDom = (ed < cast(int) eag.DomBuf.length)  ? eag.DomBuf[ed]  : EAG.nil;
 
                 if (gDom == EAG.nil && eDom == EAG.nil)
                     break;
@@ -1271,7 +1271,7 @@ class EAGBuilder
                     {
                         error!"compareAffixes: HNont '%s' signature domain '%s' maps to %s, expected %s"(
                             symName,
-                            EAG.symbolTable.symbol(this.mNont[gMNont].Id),
+                            eag.symbolTable.symbol(this.mNont[gMNont].Id),
                             translated, eMNont);
                         ++count;
                     }
@@ -1298,10 +1298,10 @@ class EAGBuilder
             const eSym    = *eSymP;
             const symName = this.hNont[gammaSym].anonymous
                 ? format!"A%s"(-this.hNont[gammaSym].Id)
-                : EAG.symbolTable.symbol(this.hNont[gammaSym].Id);
+                : eag.symbolTable.symbol(this.hNont[gammaSym].Id);
 
             EAG.Alt gammaAlt   = this.hNont[gammaSym].Def.Sub;
-            EAG.Alt epsilonAlt = EAG.HNont[eSym].Def.Sub;
+            EAG.Alt epsilonAlt = eag.HNont[eSym].Def.Sub;
 
             for (int ai = 0; gammaAlt !is null && epsilonAlt !is null; ++ai)
             {
@@ -1352,11 +1352,11 @@ class EAGBuilder
             const eSym    = *eSymP;
             const symName = this.hNont[gammaSym].anonymous
                 ? format!"A%s"(-this.hNont[gammaSym].Id)
-                : EAG.symbolTable.symbol(this.hNont[gammaSym].Id);
+                : eag.symbolTable.symbol(this.hNont[gammaSym].Id);
 
             if (auto rep = cast(EAG.Rep) this.hNont[gammaSym].Def)
             {
-                if (auto eRep = cast(EAG.Rep) EAG.HNont[eSym].Def)
+                if (auto eRep = cast(EAG.Rep) eag.HNont[eSym].Def)
                 {
                     const label = format!"HNont '%s' Rep"(symName);
 
@@ -1369,7 +1369,7 @@ class EAGBuilder
             }
             else if (auto opt = cast(EAG.Opt) this.hNont[gammaSym].Def)
             {
-                if (auto eOpt = cast(EAG.Opt) EAG.HNont[eSym].Def)
+                if (auto eOpt = cast(EAG.Opt) eag.HNont[eSym].Def)
                 {
                     const label = format!"HNont '%s' Opt"(symName);
 
@@ -1386,7 +1386,7 @@ class EAGBuilder
         // Compare total Var counts.
         // ----------------------------------------------------------------
         const gVarCount = this.nextVarBuf - EAG.firstVar;
-        const eVarCount = EAG.NextVar      - EAG.firstVar;
+        const eVarCount = eag.NextVar      - EAG.firstVar;
 
         if (gVarCount != eVarCount)
         {
@@ -1405,16 +1405,16 @@ class EAGBuilder
 
     private void buildSets()
     {
-        if (this.eag.plainHyperGrammar is null)
+        if (this.gammaEAG.plainHyperGrammar is null)
             return;
 
-        auto properties = new GrammarProperties(this.eag.plainHyperGrammar, this.eag.lexicalHyperNonterminals);
+        auto properties = new GrammarProperties(this.gammaEAG.plainHyperGrammar, this.gammaEAG.lexicalHyperNonterminals);
 
         this.reachableHNonterminals.length = this.hNont.length;
         this.productiveHNonterminals.length = this.hNont.length;
         this.nullableHNonterminals.length = this.hNont.length;
 
-        foreach (nonterminal; this.eag.plainHyperGrammar.nonterminals)
+        foreach (nonterminal; this.gammaEAG.plainHyperGrammar.nonterminals)
         {
             const gammaSym = this.hNontByNonterminal.get(nonterminal, int.min);
 
@@ -1440,17 +1440,17 @@ class EAGBuilder
             const id = this.hNont[gammaSym].Id;
             int epsilonSym = EAG.firstHNont;
 
-            while (epsilonSym < EAG.NextHNont && EAG.HNont[epsilonSym].Id != id)
+            while (epsilonSym < eag.NextHNont && eag.HNont[epsilonSym].Id != id)
                 ++epsilonSym;
 
-            if (epsilonSym < EAG.NextHNont)
+            if (epsilonSym < eag.NextHNont)
                 gammaToEpsilonHNont[gammaSym] = epsilonSym;
         }
 
         int[] epsilonAnonymous;
 
-        foreach (epsilonSym; EAG.firstHNont .. EAG.NextHNont)
-            if (EAG.HNont[epsilonSym].Id < 0 && EAG.HNont[epsilonSym].Def !is null)
+        foreach (epsilonSym; EAG.firstHNont .. eag.NextHNont)
+            if (eag.HNont[epsilonSym].Id < 0 && eag.HNont[epsilonSym].Def !is null)
                 epsilonAnonymous ~= epsilonSym;
 
         const anonymousCount = this.hAnonymNonts.length < epsilonAnonymous.length
@@ -1469,11 +1469,11 @@ class EAGBuilder
             const epsilonSym = *epsilonSymP;
             const symbolName = this.hNont[gammaSym].anonymous
                 ? format!"A%s"(-this.hNont[gammaSym].Id)
-                : EAG.symbolTable.symbol(this.hNont[gammaSym].Id);
+                : eag.symbolTable.symbol(this.hNont[gammaSym].Id);
 
-            count += compareSet("Reach", symbolName, this.reachableHNonterminals[gammaSym], EAG.Reach[epsilonSym]);
-            count += compareSet("Prod", symbolName, this.productiveHNonterminals[gammaSym], EAG.Prod[epsilonSym]);
-            count += compareSet("Null", symbolName, this.nullableHNonterminals[gammaSym], EAG.Null[epsilonSym]);
+            count += compareSet("Reach", symbolName, this.reachableHNonterminals[gammaSym], eag.Reach[epsilonSym]);
+            count += compareSet("Prod", symbolName, this.productiveHNonterminals[gammaSym], eag.Prod[epsilonSym]);
+            count += compareSet("Null", symbolName, this.nullableHNonterminals[gammaSym], eag.Null[epsilonSym]);
         }
 
         if (count == 0)
@@ -1505,10 +1505,10 @@ class EAGBuilder
         int[] epsilonAnonymList;
         int   epsilonShrunkAnonymCount = 0;
 
-        foreach (sym; EAG.firstHNont .. EAG.NextHNont)
-            if (EAG.HNont[sym].Id < 0)
+        foreach (sym; EAG.firstHNont .. eag.NextHNont)
+            if (eag.HNont[sym].Id < 0)
             {
-                if (EAG.HNont[sym].Def !is null)
+                if (eag.HNont[sym].Def !is null)
                     epsilonAnonymList ~= sym;
                 else
                     ++epsilonShrunkAnonymCount;
@@ -1523,13 +1523,13 @@ class EAGBuilder
             const id = this.hNont[gammaSym].Id;
             int   epsilonSym = EAG.firstHNont;
 
-            while (epsilonSym < EAG.NextHNont && EAG.HNont[epsilonSym].Id != id)
+            while (epsilonSym < eag.NextHNont && eag.HNont[epsilonSym].Id != id)
                 ++epsilonSym;
 
-            if (epsilonSym >= EAG.NextHNont)
+            if (epsilonSym >= eag.NextHNont)
             {
                 error!"compareHyper: named HNont '%s' not found in EAG"(
-                    EAG.symbolTable.symbol(id));
+                    eag.symbolTable.symbol(id));
                 ++count;
             }
             else
@@ -1553,10 +1553,10 @@ class EAGBuilder
             gammaToEpsilonHNont[this.hAnonymNonts[k]] = epsilonAnonymList[k];
 
         // Ignore anonymous nonterminals removed by epsilon's Shrink().
-        if (cast(int) this.hNont.length + epsilonShrunkAnonymCount != EAG.NextHNont)
+        if (cast(int) this.hNont.length + epsilonShrunkAnonymCount != eag.NextHNont)
         {
             error!"compareHyper: gamma has %s HNont entries but EAG (excluding shrunk) has %s"(
-                this.hNont.length, EAG.NextHNont - epsilonShrunkAnonymCount);
+                this.hNont.length, eag.NextHNont - epsilonShrunkAnonymCount);
             ++count;
         }
 
@@ -1570,13 +1570,13 @@ class EAGBuilder
             const id = this.hTerm[gammaSym].Id;
             int   epsilonSym = EAG.firstHTerm;
 
-            while (epsilonSym < EAG.NextHTerm && EAG.HTerm[epsilonSym].Id != id)
+            while (epsilonSym < eag.NextHTerm && eag.HTerm[epsilonSym].Id != id)
                 ++epsilonSym;
 
-            if (epsilonSym >= EAG.NextHTerm)
+            if (epsilonSym >= eag.NextHTerm)
             {
                 error!"compareHyper: HTerm '%s' not found in EAG"(
-                    EAG.symbolTable.symbol(id));
+                    eag.symbolTable.symbol(id));
                 ++count;
             }
             else
@@ -1585,10 +1585,10 @@ class EAGBuilder
             }
         }
 
-        if (cast(int) this.hTerm.length != EAG.NextHTerm)
+        if (cast(int) this.hTerm.length != eag.NextHTerm)
         {
             error!"compareHyper: gamma has %s HTerm entries but EAG has %s"(
-                this.hTerm.length, EAG.NextHTerm);
+                this.hTerm.length, eag.NextHTerm);
             ++count;
         }
 
@@ -1607,20 +1607,20 @@ class EAGBuilder
             // Convenient name for messages.
             const symName = this.hNont[gammaSym].anonymous
                 ? format!"A%s"(-this.hNont[gammaSym].Id)
-                : EAG.symbolTable.symbol(this.hNont[gammaSym].Id);
+                : eag.symbolTable.symbol(this.hNont[gammaSym].Id);
 
             // ---- IsToken ----
-            if (this.hNont[gammaSym].IsToken != EAG.HNont[epsilonSym].IsToken)
+            if (this.hNont[gammaSym].IsToken != eag.HNont[epsilonSym].IsToken)
             {
                 error!"compareHyper: HNont '%s' IsToken %s != %s"(
                     symName,
-                    this.hNont[gammaSym].IsToken, EAG.HNont[epsilonSym].IsToken);
+                    this.hNont[gammaSym].IsToken, eag.HNont[epsilonSym].IsToken);
                 ++count;
             }
 
             // ---- Def type ----
             const gammaHasDef   = this.hNont[gammaSym].Def !is null;
-            const epsilonHasDef = EAG.HNont[epsilonSym].Def !is null;
+            const epsilonHasDef = eag.HNont[epsilonSym].Def !is null;
 
             if (gammaHasDef != epsilonHasDef)
             {
@@ -1635,9 +1635,9 @@ class EAGBuilder
             const gammaIsGrp = cast(EAG.Grp) this.hNont[gammaSym].Def !is null;
             const gammaIsRep = cast(EAG.Rep) this.hNont[gammaSym].Def !is null;
             const gammaIsOpt = cast(EAG.Opt) this.hNont[gammaSym].Def !is null;
-            const epsIsGrp   = cast(EAG.Grp) EAG.HNont[epsilonSym].Def !is null;
-            const epsIsRep   = cast(EAG.Rep) EAG.HNont[epsilonSym].Def !is null;
-            const epsIsOpt   = cast(EAG.Opt) EAG.HNont[epsilonSym].Def !is null;
+            const epsIsGrp   = cast(EAG.Grp) eag.HNont[epsilonSym].Def !is null;
+            const epsIsRep   = cast(EAG.Rep) eag.HNont[epsilonSym].Def !is null;
+            const epsIsOpt   = cast(EAG.Opt) eag.HNont[epsilonSym].Def !is null;
 
             if (gammaIsGrp != epsIsGrp || gammaIsRep != epsIsRep || gammaIsOpt != epsIsOpt)
             {
@@ -1652,7 +1652,7 @@ class EAGBuilder
 
             // ---- Alt chains ----
             EAG.Alt gammaAlt   = this.hNont[gammaSym].Def.Sub;
-            EAG.Alt epsilonAlt = EAG.HNont[epsilonSym].Def.Sub;
+            EAG.Alt epsilonAlt = eag.HNont[epsilonSym].Def.Sub;
 
             for (int altIndex = 0; gammaAlt !is null || epsilonAlt !is null; ++altIndex)
             {
@@ -1695,7 +1695,7 @@ class EAGBuilder
 
                         if (translated != epsilonTermSym)
                         {
-                            const gammaName = EAG.symbolTable.symbol(this.hTerm[gammaTermSym].Id);
+                            const gammaName = eag.symbolTable.symbol(this.hTerm[gammaTermSym].Id);
 
                             error!"compareHyper: HNont '%s' alt[%s] factor[%s] Term '%s' maps to %s, expected %s"(
                                 symName, altIndex, factorIndex,
@@ -1714,7 +1714,7 @@ class EAGBuilder
                         {
                             const gammaName = this.hNont[gammaNontSym].anonymous
                                 ? format!"A%s"(-this.hNont[gammaNontSym].Id)
-                                : EAG.symbolTable.symbol(this.hNont[gammaNontSym].Id);
+                                : eag.symbolTable.symbol(this.hNont[gammaNontSym].Id);
 
                             error!"compareHyper: HNont '%s' alt[%s] factor[%s] Nont '%s' maps to %s, expected %s"(
                                 symName, altIndex, factorIndex,
@@ -1743,7 +1743,7 @@ class EAGBuilder
 
     private int internMNont(string name) @safe
     {
-        const id = cast(int) EAG.symbolTable.intern(name);
+        const id = cast(int) eag.symbolTable.intern(name);
 
         if (auto p = id in this.mNontById)
             return *p;
@@ -1757,7 +1757,7 @@ class EAGBuilder
 
     private int internMTerm(string name) @safe
     {
-        const id = cast(int) EAG.symbolTable.intern(name);
+        const id = cast(int) eag.symbolTable.intern(name);
 
         if (auto p = id in this.mTermById)
             return *p;
@@ -1822,7 +1822,7 @@ class EAGBuilder
         else
         {
             // Named: use the shared symbolTable Id.
-            const id = cast(int) EAG.symbolTable.intern(nonterminal.toString);
+            const id = cast(int) eag.symbolTable.intern(nonterminal.toString);
 
             this.hNont ~= EAG.HNontRecord(id, id, -1, null, false);
             this.hNontById[id] = sym;
@@ -1835,7 +1835,7 @@ class EAGBuilder
      */
     private int findOrCreateHTerm(string name)
     {
-        const id = cast(int) EAG.symbolTable.intern(name);
+        const id = cast(int) eag.symbolTable.intern(name);
 
         if (auto p = id in this.hTermById)
             return *p;

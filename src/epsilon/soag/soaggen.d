@@ -1,6 +1,6 @@
 module epsilon.soag.soaggen;
 
-import EAG = epsilon.eag;
+import epsilon.eag;
 import EmitGen = epsilon.emitgen;
 import epsilon.settings;
 import SLAGGen = epsilon.slaggen;
@@ -43,7 +43,7 @@ public string Generate(Settings settings)
     VisitSeq.Generate;
     if (Optimize)
         optimizer.Optimize;
-    info!"SOAG writing %s"(EAG.BaseName);
+    info!"SOAG writing %s"(eag.BaseName);
     if (Optimize)
         info!"optimize";
     else
@@ -80,16 +80,16 @@ private void ComputeNodeNames(int R) @nogc nothrow
     void Traverse(int Node, ref int Var)
     {
         int Node1;
-        const Arity = EAG.MAlt[EAG.NodeBuf[Node]].Arity;
+        const Arity = eag.MAlt[eag.NodeBuf[Node]].Arity;
 
         ++Var;
         NodeName[Node] = Var;
         for (size_t n = 1; n <= Arity; ++n)
         {
-            Node1 = EAG.NodeBuf[Node + n];
+            Node1 = eag.NodeBuf[Node + n];
             if (Node1 > 0)
             {
-                if (UseConst && EAG.MAlt[EAG.NodeBuf[Node1]].Arity == 0)
+                if (UseConst && eag.MAlt[eag.NodeBuf[Node1]].Arity == 0)
                 {
                     ++Var;
                     NodeName[Node1] = Var;
@@ -106,13 +106,13 @@ private void ComputeNodeNames(int R) @nogc nothrow
     for (AP = SOAG.Rule[R].AffOcc.Beg; AP <= SOAG.Rule[R].AffOcc.End; ++AP)
     {
         PBI = SOAG.AffOcc[AP].ParamBufInd;
-        if (EAG.ParamBuf[PBI].isDef || UseRefCnt)
+        if (eag.ParamBuf[PBI].isDef || UseRefCnt)
         {
             Var = 0;
-            Node = EAG.ParamBuf[PBI].Affixform;
+            Node = eag.ParamBuf[PBI].Affixform;
             if (Node > 0)
             {
-                if (UseConst && EAG.MAlt[EAG.NodeBuf[Node]].Arity == 0)
+                if (UseConst && eag.MAlt[eag.NodeBuf[Node]].Arity == 0)
                 {
                     ++Var;
                     NodeName[Node] = Var;
@@ -138,8 +138,8 @@ private void ComputeNodeNames(int R) @nogc nothrow
                     ++AP)
             {
                 PBI = SOAG.AffOcc[AP].ParamBufInd;
-                Node = EAG.ParamBuf[PBI].Affixform;
-                if (!EAG.ParamBuf[PBI].isDef)
+                Node = eag.ParamBuf[PBI].Affixform;
+                if (!eag.ParamBuf[PBI].isDef)
                 {
                     if (Node > 0)
                     {
@@ -172,7 +172,7 @@ private int GetCorrespondedAffPos(int AP) @nogc nothrow @safe
 /**
  * IN:  Regel
  * OUT: -
- * SEM: berechnet im Feld AffixOffset[], das parallel zu EAG.Var liegt,
+ * SEM: berechnet im Feld AffixOffset[], das parallel zu eag.Var liegt,
  *      den Offset der Affixvariablen im Feld Var[] des generierten Compilers;
  *      alle nicht-applizierten Affixvariablen (AffixAppls[]=0) werden ausgelassen
  * PRE: AffixAppls[] muss berechnet sein
@@ -262,13 +262,13 @@ private int GetAffixCount(int R) @nogc nothrow @safe
  */
 private int HyperArity() nothrow
 {
-    const Nonts = EAG.All - EAG.Pred;
+    const Nonts = eag.All - eag.Pred;
     int Max = 0;
     int i;
 
     foreach (N; Nonts.bitsSet)
     {
-        EAG.Alt A = EAG.HNont[N].Def.Sub;
+        EAG.Alt A = eag.HNont[N].Def.Sub;
 
         i = 0;
         do
@@ -277,7 +277,7 @@ private int HyperArity() nothrow
             A = A.Next;
         }
         while (A !is null);
-        if (cast(EAG.Opt) EAG.HNont[N].Def || cast(EAG.Rep) EAG.HNont[N].Def)
+        if (cast(EAG.Opt) eag.HNont[N].Def || cast(EAG.Rep) eag.HNont[N].Def)
             ++i;
         if (i > Max)
             Max = i;
@@ -300,23 +300,23 @@ private void Init() nothrow
 
     LocalVars = new int[SOAG.NextRule];
     AffixVarCount = new int[SOAG.NextRule];
-    AffixOffset = new int[EAG.NextVar];
-    NodeName = new int[EAG.NextNode];
+    AffixOffset = new int[eag.NextVar];
+    NodeName = new int[eag.NextNode];
     SubTreeOffset = new int[SOAG.NextSymOcc];
     FirstRule = new int[SOAG.NextSym];
-    AffixAppls = new int[EAG.NextVar];
+    AffixAppls = new int[eag.NextVar];
     for (size_t i = SOAG.firstRule; i < SOAG.NextRule; ++i)
     {
         LocalVars[i] = 0;
         AffixVarCount[i] = -1;
     }
-    for (size_t i = EAG.firstNode; i < EAG.NextNode; ++i)
+    for (size_t i = EAG.firstNode; i < eag.NextNode; ++i)
     {
         NodeName[i] = -1;
     }
-    for (size_t i = EAG.firstVar; i < EAG.NextVar; ++i)
+    for (size_t i = EAG.firstVar; i < eag.NextVar; ++i)
     {
-        EAG.Var[i].Def = false;
+        eag.Var[i].Def = false;
         AffixAppls[i] = SOAG.AffixApplCnt[i];
     }
     for (R = SOAG.firstRule; R < SOAG.NextRule; ++R)
@@ -544,19 +544,19 @@ private void GenSynPred(int SymOccInd, int VisitNo)
         int Node1;
         int n;
         int V;
-        const Alt = EAG.NodeBuf[Node];
+        const Alt = eag.NodeBuf[Node];
 
         GenHeap(-1, Offset);
         output.writeln(" = ", SLAGGen.NodeIdent[Alt], ";");
         Offset1 = Offset;
-        Offset += 1 + EAG.MAlt[Alt].Arity;
-        for (n = 1; n <= EAG.MAlt[Alt].Arity; ++n)
+        Offset += 1 + eag.MAlt[Alt].Arity;
+        for (n = 1; n <= eag.MAlt[Alt].Arity; ++n)
         {
-            Node1 = EAG.NodeBuf[Node + n];
+            Node1 = eag.NodeBuf[Node + n];
             if (Node1 < 0)
             {
                 V = -Node1;
-                if (!EAG.Var[V].Def)
+                if (!eag.Var[V].Def)
                 {
                     SOAG.Error(SOAG.abnormalError, "eSOAGGen.GenSynTraverse: Affix nicht definiert.");
                 }
@@ -577,9 +577,9 @@ private void GenSynPred(int SymOccInd, int VisitNo)
             {
                 GenHeap(-1, Offset1 + n);
                 output.write(" = ");
-                if (UseConst && EAG.MAlt[EAG.NodeBuf[Node1]].Arity == 0)
+                if (UseConst && eag.MAlt[eag.NodeBuf[Node1]].Arity == 0)
                 {
-                    output.writeln(SLAGGen.Leaf[EAG.NodeBuf[Node1]], ";");
+                    output.writeln(SLAGGen.Leaf[eag.NodeBuf[Node1]], ";");
                 }
                 else
                 {
@@ -601,17 +601,17 @@ private void GenSynPred(int SymOccInd, int VisitNo)
         int Node1;
         int n;
         int V;
-        const Alt = EAG.NodeBuf[Node];
+        const Alt = eag.NodeBuf[Node];
 
         GenHeap(NodeName[Node], 0);
         output.writeln(" = ", SLAGGen.NodeIdent[Alt], ";");
-        for (n = 1; n <= EAG.MAlt[Alt].Arity; ++n)
+        for (n = 1; n <= eag.MAlt[Alt].Arity; ++n)
         {
-            Node1 = EAG.NodeBuf[Node + n];
+            Node1 = eag.NodeBuf[Node + n];
             if (Node1 < 0)
             {
                 V = -Node1;
-                if (!EAG.Var[V].Def)
+                if (!eag.Var[V].Def)
                 {
                     SOAG.Error(SOAG.abnormalError, "eSOAGGen.GenSynTraverse: Affix nicht definiert.");
                 }
@@ -632,15 +632,15 @@ private void GenSynPred(int SymOccInd, int VisitNo)
             }
             else
             {
-                if (UseConst && EAG.MAlt[EAG.NodeBuf[Node1]].Arity == 0)
+                if (UseConst && eag.MAlt[eag.NodeBuf[Node1]].Arity == 0)
                 {
                     GenHeap(NodeName[Node], n);
-                    output.write(" = ", SLAGGen.Leaf[EAG.NodeBuf[Node1]], "; ");
-                    output.writeln("Heap[", SLAGGen.Leaf[EAG.NodeBuf[Node1]], "] += refConst;");
+                    output.write(" = ", SLAGGen.Leaf[eag.NodeBuf[Node1]], "; ");
+                    output.writeln("Heap[", SLAGGen.Leaf[eag.NodeBuf[Node1]], "] += refConst;");
                 }
                 else
                 {
-                    output.write("GetHeap(", EAG.MAlt[EAG.NodeBuf[Node1]].Arity, ", ");
+                    output.write("GetHeap(", eag.MAlt[eag.NodeBuf[Node1]].Arity, ", ");
                     GenVar(NodeName[Node1]);
                     output.writeln(");");
                     GenSynTraverseRefCnt(Node1);
@@ -660,14 +660,14 @@ private void GenSynPred(int SymOccInd, int VisitNo)
     {
         AN = AP - SOAG.SymOcc[SymOccInd].AffOcc.Beg;
         P = SOAG.AffOcc[AP].ParamBufInd;
-        if (!EAG.ParamBuf[P].isDef && (VisitSeq.GetVisitNo(AP) == VisitNo || IsPred))
+        if (!eag.ParamBuf[P].isDef && (VisitSeq.GetVisitNo(AP) == VisitNo || IsPred))
         {
-            Node = EAG.ParamBuf[P].Affixform;
+            Node = eag.ParamBuf[P].Affixform;
             SN = SymOccInd - SOAG.Rule[SOAG.SymOcc[SymOccInd].RuleInd].SymOcc.Beg;
             if (Node < 0)
             {
                 V = -Node;
-                if (!EAG.Var[V].Def)
+                if (!eag.Var[V].Def)
                 {
                     SOAG.Error(SOAG.abnormalError, "eSOAGGen.GenSynTraverse: Affix nicht definiert.");
                 }
@@ -699,7 +699,7 @@ private void GenSynPred(int SymOccInd, int VisitNo)
                 }
                 else if (UseRefCnt)
                 {
-                    output.write("GetHeap(", EAG.MAlt[EAG.NodeBuf[Node]].Arity, ", ");
+                    output.write("GetHeap(", eag.MAlt[eag.NodeBuf[Node]].Arity, ", ");
                     GenVar(NodeName[Node]);
                     output.writeln(");");
                     GenSynTraverseRefCnt(Node);
@@ -741,21 +741,21 @@ private void GenAnalPred(int SymOccInd, int VisitNo) @safe
     void GenEqualErrMsg(int Var)
     {
         output.write(`"'`);
-        output.write(EAG.VarRepr(Var));
+        output.write(eag.VarRepr(Var));
         output.write("' failed in '");
-        output.write(EAG.NamedHNontRepr(SOAG.SymOcc[SymOccInd].SymInd));
+        output.write(eag.NamedHNontRepr(SOAG.SymOcc[SymOccInd].SymInd));
         output.write(`'"`);
     }
 
     void GenAnalErrMsg()
     {
         output.write(`"`);
-        output.write(EAG.NamedHNontRepr(SOAG.SymOcc[SymOccInd].SymInd));
+        output.write(eag.NamedHNontRepr(SOAG.SymOcc[SymOccInd].SymInd));
         output.write(`"`);
     }
 
     /**
-     * IN:  Index auf EAG.Var[] des def. Affixes, Index auf NodeName[] und Nr. des Sohnes im Heap
+     * IN:  Index auf eag.Var[] des def. Affixes, Index auf NodeName[] und Nr. des Sohnes im Heap
      * OUT: -
      * SEM: Generiert einen Vergleich zwischen einer Variable eines def. Affixes und einem Baumeintrag
      */
@@ -771,7 +771,7 @@ private void GenAnalPred(int SymOccInd, int VisitNo) @safe
     }
 
     /**
-     * IN:  zwei Indexe auf EAG.Var[]
+     * IN:  zwei Indexe auf eag.Var[]
      * OUT: -
      * SEM: Generiert einen Vergleich zwischen zwei Variablen der Felder Var[] (gen. Compiler)
      */
@@ -782,7 +782,7 @@ private void GenAnalPred(int SymOccInd, int VisitNo) @safe
         output.write(", ");
         GenAffix(V2);
         output.write(", ");
-        if (EAG.Var[V1].Num < 0)
+        if (eag.Var[V1].Num < 0)
             GenEqualErrMsg(V1);
         else
             GenEqualErrMsg(V2);
@@ -811,10 +811,10 @@ private void GenAnalPred(int SymOccInd, int VisitNo) @safe
         int Node1;
         int n;
         int V;
-        const Alt = EAG.NodeBuf[Node];
+        const Alt = eag.NodeBuf[Node];
 
         output.write("if (");
-        if (UseConst && EAG.MAlt[Alt].Arity == 0)
+        if (UseConst && eag.MAlt[Alt].Arity == 0)
         {
             GenVar(NodeName[Node]);
             output.write(" != ", SLAGGen.Leaf[Alt]);
@@ -831,13 +831,13 @@ private void GenAnalPred(int SymOccInd, int VisitNo) @safe
         output.write(", ");
         GenAnalErrMsg;
         output.writeln(");");
-        for (n = 1; n <= EAG.MAlt[Alt].Arity; ++n)
+        for (n = 1; n <= eag.MAlt[Alt].Arity; ++n)
         {
-            Node1 = EAG.NodeBuf[Node + n];
+            Node1 = eag.NodeBuf[Node + n];
             if (Node1 < 0)
             {
                 V = -Node1;
-                if (EAG.Var[V].Def)
+                if (eag.Var[V].Def)
                 {
                     GenEqualPred(V, Node, n);
                     --AffixAppls[V];
@@ -848,25 +848,25 @@ private void GenAnalPred(int SymOccInd, int VisitNo) @safe
                 }
                 else
                 {
-                    EAG.Var[V].Def = true;
+                    eag.Var[V].Def = true;
                     if (AffixOffset[V] != notApplied)
                     {
                         GenAffixAssign(V);
                         GenHeap(NodeName[Node], n);
                         GenClose;
-                        if (EAG.Var[EAG.Var[V].Neg].Def)
+                        if (eag.Var[eag.Var[V].Neg].Def)
                         {
                             output.writeln;
-                            GenUnequalPred(EAG.Var[V].Neg, V);
-                            --AffixAppls[EAG.Var[V].Neg];
+                            GenUnequalPred(eag.Var[V].Neg, V);
+                            --AffixAppls[eag.Var[V].Neg];
                             --AffixAppls[V];
                             if (UseRefCnt && AffixAppls[V] > 0)
                                 GenIncRefCnt(V);
                             if (UseRefCnt)
-                                GenFreeAffix(EAG.Var[V].Neg);
+                                GenFreeAffix(eag.Var[V].Neg);
                             if (Optimize)
                             {
-                                GenPopAffix(EAG.Var[V].Neg);
+                                GenPopAffix(eag.Var[V].Neg);
                                 GenPopAffix(V);
                             }
                         }
@@ -895,15 +895,15 @@ private void GenAnalPred(int SymOccInd, int VisitNo) @safe
             ++AP)
     {
         AN = AP - SOAG.SymOcc[SymOccInd].AffOcc.Beg;
-        if (EAG.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].isDef
+        if (eag.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].isDef
                 && (VisitSeq.GetVisitNo(AP) == VisitNo || IsPred))
         {
-            Node = EAG.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].Affixform;
+            Node = eag.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].Affixform;
             SN = SymOccInd - SOAG.Rule[SOAG.SymOcc[SymOccInd].RuleInd].SymOcc.Beg;
             if (Node < 0)
             {
                 V = -Node;
-                if (EAG.Var[V].Def)
+                if (eag.Var[V].Def)
                 {
                     GenPos(PosNeeded);
                     output.write("Eq(");
@@ -927,7 +927,7 @@ private void GenAnalPred(int SymOccInd, int VisitNo) @safe
                 }
                 else
                 {
-                    EAG.Var[V].Def = true;
+                    eag.Var[V].Def = true;
                     if (!IsPred)
                     {
                         if (AffixOffset[V] != notApplied)
@@ -940,26 +940,26 @@ private void GenAnalPred(int SymOccInd, int VisitNo) @safe
                             output.writeln;
                         }
                     }
-                    if (EAG.Var[EAG.Var[V].Neg].Def)
+                    if (eag.Var[eag.Var[V].Neg].Def)
                     {
                         GenPos(PosNeeded);
                         output.write("UnEq(");
-                        GenAffix(EAG.Var[V].Neg);
+                        GenAffix(eag.Var[V].Neg);
                         output.write(", ");
                         GenAffix(V);
                         output.write(", ");
                         GenEqualErrMsg(V);
                         output.writeln(");");
-                        --AffixAppls[EAG.Var[V].Neg];
+                        --AffixAppls[eag.Var[V].Neg];
                         --AffixAppls[V];
                         if (UseRefCnt)
                         {
-                            GenFreeAffix(EAG.Var[V].Neg);
+                            GenFreeAffix(eag.Var[V].Neg);
                             GenFreeAffix(V);
                         }
                         if (Optimize)
                         {
-                            GenPopAffix(EAG.Var[V].Neg);
+                            GenPopAffix(eag.Var[V].Neg);
                             GenPopAffix(V);
                         }
                     }
@@ -1020,10 +1020,10 @@ private void GenPredCall(int SO) @safe
     {
         for (AP = SOAG.SymOcc[SO].AffOcc.Beg; AP <= SOAG.SymOcc[SO].AffOcc.End; ++AP)
         {
-            if (!EAG.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].isDef)
+            if (!eag.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].isDef)
             {
                 AN = AP - SOAG.SymOcc[SO].AffOcc.Beg;
-                V = -EAG.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].Affixform;
+                V = -eag.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].Affixform;
                 if (V > 0)
                     GenIncRefCnt(V);
             }
@@ -1031,14 +1031,14 @@ private void GenPredCall(int SO) @safe
     }
     S = SOAG.SymOcc[SO].SymInd;
     output.write("Check", S, `("`);
-    output.write(EAG.NamedHNontRepr(S));
+    output.write(eag.NamedHNontRepr(S));
     output.write(`", `);
     for (AP = SOAG.SymOcc[SO].AffOcc.Beg; AP <= SOAG.SymOcc[SO].AffOcc.End; ++AP)
     {
-        Node = EAG.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].Affixform;
+        Node = eag.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].Affixform;
         AN = AP - SOAG.SymOcc[SO].AffOcc.Beg;
         V = -Node;
-        if (EAG.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].isDef)
+        if (eag.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].isDef)
         {
             if (V > 0 && SOAG.DefAffOcc[V] == AP)
             {
@@ -1079,10 +1079,10 @@ private void GenPredCall(int SO) @safe
     for (AP = SOAG.SymOcc[SO].AffOcc.Beg; AP <= SOAG.SymOcc[SO].AffOcc.End; ++AP)
     {
         AN = AP - SOAG.SymOcc[SO].AffOcc.Beg;
-        V = -EAG.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].Affixform;
+        V = -eag.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].Affixform;
         if (V > 0)
         {
-            if (EAG.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].isDef)
+            if (eag.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].isDef)
             {
                 if (AffixOffset[V] == optimizedStorage)
                 {
@@ -1349,7 +1349,7 @@ private void GenConstDeclarations() @safe
     {
         output.write("const S", S, " = ");
         output.write(SOAG.Sym[S].AffPos.Beg, "; // ");
-        output.write(EAG.HNontRepr(S));
+        output.write(eag.HNontRepr(S));
         output.writeln;
     }
 }
@@ -1410,7 +1410,7 @@ private string GenerateModule(Settings settings)
     }
 
     enum fixName = "soag.fix.d";
-    const name = EAG.BaseName ~ "Eval";
+    const name = eag.BaseName ~ "Eval";
     const fileName = settings.path(name ~ ".d");
 
     Fix = Input(fixName, import(fixName));
@@ -1444,12 +1444,12 @@ private string GenerateModule(Settings settings)
     InclFix('$');
     if (Optimize)
         GenStackInit;
-    StartRule = FirstRule[SOAG.SymOcc[SOAG.Sym[EAG.StartSym].FirstOcc].RuleInd];
+    StartRule = FirstRule[SOAG.SymOcc[SOAG.Sym[eag.StartSym].FirstOcc].RuleInd];
     InclFix('$');
     if (StartRule - 1 != 0)
         output.write(StartRule - 1, " + ");
     InclFix('$');
-    output.write("S", EAG.StartSym);
+    output.write("S", eag.StartSym);
     InclFix('$');
     EmitGen.GenEmitCall(output, settings);
     InclFix('$');
@@ -1465,7 +1465,7 @@ private string GenerateModule(Settings settings)
     else
         output.write(0);
     InclFix('$');
-    output.write(EAG.BaseName);
+    output.write(eag.BaseName);
     output.write("Eval");
     InclFix('$');
     output.flush;

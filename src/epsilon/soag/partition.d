@@ -1,6 +1,6 @@
 module epsilon.soag.partition;
 
-import EAG = epsilon.eag;
+import epsilon.eag;
 import ALists = epsilon.soag.alists;
 import Protocol = epsilon.soag.protocol;
 import SOAG = epsilon.soag.soag;
@@ -217,17 +217,17 @@ void SetAffOccforVars(int AO, int Affixform, bool isDef) nothrow @safe
             Expand;
         VarBuf[NextVarBuf].AffOcc = AO;
         if (isDef)
-            VarBuf[NextVarBuf].Sym = -EAG.Var[-Affixform].Sym;
+            VarBuf[NextVarBuf].Sym = -eag.Var[-Affixform].Sym;
         else
-            VarBuf[NextVarBuf].Sym = EAG.Var[-Affixform].Sym;
-        VarBuf[NextVarBuf].Num = EAG.Var[-Affixform].Num;
+            VarBuf[NextVarBuf].Sym = eag.Var[-Affixform].Sym;
+        VarBuf[NextVarBuf].Num = eag.Var[-Affixform].Num;
         VarBuf[NextVarBuf].VarInd = -Affixform;
         ++NextVarBuf;
     }
-    else if (EAG.MAlt[EAG.NodeBuf[Affixform]].Arity > 0)
+    else if (eag.MAlt[eag.NodeBuf[Affixform]].Arity > 0)
     {
-        for (MA = 1; MA <= EAG.MAlt[EAG.NodeBuf[Affixform]].Arity; ++MA)
-            SetAffOccforVars(AO, EAG.NodeBuf[Affixform + MA], isDef);
+        for (MA = 1; MA <= eag.MAlt[eag.NodeBuf[Affixform]].Arity; ++MA)
+            SetAffOccforVars(AO, eag.NodeBuf[Affixform + MA], isDef);
     }
 }
 
@@ -263,7 +263,7 @@ void ComputeDefAffOcc(int R)
         do
         {
             ++i;
-            Found = EAG.Var[V].Sym == -VarBuf[i].Sym && EAG.Var[V].Num == VarBuf[i].Num;
+            Found = eag.Var[V].Sym == -VarBuf[i].Sym && eag.Var[V].Num == VarBuf[i].Num;
         }
         while (!Found && i < NextVarBuf - 1);
         if (Found)
@@ -274,7 +274,7 @@ void ComputeDefAffOcc(int R)
         {
             import std.stdio : writeln;  // TODO: replace with log
 
-            writeln(EAG.Var[V].Pos);
+            writeln(eag.Var[V].Pos);
             SOAG.Error(SOAG.notLeftDefined, "epsilon.soag.partition.ComputeDefAffOcc");
         }
     }
@@ -310,9 +310,9 @@ void ComputeAffixApplCnt(int R) @nogc nothrow
 
         while (i < NextVarBuf)
         {
-            if (EAG.Var[A].Sym == -VarBuf[i].Sym
-                    && (EAG.Var[A].Num == VarBuf[i].Num && SOAG.DefAffOcc[A] != VarBuf[i].AffOcc
-                        || EAG.Var[A].Num == -VarBuf[i].Num && SOAG.DefAffOcc[VarBuf[i].VarInd] == VarBuf[i].AffOcc))
+            if (eag.Var[A].Sym == -VarBuf[i].Sym
+                    && (eag.Var[A].Num == VarBuf[i].Num && SOAG.DefAffOcc[A] != VarBuf[i].AffOcc
+                        || eag.Var[A].Num == -VarBuf[i].Num && SOAG.DefAffOcc[VarBuf[i].VarInd] == VarBuf[i].AffOcc))
             {
                 const AN = VarBuf[i].AffOcc - SOAG.Rule[R].AffOcc.Beg;
                 const DAN = SOAG.DefAffOcc[A] - SOAG.Rule[R].AffOcc.Beg;
@@ -320,7 +320,7 @@ void ComputeAffixApplCnt(int R) @nogc nothrow
                 SOAG.Rule[R].DP[DAN][AN] = true;
                 ++SOAG.AffixApplCnt[A];
             }
-            else if (EAG.Var[A].Sym == VarBuf[i].Sym && EAG.Var[A].Num == VarBuf[i].Num)
+            else if (eag.Var[A].Sym == VarBuf[i].Sym && eag.Var[A].Num == VarBuf[i].Num)
             {
                 ++SOAG.AffixApplCnt[A];
             }
@@ -358,7 +358,7 @@ void ComputeDP()
                         ++AO)
                 {
                     PBI = SOAG.AffOcc[AO].ParamBufInd;
-                    SetAffOccforVars(AO, EAG.ParamBuf[PBI].Affixform, EAG.ParamBuf[PBI].isDef);
+                    SetAffOccforVars(AO, eag.ParamBuf[PBI].Affixform, eag.ParamBuf[PBI].isDef);
                 }
                 if (SOAG.IsPredNont(SO))
                 {
@@ -562,7 +562,7 @@ void DynTopSortSym(int X)
                 Leave[a] = true;
         }
     }
-    trace!"compute partition for symbol %s"(EAG.HNontRepr(X));
+    trace!"compute partition for symbol %s"(eag.HNontRepr(X));
     trace!"initially: Cur=%s, Leave=%s"(Cur, Leave);
     do
     {
@@ -640,9 +640,9 @@ void DynTopSort()
     New.length = (SOAG.MaxAffNumInSym + 1) * (SOAG.MaxAffNumInSym + 1) + 1;
     Seperator = SOAG.MaxAffNumInSym + 1;
     ALists.New(LastCur, 16);
-    for (int S = EAG.firstHNont; S < EAG.NextHNont; ++S)
+    for (int S = EAG.firstHNont; S < eag.NextHNont; ++S)
     {
-        if (!EAG.Pred[S] && EAG.All[S])
+        if (!eag.Pred[S] && eag.All[S])
             DynTopSortSym(S);
     }
 }

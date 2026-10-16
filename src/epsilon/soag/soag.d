@@ -1,6 +1,6 @@
 module epsilon.soag.soag;
 
-import EAG = epsilon.eag;
+import epsilon.eag;
 import Predicates = epsilon.predicates;
 import runtime;
 import std.bitmanip : BitArray;
@@ -71,7 +71,7 @@ struct SymOccDesc
 
         string[] items;
 
-        items ~= EAG.HNontRepr(SymInd);
+        items ~= eag.HNontRepr(SymInd);
         items ~= format!"RuleInd=%s"(RuleInd);
         items ~= format!"Nont=%s"(Nont);
         items ~= format!"AffOcc=%s"(AffOcc);
@@ -239,7 +239,7 @@ void AppAffOcc(int Params) nothrow @safe
 {
     if (Params != EAG.empty)
     {
-        while (EAG.ParamBuf[Params].Affixform != EAG.nil)
+        while (eag.ParamBuf[Params].Affixform != EAG.nil)
         {
             AffOcc[NextAffOcc].ParamBufInd = Params;
             AffOcc[NextAffOcc].SymOccInd = NextSymOcc;
@@ -365,7 +365,7 @@ void AppVS(ref Instruction I) nothrow @safe
  */
 bool IsInherited(int S, int AffOccNum) @nogc nothrow @safe
 {
-    return EAG.DomBuf[EAG.HNont[S].Sig + AffOccNum] < 0;
+    return eag.DomBuf[eag.HNont[S].Sig + AffOccNum] < 0;
 }
 
 /**
@@ -375,7 +375,7 @@ bool IsInherited(int S, int AffOccNum) @nogc nothrow @safe
  */
 bool IsSynthesized(size_t S, int AffOccNum) @nogc nothrow @safe
 {
-    return EAG.DomBuf[EAG.HNont[S].Sig + AffOccNum] > 0;
+    return eag.DomBuf[eag.HNont[S].Sig + AffOccNum] > 0;
 }
 
 /**
@@ -397,7 +397,7 @@ bool IsOrientable(int S, int AffOccNum1, int AffOccNum2) @nogc nothrow @safe
  */
 bool IsEvaluatorRule(size_t R) @nogc nothrow
 {
-    return !EAG.Pred[SymOcc[Rule[R].SymOcc.Beg].SymInd];
+    return !eag.Pred[SymOcc[Rule[R].SymOcc.Beg].SymInd];
 }
 
 /**
@@ -408,7 +408,7 @@ bool IsEvaluatorRule(size_t R) @nogc nothrow
  */
 bool IsPredNont(int SO) @nogc nothrow
 {
-    return EAG.Pred[SymOcc[SO].SymInd];
+    return eag.Pred[SymOcc[SO].SymInd];
 }
 
 /**
@@ -443,30 +443,30 @@ void Init()
     int a;
     int Max;
 
-    Sym = new SymDesc[EAG.NextHNont];
+    Sym = new SymDesc[eag.NextHNont];
     Rule = new RuleBase[128];
     SymOcc = new SymOccDesc[256];
     AffOcc = new AffOccDesc[512];
     VS = new Instruction[512];
-    DefAffOcc = new int[EAG.NextVar];
-    AffixApplCnt = new int[EAG.NextVar];
+    DefAffOcc = new int[eag.NextVar];
+    AffixApplCnt = new int[eag.NextVar];
     StorageName = null;
-    NextSym = EAG.NextHNont;
+    NextSym = eag.NextHNont;
     NextRule = firstRule;
     NextSymOcc = firstSymOcc;
     NextAffOcc = firstAffOcc;
     NextVS = firstVS;
-    NextDefAffOcc = EAG.NextVar;
+    NextDefAffOcc = eag.NextVar;
     NextStorageName = nil;
-    NextAffixApplCnt = EAG.NextVar;
+    NextAffixApplCnt = eag.NextVar;
     Predicates.Check;
-    for (size_t i = EAG.firstHNont; i < EAG.NextHNont; ++i)
+    for (size_t i = EAG.firstHNont; i < eag.NextHNont; ++i)
         Sym[i].FirstOcc = nil;
-    foreach (i; EAG.All.bitsSet)
+    foreach (i; eag.All.bitsSet)
     {
-        if (cast(EAG.Rep) EAG.HNont[i].Def)
+        if (cast(EAG.Rep) eag.HNont[i].Def)
         {
-            A = EAG.HNont[i].Def.Sub;
+            A = eag.HNont[i].Def.Sub;
             while (A !is null)
             {
                 AppRepRule(A);
@@ -475,15 +475,15 @@ void Init()
         }
         else
         {
-            A = EAG.HNont[i].Def.Sub;
+            A = eag.HNont[i].Def.Sub;
             while (A !is null)
             {
                 AppRule(A);
                 A = A.Next;
             }
         }
-        if (cast(EAG.Rep) EAG.HNont[i].Def || cast(EAG.Opt) EAG.HNont[i].Def)
-            AppEmptyRule(i, EAG.HNont[i].Def);
+        if (cast(EAG.Rep) eag.HNont[i].Def || cast(EAG.Opt) eag.HNont[i].Def)
+            AppEmptyRule(i, eag.HNont[i].Def);
     }
     MaxAffNumInRule = 0;
     for (size_t i = firstRule; i < NextRule; ++i)
@@ -506,7 +506,7 @@ void Init()
     }
     MaxAffNumInSym = 0;
     NextPartNum = firstPartNum;
-    foreach (i; EAG.All.bitsSet)
+    foreach (i; eag.All.bitsSet)
     {
         Max = SymOcc[Sym[i].FirstOcc].AffOcc.End - SymOcc[Sym[i].FirstOcc].AffOcc.Beg;
         Sym[i].AffPos.Beg = NextPartNum;
@@ -519,7 +519,7 @@ void Init()
     }
     PartNum = new int[NextPartNum];
     MaxPart = 0;
-    for (size_t i = EAG.firstVar; i < EAG.NextVar; ++i)
+    for (size_t i = EAG.firstVar; i < eag.NextVar; ++i)
     {
         DefAffOcc[i] = -1;
         AffixApplCnt[i] = 0;

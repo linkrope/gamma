@@ -1,6 +1,6 @@
 module epsilon.predicates;
 
-import EAG = epsilon.eag;
+import epsilon.eag;
 import log;
 import runtime;
 import std.bitmanip : BitArray;
@@ -41,14 +41,14 @@ void Check()
 
     void BuiltEdge()
     {
-        for (size_t N = EAG.firstHNont; N < EAG.NextHNont; ++N)
+        for (size_t N = EAG.firstHNont; N < eag.NextHNont; ++N)
             HNont[N] = -1;
-        foreach (N; EAG.All.bitsSet)
+        foreach (N; eag.All.bitsSet)
         {
-            if (!EAG.Null[N])
+            if (!eag.Null[N])
                 PutCoPred(N);
 
-            EAG.Alt A = EAG.HNont[N].Def.Sub;
+            EAG.Alt A = eag.HNont[N].Def.Sub;
 
             do
             {
@@ -79,18 +79,18 @@ void Check()
         }
     }
 
-    HNont = new int[EAG.NextHNont];
-    Edge = new  EdgeRecord[EAG.NONont + 1];
+    HNont = new int[eag.NextHNont];
+    Edge = new  EdgeRecord[eag.NONont + 1];
     NextEdge = 0;
-    Stack = new size_t[EAG.NextHNont];
+    Stack = new size_t[eag.NextHNont];
     Top = 0;
     CoPred = BitArray();
-    CoPred.length = EAG.NextHNont + 1;
+    CoPred.length = eag.NextHNont + 1;
     BuiltEdge;
     ClearStack;
-    Pred = EAG.Prod - CoPred;
-    Pred[EAG.StartSym] = false;
-    EAG.Pred = Pred;
+    Pred = eag.Prod - CoPred;
+    Pred[eag.StartSym] = false;
+    eag.Pred = Pred;
     List;
 }
 
@@ -99,17 +99,17 @@ private void List()
     import std.algorithm : map;
     import std.format : format;
 
-    info!"predicates in %s: %s"(EAG.BaseName, EAG.Pred.count);
-    if (EAG.Pred.count == 0)
+    info!"predicates in %s: %s"(eag.BaseName, eag.Pred.count);
+    if (eag.Pred.count == 0)
         return;
 
     string[] items;
 
-    foreach (N; EAG.Pred.bitsSet)
-        if (EAG.HNont[N].anonymous)
-            items ~= format!"EBNF expression in %s\n%s"(EAG.NamedHNontRepr(N), EAG.HNont[N].Def.Sub.Pos);
+    foreach (N; eag.Pred.bitsSet)
+        if (eag.HNont[N].anonymous)
+            items ~= format!"EBNF expression in %s\n%s"(eag.NamedHNontRepr(N), eag.HNont[N].Def.Sub.Pos);
         else
-            items ~= format!"%s\n%s"(EAG.HNontRepr(N), EAG.HNont[N].Def.Sub.Pos);
+            items ~= format!"%s\n%s"(eag.HNontRepr(N), eag.HNont[N].Def.Sub.Pos);
 
-    trace!"predicate occurrences in %s:%-(\n%s%)"(EAG.BaseName, items);
+    trace!"predicate occurrences in %s:%-(\n%s%)"(eag.BaseName, items);
 }

@@ -1,6 +1,6 @@
 module epsilon.analyzer;
 
-import EAG = epsilon.eag;
+import epsilon.eag;
 import Earley = epsilon.earley;
 import epsilon.lexer : Lexer, Token;
 import io : Input, Position;
@@ -105,7 +105,7 @@ void Specification()
      */
     void MetaRule(int Id, bool IsToken)
     {
-        const MNont = EAG.FindMNont(Id);
+        const MNont = eag.FindMNont(Id);
 
         /**
          * MetaExpr:
@@ -123,7 +123,7 @@ void Specification()
                 {
                     if (lexer.front == Token.name)
                     {
-                        EAG.AppMemb(EAG.FindMNont(lexer.value.to!int));
+                        eag.AppMemb(eag.FindMNont(lexer.value.to!int));
                         lexer.popFront;
                         if (lexer.front == Token.number)
                         {
@@ -133,12 +133,12 @@ void Specification()
                     }
                     else if (lexer.front == Token.string_)
                     {
-                        EAG.AppMemb(-EAG.FindMTerm(lexer.value.to!int));
+                        eag.AppMemb(-eag.FindMTerm(lexer.value.to!int));
                         lexer.popFront;
                     }
                     else
                     {
-                        EAG.AppMemb(EAG.nil);
+                        eag.AppMemb(EAG.nil);
                         break;
                     }
                 }
@@ -146,10 +146,10 @@ void Specification()
 
             for (;;)
             {
-                const Rhs = EAG.NextMemb;
+                const Rhs = eag.NextMemb;
 
                 MetaTerm;
-                EAG.AppMemb(EAG.NewMAlt(MNont, Rhs));
+                eag.AppMemb(eag.NewMAlt(MNont, Rhs));
                 if (lexer.front == '|')
                     lexer.popFront;
                 else
@@ -157,7 +157,7 @@ void Specification()
             }
         }
 
-        EAG.MNont[MNont].IsToken = EAG.MNont[MNont].IsToken || IsToken;
+        eag.MNont[MNont].IsToken = eag.MNont[MNont].IsToken || IsToken;
         if (lexer.front == '=')
             lexer.popFront;
         else
@@ -171,8 +171,8 @@ void Specification()
 
     void SetBaseName()
     {
-        EAG.StartSym = EAG.firstHNont;
-        EAG.BaseName = EAG.symbolTable.symbol(EAG.HNont[EAG.StartSym].Id);
+        eag.StartSym = EAG.firstHNont;
+        eag.BaseName = eag.symbolTable.symbol(eag.HNont[eag.StartSym].Id);
     }
 
     /**
@@ -188,17 +188,17 @@ void Specification()
                 int Affixform;
                 int P = s;
 
-                d = EAG.NextParam;
-                while (EAG.ParamBuf[P].Affixform != nil)
+                d = eag.NextParam;
+                while (eag.ParamBuf[P].Affixform != nil)
                 {
-                    Earley.CopyAffixform(EAG.ParamBuf[P].Affixform, Affixform);
-                    EAG.AppParam(Affixform, EAG.ParamBuf[P].Pos);
+                    Earley.CopyAffixform(eag.ParamBuf[P].Affixform, Affixform);
+                    eag.AppParam(Affixform, eag.ParamBuf[P].Pos);
                     ++P;
                 }
-                EAG.AppParam(nil, EAG.ParamBuf[P].Pos);
+                eag.AppParam(nil, eag.ParamBuf[P].Pos);
             }
 
-            EAG.HNont[Sym].Sig = Sig;
+            eag.HNont[Sym].Sig = Sig;
             A.Formal.Pos = Formal.Pos;
             A.Formal.Params = Formal.Params;
             A = A.Next;
@@ -234,7 +234,7 @@ void Specification()
 
                     if (lexer.front == Token.string_)
                     {
-                        Sym = -EAG.FindMTerm(lexer.value.to!int);
+                        Sym = -eag.FindMTerm(lexer.value.to!int);
                         Num = 0;
                         lexer.popFront;
                         ++Cnt;
@@ -252,7 +252,7 @@ void Specification()
                         }
                         if (lexer.front == Token.name)
                         {
-                            Sym = EAG.FindMNont(lexer.value.to!int);
+                            Sym = eag.FindMNont(lexer.value.to!int);
                             lexer.popFront;
                             if (lexer.front == Token.number)
                             {
@@ -293,7 +293,7 @@ void Specification()
 
                 bool isFormal = lexer.front == '+' || lexer.front == '-';
 
-                P.Params = EAG.NextParam;
+                P.Params = eag.NextParam;
                 for (;;)
                 {
                     char Dir;
@@ -311,7 +311,7 @@ void Specification()
                         if (isFormal)
                             Error(lexer.position, "'+' or '-' expected");
                     }
-                    EAG.AppParam(Earley.StartAffixform(), lexer.position);
+                    eag.AppParam(Earley.StartAffixform(), lexer.position);
                     Affixform(Sym);
                     if (isFormal)
                     {
@@ -323,7 +323,7 @@ void Specification()
                                 Error(lexer.position, "':' expected");
                             if (lexer.front == Token.name)
                             {
-                                EAG.AppDom(Dir, EAG.FindMNont(lexer.value.to!int));
+                                eag.AppDom(Dir, eag.FindMNont(lexer.value.to!int));
                                 lexer.popFront;
                             }
                             else
@@ -338,7 +338,7 @@ void Specification()
                         }
                         else
                         {
-                            EAG.AppDom(Dir, Sym);
+                            eag.AppDom(Dir, Sym);
                         }
                     }
                     while (lexer.front != ',' && lexer.front != '>' && lexer.front != Token.end)
@@ -351,7 +351,7 @@ void Specification()
                     else
                         break;
                 }
-                EAG.AppParam(EAG.nil, lexer.position);
+                eag.AppParam(EAG.nil, lexer.position);
                 if (lexer.front == '>')
                     lexer.popFront;
                 else
@@ -397,7 +397,7 @@ void Specification()
                             Error(Actual.Pos, "actual params not allowed here");
                             Actual.Params = EAG.empty;
                         }
-                        HNont = EAG.FindHNont(lexer.value.to!int);
+                        HNont = eag.FindHNont(lexer.value.to!int);
                         Pos = lexer.position;
                         lexer.popFront;
                         if (lexer.front == Token.number)
@@ -408,7 +408,7 @@ void Specification()
                         Params(Actual, Formal);
                         if (Formal.Params != EAG.empty)
                             Error(Formal.Pos, "formal params not allowed here");
-                        EAG.NewNont(Last, HNont, Actual, Pos);
+                        eag.NewNont(Last, HNont, Actual, Pos);
                         Actual.Params = EAG.empty;
                     }
                     else if (lexer.front == Token.string_)
@@ -418,7 +418,7 @@ void Specification()
                             Error(Actual.Pos, "actual params not allowed here");
                             Actual.Params = EAG.empty;
                         }
-                        EAG.NewTerm(Last, EAG.FindHTerm(lexer.value.to!int), lexer.position);
+                        eag.NewTerm(Last, eag.FindHTerm(lexer.value.to!int), lexer.position);
                         lexer.popFront;
                     }
                     else
@@ -432,8 +432,8 @@ void Specification()
                         if (lexer.front == '(' || lexer.front == '[' || lexer.front == '{')
                         {
                             Pos = lexer.position;
-                            HNont = EAG.NewAnonymNont(Id);
-                            EAG.NewNont(Last, HNont, Actual, Pos);
+                            HNont = eag.NewAnonymNont(Id);
+                            eag.NewNont(Last, HNont, Actual, Pos);
                             Actual.Params = EAG.empty;
                             if (lexer.front == '(')
                             {
@@ -443,7 +443,7 @@ void Specification()
                                     lexer.popFront;
                                 else
                                     Error(lexer.position, "')' expected");
-                                EAG.NewGrp(HNont, HExpr);
+                                eag.NewGrp(HNont, HExpr);
                             }
                             else
                             {
@@ -466,12 +466,12 @@ void Specification()
                                         Error(lexer.position, "']' expected");
                                 }
                                 Params(Actual, Formal);
-                                if (!EAG.SigOK(HNont))
+                                if (!eag.SigOK(HNont))
                                     Error(Formal.Pos, "formal params differ");
                                 if (Left == '{')
-                                    EAG.NewRep(HNont, HExpr, Formal, Pos);
+                                    eag.NewRep(HNont, HExpr, Formal, Pos);
                                 else
-                                    EAG.NewOpt(HNont, HExpr, Formal, Pos);
+                                    eag.NewOpt(HNont, HExpr, Formal, Pos);
                             }
                         }
                         else
@@ -496,7 +496,7 @@ void Specification()
                 EAG.Factor LastF;
 
                 Params(Actual, Formal);
-                if (!EAG.SigOK(HNont))
+                if (!eag.SigOK(HNont))
                     Error(Formal.Pos, "formal params differ");
                 HyperTerm(Actual, FirstF, LastF);
                 if (Left == '{' && Actual.Params == EAG.empty)
@@ -510,7 +510,7 @@ void Specification()
                     Error(Actual.Pos, "actual params not allowed here");
                     Actual.Params = EAG.empty;
                 }
-                EAG.NewAlt(Last, HNont, Formal, Actual, FirstF, LastF, AltPos);
+                eag.NewAlt(Last, HNont, Formal, Actual, FirstF, LastF, AltPos);
                 if (HExpr is null)
                     HExpr = Last;
                 if (lexer.front == '|')
@@ -525,7 +525,7 @@ void Specification()
             }
         }
 
-        int HNont = EAG.FindHNont(Id);
+        int HNont = eag.FindHNont(Id);
         int Sig;
         EAG.Alt HExpr;
 
@@ -533,9 +533,9 @@ void Specification()
         {
             NameNotified = true;
             SetBaseName;
-            info!"Analysing %s"(EAG.BaseName);
+            info!"Analysing %s"(eag.BaseName);
         }
-        EAG.HNont[HNont].IsToken = EAG.HNont[HNont].IsToken || IsToken;
+        eag.HNont[HNont].IsToken = eag.HNont[HNont].IsToken || IsToken;
 
         EAG.ParamsDesc Actual;
         EAG.ParamsDesc Formal;
@@ -543,10 +543,10 @@ void Specification()
         Params(Actual, Formal);
         if (Actual.Params != EAG.empty)
             Error(Actual.Pos, "actual params not allowed here");
-        if (Formal.Params != EAG.empty && EAG.SigOK(HNont))
+        if (Formal.Params != EAG.empty && eag.SigOK(HNont))
         {
-            Sig = EAG.HNont[HNont].Sig;
-            EAG.HNont[HNont].Sig = EAG.empty;
+            Sig = eag.HNont[HNont].Sig;
+            eag.HNont[HNont].Sig = EAG.empty;
         }
 
         Position AltPos;
@@ -563,7 +563,7 @@ void Specification()
         HyperExpr(HNont, Id, '(', HExpr, AltPos);
         if (Formal.Params != EAG.empty)
             Distribute(HNont, HExpr, Sig, Formal);
-        EAG.NewGrp(HNont, HExpr);
+        eag.NewGrp(HNont, HExpr);
         if (lexer.front == '.')
             lexer.popFront;
         else
@@ -622,20 +622,20 @@ void CheckSemantics()
 {
     void Shrink(int Sym)
     {
-        if (EAG.HNont[Sym].Id >= 0 && cast(EAG.Grp) EAG.HNont[Sym].Def)
+        if (eag.HNont[Sym].Id >= 0 && cast(EAG.Grp) eag.HNont[Sym].Def)
         {
-            EAG.Alt A = (cast(EAG.Grp) EAG.HNont[Sym].Def).Sub;
+            EAG.Alt A = (cast(EAG.Grp) eag.HNont[Sym].Def).Sub;
 
             if (A.Formal.Params == EAG.empty && A.Next is null && A.Sub !is null && cast(EAG.Nont) A.Sub)
             {
                 EAG.Nont F = cast(EAG.Nont) A.Sub;
 
-                if (EAG.HNont[F.Sym].anonymous && F.Actual.Params == EAG.empty && F.Next is null)
+                if (eag.HNont[F.Sym].anonymous && F.Actual.Params == EAG.empty && F.Next is null)
                 {
-                    EAG.HNont[Sym].Def = EAG.HNont[F.Sym].Def;
-                    EAG.HNont[F.Sym].Def = null;
-                    EAG.HNont[Sym].Sig = EAG.HNont[F.Sym].Sig;
-                    A = EAG.HNont[Sym].Def.Sub;
+                    eag.HNont[Sym].Def = eag.HNont[F.Sym].Def;
+                    eag.HNont[F.Sym].Def = null;
+                    eag.HNont[Sym].Sig = eag.HNont[F.Sym].Sig;
+                    A = eag.HNont[Sym].Def.Sub;
                     do
                     {
                         A.Up = Sym;
@@ -655,17 +655,17 @@ void CheckSemantics()
 
             int P = Par.Params;
 
-            while (EAG.DomBuf[Dom] != nil && EAG.ParamBuf[P].Affixform != nil)
+            while (eag.DomBuf[Dom] != nil && eag.ParamBuf[P].Affixform != nil)
             {
-                EAG.ParamBuf[P].isDef = Lhs && EAG.DomBuf[Dom] < 0 || !Lhs && EAG.DomBuf[Dom] > 0;
-                Earley.Parse(abs(EAG.DomBuf[Dom]), EAG.ParamBuf[P].Affixform,
-                        EAG.ParamBuf[P].Affixform, EAG.ParamBuf[P].isDef);
-                if (EAG.ParamBuf[P].Affixform == EAG.nil)
+                eag.ParamBuf[P].isDef = Lhs && eag.DomBuf[Dom] < 0 || !Lhs && eag.DomBuf[Dom] > 0;
+                Earley.Parse(abs(eag.DomBuf[Dom]), eag.ParamBuf[P].Affixform,
+                        eag.ParamBuf[P].Affixform, eag.ParamBuf[P].isDef);
+                if (eag.ParamBuf[P].Affixform == EAG.nil)
                     ++ErrorCounter;
                 ++Dom;
                 ++P;
             }
-            if (EAG.DomBuf[Dom] != EAG.ParamBuf[P].Affixform)
+            if (eag.DomBuf[Dom] != eag.ParamBuf[P].Affixform)
             {
                 Error(Par.Pos, "number of affixforms differs from signature");
             }
@@ -673,12 +673,12 @@ void CheckSemantics()
 
         void CheckActual(EAG.Nont F)
         {
-            if (EAG.WellMatched(EAG.HNont[F.Sym].Sig, EAG.empty)
+            if (eag.WellMatched(eag.HNont[F.Sym].Sig, EAG.empty)
                     && F.Actual.Params != EAG.empty
                     && F.Next !is null
                     && cast(EAG.Nont) F.Next
                     && (cast(EAG.Nont) F.Next).Actual.Params == EAG.empty
-                    && EAG.HNont[(cast(EAG.Nont) F.Next).Sym].anonymous)
+                    && eag.HNont[(cast(EAG.Nont) F.Next).Sym].anonymous)
             {
                 (cast(EAG.Nont)F.Next).Actual = F.Actual;
                 F.Actual.Params = EAG.empty;
@@ -690,7 +690,7 @@ void CheckSemantics()
             if (A.Last !is null)
                 if (auto F = cast(EAG.Nont) A.Last)
                 {
-                    if (EAG.WellMatched(EAG.HNont[F.Sym].Sig, EAG.empty)
+                    if (eag.WellMatched(eag.HNont[F.Sym].Sig, EAG.empty)
                             && F.Actual.Params != EAG.empty
                             && A.Actual.Params == EAG.empty)
                     {
@@ -700,32 +700,32 @@ void CheckSemantics()
                 }
         }
 
-        EAG.Rule Node = EAG.HNont[Sym].Def;
-        const Sig = EAG.HNont[Sym].Sig;
+        EAG.Rule Node = eag.HNont[Sym].Def;
+        const Sig = eag.HNont[Sym].Sig;
 
         if (Node !is null)
         {
             if (auto rep = cast(EAG.Rep) Node)
             {
-                EAG.Scope = EAG.NextVar;
-                rep.Scope.Beg = EAG.NextVar;
+                eag.Scope = eag.NextVar;
+                rep.Scope.Beg = eag.NextVar;
                 CheckParamList(Sig, rep.Formal, true);
-                rep.Scope.End = EAG.NextVar;
+                rep.Scope.End = eag.NextVar;
             }
             else if (auto opt = cast(EAG.Opt) Node)
             {
-                EAG.Scope = EAG.NextVar;
-                opt.Scope.Beg = EAG.NextVar;
+                eag.Scope = eag.NextVar;
+                opt.Scope.Beg = eag.NextVar;
                 CheckParamList(Sig, opt.Formal, true);
-                opt.Scope.End = EAG.NextVar;
+                opt.Scope.End = eag.NextVar;
             }
 
             EAG.Alt A = Node.Sub;
 
             do
             {
-                EAG.Scope = EAG.NextVar;
-                A.Scope.Beg = EAG.NextVar;
+                eag.Scope = eag.NextVar;
+                A.Scope.Beg = eag.NextVar;
                 CheckParamList(Sig, A.Formal, true);
                 if (cast(EAG.Rep) Node)
                 {
@@ -740,72 +740,72 @@ void CheckSemantics()
                     if (auto nont = cast(EAG.Nont) F)
                     {
                         CheckActual(nont);
-                        CheckParamList(EAG.HNont[nont.Sym].Sig, nont.Actual, false);
+                        CheckParamList(eag.HNont[nont.Sym].Sig, nont.Actual, false);
                     }
                     F = F.Next;
                 }
-                A.Scope.End = EAG.NextVar;
+                A.Scope.End = eag.NextVar;
                 A = A.Next;
             }
             while (A !is null);
         }
     }
 
-    EAG.All = BitArray();
-    EAG.All.length = EAG.NextHNont + 1;
-    if (EAG.firstHNont == EAG.NextHNont)
+    eag.All = BitArray();
+    eag.All.length = eag.NextHNont + 1;
+    if (EAG.firstHNont == eag.NextHNont)
     {
         ++ErrorCounter;
         error!"EAG needs at least one hyper-rule";
     }
-    for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
+    for (int Sym = EAG.firstHNont; Sym < eag.NextHNont; ++Sym)
     {
-        if (EAG.HNont[Sym].Def is null)
+        if (eag.HNont[Sym].Def is null)
         {
-            if (EAG.HNont[Sym].Id >= 0)
+            if (eag.HNont[Sym].Id >= 0)
             {
                 ++ErrorCounter;
-                error!"hyper-nonterminal %s undefined"(EAG.symbolTable.symbol(EAG.HNont[Sym].Id));
+                error!"hyper-nonterminal %s undefined"(eag.symbolTable.symbol(eag.HNont[Sym].Id));
             }
         }
         else
         {
-            EAG.All[Sym] = true;
+            eag.All[Sym] = true;
             Shrink(Sym);
         }
     }
-    for (int Sym = EAG.firstMNont; Sym < EAG.NextMNont; ++Sym)
+    for (int Sym = EAG.firstMNont; Sym < eag.NextMNont; ++Sym)
     {
-        if (EAG.MNont[Sym].MRule == nil)
+        if (eag.MNont[Sym].MRule == nil)
         {
             ++ErrorCounter;
-            error!"meta-nonterminal %s undefined"(EAG.symbolTable.symbol(EAG.MNont[Sym].Id));
+            error!"meta-nonterminal %s undefined"(eag.symbolTable.symbol(eag.MNont[Sym].Id));
         }
     }
     if (ErrorCounter == 0)
     {
-        for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
+        for (int Sym = EAG.firstHNont; Sym < eag.NextHNont; ++Sym)
             Traverse(Sym);
-        for (int n = EAG.firstVar; n < EAG.NextVar; ++n)
+        for (int n = EAG.firstVar; n < eag.NextVar; ++n)
         {
-            if (EAG.Var[n].Num < 0 && EAG.Var[n].Neg == EAG.nil)
-                Error(EAG.Var[n].Pos, "! operator not allowed");
-            if (!EAG.Var[n].Def)
+            if (eag.Var[n].Num < 0 && eag.Var[n].Neg == EAG.nil)
+                Error(eag.Var[n].Pos, "! operator not allowed");
+            if (!eag.Var[n].Def)
             {
                 import std.format : format;
 
-                Error(EAG.Var[n].Pos, format!"variable %s never on defining position"(EAG.VarRepr(n)));
+                Error(eag.Var[n].Pos, format!"variable %s never on defining position"(eag.VarRepr(n)));
             }
         }
-        if (EAG.DomBuf[EAG.HNont[EAG.StartSym].Sig] == EAG.nil
-                || EAG.DomBuf[EAG.HNont[EAG.StartSym].Sig] < 0
-                || EAG.DomBuf[EAG.HNont[EAG.StartSym].Sig + 1] != EAG.nil)
+        if (eag.DomBuf[eag.HNont[eag.StartSym].Sig] == EAG.nil
+                || eag.DomBuf[eag.HNont[eag.StartSym].Sig] < 0
+                || eag.DomBuf[eag.HNont[eag.StartSym].Sig + 1] != EAG.nil)
         {
             ++ErrorCounter;
             error!"start symbol %s must have exactly one synthesized attribute"(
-                    EAG.symbolTable.symbol(EAG.HNont[EAG.StartSym].Id));
+                    eag.symbolTable.symbol(eag.HNont[eag.StartSym].Id));
         }
-        if (EAG.firstMNont == EAG.NextMNont)
+        if (EAG.firstMNont == eag.NextMNont)
         {
             ++ErrorCounter;
             error!"EAG needs at least one meta-rule";
@@ -830,14 +830,14 @@ void ComputeEAGSets()
 
     void ComputeReach(int Sym)
     {
-        EAG.Alt A = EAG.HNont[Sym].Def.Sub;
+        EAG.Alt A = eag.HNont[Sym].Def.Sub;
 
-        EAG.Reach[Sym] = true;
+        eag.Reach[Sym] = true;
         do
         {
             for (EAG.Factor F = A.Sub; F !is null; F = F.Next)
                 if (auto nont = cast(EAG.Nont) F)
-                    if (!EAG.Reach[nont.Sym])
+                    if (!eag.Reach[nont.Sym])
                         ComputeReach(nont.Sym);
             A = A.Next;
         }
@@ -883,33 +883,33 @@ void ComputeEAGSets()
         }
     }
 
-    EAG.Reach = BitArray();
-    EAG.Reach.length = EAG.NextHNont + 1;
+    eag.Reach = BitArray();
+    eag.Reach.length = eag.NextHNont + 1;
 
-    ComputeReach(EAG.StartSym);
-    Deg = new int[EAG.NextHAlt];
-    Stack = new int[EAG.NextHNont];
+    ComputeReach(eag.StartSym);
+    Deg = new int[eag.NextHAlt];
+    Stack = new int[eag.NextHNont];
     Top = 0;
-    Edge = new EdgeRecord[EAG.NextHNont + EAG.NONont + 1];
-    NextEdge = EAG.NextHNont;
-    for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
+    Edge = new EdgeRecord[eag.NextHNont + eag.NONont + 1];
+    NextEdge = eag.NextHNont;
+    for (int Sym = EAG.firstHNont; Sym < eag.NextHNont; ++Sym)
         Edge[Sym].Next = nil;
-    EAG.Null = BitArray();
-    EAG.Null.length = EAG.NextHNont + 1;
+    eag.Null = BitArray();
+    eag.Null.length = eag.NextHNont + 1;
     Prod = BitArray();
-    Prod.length = EAG.NextHNont + 1;
-    for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
+    Prod.length = eag.NextHNont + 1;
+    for (int Sym = EAG.firstHNont; Sym < eag.NextHNont; ++Sym)
     {
-        if (EAG.HNont[Sym].Def !is null)
+        if (eag.HNont[Sym].Def !is null)
         {
-            if (cast(EAG.Opt) EAG.HNont[Sym].Def || cast(EAG.Rep) EAG.HNont[Sym].Def)
+            if (cast(EAG.Opt) eag.HNont[Sym].Def || cast(EAG.Rep) eag.HNont[Sym].Def)
             {
                 Prod[Sym] = true;
                 Stack[Top] = Sym;
                 ++Top;
             }
 
-            EAG.Alt A = EAG.HNont[Sym].Def.Sub;
+            EAG.Alt A = eag.HNont[Sym].Def.Sub;
 
             do
             {
@@ -938,12 +938,12 @@ void ComputeEAGSets()
         }
     }
     Prune;
-    EAG.Null = Prod.dup;
-    for (int Sym = EAG.firstHNont; Sym < EAG.NextHNont; ++Sym)
+    eag.Null = Prod.dup;
+    for (int Sym = EAG.firstHNont; Sym < eag.NextHNont; ++Sym)
     {
-        if (EAG.HNont[Sym].Def !is null)
+        if (eag.HNont[Sym].Def !is null)
         {
-            EAG.Alt A = EAG.HNont[Sym].Def.Sub;
+            EAG.Alt A = eag.HNont[Sym].Def.Sub;
 
             do
             {
@@ -958,13 +958,13 @@ void ComputeEAGSets()
         }
     }
     Prune;
-    EAG.Prod = Prod;
+    eag.Prod = Prod;
 }
 
 void Analyse(Input input)
 {
-    EAG.Init;
-    lexer = Lexer(input, EAG.symbolTable);
+    eag.Init;
+    lexer = Lexer(input, eag.symbolTable);
     Earley.Init;
     ErrorCounter = 0;
     NameNotified = false;
@@ -980,20 +980,20 @@ void Analyse(Input input)
     }
     if (ErrorCounter == 0)
     {
-        if (!EAG.Prod[EAG.StartSym])
+        if (!eag.Prod[eag.StartSym])
         {
             ++ErrorCounter;
-            error!"start symbol %s is unproductive"(EAG.HNontRepr(EAG.StartSym));
+            error!"start symbol %s is unproductive"(eag.HNontRepr(eag.StartSym));
         }
     }
     if (ErrorCounter == 0)
     {
-        info!"%s grammar is valid"(EAG.BaseName);
+        info!"%s grammar is valid"(eag.BaseName);
     }
     else
     {
         if (NameNotified)
-            info!"errors in %s"(EAG.BaseName);
+            info!"errors in %s"(eag.BaseName);
         else
             info!"errors";
     }

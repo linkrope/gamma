@@ -1,7 +1,7 @@
 module epsilon.ell1gen;
 
 import core.time : MonoTime;
-import EAG = epsilon.eag;
+import epsilon.eag;
 import EmitGen = epsilon.emitgen;
 import epsilon.settings;
 import Shift = epsilon.shift;
@@ -76,7 +76,7 @@ private bool UseReg;
 
 public bool Test(Settings settings)
 {
-    info!"ELL(1) testing %s"(EAG.BaseName);
+    info!"ELL(1) testing %s"(eag.BaseName);
 
     Init(settings);
     scope (exit)
@@ -88,13 +88,13 @@ public bool Test(Settings settings)
     if (Error || Warning)
         return !Error;
 
-    info!"%s grammar is ELL(1)"(EAG.BaseName);
+    info!"%s grammar is ELL(1)"(eag.BaseName);
     return true;
 }
 
 public string Generate(Settings settings)
 {
-    info!"ELL(1) writing %s"(EAG.BaseName);
+    info!"ELL(1) writing %s"(eag.BaseName);
 
     Init(settings);
     scope (exit)
@@ -115,7 +115,7 @@ public string Generate(Settings settings)
 
 public string GenerateParser(Settings settings)
 {
-    info!"ELL(1) writing parser of %s"(EAG.BaseName);
+    info!"ELL(1) writing parser of %s"(eag.BaseName);
 
     Init(settings);
     scope (exit)
@@ -136,12 +136,12 @@ private void Init(Settings settings)
 {
     int i;
 
-    nToks = EAG.NextHTerm - EAG.firstHTerm + firstUserTok;
-    if (EAG.NextHNont >= 1)
-        Nont = new NontRecord[EAG.NextHNont];
+    nToks = eag.NextHTerm - EAG.firstHTerm + firstUserTok;
+    if (eag.NextHNont >= 1)
+        Nont = new NontRecord[eag.NextHNont];
     else
         Nont = new NontRecord[1];
-    for (i = EAG.firstHNont; i < EAG.NextHNont; ++i)
+    for (i = EAG.firstHNont; i < eag.NextHNont; ++i)
     {
         Nont[i].First = BitArray();
         Nont[i].First.length = nToks + 1;
@@ -157,22 +157,22 @@ private void Init(Settings settings)
         Nont[i].OptExp = nil;
         Nont[i].FirstIndex = nil;
         Nont[i].FollowIndex = nil;
-        Nont[i].Anonym = EAG.All[i] && EAG.HNont[i].anonymous;
+        Nont[i].Anonym = eag.All[i] && eag.HNont[i].anonymous;
     }
-    if (EAG.NextHAlt >= 1)
-        Alt = new AltRecord[EAG.NextHAlt];
+    if (eag.NextHAlt >= 1)
+        Alt = new AltRecord[eag.NextHAlt];
     else
         Alt = new AltRecord[1];
-    for (i = EAG.firstHAlt; i < EAG.NextHAlt; ++i)
+    for (i = EAG.firstHAlt; i < eag.NextHAlt; ++i)
     {
         Alt[i].Dir = BitArray();
         Alt[i].Dir.length = nToks + 1;
     }
-    if (EAG.NextHFactor >= 1)
-        Factor = new FactorRecord[EAG.NextHFactor];
+    if (eag.NextHFactor >= 1)
+        Factor = new FactorRecord[eag.NextHFactor];
     else
         Factor = new FactorRecord[1];
-    for (i = EAG.firstHFactor; i < EAG.NextHFactor; ++i)
+    for (i = EAG.firstHFactor; i < eag.NextHFactor; ++i)
         Factor[i].Rec = nil;
     Edge = new EdgeRecord[255];
     NextEdge = firstEdge;
@@ -180,16 +180,16 @@ private void Init(Settings settings)
     NextGenSet = firstGenSet;
     GenSetT = new BitArray[255];
     NextGenSetT = firstGenSetT;
-    TestNonts = EAG.All - EAG.Pred;
-    GenNonts = EAG.Prod & EAG.Reach;
-    GenNonts -= EAG.Pred;
+    TestNonts = eag.All - eag.Pred;
+    GenNonts = eag.Prod & eag.Reach;
+    GenNonts -= eag.Pred;
     Error = false;
     Warning = false;
     UseReg = !settings.p;
     RegNonts = BitArray();
-    RegNonts.length = EAG.NextHNont + 1;
+    RegNonts.length = eag.NextHNont + 1;
     ConflictNonts = BitArray();
-    ConflictNonts.length = EAG.NextHNont + 1;
+    ConflictNonts.length = eag.NextHNont + 1;
     if (UseReg)
         ComputeRegNonts;
 }
@@ -204,7 +204,7 @@ private void ComputeRegNonts()
 
     void TraverseRegNonts(size_t N)
     {
-        EAG.Alt A = EAG.HNont[N].Def.Sub;
+        EAG.Alt A = eag.HNont[N].Def.Sub;
 
         do
         {
@@ -227,7 +227,7 @@ private void ComputeRegNonts()
 
     void DeleteConflictNont(int N)
     {
-        EAG.Alt A = EAG.HNont[N].Def.Sub;
+        EAG.Alt A = eag.HNont[N].Def.Sub;
 
         ConflictNonts[N] = false;
         do
@@ -243,7 +243,7 @@ private void ComputeRegNonts()
 
     RegNonts[] = false;
     foreach (N; TestNonts.bitsSet)
-    if (TestNonts[N] && EAG.HNont[N].IsToken && !RegNonts[N])
+    if (TestNonts[N] && eag.HNont[N].IsToken && !RegNonts[N])
     {
         RegNonts[N] = true;
         TraverseRegNonts(N);
@@ -252,7 +252,7 @@ private void ComputeRegNonts()
     foreach (N; ConflictNonts.bitsSet)
     if (ConflictNonts[N])
     {
-        A = EAG.HNont[N].Def.Sub;
+        A = eag.HNont[N].Def.Sub;
         do
         {
             F = A.Last;
@@ -294,46 +294,46 @@ private bool GrammarOk()
 
     if (UseReg)
     {
-        if (RegNonts[EAG.StartSym])
+        if (RegNonts[eag.StartSym])
         {
-            if (EAG.HNont[EAG.StartSym].IsToken)
+            if (eag.HNont[eag.StartSym].IsToken)
                 error!"start symbol must not be a token";
             else
                 error!"start symbol must not be a sub-token";
             Ok = false;
         }
         foreach (N; TestNonts.bitsSet)
-            if (EAG.HNont[N].IsToken)
+            if (eag.HNont[N].IsToken)
             {
-                if (EAG.Null[N])
+                if (eag.Null[N])
                 {
-                    error!"marked token %s is nullable"(EAG.HNontRepr(N));
+                    error!"marked token %s is nullable"(eag.HNontRepr(N));
                     Ok = false;
                 }
                 if (Nont[N].Anonym)
                 {
-                    fatal!"token in %s is anonymous"(EAG.NamedHNontRepr(N));
+                    fatal!"token in %s is anonymous"(eag.NamedHNontRepr(N));
                     Ok = false;
                 }
             }
         foreach (N; TestNonts.bitsSet)
             if (!RegNonts[N])
             {
-                A = EAG.HNont[N].Def.Sub;
+                A = eag.HNont[N].Def.Sub;
                 do
                 {
                     F = A.Sub;
                     while (F !is null)
                     {
                         if (auto nont = cast(EAG.Nont) F)
-                            if (TestNonts[nont.Sym] && RegNonts[nont.Sym] && !EAG.HNont[nont.Sym].IsToken)
+                            if (TestNonts[nont.Sym] && RegNonts[nont.Sym] && !eag.HNont[nont.Sym].IsToken)
                             {
                                 if (Nont[N].Anonym)
                                     error!"nonterminal in %s calls sub-token %s"(
-                                            EAG.NamedHNontRepr(N), EAG.HNontRepr(nont.Sym));
+                                            eag.NamedHNontRepr(N), eag.HNontRepr(nont.Sym));
                                 else
                                     error!"nonterminal %s calls sub-token %s"(
-                                            EAG.HNontRepr(N), EAG.HNontRepr(nont.Sym));
+                                            eag.HNontRepr(N), eag.HNontRepr(nont.Sym));
                                 Ok = false;
                             }
                         F = F.Next;
@@ -396,11 +396,11 @@ private void ComputeDir()
                     if (Nont[N1].Anonym)
                     {
                         items ~= format!"EBNF expression in %s\n%s"
-                            (EAG.NamedHNontRepr(N1), EAG.HNont[N1].Def.Sub.Pos);
+                            (eag.NamedHNontRepr(N1), eag.HNont[N1].Def.Sub.Pos);
                     }
                     else
                     {
-                        items ~= EAG.NamedHNontRepr(N1);
+                        items ~= eag.NamedHNontRepr(N1);
                     }
                 }
                 Nont[N1].First = Nont[N].First;
@@ -453,7 +453,7 @@ private void ComputeDir()
         import std.algorithm : map;
 
         const msg = format!"director set conflict in %s: %-(%s, %)\n%s"
-            (EAG.NamedHNontRepr(N), (Dir & PrevDirs).bitsSet.map!TokRepr, Pos);
+            (eag.NamedHNontRepr(N), (Dir & PrevDirs).bitsSet.map!TokRepr, Pos);
 
         if ((Dir - PrevDirs).bitsSet.empty)
         {
@@ -467,15 +467,15 @@ private void ComputeDir()
         }
     }
 
-    State = new int[EAG.NextHNont];
-    Stack = new size_t[EAG.NextHNont];
+    State = new int[eag.NextHNont];
+    Stack = new size_t[eag.NextHNont];
     Top = 0;
     NullAlts = BitArray();
-    NullAlts.length = EAG.NextHAlt;
+    NullAlts.length = eag.NextHAlt;
     Toks = BitArray();
     Toks.length = nToks + 1;
     NextEdge = firstEdge;
-    for (size_t N = EAG.firstHNont; N < EAG.NextHNont; ++N)
+    for (size_t N = EAG.firstHNont; N < eag.NextHNont; ++N)
     {
         Nont[N].Edge = nil;
         State[N] = 0;
@@ -483,7 +483,7 @@ private void ComputeDir()
     foreach (N; TestNonts.bitsSet)
     {
         Nont[N].First[] = false;
-        A = EAG.HNont[N].Def.Sub;
+        A = eag.HNont[N].Def.Sub;
         do
         {
             F = A.Sub;
@@ -501,7 +501,7 @@ private void ComputeDir()
                     if (TestNonts[nont.Sym])
                     {
                         NewEdge(N, nont.Sym);
-                        if (!EAG.Null[nont.Sym])
+                        if (!eag.Null[nont.Sym])
                             break;
                     }
                 }
@@ -515,19 +515,19 @@ private void ComputeDir()
         if (State[N] == 0)
             ComputeFirst(N);
     NextEdge = firstEdge;
-    for (size_t N = EAG.firstHNont; N < EAG.NextHNont; ++N)
+    for (size_t N = EAG.firstHNont; N < eag.NextHNont; ++N)
     {
         Nont[N].Edge = nil;
         Nont[N].Follow[] = false;
     }
-    Nont[EAG.StartSym].Follow[endTok] = true;
+    Nont[eag.StartSym].Follow[endTok] = true;
     NullAlts[] = false;
     foreach (N; TestNonts.bitsSet)
     {
-        A = EAG.HNont[N].Def.Sub;
+        A = eag.HNont[N].Def.Sub;
         do
         {
-            if (cast(EAG.Rep) EAG.HNont[N].Def !is null)
+            if (cast(EAG.Rep) eag.HNont[N].Def !is null)
                 Toks = Nont[N].First.dup;
             else
                 Toks[] = false;
@@ -550,7 +550,7 @@ private void ComputeDir()
                         Nont[nont.Sym].Follow |= Toks;
                         if (UseReg && !RegNonts[N] && RegNonts[nont.Sym])
                             Nont[nont.Sym].Follow[sepTok] = true;
-                        if (EAG.Null[nont.Sym])
+                        if (eag.Null[nont.Sym])
                         {
                             Toks |= Nont[nont.Sym].First;
                         }
@@ -571,7 +571,7 @@ private void ComputeDir()
     }
     foreach (N; TestNonts.bitsSet)
         Nont[N].IniFollow = Nont[N].Follow.dup;
-    for (size_t N = EAG.firstHNont; N < EAG.NextHNont; ++N)
+    for (size_t N = EAG.firstHNont; N < eag.NextHNont; ++N)
         State[N] = 0;
     foreach (N; TestNonts.bitsSet)
         if (State[N] == 0)
@@ -579,7 +579,7 @@ private void ComputeDir()
     foreach (N; TestNonts.bitsSet)
     {
         Toks[] = false;
-        A = EAG.HNont[N].Def.Sub;
+        A = eag.HNont[N].Def.Sub;
         do
         {
             if (NullAlts[A.Ind])
@@ -601,7 +601,7 @@ private void ComputeDir()
                     if (TestNonts[nont.Sym])
                     {
                         Alt[A.Ind].Dir |= Nont[nont.Sym].First;
-                        if (!EAG.Null[nont.Sym])
+                        if (!eag.Null[nont.Sym])
                             break;
                     }
                 }
@@ -616,15 +616,15 @@ private void ComputeDir()
             A = A.Next;
         }
         while (A !is null);
-        if (cast(EAG.Opt) EAG.HNont[N].Def || cast(EAG.Rep) EAG.HNont[N].Def)
+        if (cast(EAG.Opt) eag.HNont[N].Def || cast(EAG.Rep) eag.HNont[N].Def)
         {
             if (!(Nont[N].Follow & Toks).bitsSet.empty)
             {
                 if (!UseReg || !ConflictNonts[N] || Toks[sepTok])
                 {
-                    if (auto opt = cast(EAG.Opt) EAG.HNont[N].Def)
+                    if (auto opt = cast(EAG.Opt) eag.HNont[N].Def)
                         Conflict(N, opt.EmptyAltPos, Nont[N].Follow, Toks);
-                    else if (auto rep = cast(EAG.Rep) EAG.HNont[N].Def)
+                    else if (auto rep = cast(EAG.Rep) eag.HNont[N].Def)
                         Conflict(N, rep.EmptyAltPos, Nont[N].Follow, Toks);
                 }
             }
@@ -641,7 +641,7 @@ private string TokRepr(size_t Tok) @safe
     else if (Tok == sepTok)
         return "<sep>";
     else
-        return EAG.HTermRepr(Tok.to!int + EAG.firstHTerm - firstUserTok);
+        return eag.HTermRepr(Tok.to!int + EAG.firstHTerm - firstUserTok);
 }
 
 private void ComputeDefaultAlts()
@@ -719,26 +719,26 @@ private void ComputeDefaultAlts()
         Stack[MinPos] = Stack[Top];
     }
 
-    if (EAG.NextHAlt >= 1)
-        Alt = new AltRecord[EAG.NextHAlt];
-    if (EAG.NextHNont >= 1)
-        Stack = new StackRecord[EAG.NextHNont];
+    if (eag.NextHAlt >= 1)
+        Alt = new AltRecord[eag.NextHAlt];
+    if (eag.NextHNont >= 1)
+        Stack = new StackRecord[eag.NextHNont];
     Top = 0;
-    if (EAG.NextHNont >= 1)
-        StackPos = new int[EAG.NextHNont];
+    if (eag.NextHNont >= 1)
+        StackPos = new int[eag.NextHNont];
     DefNonts = GenNonts.dup;
     NextEdge = firstEdge;
-    for (size_t N = EAG.firstHNont; N < EAG.NextHNont; ++N)
+    for (size_t N = EAG.firstHNont; N < eag.NextHNont; ++N)
     {
         Nont[N].Edge = nil;
         Nont[N].DefaultAlt = null;
         StackPos[N] = int.max;
-        if (GenNonts[N] && (cast(EAG.Opt) EAG.HNont[N].Def || cast(EAG.Rep) EAG.HNont[N].Def))
+        if (GenNonts[N] && (cast(EAG.Opt) eag.HNont[N].Def || cast(EAG.Rep) eag.HNont[N].Def))
             DefNonts[N] = false;
     }
     foreach (N; DefNonts.bitsSet)
     {
-        A = EAG.HNont[N].Def.Sub;
+        A = eag.HNont[N].Def.Sub;
         APrio = 1;
         do
         {
@@ -813,7 +813,7 @@ private void ComputeSets()
 
     void ComputeRecoverySets(size_t N, ref BitArray LocalRec)
     {
-        EAG.Alt A = EAG.HNont[N].Def.Sub;
+        EAG.Alt A = eag.HNont[N].Def.Sub;
         const RealAlt = A.Next !is null;
         EAG.Factor F;
         BitArray S;
@@ -821,7 +821,7 @@ private void ComputeSets()
         S.length = nToks + 1;
         do
         {
-            if (cast(EAG.Rep) EAG.HNont[N].Def)
+            if (cast(EAG.Rep) eag.HNont[N].Def)
                 S = LocalRec | Nont[N].First;
             else
                 S = LocalRec.dup;
@@ -856,7 +856,7 @@ private void ComputeSets()
         }
         while (A !is null);
         LocalRec |= Nont[N].First;
-        if (cast(EAG.Opt) EAG.HNont[N].Def || cast(EAG.Rep) EAG.HNont[N].Def)
+        if (cast(EAG.Opt) eag.HNont[N].Def || cast(EAG.Rep) eag.HNont[N].Def)
             NewGenSet(LocalRec, Nont[N].OptRec);
         if (RealAlt)
             NewGenSet(LocalRec, Nont[N].AltRec);
@@ -867,11 +867,11 @@ private void ComputeSets()
     foreach (N; GenNonts.bitsSet)
     {
         Start[] = false;
-        if (N == EAG.StartSym)
+        if (N == eag.StartSym)
             Start[endTok] = true;
         if (!Nont[N].Anonym)
             ComputeRecoverySets(N, Start);
-        if (cast(EAG.Opt) EAG.HNont[N].Def || cast(EAG.Rep) EAG.HNont[N].Def)
+        if (cast(EAG.Opt) eag.HNont[N].Def || cast(EAG.Rep) eag.HNont[N].Def)
         {
             if (!Nont[N].Anonym)
             {
@@ -885,7 +885,7 @@ private void ComputeSets()
             NewGenSetT(Nont[N].First, Nont[N].FirstIndex);
             NewGenSetT(Nont[N].Follow, Nont[N].FollowIndex);
         }
-        if (EAG.HNont[N].Def.Sub.Next !is null)
+        if (eag.HNont[N].Def.Sub.Next !is null)
             NewGenSet(Nont[N].First, Nont[N].AltExp);
     }
 }
@@ -980,7 +980,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                                     output.writeln("S.Get = &S.Get3;");
                                 output.write("P", nont.Sym);
                                 EvalGen.GenActualParams(nont.Actual.Params, true);
-                                output.writeln("; // ", EAG.HNontRepr(nont.Sym));
+                                output.writeln("; // ", eag.HNontRepr(nont.Sym));
                                 if (UseReg && !RegNonts[N] && RegNonts[nont.Sym])
                                 {
                                     output.writeln("if (Tok == sepTok)");
@@ -1006,7 +1006,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                             EvalGen.GenAnalPred(N, nont.Actual.Params);
                             Poss1 = AllToks.dup;
                         }
-                        else if (EAG.Pred[nont.Sym])
+                        else if (eag.Pred[nont.Sym])
                         {
                             EvalGen.GenSynPred(N, nont.Actual.Params);
                             EvalGen.GenPredCall(nont.Sym, nont.Actual.Params);
@@ -1028,14 +1028,14 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                 EvalGen.InitScope(A.Scope);
                 EvalGen.GenAnalPred(N, A.Formal.Params);
                 TraverseFactors(A.Sub, FirstNontCall, Poss);
-                if (cast(EAG.Rep) EAG.HNont[N].Def)
+                if (cast(EAG.Rep) eag.HNont[N].Def)
                     EvalGen.GenRepAlt(N.to!int, A);
                 else
                     EvalGen.GenSynPred(N, A.Formal.Params);
             }
             else
             {
-                if (!EAG.Null[N])
+                if (!eag.Null[N])
                     Toks = Nont[N].First.dup;
                 else
                     Toks = Nont[N].First | Nont[N].Follow;
@@ -1055,7 +1055,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                 {
                     if (!LoopNeeded && (Alt[A.Ind].Dir & Poss).bitsSet.empty)
                     {
-                        warn!"dead alternative in %s\n%s"(EAG.NamedHNontRepr(N), A.Pos);
+                        warn!"dead alternative in %s\n%s"(eag.NamedHNontRepr(N), A.Pos);
                         Warning = true;
                     }
                     output.write("case ");
@@ -1078,7 +1078,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                     EvalGen.InitScope(A.Scope);
                     EvalGen.GenAnalPred(N, A.Formal.Params);
                     TraverseFactors(A.Sub, FirstNontCall, Alt[A.Ind].Dir);
-                    if (cast(EAG.Rep) EAG.HNont[N].Def)
+                    if (cast(EAG.Rep) eag.HNont[N].Def)
                         EvalGen.GenRepAlt(N.to!int, A);
                     else
                         EvalGen.GenSynPred(N, A.Formal.Params);
@@ -1099,7 +1099,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                     EvalGen.InitScope(A.Scope);
                     EvalGen.GenAnalPred(N, A.Formal.Params);
                     TraverseFactors(A.Sub, FirstNontCall, Toks);
-                    if (cast(EAG.Rep) EAG.HNont[N].Def)
+                    if (cast(EAG.Rep) eag.HNont[N].Def)
                         EvalGen.GenRepAlt(N.to!int, A);
                     else
                         EvalGen.GenSynPred(N, A.Formal.Params);
@@ -1143,16 +1143,16 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
             }
         }
 
-        if (auto opt = cast(EAG.Opt) EAG.HNont[N].Def)
+        if (auto opt = cast(EAG.Opt) eag.HNont[N].Def)
         {
             if (Poss <= Nont[N].Follow && (Nont[N].First & Poss).bitsSet.empty)
             {
-                warn!"dead brackets in %s\n%s"(EAG.NamedHNontRepr(N), EAG.HNont[N].Def.Sub.Pos);
+                warn!"dead brackets in %s\n%s"(eag.NamedHNontRepr(N), eag.HNont[N].Def.Sub.Pos);
                 Warning = true;
             }
             else if (Poss <= Nont[N].First)
             {
-                warn!"useless brackets in %s\n%s"(EAG.NamedHNontRepr(N), EAG.HNont[N].Def.Sub.Pos);
+                warn!"useless brackets in %s\n%s"(eag.NamedHNontRepr(N), eag.HNont[N].Def.Sub.Pos);
                 Warning = true;
             }
             output.writeln("while (1)");
@@ -1172,7 +1172,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
             }
             output.writeln(")");
             output.writeln("{");
-            TraverseAlts(EAG.HNont[N].Def.Sub, FirstNontCall, Nont[N].First);
+            TraverseAlts(eag.HNont[N].Def.Sub, FirstNontCall, Nont[N].First);
             output.writeln("break;");
             output.writeln("}");
             output.write("else if (");
@@ -1202,11 +1202,11 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
             output.writeln(");");
             output.writeln("}");
         }
-        else if (cast(EAG.Rep) EAG.HNont[N].Def)
+        else if (cast(EAG.Rep) eag.HNont[N].Def)
         {
             if (Poss <= Nont[N].Follow && (Nont[N].First & Poss).bitsSet.empty)
             {
-                warn!"dead braces in %s\n%s"(EAG.NamedHNontRepr(N), EAG.HNont[N].Def.Sub.Pos);
+                warn!"dead braces in %s\n%s"(eag.NamedHNontRepr(N), eag.HNont[N].Def.Sub.Pos);
                 Warning = true;
             }
             EvalGen.GenRepStart(N.to!int);
@@ -1227,7 +1227,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
            }
             output.writeln(")");
             output.writeln("{");
-            TraverseAlts(EAG.HNont[N].Def.Sub, FirstNontCall, Nont[N].First);
+            TraverseAlts(eag.HNont[N].Def.Sub, FirstNontCall, Nont[N].First);
             output.writeln("}");
             output.write("else if (");
             TestOneToken(Nont[N].Follow, ExactOneToken, TheOneToken);
@@ -1251,7 +1251,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
         }
         else
         {
-            TraverseAlts(EAG.HNont[N].Def.Sub, FirstNontCall, Poss);
+            TraverseAlts(eag.HNont[N].Def.Sub, FirstNontCall, Poss);
         }
     }
 
@@ -1310,7 +1310,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     }
 
     enum fixName = "ell1gen.fix.d";
-    const fileName = settings.path(EAG.BaseName ~ ".d");
+    const fileName = settings.path(eag.BaseName ~ ".d");
 
     AllToks = BitArray();
     AllToks.length = nToks + 1;
@@ -1321,14 +1321,14 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     else
         EvalGen.InitGen(output, EvalGen.onePass, settings);
     InclFix('$');
-    output.write(EAG.BaseName);
+    output.write(eag.BaseName);
     InclFix('$');
-    name = EAG.BaseName ~ "Lex";
+    name = eag.BaseName ~ "Lex";
     output.write(name);
     if (parsePass)
     {
         output.write(", Eval = ");
-        output.write(EAG.BaseName);
+        output.write(eag.BaseName);
         output.write("Eval");
     }
     InclFix('$');
@@ -1357,7 +1357,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
             EvalGen.ComputeVarNames(N, Yes.embed);
             output.write("void P", N);
             EvalGen.GenFormalParams(N, Yes.parNeeded);
-            output.writeln(" // ", EAG.HNontRepr(N));
+            output.writeln(" // ", eag.HNontRepr(N));
             output.writeln("{");
             EvalGen.GenVarDecl(N);
             TraverseNont(N, true, AllToks);
@@ -1371,10 +1371,10 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     if (parsePass)
         output.write("& Eval.EvalInitSucceeds()");
     InclFix('$');
-    output.write(EAG.BaseName);
+    output.write(eag.BaseName);
     InclFix('$');
     output.write("P");
-    output.write(EAG.StartSym);
+    output.write(eag.StartSym);
     InclFix('$');
     if (parsePass)
     {
@@ -1401,14 +1401,14 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
         EmitGen.GenShowHeap(output);
     }
     InclFix('$');
-    output.write(EAG.BaseName);
+    output.write(eag.BaseName);
     InclFix('$');
-    name = EAG.BaseName ~ ".Tab";
+    name = eag.BaseName ~ ".Tab";
     output.write(name);
     InclFix('$');
-    output.write(EAG.BaseName);
+    output.write(eag.BaseName);
     InclFix('$');
-    name = EAG.BaseName ~ ".Tab";
+    name = eag.BaseName ~ ".Tab";
     WriteTab(name);
     EvalGen.FinitGen;
     output.close;

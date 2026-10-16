@@ -1,6 +1,6 @@
 module epsilon.soag.optimizer;
 
-import EAG = epsilon.eag;
+import epsilon.eag;
 import ALists = epsilon.soag.alists;
 import Protocol = epsilon.soag.protocol;
 import SOAG = epsilon.soag.soag;
@@ -47,7 +47,7 @@ void WriteVDS()
 
     stdout.writeln("Inhalt VDS:");
     for (size_t i = ALists.firstIndex; i <= VDS.Last; i += 3)
-        stdout.writeln(EAG.HNontRepr(VDS.Elem[i]), ", ", VDS.Elem[i + 1], ", ", VDS.Elem[i + 2]);
+        stdout.writeln(eag.HNontRepr(VDS.Elem[i]), ", ", VDS.Elem[i + 1], ", ", VDS.Elem[i + 2]);
         stdout.writeln;
 }
 
@@ -80,7 +80,7 @@ void WriteVS()
 
     stdout.writeln("Inhalt VS:");
     for (size_t i = ALists.firstIndex; i <= VS.Last; i += 2)
-        stdout.writeln(EAG.HNontRepr(VS.Elem[i]), ", ", VS.Elem[i + 1]);
+        stdout.writeln(eag.HNontRepr(VS.Elem[i]), ", ", VS.Elem[i + 1]);
         stdout.writeln;
 }
 
@@ -505,13 +505,13 @@ void Optimize() nothrow
     Init;
     GlobalVar = firstGlobalVar - 1;
     StackVar = firstStackVar - 1;
-    foreach (S; EAG.All.bitsSet)
+    foreach (S; eag.All.bitsSet)
     {
         for (int AP = SOAG.Sym[S].AffPos.Beg; AP <= SOAG.Sym[S].AffPos.End; ++AP)
         {
             const A = AP - SOAG.Sym[S].AffPos.Beg;
 
-            if (!EAG.Pred[S] || SOAG.IsSynthesized(S, A))
+            if (!eag.Pred[S] || SOAG.IsSynthesized(S, A))
             {
                 disjoint = true;
                 admissible = true;

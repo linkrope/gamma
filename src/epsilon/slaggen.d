@@ -1,7 +1,7 @@
 module epsilon.slaggen;
 
 import core.time : MonoTime;
-import EAG = epsilon.eag;
+import epsilon.eag;
 import epsilon.settings;
 import io : Input, Position, read;
 import log;
@@ -52,26 +52,26 @@ public bool Test()
 {
     auto type = Type.slag;
 
-    info!"SLAG testing %s"(EAG.BaseName);
+    info!"SLAG testing %s"(eag.BaseName);
 
     InitTest;
     scope (exit)
         FinitTest;
 
-    foreach (N; EAG.Prod.bitsSet)
-        if (EAG.HNont[N].Id >= 0)
+    foreach (N; eag.Prod.bitsSet)
+        if (eag.HNont[N].Id >= 0)
             type = min(type, TestHNont(N, Yes.checkSLAG));
 
     final switch (type) with (Type)
     {
         case neither:
-            info!"%s grammar is no LAG"(EAG.BaseName);
+            info!"%s grammar is no LAG"(eag.BaseName);
             return false;
         case lag:
-            info!"%s grammar is no SLAG but LAG"(EAG.BaseName);
+            info!"%s grammar is no SLAG but LAG"(eag.BaseName);
             return false;
         case slag:
-            info!"%s grammar is SLAG"(EAG.BaseName);
+            info!"%s grammar is SLAG"(eag.BaseName);
             return true;
     }
 }
@@ -92,7 +92,7 @@ public void FinitTest() nothrow
 
 public bool PredsOK()
 {
-    return EAG.Pred.bitsSet
+    return eag.Pred.bitsSet
         .map!(N => IsLAG(N))
         .all;
 }
@@ -103,7 +103,7 @@ public bool IsLAG(size_t N)
 }
 
 private Type TestHNont(size_t N, Flag!"checkSLAG" checkSLAG = No.checkSLAG)
-in (EAG.Prod[N])
+in (eag.Prod[N])
 {
     auto type = Type.slag;
 
@@ -113,12 +113,12 @@ in (EAG.Prod[N])
         {
             if (Node < 0)
             {
-                EAG.Var[-Node].Def = true;
+                eag.Var[-Node].Def = true;
             }
             else
             {
-                foreach (n; 0 .. EAG.MAlt[EAG.NodeBuf[Node]].Arity)
-                    DefPos(EAG.NodeBuf[Node + n + 1]);
+                foreach (n; 0 .. eag.MAlt[eag.NodeBuf[Node]].Arity)
+                    DefPos(eag.NodeBuf[Node + n + 1]);
             }
         }
 
@@ -134,16 +134,16 @@ in (EAG.Prod[N])
             {
                 const V = -Node;
 
-                if (!EAG.Var[V].Def)
+                if (!eag.Var[V].Def)
                 {
-                    error!"not left-defining\n%s"(EAG.Var[V].Pos);
+                    error!"not left-defining\n%s"(eag.Var[V].Pos);
                     type = Type.neither;
                 }
             }
             else
             {
-                foreach (n; 0 .. EAG.MAlt[EAG.NodeBuf[Node]].Arity)
-                    ApplPos(EAG.NodeBuf[Node + n + 1]);
+                foreach (n; 0 .. eag.MAlt[eag.NodeBuf[Node]].Arity)
+                    ApplPos(eag.NodeBuf[Node + n + 1]);
             }
         }
 
@@ -162,12 +162,12 @@ in (EAG.Prod[N])
                 error!"cannot analyze bottom up\n%s"(param.Pos);
                 type = min(type, Type.lag);
             }
-            else if (EAG.Var[-Node].Def)
+            else if (eag.Var[-Node].Def)
             {
                 error!"cannot check for equality bottom up\n%s"(param.Pos);
                 type = min(type, Type.lag);
             }
-            else if (EAG.Var[EAG.Var[-Node].Neg].Def)
+            else if (eag.Var[eag.Var[-Node].Neg].Def)
             {
                 error!"cannot check for inequality bottom up\n%s"(param.Pos);
                 type = min(type, Type.lag);
@@ -182,19 +182,19 @@ in (EAG.Prod[N])
 
     Prepare(N);
 
-    EAG.Rule Node = EAG.HNont[N].Def;
+    EAG.Rule Node = eag.HNont[N].Def;
 
     if (auto rep = cast(EAG.Rep) Node)
     {
         InitScope(rep.Scope);
-        rep.Formal.params.each!(param => CheckDefPos(param));
-        rep.Formal.params.each!(param => CheckApplPos(param));
+        rep.Formal.params(eag).each!(param => CheckDefPos(param));
+        rep.Formal.params(eag).each!(param => CheckApplPos(param));
     }
     else if (auto opt = cast(EAG.Opt) Node)
     {
         InitScope(opt.Scope);
-        opt.Formal.params.each!(param => CheckDefPos(param));
-        opt.Formal.params.each!(param => CheckApplPos(param));
+        opt.Formal.params(eag).each!(param => CheckDefPos(param));
+        opt.Formal.params(eag).each!(param => CheckApplPos(param));
     }
 
     EAG.Alt A = Node.Sub;
@@ -202,7 +202,7 @@ in (EAG.Prod[N])
     do
     {
         InitScope(A.Scope);
-        A.Formal.params.each!(param => CheckDefPos(param));
+        A.Formal.params(eag).each!(param => CheckDefPos(param));
 
         EAG.Factor F = A.Sub;
 
@@ -210,24 +210,24 @@ in (EAG.Prod[N])
         {
             if (auto nont = cast(EAG.Nont) F)
             {
-                nont.Actual.params.each!(param => CheckApplPos(param));
-                if (checkSLAG && EAG.HNont[nont.Sym].anonymous && EAG.Prod[nont.Sym])
+                nont.Actual.params(eag).each!(param => CheckApplPos(param));
+                if (checkSLAG && eag.HNont[nont.Sym].anonymous && eag.Prod[nont.Sym])
                     type = min(type, TestHNont(nont.Sym, checkSLAG));
-                nont.Actual.params.each!(param => CheckDefPos(param));
+                nont.Actual.params(eag).each!(param => CheckDefPos(param));
             }
             F = F.Next;
         }
         if (cast(EAG.Rep) Node !is null)
         {
-            A.Actual.params.each!(param => CheckApplPos(param));
-            foreach (param; A.Actual.params)
+            A.Actual.params(eag).each!(param => CheckApplPos(param));
+            foreach (param; A.Actual.params(eag))
             {
                 if (checkSLAG)
                     CheckSLAGCond(param);
                 CheckDefPos(param);
             }
         }
-        A.Formal.params.each!(param => CheckApplPos(param));
+        A.Formal.params(eag).each!(param => CheckApplPos(param));
         A = A.Next;
     }
     while (A !is null);
@@ -253,8 +253,8 @@ private void Prepare(size_t N) nothrow
             }
             else
             {
-                foreach (n; 0 .. EAG.MAlt[EAG.NodeBuf[Node]].Arity)
-                    DefPos(EAG.NodeBuf[Node + n + 1]);
+                foreach (n; 0 .. eag.MAlt[eag.NodeBuf[Node]].Arity)
+                    DefPos(eag.NodeBuf[Node + n + 1]);
             }
         }
 
@@ -267,8 +267,8 @@ private void Prepare(size_t N) nothrow
             }
             else
             {
-                foreach (n; 0 .. EAG.MAlt[EAG.NodeBuf[Node]].Arity)
-                    ApplPos(EAG.NodeBuf[Node + n + 1]);
+                foreach (n; 0 .. eag.MAlt[eag.NodeBuf[Node]].Arity)
+                    ApplPos(eag.NodeBuf[Node + n + 1]);
             }
         }
 
@@ -290,17 +290,17 @@ private void Prepare(size_t N) nothrow
 
     if (!PreparedHNonts[N])
     {
-        EAG.Rule Node = EAG.HNont[N].Def;
+        EAG.Rule Node = eag.HNont[N].Def;
 
         if (auto rep = cast(EAG.Rep) Node)
         {
             InitArray(rep.Scope);
-            Traverse(rep.Formal.params);
+            Traverse(rep.Formal.params(eag));
         }
         else if (auto opt = cast(EAG.Opt) Node)
         {
             InitArray(opt.Scope);
-            Traverse(opt.Formal.params);
+            Traverse(opt.Formal.params(eag));
         }
 
         EAG.Alt A = Node.Sub;
@@ -308,20 +308,20 @@ private void Prepare(size_t N) nothrow
         do
         {
             InitArray(A.Scope);
-            Traverse(A.Formal.params);
+            Traverse(A.Formal.params(eag));
 
             EAG.Factor F = A.Sub;
 
             while (F !is null)
             {
                 if (auto nont = cast(EAG.Nont) F)
-                    Traverse(nont.Actual.params);
+                    Traverse(nont.Actual.params(eag));
                 F = F.Next;
             }
             if (cast(EAG.Rep) Node !is null)
             {
-                Traverse(A.Actual.params);
-                foreach (param; A.Actual.params)
+                Traverse(A.Actual.params(eag));
+                foreach (param; A.Actual.params(eag))
                     if (param.isDef && param.Affixform < 0)
                         RepVar[-param.Affixform] = true;
             }
@@ -366,67 +366,67 @@ public void InitGen(File MOut, int Treatment, Settings settings)
         PrepareInit;
     ComputeNodeIdent;
     ComputeConstDat;
-    AffixName = new int[EAG.NextParam];
-    foreach (i; EAG.firstParam .. EAG.NextParam)
+    AffixName = new int[eag.NextParam];
+    foreach (i; EAG.firstParam .. eag.NextParam)
         AffixName[i] = -1;
-    NodeName = new int[EAG.NextNode];
-    VarName = new int[EAG.NextVar];
-    VarDeps = new int[EAG.NextVar];
-    VarRefCnt = new int[EAG.NextVar];
-    VarDepPos = new int[EAG.NextVar];
-    foreach (i; EAG.firstVar .. EAG.NextVar)
+    NodeName = new int[eag.NextNode];
+    VarName = new int[eag.NextVar];
+    VarDeps = new int[eag.NextVar];
+    VarRefCnt = new int[eag.NextVar];
+    VarDepPos = new int[eag.NextVar];
+    foreach (i; EAG.firstVar .. eag.NextVar)
     {
         VarRefCnt[i] = 0;
         VarDepPos[i] = -1;
         VarName[i] = -1;
     }
-    ActualName = new int[EAG.NextDom];
-    FormalName = new int[EAG.NextDom];
-    foreach (i; EAG.firstDom .. EAG.NextDom)
+    ActualName = new int[eag.NextDom];
+    FormalName = new int[eag.NextDom];
+    foreach (i; EAG.firstDom .. eag.NextDom)
     {
         ActualName[i] = -1;
         FormalName[i] = -1;
     }
-    HNontVars = new int[EAG.NextHNont];
-    HNontFVars = new int[EAG.NextHNont];
+    HNontVars = new int[eag.NextHNont];
+    HNontFVars = new int[eag.NextHNont];
     HNontDef = BitArray();
-    HNontDef.length = EAG.NextHNont + 1;
-    RepAppls = new bool[EAG.NextHNont];
-    foreach (i; EAG.firstHNont .. EAG.NextHNont)
+    HNontDef.length = eag.NextHNont + 1;
+    RepAppls = new bool[eag.NextHNont];
+    foreach (i; EAG.firstHNont .. eag.NextHNont)
         RepAppls[i] = true;
     EmptySet = BitArray();
-    EmptySet.length = EAG.NextVar + 1;
+    EmptySet.length = eag.NextVar + 1;
     Generating = true;
 }
 
 private void PrepareInit() nothrow
 {
-    VarCnt = new int[EAG.NextVar];
-    VarAppls = new int[EAG.NextVar];
+    VarCnt = new int[eag.NextVar];
+    VarAppls = new int[eag.NextVar];
     RepVar = BitArray();
-    RepVar.length = EAG.NextVar + 1;
+    RepVar.length = eag.NextVar + 1;
     PreparedHNonts = BitArray();
-    PreparedHNonts.length = EAG.NextHNont + 1;
+    PreparedHNonts.length = eag.NextHNont + 1;
 }
 
 private void ComputeNodeIdent() nothrow @safe
 {
     int i;
 
-    NodeIdent = new int[EAG.NextMAlt];
-    foreach (A; EAG.firstMAlt .. EAG.NextMAlt)
+    NodeIdent = new int[eag.NextMAlt];
+    foreach (A; EAG.firstMAlt .. eag.NextMAlt)
         NodeIdent[A] = -1;
     MaxMAlt = 0;
-    foreach (N; EAG.firstMNont .. EAG.NextMNont)
+    foreach (N; EAG.firstMNont .. eag.NextMNont)
     {
-        int A = EAG.MNont[N].MRule;
+        int A = eag.MNont[N].MRule;
 
         i = 0;
         while (A != EAG.nil)
         {
             ++i;
             NodeIdent[A] = i;
-            A = EAG.MAlt[A].Next;
+            A = eag.MAlt[A].Next;
         }
         if (i > MaxMAlt)
             MaxMAlt = i;
@@ -436,11 +436,11 @@ private void ComputeNodeIdent() nothrow @safe
         i = i * 2;
     MaxMAlt = i;
     RefConst = 0;
-    foreach (A; EAG.firstMAlt .. EAG.NextMAlt)
+    foreach (A; EAG.firstMAlt .. eag.NextMAlt)
     {
         assert(NodeIdent[A] >= 0);
 
-        NodeIdent[A] = NodeIdent[A] + EAG.MAlt[A].Arity * MaxMAlt;
+        NodeIdent[A] = NodeIdent[A] + eag.MAlt[A].Arity * MaxMAlt;
         if (RefConst < NodeIdent[A])
             RefConst = NodeIdent[A];
     }
@@ -466,25 +466,25 @@ private void ComputeConstDat() nothrow
                 }
                 else
                 {
-                    const Arity = EAG.MAlt[EAG.NodeBuf[Node]].Arity;
+                    const Arity = eag.MAlt[eag.NodeBuf[Node]].Arity;
 
                     if (!UseConst || Arity != 0)
                         Next += 1 + Arity;
                     foreach (n; 0 .. Arity)
-                        TraverseTree(EAG.NodeBuf[Node + n + 1], Next);
+                        TraverseTree(eag.NodeBuf[Node + n + 1], Next);
                 }
             }
 
-            while (EAG.ParamBuf[P].Affixform != EAG.nil)
+            while (eag.ParamBuf[P].Affixform != EAG.nil)
             {
-                const Tree = EAG.ParamBuf[P].Affixform;
+                const Tree = eag.ParamBuf[P].Affixform;
 
                 isConst = true;
                 TraverseTree(Tree, AffixSpace[P]);
-                if (Tree > 0 && EAG.MAlt[EAG.NodeBuf[Tree]].Arity == 0)
+                if (Tree > 0 && eag.MAlt[eag.NodeBuf[Tree]].Arity == 0)
                 {
                     if (isConst)
-                        AffixPlace[P] = Leaf[EAG.NodeBuf[Tree]];
+                        AffixPlace[P] = Leaf[eag.NodeBuf[Tree]];
                 }
                 else
                 {
@@ -498,7 +498,7 @@ private void ComputeConstDat() nothrow
             }
         }
 
-        EAG.Rule Node = EAG.HNont[N].Def;
+        EAG.Rule Node = eag.HNont[N].Def;
 
         if (auto rep = cast(EAG.Rep) Node)
             CheckParams(rep.Formal.Params, ConstPtr);
@@ -526,21 +526,21 @@ private void ComputeConstDat() nothrow
         while (A !is null);
     }
 
-    AffixSpace = new int[EAG.NextParam];
-    AffixPlace = new int[EAG.NextParam];
-    foreach (i; EAG.firstParam .. EAG.NextParam)
+    AffixSpace = new int[eag.NextParam];
+    AffixPlace = new int[eag.NextParam];
+    foreach (i; EAG.firstParam .. eag.NextParam)
     {
         AffixSpace[i] = 0;
         AffixPlace[i] = -1;
     }
-    Leaf = new int[EAG.NextMAlt];
+    Leaf = new int[eag.NextMAlt];
 
-    int ConstPtr = EAG.MaxMArity + 1;
+    int ConstPtr = eag.MaxMArity + 1;
 
     FirstHeap = ConstPtr;
-    foreach (A; EAG.firstMAlt .. EAG.NextMAlt)
+    foreach (A; EAG.firstMAlt .. eag.NextMAlt)
     {
-        if (EAG.MAlt[A].Arity == 0)
+        if (eag.MAlt[A].Arity == 0)
         {
             Leaf[A] = ConstPtr;
             ++ConstPtr;
@@ -550,7 +550,7 @@ private void ComputeConstDat() nothrow
             Leaf[A] = -1;
         }
     }
-    foreach (i; EAG.Prod.bitsSet)
+    foreach (i; eag.Prod.bitsSet)
         Traverse(i, ConstPtr);
     if (UseConst)
         FirstHeap = ConstPtr;
@@ -593,19 +593,19 @@ public void GenRepStart(int Sym) @safe
     {
         import std.conv : to;
 
-        const Next = (cast(EAG.Rep) EAG.HNont[Sym].Def).Sub.Formal.params
+        const Next = (cast(EAG.Rep) eag.HNont[Sym].Def).Sub.Formal.params(eag)
             .count!(param => !param.isDef)
             .to!int;
 
         GenOverflowGuard(Next);
     }
 
-    int Dom = EAG.HNont[Sym].Sig;
-    int P = (cast(EAG.Rep) EAG.HNont[Sym].Def).Sub.Formal.Params;
+    int Dom = eag.HNont[Sym].Sig;
+    int P = (cast(EAG.Rep) eag.HNont[Sym].Def).Sub.Formal.Params;
 
-    while (EAG.DomBuf[Dom] != EAG.nil)
+    while (eag.DomBuf[Dom] != EAG.nil)
     {
-        if (!EAG.ParamBuf[P].isDef)
+        if (!eag.ParamBuf[P].isDef)
         {
             if (UseRefCnt)
             {
@@ -679,15 +679,15 @@ public void GenDeclarations(Settings settings)
         {
             const Next1 = Next;
 
-            Heap[Next] = NodeIdent[EAG.NodeBuf[Node]];
-            Next += 1 + EAG.MAlt[EAG.NodeBuf[Node]].Arity;
-            foreach (n; 0 .. EAG.MAlt[EAG.NodeBuf[Node]].Arity)
+            Heap[Next] = NodeIdent[eag.NodeBuf[Node]];
+            Next += 1 + eag.MAlt[eag.NodeBuf[Node]].Arity;
+            foreach (n; 0 .. eag.MAlt[eag.NodeBuf[Node]].Arity)
             {
-                const Node1 = EAG.NodeBuf[Node + n + 1];
+                const Node1 = eag.NodeBuf[Node + n + 1];
 
-                if (EAG.MAlt[EAG.NodeBuf[Node1]].Arity == 0)
+                if (eag.MAlt[eag.NodeBuf[Node1]].Arity == 0)
                 {
-                    Heap[Next1 + n + 1] = Leaf[EAG.NodeBuf[Node1]];
+                    Heap[Next1 + n + 1] = Leaf[eag.NodeBuf[Node1]];
                 }
                 else
                 {
@@ -704,22 +704,22 @@ public void GenDeclarations(Settings settings)
         Tab.writefln!"long %s"(FirstHeap - 1);
         Heap = new int[FirstHeap];
         Heap[errVal] = 0;
-        foreach (i; 0 .. EAG.MaxMArity)
+        foreach (i; 0 .. eag.MaxMArity)
             Heap[i + 1] = errVal;
         if (UseConst)
         {
-            foreach (i; EAG.firstMAlt .. EAG.NextMAlt)
+            foreach (i; EAG.firstMAlt .. eag.NextMAlt)
             {
                 if (Leaf[i] >= errVal)
                     Heap[Leaf[i]] = NodeIdent[i];
             }
-            foreach (P; EAG.firstParam .. EAG.NextParam)
+            foreach (P; EAG.firstParam .. eag.NextParam)
             {
-                if (EAG.ParamBuf[P].Affixform != EAG.nil && AffixPlace[P] >= 0)
+                if (eag.ParamBuf[P].Affixform != EAG.nil && AffixPlace[P] >= 0)
                 {
                     int Next = AffixPlace[P];
 
-                    SynTree(EAG.ParamBuf[P].Affixform, Next);
+                    SynTree(eag.ParamBuf[P].Affixform, Next);
                 }
             }
         }
@@ -729,7 +729,7 @@ public void GenDeclarations(Settings settings)
     }
 
     enum fixName = "slaggen.fix.d";
-    const name = EAG.BaseName ~ (TraversePass ? "Eval.EvalTab" : ".EvalTab");
+    const name = eag.BaseName ~ (TraversePass ? "Eval.EvalTab" : ".EvalTab");
     const TabTimeStamp = MonoTime.currTime.ticks;
 
     Fix = Input(fixName, import(fixName));
@@ -753,7 +753,7 @@ public void GenDeclarations(Settings settings)
     else
         SkipFix('$');
     InclFix('$');
-    output.write(EAG.MaxMArity + 1);
+    output.write(eag.MaxMArity + 1);
     InclFix('$');
     output.write(RefConst);
     InclFix('$');
@@ -800,17 +800,17 @@ public void GenDeclarations(Settings settings)
 
 public bool PosNeeded(int P) @nogc nothrow @safe
 {
-    while (EAG.ParamBuf[P].Affixform != EAG.nil)
+    while (eag.ParamBuf[P].Affixform != EAG.nil)
     {
-        if (EAG.ParamBuf[P].isDef)
+        if (eag.ParamBuf[P].isDef)
         {
-            const V = -EAG.ParamBuf[P].Affixform;
+            const V = -eag.ParamBuf[P].Affixform;
 
             if (V < 0)
                 return true;
-            else if (EAG.Var[V].Def)
+            else if (eag.Var[V].Def)
                 return true;
-            else if (EAG.Var[EAG.Var[V].Neg].Def)
+            else if (eag.Var[eag.Var[V].Neg].Def)
                 return true;
         }
         ++P;
@@ -829,10 +829,10 @@ public void GenRepAlt(int Sym, EAG.Alt A)
     if (SavePos)
         output.writeln("PushPos;");
     P = A.Actual.Params;
-    Dom = EAG.HNont[Sym].Sig;
-    while (EAG.ParamBuf[P].Affixform != EAG.nil)
+    Dom = eag.HNont[Sym].Sig;
+    while (eag.ParamBuf[P].Affixform != EAG.nil)
     {
-        if (!EAG.ParamBuf[P].isDef && AffixName[P] != FormalName[Dom])
+        if (!eag.ParamBuf[P].isDef && AffixName[P] != FormalName[Dom])
         {
             GenVar(FormalName[Dom]);
             output.write(" = ");
@@ -843,7 +843,7 @@ public void GenRepAlt(int Sym, EAG.Alt A)
         ++Dom;
     }
     P1 = A.Actual.Params;
-    Dom = EAG.HNont[Sym].Sig;
+    Dom = eag.HNont[Sym].Sig;
     P = A.Formal.Params;
     if (!UseRefCnt)
         GetAffixSpace(P);
@@ -851,14 +851,14 @@ public void GenRepAlt(int Sym, EAG.Alt A)
 
     int Next = 0;
 
-    while (EAG.ParamBuf[P].Affixform != EAG.nil)
+    while (eag.ParamBuf[P].Affixform != EAG.nil)
     {
-        if (!EAG.ParamBuf[P].isDef)
+        if (!eag.ParamBuf[P].isDef)
         {
-            const Tree = EAG.ParamBuf[P].Affixform;
+            const Tree = eag.ParamBuf[P].Affixform;
 
             if (SavePos)
-                output.writeln("PopPos(", EAG.MAlt[EAG.NodeBuf[Tree]].Arity, ");");
+                output.writeln("PopPos(", eag.MAlt[eag.NodeBuf[Tree]].Arity, ");");
             if (Tree > 0 && !(UseConst && AffixPlace[P] >= 0))
             {
                 if (Guard)
@@ -869,14 +869,14 @@ public void GenRepAlt(int Sym, EAG.Alt A)
                     output.writeln("{");
                 }
                 if (UseRefCnt)
-                    Gen1SynTree(Tree, RepVar, EAG.Pred[Sym]);
+                    Gen1SynTree(Tree, RepVar, eag.Pred[Sym]);
                 else
                     GenSynTree(Tree, RepVar, Next);
                 output.writeln;
                 if (Guard)
                     output.writeln("}");
             }
-            if (Guard && VarAppls[-EAG.ParamBuf[P1].Affixform] == 0)
+            if (Guard && VarAppls[-eag.ParamBuf[P1].Affixform] == 0)
             {
                 GenVar(AffixName[P1]);
                 output.writeln(" = undef;");
@@ -894,25 +894,25 @@ public void GenRepEnd(int Sym)
 {
     const Guard = false; // TODO: eliminate dead code?
 
-    InitScope((cast(EAG.Rep) EAG.HNont[Sym].Def).Scope);
+    InitScope((cast(EAG.Rep) eag.HNont[Sym].Def).Scope);
 
-    int P = (cast(EAG.Rep) EAG.HNont[Sym].Def).Formal.Params;
-    int P1 = EAG.HNont[Sym].Def.Sub.Actual.Params;
-    int Dom = EAG.HNont[Sym].Sig;
+    int P = (cast(EAG.Rep) eag.HNont[Sym].Def).Formal.Params;
+    int P1 = eag.HNont[Sym].Def.Sub.Actual.Params;
+    int Dom = eag.HNont[Sym].Sig;
     int Next = 0;
 
     GenAnalPred(Sym, P);
     if (!UseRefCnt)
         GetAffixSpace(P);
     GenHangIn(P, Guard);
-    while (EAG.ParamBuf[P].Affixform != EAG.nil)
+    while (eag.ParamBuf[P].Affixform != EAG.nil)
     {
-        if (!EAG.ParamBuf[P].isDef)
+        if (!eag.ParamBuf[P].isDef)
         {
-            const Tree = EAG.ParamBuf[P].Affixform;
+            const Tree = eag.ParamBuf[P].Affixform;
 
             if (SavePos)
-                output.writeln("PopPos(", EAG.MAlt[EAG.NodeBuf[Tree]].Arity, ");");
+                output.writeln("PopPos(", eag.MAlt[eag.NodeBuf[Tree]].Arity, ");");
             if (Tree > 0 && !(UseConst && AffixPlace[P] >= 0))
             {
                 if (Guard)
@@ -923,7 +923,7 @@ public void GenRepEnd(int Sym)
                     output.writeln("{");
                 }
                 if (UseRefCnt)
-                    Gen1SynTree(Tree, EmptySet, EAG.Pred[Sym]);
+                    Gen1SynTree(Tree, EmptySet, eag.Pred[Sym]);
                 else
                     GenSynTree(Tree, EmptySet, Next);
                 output.writeln("");
@@ -973,18 +973,18 @@ private void GenHangIn(int P, bool Guard)
         }
         else
         {
-            foreach (n; 0 .. EAG.MAlt[EAG.NodeBuf[Node]].Arity)
-                FreeVariables(EAG.NodeBuf[Node + n + 1]);
+            foreach (n; 0 .. eag.MAlt[eag.NodeBuf[Node]].Arity)
+                FreeVariables(eag.NodeBuf[Node + n + 1]);
         }
     }
 
     int Next = 0;
 
-    while (EAG.ParamBuf[P].Affixform != EAG.nil)
+    while (eag.ParamBuf[P].Affixform != EAG.nil)
     {
-        if (!EAG.ParamBuf[P].isDef)
+        if (!eag.ParamBuf[P].isDef)
         {
-            const Tree = EAG.ParamBuf[P].Affixform;
+            const Tree = eag.ParamBuf[P].Affixform;
             if (Guard)
             {
                 output.write("if (");
@@ -1022,7 +1022,7 @@ private void GenHangIn(int P, bool Guard)
             {
                 if (UseRefCnt)
                 {
-                    output.write("GetHeap(", EAG.MAlt[EAG.NodeBuf[Tree]].Arity, ", ");
+                    output.write("GetHeap(", eag.MAlt[eag.NodeBuf[Tree]].Arity, ", ");
                     GenVar(NodeName[Tree]);
                     output.write("); ");
                     GenHeap(AffixName[P], 0);
@@ -1068,7 +1068,7 @@ private void GenHangIn(int P, bool Guard)
 public void GenPredProcs()
 {
     void GenPredCover(size_t N)
-    in (EAG.Pred[N])
+    in (eag.Pred[N])
     {
         output.write("void Check", N, "(string ErrMsg");
         GenFormalParams(N, No.parNeeded);
@@ -1076,28 +1076,28 @@ public void GenPredProcs()
         output.writeln("{");
         output.write("if (!Pred", N, "(");
 
-        int Dom = EAG.HNont[N].Sig;
+        int Dom = eag.HNont[N].Sig;
         int i = 1;
 
-        if (EAG.DomBuf[Dom] != EAG.nil)
+        if (eag.DomBuf[Dom] != EAG.nil)
         {
             for (;;)
             {
                 GenVar(i);
                 ++Dom;
                 ++i;
-                if (EAG.DomBuf[Dom] == EAG.nil)
+                if (eag.DomBuf[Dom] == EAG.nil)
                     break;
                 output.write(", ");
             }
         }
         output.writeln("))");
         output.writeln("{");
-        Dom = EAG.HNont[N].Sig;
+        Dom = eag.HNont[N].Sig;
         i = 1;
-        while (EAG.DomBuf[Dom] > 0)
+        while (eag.DomBuf[Dom] > 0)
             ++Dom;
-        if (EAG.DomBuf[Dom] != EAG.nil)
+        if (eag.DomBuf[Dom] != EAG.nil)
         {
             output.write("if (");
             for (;;)
@@ -1109,8 +1109,8 @@ public void GenPredProcs()
                     ++Dom;
                     ++i;
                 }
-                while (!(EAG.DomBuf[Dom] <= 0));
-                if (EAG.DomBuf[Dom] == EAG.nil)
+                while (!(eag.DomBuf[Dom] <= 0));
+                if (eag.DomBuf[Dom] == EAG.nil)
                     break;
                 output.write(" && ");
             }
@@ -1128,7 +1128,7 @@ public void GenPredProcs()
 
     void GenPredicateCode(size_t N)
     {
-        EAG.Rule Node = EAG.HNont[N].Def;
+        EAG.Rule Node = eag.HNont[N].Def;
         EAG.Alt A;
 
         void CleanLevel(int Level)
@@ -1143,9 +1143,9 @@ public void GenPredProcs()
 
         void FreeParamTrees(int P)
         {
-            while (EAG.ParamBuf[P].Affixform != EAG.nil)
+            while (eag.ParamBuf[P].Affixform != EAG.nil)
             {
-                if (EAG.ParamBuf[P].isDef)
+                if (eag.ParamBuf[P].isDef)
                     GenFreeHeap(AffixName[P]);
                 ++P;
             }
@@ -1158,12 +1158,12 @@ public void GenPredProcs()
                 auto nont = cast(EAG.Nont) F;
 
                 assert(nont !is null);
-                assert(EAG.Pred[nont.Sym]);
+                assert(eag.Pred[nont.Sym]);
 
                 GenSynPred(N, nont.Actual.Params);
                 output.write("if (Pred", nont.Sym);
                 GenActualParams(nont.Actual.Params, true);
-                output.writeln(") // ", EAG.HNontRepr(nont.Sym));
+                output.writeln(") // ", eag.HNontRepr(nont.Sym));
                 output.writeln("{");
                 GenAnalPred(N, nont.Actual.Params);
 
@@ -1182,7 +1182,7 @@ public void GenPredProcs()
                     GenSynPred(N, A.Actual.Params);
                     output.write("if (Pred", N);
                     GenActualParams(A.Actual.Params, true);
-                    output.writeln(") // ", EAG.HNontRepr(N));
+                    output.writeln(") // ", eag.HNontRepr(N));
                     output.writeln("{");
                     GenAnalPred(N, A.Actual.Params);
 
@@ -1261,9 +1261,9 @@ public void GenPredProcs()
             FreeParamTrees(P);
         output.writeln("if (Failed)");
         output.writeln("{");
-        while (EAG.ParamBuf[P].Affixform != EAG.nil)
+        while (eag.ParamBuf[P].Affixform != EAG.nil)
         {
-            if (!EAG.ParamBuf[P].isDef)
+            if (!eag.ParamBuf[P].isDef)
             {
                 GenVar(AffixName[P]);
                 output.writeln(" = errVal;");
@@ -1275,14 +1275,14 @@ public void GenPredProcs()
         output.writeln("}");
     }
 
-    foreach (N; EAG.Pred.bitsSet)
+    foreach (N; eag.Pred.bitsSet)
         GenPredCover(N);
-    foreach (N; EAG.Pred.bitsSet)
+    foreach (N; eag.Pred.bitsSet)
     {
         ComputeVarNames(N, No.embed);
         output.write("bool Pred", N);
         GenFormalParams(N, Yes.parNeeded);
-        output.writeln(" // ", EAG.HNontRepr(N));
+        output.writeln(" // ", eag.HNontRepr(N));
         output.writeln("{");
         GenVarDecl(N);
         GenPredicateCode(N);
@@ -1293,7 +1293,7 @@ public void GenPredProcs()
 }
 
 public void ComputeVarNames(size_t N, Flag!"embed" embed)
-in (EAG.Prod[N])
+in (eag.Prod[N])
 in (!HNontDef[N])
 {
     int[] FreeVar;
@@ -1374,17 +1374,17 @@ in (!HNontDef[N])
                 {
                     const V = -Node;
 
-                    if (!EAG.Var[V].Def)
+                    if (!eag.Var[V].Def)
                     {
-                        EAG.Var[V].Def = true;
+                        eag.Var[V].Def = true;
                         if (VarName[V] < 0)
                         {
                             VarName[V] = GetFreeVar;
                             ++RefCnt[VarName[V]];
                         }
-                        if (EAG.Var[EAG.Var[V].Neg].Def)
+                        if (eag.Var[eag.Var[V].Neg].Def)
                         {
-                            const Vn = EAG.Var[V].Neg;
+                            const Vn = eag.Var[V].Neg;
 
                             --VarDeps[V];
                             --VarDeps[Vn];
@@ -1406,16 +1406,16 @@ in (!HNontDef[N])
                 }
                 else
                 {
-                    const Arity = EAG.MAlt[EAG.NodeBuf[Node]].Arity;
+                    const Arity = eag.MAlt[eag.NodeBuf[Node]].Arity;
 
                     if (Arity != 0)
                         NodeName[Node] = Var;
                     foreach (n; 0 .. Arity)
                     {
-                        const Node1 = EAG.NodeBuf[Node + n + 1];
+                        const Node1 = eag.NodeBuf[Node + n + 1];
                         const NeedVar = ((isPred || UseRefCnt) && Var == AffixName[P] || n + 1 != Arity)
                             && Node1 >= 0
-                            && EAG.MAlt[EAG.NodeBuf[Node1]].Arity > 0;
+                            && eag.MAlt[eag.NodeBuf[Node1]].Arity > 0;
                         int Var1;
 
                         if (NeedVar)
@@ -1434,11 +1434,11 @@ in (!HNontDef[N])
                 }
             }
 
-            while (EAG.ParamBuf[P].Affixform != EAG.nil)
+            while (eag.ParamBuf[P].Affixform != EAG.nil)
             {
-                const Tree = EAG.ParamBuf[P].Affixform;
+                const Tree = eag.ParamBuf[P].Affixform;
 
-                if (EAG.ParamBuf[P].isDef)
+                if (eag.ParamBuf[P].isDef)
                 {
                     if (Tree < 0 && VarName[-Tree] < 0)
                     {
@@ -1473,17 +1473,17 @@ in (!HNontDef[N])
                 }
                 else
                 {
-                    const Arity = EAG.MAlt[EAG.NodeBuf[Node]].Arity;
+                    const Arity = eag.MAlt[eag.NodeBuf[Node]].Arity;
 
                     NodeName[Node] = Var;
                     foreach (n; 0 .. Arity)
                     {
-                        const Node1 = EAG.NodeBuf[Node + n + 1];
+                        const Node1 = eag.NodeBuf[Node + n + 1];
                         const NeedVar = !(UseConst && AffixPlace[P] > 0)
                             && UseRefCnt
                             && (Var == AffixName[P] || n + 1 != Arity)
                             && Node1 >= 0
-                            && EAG.MAlt[EAG.NodeBuf[Node1]].Arity > 0;
+                            && eag.MAlt[eag.NodeBuf[Node1]].Arity > 0;
                         int Var1;
 
                         if (NeedVar)
@@ -1503,11 +1503,11 @@ in (!HNontDef[N])
             }
 
             P1 = P;
-            while (EAG.ParamBuf[P].Affixform != EAG.nil)
+            while (eag.ParamBuf[P].Affixform != EAG.nil)
             {
-                if (!EAG.ParamBuf[P].isDef)
+                if (!eag.ParamBuf[P].isDef)
                 {
-                    Tree = EAG.ParamBuf[P].Affixform;
+                    Tree = eag.ParamBuf[P].Affixform;
                     if (Tree < 0 && VarName[-Tree] < 0)
                     {
                         V = -Tree;
@@ -1529,11 +1529,11 @@ in (!HNontDef[N])
             }
             if (Repetition)
             {
-                while (EAG.ParamBuf[P1].Affixform != EAG.nil)
+                while (eag.ParamBuf[P1].Affixform != EAG.nil)
                 {
-                    if (!EAG.ParamBuf[P1].isDef && !(UseConst && AffixPlace[P1] > 0))
+                    if (!eag.ParamBuf[P1].isDef && !(UseConst && AffixPlace[P1] > 0))
                     {
-                        Tree = EAG.ParamBuf[P1].Affixform;
+                        Tree = eag.ParamBuf[P1].Affixform;
                         if (Tree >= 0)
                             Dispose(NodeName[Tree]);
                     }
@@ -1544,12 +1544,12 @@ in (!HNontDef[N])
 
         void GetFormalParamNames(size_t N, int P)
         {
-            const Repetition = !EAG.Pred[N] && cast(EAG.Rep) EAG.HNont[N].Def;
-            int Dom = EAG.HNont[N].Sig;
+            const Repetition = !eag.Pred[N] && cast(EAG.Rep) eag.HNont[N].Def;
+            int Dom = eag.HNont[N].Sig;
             int Tree;
             int V;
 
-            while (EAG.ParamBuf[P].Affixform != EAG.nil)
+            while (eag.ParamBuf[P].Affixform != EAG.nil)
             {
                 if (Repetition)
                 {
@@ -1558,8 +1558,8 @@ in (!HNontDef[N])
                 else
                 {
                     AffixName[P] = FormalName[Dom];
-                    Tree = EAG.ParamBuf[P].Affixform;
-                    if (!EAG.ParamBuf[P].isDef && Tree < 0)
+                    Tree = eag.ParamBuf[P].Affixform;
+                    if (!eag.ParamBuf[P].isDef && Tree < 0)
                     {
                         V = -Tree;
                         VarName[V] = AffixName[P];
@@ -1580,26 +1580,26 @@ in (!HNontDef[N])
                 return P;
             }
 
-            const Repetition = !EAG.Pred[N] && cast(EAG.Rep) EAG.HNont[N].Def;
+            const Repetition = !eag.Pred[N] && cast(EAG.Rep) eag.HNont[N].Def;
             int P1 = P;
             int Tree;
             int V;
 
-            while (EAG.ParamBuf[P].Affixform != EAG.nil)
+            while (eag.ParamBuf[P].Affixform != EAG.nil)
             {
-                Tree = EAG.ParamBuf[P].Affixform;
+                Tree = eag.ParamBuf[P].Affixform;
                 if (AffixName[P] < 0)
                 {
                     if (Tree < 0 && VarName[-Tree] >= 0)
                     {
                         V = -Tree;
-                        if (!EAG.ParamBuf[P].isDef)
+                        if (!eag.ParamBuf[P].isDef)
                         {
                             if (Repetition && VarDeps[V] > 1)
                             {
                                 AffixName[P] = GetFreeVar;
                             }
-                            else if (!EAG.Pred[N] && EAG.HNont[N].anonymous)
+                            else if (!eag.Pred[N] && eag.HNont[N].anonymous)
                             {
                                 AffixName[P] = VarName[V];
                                 if (FindVarName(P1, VarName[V]) != P)
@@ -1613,7 +1613,7 @@ in (!HNontDef[N])
                         else
                         {
                             AffixName[P] = VarName[V];
-                            if (EAG.Var[V].Def || FindVarName(P1, VarName[V]) != P)
+                            if (eag.Var[V].Def || FindVarName(P1, VarName[V]) != P)
                                 AffixName[P] = GetFreeVar;
                         }
                     }
@@ -1623,7 +1623,7 @@ in (!HNontDef[N])
                     }
                 }
                 ++RefCnt[AffixName[P]];
-                if (isPred && EAG.ParamBuf[P].isDef)
+                if (isPred && eag.ParamBuf[P].isDef)
                     ++RefCnt[AffixName[P]];
                 ++P;
             }
@@ -1631,7 +1631,7 @@ in (!HNontDef[N])
 
         void FreeActualParamNames(int P)
         {
-            while (EAG.ParamBuf[P].Affixform != EAG.nil)
+            while (eag.ParamBuf[P].Affixform != EAG.nil)
             {
                 Dispose(AffixName[P]);
                 ++P;
@@ -1644,9 +1644,9 @@ in (!HNontDef[N])
 
             void FreeVarNames(int P)
             {
-                while (EAG.ParamBuf[P].Affixform != EAG.nil)
+                while (eag.ParamBuf[P].Affixform != EAG.nil)
                 {
-                    if (EAG.ParamBuf[P].isDef)
+                    if (eag.ParamBuf[P].isDef)
                         Dispose(AffixName[P]);
                     ++P;
                 }
@@ -1670,7 +1670,7 @@ in (!HNontDef[N])
             foreach (i; Scope.Beg .. Scope.End)
             {
                 VarDeps[i] = VarCnt[i];
-                if (EAG.Var[i].Neg != EAG.nil)
+                if (eag.Var[i].Neg != EAG.nil)
                     ++VarDeps[i];
             }
         }
@@ -1683,21 +1683,21 @@ in (!HNontDef[N])
                 VarRefCnt[i] = VarAppls[i];
                 if (VarDepPos[i] >= 0)
                     ++VarRefCnt[i];
-                trace!`RC: "%s" %s V%s (%s)`(EAG.VarRepr(i), VarDeps[i], VarName[i], RefCnt[VarName[i]]);
+                trace!`RC: "%s" %s V%s (%s)`(eag.VarRepr(i), VarDeps[i], VarName[i], RefCnt[VarName[i]]);
             }
         }
 
         Prepare(N);
-        trace!`RC: begin "%s": RefCnt=%s`(EAG.HNontRepr(N), RefCnt[0 .. NextFreeVar + 1]);
+        trace!`RC: begin "%s": RefCnt=%s`(eag.HNontRepr(N), RefCnt[0 .. NextFreeVar + 1]);
         scope (exit)
-            trace!`RC: end "%s": RefCnt=%s`(EAG.HNontRepr(N), RefCnt[0 .. NextFreeVar + 1]);
-        Node = EAG.HNont[N].Def;
-        isPred = EAG.Pred[N];
+            trace!`RC: end "%s": RefCnt=%s`(eag.HNontRepr(N), RefCnt[0 .. NextFreeVar + 1]);
+        Node = eag.HNont[N].Def;
+        isPred = eag.Pred[N];
 
         const Repetition = !isPred && cast(EAG.Rep) Node;
-        int Dom = EAG.HNont[N].Sig;
+        int Dom = eag.HNont[N].Sig;
 
-        while (EAG.DomBuf[Dom] != EAG.nil)
+        while (eag.DomBuf[Dom] != EAG.nil)
         {
             if (FormalName[Dom] < 0)
                 FormalName[Dom] = GetFreeVar;
@@ -1706,12 +1706,12 @@ in (!HNontDef[N])
         }
         if (Repetition)
         {
-            Dom = EAG.HNont[N].Sig;
+            Dom = eag.HNont[N].Sig;
             P = (cast(EAG.Rep) Node).Formal.Params;
-            while (EAG.DomBuf[Dom] != EAG.nil)
+            while (eag.DomBuf[Dom] != EAG.nil)
             {
                 ActualName[Dom] = FormalName[Dom];
-                if (!EAG.ParamBuf[P].isDef)
+                if (!eag.ParamBuf[P].isDef)
                 {
                     ActualName[Dom] = GetFreeVar;
                     ++RefCnt[ActualName[Dom]];
@@ -1728,16 +1728,16 @@ in (!HNontDef[N])
             GetFormalParamNames(N, A.Formal.Params);
             if (Repetition)
             {
-                Dom = EAG.HNont[N].Sig;
+                Dom = eag.HNont[N].Sig;
                 P = A.Actual.Params;
-                while (EAG.ParamBuf[P].Affixform != EAG.nil)
+                while (eag.ParamBuf[P].Affixform != EAG.nil)
                 {
-                    if (EAG.ParamBuf[P].isDef)
+                    if (eag.ParamBuf[P].isDef)
                     {
                         AffixName[P] = ActualName[Dom];
-                        if (EAG.ParamBuf[P].Affixform < 0)
+                        if (eag.ParamBuf[P].Affixform < 0)
                         {
-                            VarName[-EAG.ParamBuf[P].Affixform] = AffixName[P];
+                            VarName[-eag.ParamBuf[P].Affixform] = AffixName[P];
                             ++RefCnt[AffixName[P]];
                         }
                     }
@@ -1753,11 +1753,11 @@ in (!HNontDef[N])
                 {
                     GetActualParamNames(nont.Sym, nont.Actual.Params);
                     CheckApplPos(nont.Actual.Params, false);
-                    if (embed && EAG.Prod[nont.Sym] && !EAG.Pred[nont.Sym] && EAG.HNont[nont.Sym].anonymous)
+                    if (embed && eag.Prod[nont.Sym] && !eag.Pred[nont.Sym] && eag.HNont[nont.Sym].anonymous)
                     {
-                        Dom = EAG.HNont[nont.Sym].Sig;
+                        Dom = eag.HNont[nont.Sym].Sig;
                         P = nont.Actual.Params;
-                        while (EAG.DomBuf[Dom] != EAG.nil)
+                        while (eag.DomBuf[Dom] != EAG.nil)
                         {
                             FormalName[Dom] = AffixName[P];
                             ++Dom;
@@ -1804,15 +1804,15 @@ in (!HNontDef[N])
         if (Repetition)
         {
             P = (cast(EAG.Rep) Node).Formal.Params;
-            while (EAG.ParamBuf[P].Affixform != EAG.nil)
+            while (eag.ParamBuf[P].Affixform != EAG.nil)
             {
-                if (!EAG.ParamBuf[P].isDef)
+                if (!eag.ParamBuf[P].isDef)
                     Dispose(AffixName[P]);
                 ++P;
             }
         }
-        Dom = EAG.HNont[N].Sig;
-        while (EAG.DomBuf[Dom] != EAG.nil)
+        Dom = eag.HNont[N].Sig;
+        while (eag.DomBuf[Dom] != EAG.nil)
         {
             Dispose(FormalName[Dom]);
             ++Dom;
@@ -1821,13 +1821,13 @@ in (!HNontDef[N])
 
     void ComputeRepAppls(size_t N)
     {
-        if (cast(EAG.Rep) EAG.HNont[N].Def)
+        if (cast(EAG.Rep) eag.HNont[N].Def)
         {
-            EAG.Alt A = EAG.HNont[N].Def.Sub;
+            EAG.Alt A = eag.HNont[N].Def.Sub;
 
             do
             {
-                foreach (param; A.Actual.params)
+                foreach (param; A.Actual.params(eag))
                     if (param.isDef)
                         RepAppls[N] = RepAppls[N] && VarAppls[-param.Affixform] == 1;
                 A = A.Next;
@@ -1848,24 +1848,24 @@ in (!HNontDef[N])
 
 public void GenFormalParams(size_t N, Flag!"parNeeded" parNeeded)
 {
-    int Dom = EAG.HNont[N].Sig;
+    int Dom = eag.HNont[N].Sig;
     int i = 1;
 
     if (parNeeded)
         output.write("(");
-    if (EAG.DomBuf[Dom] != EAG.nil)
+    if (eag.DomBuf[Dom] != EAG.nil)
     {
         if (!parNeeded)
             output.write(", ");
         for (;;)
         {
-            if (EAG.DomBuf[Dom] > 0)
+            if (eag.DomBuf[Dom] > 0)
                 output.write("ref ");
             output.write("HeapType ");
             GenVar(i);
             ++i;
             ++Dom;
-            if (EAG.DomBuf[Dom] == EAG.nil)
+            if (eag.DomBuf[Dom] == EAG.nil)
                 break;
             output.write(", ");
         }
@@ -1886,23 +1886,23 @@ public void GenVarDecl(size_t N)
             output.writeln(";");
         }
     }
-    if (EAG.Pred[N])
+    if (eag.Pred[N])
         output.writeln("bool Failed;");
 }
 
 public void InitScope(EAG.ScopeDesc Scope) @nogc nothrow @safe
 {
     foreach (i; Scope.Beg .. Scope.End)
-        EAG.Var[i].Def = false;
+        eag.Var[i].Def = false;
 }
 
 public void GenPredCall(int N, int ActualParams)
-in (EAG.Pred[N])
+in (eag.Pred[N])
 {
     output.write("Check", N, `("`);
-    if (EAG.HNont[N].anonymous)
+    if (eag.HNont[N].anonymous)
         output.write("in ");
-    output.write("'", EAG.NamedHNontRepr(N), `'"`);
+    output.write("'", eag.NamedHNontRepr(N), `'"`);
     GenActualParams(ActualParams, false);
     output.writeln(");");
 }
@@ -1911,7 +1911,7 @@ public void GenActualParams(int P, bool ParNeeded) @safe
 {
     if (ParNeeded)
         output.write("(");
-    if (EAG.ParamBuf[P].Affixform != EAG.nil)
+    if (eag.ParamBuf[P].Affixform != EAG.nil)
     {
         if (!ParNeeded)
             output.write(", ");
@@ -1921,7 +1921,7 @@ public void GenActualParams(int P, bool ParNeeded) @safe
 
             GenVar(AffixName[P]);
             ++P;
-            if (EAG.ParamBuf[P].Affixform == EAG.nil)
+            if (eag.ParamBuf[P].Affixform == EAG.nil)
                 break;
             output.write(", ");
         }
@@ -1933,18 +1933,18 @@ public void GenActualParams(int P, bool ParNeeded) @safe
 public void GenSynPred(size_t Sym, int P)
 {
     int Next;
-    bool IsPred = EAG.Pred[Sym];
+    bool IsPred = eag.Pred[Sym];
 
     if (!UseRefCnt)
         GetAffixSpace(P);
-    while (EAG.ParamBuf[P].Affixform != EAG.nil)
+    while (eag.ParamBuf[P].Affixform != EAG.nil)
     {
-        if (!EAG.ParamBuf[P].isDef)
+        if (!eag.ParamBuf[P].isDef)
         {
-            const Tree = EAG.ParamBuf[P].Affixform;
+            const Tree = eag.ParamBuf[P].Affixform;
 
             if (SavePos)
-                output.writeln("PopPos(", EAG.MAlt[EAG.NodeBuf[Tree]].Arity, ");");
+                output.writeln("PopPos(", eag.MAlt[eag.NodeBuf[Tree]].Arity, ");");
             if (UseConst && AffixPlace[P] >= 0)
             {
                 GenVar(AffixName[P]);
@@ -1970,7 +1970,7 @@ public void GenSynPred(size_t Sym, int P)
             {
                 if (UseRefCnt)
                 {
-                    output.write("GetHeap(", EAG.MAlt[EAG.NodeBuf[Tree]].Arity, ", ");
+                    output.write("GetHeap(", eag.MAlt[eag.NodeBuf[Tree]].Arity, ", ");
                     GenVar(NodeName[Tree]);
                     output.write("); ");
                     Gen1SynTree(Tree, EmptySet, IsPred);
@@ -1994,9 +1994,9 @@ private void GetAffixSpace(int P) @safe
 {
     int Heap = 0;
 
-    while (EAG.ParamBuf[P].Affixform != EAG.nil)
+    while (eag.ParamBuf[P].Affixform != EAG.nil)
     {
-        if (!EAG.ParamBuf[P].isDef && (!UseConst || UseConst && AffixPlace[P] < 0))
+        if (!eag.ParamBuf[P].isDef && (!UseConst || UseConst && AffixPlace[P] < 0))
             Heap += AffixSpace[P];
         ++P;
     }
@@ -2006,15 +2006,15 @@ private void GetAffixSpace(int P) @safe
 // RepVar is to be understood only in the context of generating repetition code
 private void GenSynTree(int Node, BitArray RepVar, ref int Next)
 {
-    const Alt = EAG.NodeBuf[Node];
+    const Alt = eag.NodeBuf[Node];
     const Next1 = Next;
 
     GenHeap(0, Next);
     output.write(" = ", NodeIdent[Alt], "; ");
-    Next += 1 + EAG.MAlt[Alt].Arity;
-    foreach (n; 0 .. EAG.MAlt[Alt].Arity)
+    Next += 1 + eag.MAlt[Alt].Arity;
+    foreach (n; 0 .. eag.MAlt[Alt].Arity)
     {
-        const Node1 = EAG.NodeBuf[Node + n + 1];
+        const Node1 = eag.NodeBuf[Node + n + 1];
 
         if (Node1 < 0)
         {
@@ -2037,9 +2037,9 @@ private void GenSynTree(int Node, BitArray RepVar, ref int Next)
         {
             GenHeap(0, Next1 + n + 1);
             output.write(" = ");
-            if (UseConst && EAG.MAlt[EAG.NodeBuf[Node1]].Arity == 0)
+            if (UseConst && eag.MAlt[eag.NodeBuf[Node1]].Arity == 0)
             {
-                output.write(Leaf[EAG.NodeBuf[Node1]], "; ");
+                output.write(Leaf[eag.NodeBuf[Node1]], "; ");
             }
             else
             {
@@ -2054,10 +2054,10 @@ private void GenSynTree(int Node, BitArray RepVar, ref int Next)
 private void Gen1SynTree(int Node, BitArray RepVar, bool IsPred)
 {
     GenHeap(NodeName[Node], 0);
-    output.write(" = ", NodeIdent[EAG.NodeBuf[Node]], "; ");
-    foreach (n; 0 .. EAG.MAlt[EAG.NodeBuf[Node]].Arity)
+    output.write(" = ", NodeIdent[eag.NodeBuf[Node]], "; ");
+    foreach (n; 0 .. eag.MAlt[eag.NodeBuf[Node]].Arity)
     {
-        const Node1 = EAG.NodeBuf[Node + n + 1];
+        const Node1 = eag.NodeBuf[Node + n + 1];
 
         if (Node1 < 0)
         {
@@ -2080,13 +2080,13 @@ private void Gen1SynTree(int Node, BitArray RepVar, bool IsPred)
                     GenIncRefCnt(VarName[V], 1);
             }
         }
-        else if (EAG.MAlt[EAG.NodeBuf[Node1]].Arity == 0)
+        else if (eag.MAlt[eag.NodeBuf[Node1]].Arity == 0)
         {
             if (UseConst)
             {
                 GenHeap(NodeName[Node], n + 1);
-                output.write(" = ", Leaf[EAG.NodeBuf[Node1]], "; ");
-                GenIncRefCnt(-Leaf[EAG.NodeBuf[Node1]], 1);
+                output.write(" = ", Leaf[eag.NodeBuf[Node1]], "; ");
+                GenIncRefCnt(-Leaf[eag.NodeBuf[Node1]], 1);
             }
             else
             {
@@ -2094,12 +2094,12 @@ private void Gen1SynTree(int Node, BitArray RepVar, bool IsPred)
                 GenHeap(NodeName[Node], n + 1);
                 output.write("); Heap[");
                 GenHeap(NodeName[Node], n + 1);
-                output.write("] = ", NodeIdent[EAG.NodeBuf[Node1]], ";");
+                output.write("] = ", NodeIdent[eag.NodeBuf[Node1]], ";");
             }
         }
         else
         {
-            output.write("GetHeap(", EAG.MAlt[EAG.NodeBuf[Node1]].Arity, ", ");
+            output.write("GetHeap(", eag.MAlt[eag.NodeBuf[Node1]].Arity, ", ");
             if (NodeName[Node] == NodeName[Node1])
             {
                 GenHeap(NodeName[Node], n + 1);
@@ -2136,12 +2136,12 @@ public void GenAnalPred(size_t Sym, int P)
 
     void GenEqualErrMsg(size_t Sym, int Var)
     {
-        output.write(`"'`, EAG.VarRepr(Var), "' failed in '", EAG.NamedHNontRepr(Sym), `'"`);
+        output.write(`"'`, eag.VarRepr(Var), "' failed in '", eag.NamedHNontRepr(Sym), `'"`);
     }
 
     void GenAnalErrMsg(size_t Sym)
     {
-        output.write(`"`, EAG.NamedHNontRepr(Sym), `"`);
+        output.write(`"`, eag.NamedHNontRepr(Sym), `"`);
     }
 
     void GenEqualPred(int VarName1, int Var2, bool Eq)
@@ -2178,7 +2178,7 @@ public void GenAnalPred(size_t Sym, int P)
         output.write("if (");
         GenHeap(NodeName[Node], 0);
         Comp;
-        output.write(NodeIdent[EAG.NodeBuf[Node]]);
+        output.write(NodeIdent[eag.NodeBuf[Node]]);
         output.write(")");
         if (IsPred)
         {
@@ -2194,15 +2194,15 @@ public void GenAnalPred(size_t Sym, int P)
             GenAnalErrMsg(Sym);
             output.writeln(");");
         }
-        foreach (n; 0 .. EAG.MAlt[EAG.NodeBuf[Node]].Arity)
+        foreach (n; 0 .. eag.MAlt[eag.NodeBuf[Node]].Arity)
         {
-            const Node1 = EAG.NodeBuf[Node + n + 1];
+            const Node1 = eag.NodeBuf[Node + n + 1];
 
             if (Node1 < 0)
             {
                 const V = -Node1;
 
-                if (EAG.Var[V].Def)
+                if (eag.Var[V].Def)
                 {
                     if (IsPred)
                     {
@@ -2227,14 +2227,14 @@ public void GenAnalPred(size_t Sym, int P)
                 }
                 else
                 {
-                    EAG.Var[V].Def = true;
+                    eag.Var[V].Def = true;
                     GenVar(VarName[V]);
                     output.write(" = ");
                     GenHeap(NodeName[Node], n + 1);
                     output.write("; ");
-                    if (EAG.Var[EAG.Var[V].Neg].Def)
+                    if (eag.Var[eag.Var[V].Neg].Def)
                     {
-                        const Vn = EAG.Var[V].Neg;
+                        const Vn = eag.Var[V].Neg;
 
                         GenEqualPred(VarName[Vn], V, false);
                         if (MakeRefCnt)
@@ -2260,14 +2260,14 @@ public void GenAnalPred(size_t Sym, int P)
             }
             else
             {
-                if (EAG.MAlt[EAG.NodeBuf[Node1]].Arity == 0)
+                if (eag.MAlt[eag.NodeBuf[Node1]].Arity == 0)
                 {
                     if (UseConst)
                     {
                         output.write("if (");
                         GenHeap(NodeName[Node], n + 1);
                         Comp;
-                        output.write(Leaf[EAG.NodeBuf[Node1]]);
+                        output.write(Leaf[eag.NodeBuf[Node1]]);
                     }
                     else
                     {
@@ -2275,7 +2275,7 @@ public void GenAnalPred(size_t Sym, int P)
                         GenHeap(NodeName[Node], n + 1);
                         output.write("]");
                         Comp;
-                        output.write(NodeIdent[EAG.NodeBuf[Node1]]);
+                        output.write(NodeIdent[eag.NodeBuf[Node1]]);
                     }
                     output.write(")");
                     if (IsPred)
@@ -2306,20 +2306,20 @@ public void GenAnalPred(size_t Sym, int P)
         }
     }
 
-    IsPred = EAG.Pred[Sym];
+    IsPred = eag.Pred[Sym];
     IfLevel = 0;
     MakeRefCnt = UseRefCnt && !IsPred;
-    while (EAG.ParamBuf[P].Affixform != EAG.nil)
+    while (eag.ParamBuf[P].Affixform != EAG.nil)
     {
-        if (EAG.ParamBuf[P].isDef)
+        if (eag.ParamBuf[P].isDef)
         {
-            const Tree = EAG.ParamBuf[P].Affixform;
+            const Tree = eag.ParamBuf[P].Affixform;
 
             if (Tree < 0)
             {
                 const V = -Tree;
 
-                if (EAG.Var[V].Def)
+                if (eag.Var[V].Def)
                 {
                     assert(AffixName[P] != VarName[V]);
 
@@ -2329,7 +2329,7 @@ public void GenAnalPred(size_t Sym, int P)
                 }
                 else
                 {
-                    EAG.Var[V].Def = true;
+                    eag.Var[V].Def = true;
                     if (AffixName[P] != VarName[V])
                     {
                         GenVar(VarName[V]);
@@ -2337,9 +2337,9 @@ public void GenAnalPred(size_t Sym, int P)
                         GenVar(AffixName[P]);
                         output.writeln(";");
                     }
-                    if (EAG.Var[EAG.Var[V].Neg].Def)
+                    if (eag.Var[eag.Var[V].Neg].Def)
                     {
-                        const Vn = EAG.Var[V].Neg;
+                        const Vn = eag.Var[V].Neg;
 
                         GenEqualPred(VarName[Vn], V, false);
                         if (MakeRefCnt)
@@ -2370,12 +2370,12 @@ public void GenAnalPred(size_t Sym, int P)
             }
             else
             {
-                if (EAG.MAlt[EAG.NodeBuf[Tree]].Arity == 0)
+                if (eag.MAlt[eag.NodeBuf[Tree]].Arity == 0)
                 {
                     output.write("if (");
                     GenHeap(AffixName[P], 0);
                     Comp;
-                    output.write(NodeIdent[EAG.NodeBuf[Tree]], ")");
+                    output.write(NodeIdent[eag.NodeBuf[Tree]], ")");
                     if (IsPred)
                     {
                         output.writeln;

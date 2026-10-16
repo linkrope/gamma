@@ -1,6 +1,6 @@
 module epsilon.earley;
 
-import EAG = epsilon.eag;
+import epsilon.eag;
 import io : Position;
 import runtime;
 
@@ -106,49 +106,39 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def) @safe
         int n;
         if (MSymBuf[Affixform].Sym == Dom && MSymBuf[Affixform + 1].Sym == end)
         {
-            Tree = -EAG.FindVar(MSymBuf[Affixform].Sym, MSymBuf[Affixform].Num,
+            Tree = -eag.FindVar(MSymBuf[Affixform].Sym, MSymBuf[Affixform].Num,
                     MSymBuf[Affixform].Pos, Def);
         }
         else
         {
             Tree = nil;
-            A = EAG.MNont[Dom].MRule;
+            A = eag.MNont[Dom].MRule;
             do
             {
-                m = EAG.MAlt[A].Right;
+                m = eag.MAlt[A].Right;
                 n = Affixform;
-                while (EAG.MembBuf[m] == MSymBuf[n].Sym)
+                while (eag.MembBuf[m] == MSymBuf[n].Sym)
                 {
                     ++m;
                     ++n;
                 }
-                if (EAG.MembBuf[m] == 0 && MSymBuf[n].Sym == end)
+                if (eag.MembBuf[m] == 0 && MSymBuf[n].Sym == end)
                 {
-                    Tree = EAG.NextNode;
-                    EAG.NodeBuf[EAG.NextNode] = A;
-                    ++EAG.NextNode;
-                    if (EAG.NextNode >= EAG.NodeBuf.length)
-                    {
-                        EAG.Expand;
-                    }
+                    Tree = eag.NextNode;
+                    eag.AppNode(A);
                     n = Affixform;
                     while (MSymBuf[n].Sym != end)
                     {
                         if (MSymBuf[n].Sym > 0)
                         {
-                            EAG.NodeBuf[EAG.NextNode] = -EAG.FindVar(MSymBuf[n].Sym,
-                                    MSymBuf[n].Num, MSymBuf[n].Pos, Def);
-                            ++EAG.NextNode;
-                            if (EAG.NextNode >= EAG.NodeBuf.length)
-                            {
-                                EAG.Expand;
-                            }
+                            eag.AppNode(-eag.FindVar(MSymBuf[n].Sym,
+                                    MSymBuf[n].Num, MSymBuf[n].Pos, Def));
                         }
                         ++n;
                     }
                     return;
                 }
-                A = EAG.MAlt[A].Next;
+                A = eag.MAlt[A].Next;
             }
             while (!(A == nil));
         }
@@ -162,7 +152,7 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def) @safe
         void AddItem(int Dot, int Back, int Left, int Sub)
         {
             int I;
-            if (EAG.MembBuf[Dot] >= 0 || EAG.MembBuf[Dot] == MSymBuf[CurSym + 1].Sym)
+            if (eag.MembBuf[Dot] >= 0 || eag.MembBuf[Dot] == MSymBuf[CurSym + 1].Sym)
             {
                 ItemBuf[NextItem].Dot = Dot;
                 ItemBuf[NextItem].Back = Back;
@@ -191,7 +181,7 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def) @safe
             int Sub;
             if (MSymBuf[CurSym].Sym > 0)
             {
-                Sub = -EAG.FindVar(MSymBuf[CurSym].Sym, MSymBuf[CurSym].Num,
+                Sub = -eag.FindVar(MSymBuf[CurSym].Sym, MSymBuf[CurSym].Num,
                         MSymBuf[CurSym].Pos, Def);
             }
             else
@@ -201,7 +191,7 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def) @safe
             I = PrevList;
             do
             {
-                if (EAG.MembBuf[ItemBuf[I].Dot] == MSymBuf[CurSym].Sym)
+                if (eag.MembBuf[ItemBuf[I].Dot] == MSymBuf[CurSym].Sym)
                 {
                     AddItem(ItemBuf[I].Dot + 1, ItemBuf[I].Back, I, Sub);
                 }
@@ -224,28 +214,28 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def) @safe
                 Ready = true;
                 do
                 {
-                    if (EAG.MembBuf[ItemBuf[I].Dot] > 0)
+                    if (eag.MembBuf[ItemBuf[I].Dot] > 0)
                     {
-                        N = EAG.MembBuf[ItemBuf[I].Dot];
+                        N = eag.MembBuf[ItemBuf[I].Dot];
                         if (!Predicted[N])
                         {
-                            A = EAG.MNont[N].MRule;
+                            A = eag.MNont[N].MRule;
                             do
                             {
-                                AddItem(EAG.MAlt[A].Right, CurList, nil, nil);
-                                A = EAG.MAlt[A].Next;
+                                AddItem(eag.MAlt[A].Right, CurList, nil, nil);
+                                A = eag.MAlt[A].Next;
                             }
                             while (!(A == nil));
                             Predicted[N] = true;
                         }
                     }
-                    else if (EAG.MembBuf[ItemBuf[I].Dot] == 0)
+                    else if (eag.MembBuf[ItemBuf[I].Dot] == 0)
                     {
-                        N = EAG.MAlt[EAG.MembBuf[ItemBuf[I].Dot + 1]].Left;
+                        N = eag.MAlt[eag.MembBuf[ItemBuf[I].Dot + 1]].Left;
                         I1 = ItemBuf[I].Back;
                         do
                         {
-                            if (EAG.MembBuf[ItemBuf[I1].Dot] == N)
+                            if (eag.MembBuf[ItemBuf[I1].Dot] == N)
                             {
                                 I2 = NextItem;
                                 AddItem(ItemBuf[I1].Dot + 1, ItemBuf[I1].Back, I1, I);
@@ -269,34 +259,24 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def) @safe
         {
             int i;
 
-            if (Predicted is null || Predicted.length < EAG.NextMNont)
+            if (Predicted is null || Predicted.length < eag.NextMNont)
             {
-                Predicted = new bool[EAG.NextMNont];
+                Predicted = new bool[eag.NextMNont];
             }
-            if (int.max - 3 >= EAG.NextMemb)
-            {
-                EAG.NextMemb += 3;
-            }
-            else
-            {
-                assert(0);
-            }
-            while (EAG.NextMemb >= EAG.MembBuf.length)
-            {
-                EAG.Expand;
-            }
-            EAG.NextMemb -= 3;
-            EAG.MembBuf[EAG.NextMemb] = Start;
-            EAG.MembBuf[EAG.NextMemb + 1] = end;
-            EAG.MembBuf[EAG.NextMemb + 2] = 0;
-            EAG.MembBuf[EAG.NextMemb + 3] = EAG.NextMAlt;
-            EAG.MAlt[EAG.NextMAlt].Left = EAG.NextMNont;
-            EAG.MAlt[EAG.NextMAlt].Right = EAG.NextMemb;
+            const right = eag.NextMemb;
+
+            eag.MembBuf.length = eag.NextMemb;
+            eag.MAlt.length = eag.NextMAlt;
+            eag.MembBuf ~= Start;
+            eag.MembBuf ~= end;
+            eag.MembBuf ~= 0;
+            eag.MembBuf ~= eag.NextMAlt;
+            eag.MAlt ~= EAG.MAltRecord(eag.NextMNont, right, 0, nil);
             NextItem = firstItem;
             CurList = NextItem;
-            for (i = EAG.firstMNont; i < EAG.NextMNont; ++i)
+            for (i = EAG.firstMNont; i < eag.NextMNont; ++i)
                 Predicted[i] = false;
-            AddItem(EAG.NextMemb, CurList, nil, nil);
+            AddItem(eag.NextMemb, CurList, nil, nil);
             Closure;
         }
 
@@ -304,26 +284,22 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def) @safe
         {
             int SubTree;
             int A;
-            A = EAG.MembBuf[ItemBuf[I].Dot + 1];
-            EAG.NodeBuf[EAG.NextNode] = A;
-            Tree = EAG.NextNode;
-            if (int.max - EAG.MAlt[A].Arity - 1 >= EAG.NextNode)
-                EAG.NextNode += EAG.MAlt[A].Arity + 1;
-            else
-                assert(0);
-            while (EAG.NextNode >= EAG.NodeBuf.length)
-                EAG.Expand;
-            SubTree = EAG.NextNode - 1;
+            A = eag.MembBuf[ItemBuf[I].Dot + 1];
+            Tree = eag.NextNode;
+            eag.NodeBuf.length += eag.MAlt[A].Arity + 1;
+            eag.NodeBuf[Tree] = A;
+            eag.NextNode = cast(int) eag.NodeBuf.length;
+            SubTree = eag.NextNode - 1;
             do
             {
                 if (ItemBuf[I].Sub > 0)
                 {
-                    CreateTree(ItemBuf[I].Sub, EAG.NodeBuf[SubTree]);
+                    CreateTree(ItemBuf[I].Sub, eag.NodeBuf[SubTree]);
                     --SubTree;
                 }
                 else if (ItemBuf[I].Sub < 0)
                 {
-                    EAG.NodeBuf[SubTree] = ItemBuf[I].Sub;
+                    eag.NodeBuf[SubTree] = ItemBuf[I].Sub;
                     --SubTree;
                 }
                 I = ItemBuf[I].Left;
@@ -340,7 +316,7 @@ void Parse(int Dom, int Affixform, ref int Tree, bool Def) @safe
             CurList = NextItem;
             if (NextItem >= ItemBuf.length)
                 Expand;
-            for (i = EAG.firstMNont; i < EAG.NextMNont; ++i)
+            for (i = EAG.firstMNont; i < eag.NextMNont; ++i)
                 Predicted[i] = false;
             ++CurSym;
             Scanner;

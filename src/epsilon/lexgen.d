@@ -1,6 +1,6 @@
 module epsilon.lexgen;
 
-import EAG = epsilon.eag;
+import epsilon.eag;
 import epsilon.settings;
 import io : Input, read;
 import log;
@@ -98,12 +98,12 @@ public string Generate(Settings settings)
         Fix.popFront;
     }
 
-    info!"LexGen writing %s"(EAG.BaseName);
+    info!"LexGen writing %s"(eag.BaseName);
     Error = false;
     MaxTokLen = lenOfPredefinedToken;
-    for (Term = EAG.firstHTerm; Term < EAG.NextHTerm; ++Term)
+    for (Term = EAG.firstHTerm; Term < eag.NextHTerm; ++Term)
     {
-        const Str = EAG.symbolTable.symbol(EAG.HTerm[Term].Id);
+        const Str = eag.symbolTable.symbol(eag.HTerm[Term].Id);
 
         TestToken(Str, Len);
         if (Len > MaxTokLen)
@@ -113,7 +113,7 @@ public string Generate(Settings settings)
         assert(0, "TODO: error handling for lexer generator");
 
     enum fixName = "lexgen.fix.d";
-    const name = EAG.BaseName ~ "Lex";
+    const name = eag.BaseName ~ "Lex";
     const fileName = settings.path(name ~ ".d");
 
     Fix = Input(fixName, import(fixName));
@@ -123,10 +123,10 @@ public string Generate(Settings settings)
     InclFix('$');
     output.write(MaxTokLen + 1);
     InclFix('$');
-    output.write(EAG.NextHTerm - EAG.firstHTerm + firstUserTok);
+    output.write(eag.NextHTerm - EAG.firstHTerm + firstUserTok);
     InclFix('$');
-    for (Term = EAG.firstHTerm; Term < EAG.NextHTerm; ++Term)
-        output.writeln("Enter(", Term - EAG.firstHTerm + firstUserTok, ", ", EAG.HTerm[Term].Id.repr, ");");
+    for (Term = EAG.firstHTerm; Term < eag.NextHTerm; ++Term)
+        output.writeln("Enter(", Term - EAG.firstHTerm + firstUserTok, ", ", eag.HTerm[Term].Id.repr, ");");
     InclFix('$');
     output.write(name);
     InclFix('$');
@@ -139,7 +139,7 @@ private string repr(int id)
     import std.format : format;
     import std.range : dropBackOne, dropOne, front, only;
 
-    const value = EAG.symbolTable.symbol(id);
+    const value = eag.symbolTable.symbol(id);
 
     if (value.front == '\'')
     {
