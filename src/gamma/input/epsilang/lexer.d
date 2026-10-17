@@ -1,4 +1,4 @@
-module gamma.lexer;
+module gamma.input.epsilang.lexer;
 
 import io : Input, Position;
 import std.uni;

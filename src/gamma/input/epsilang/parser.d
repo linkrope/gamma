@@ -22,7 +22,7 @@ import gamma.grammar.Rule;
 import gamma.grammar.SymbolNode;
 import gamma.grammar.Terminal;
 import gamma.input.earley.AffixForm;
-import gamma.lexer;
+import gamma.input.epsilang.lexer;
 import gamma.util.Position;
 import io;
 import log;
