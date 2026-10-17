@@ -64,7 +64,7 @@ class ItemSet : Indexed
 
                 if (item.isFinal)
                 {
-                    Symbol lhsSymbol = item.alternative.lhs.symbol;
+                    Symbol lhsSymbol = item.alternative.lhs.nonterminal;
                     ItemSet parent = item.parent;
 
                     for (int j = 0; j < parent.items_.length; ++j)

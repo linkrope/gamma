@@ -1,6 +1,6 @@
 module epsilon.soag.visitseq;
 
-import EAG = epsilon.eag;
+import epsilon.eag;
 import hash = epsilon.soag.hash;
 import SOAG = epsilon.soag.soag;
 import runtime;
@@ -25,8 +25,8 @@ void ComputeVisitNo()
     int MaxPart;
     int PartNum;
 
-    foreach (S; EAG.All.bitsSet)
-        if (!EAG.Pred[S])
+    foreach (S; eag.All.bitsSet)
+        if (!eag.Pred[S])
         {
             MaxPart = DIV(SOAG.Sym[S].MaxPart + 1, 2).to!int;
             SOAG.Sym[S].MaxPart = MaxPart;
@@ -34,7 +34,7 @@ void ComputeVisitNo()
             {
                 enforce(SOAG.PartNum[AP] >= 0,
                         format!"partition number for affix position %d at symbol %s not determined"
-                            (AP, EAG.HNontRepr(S)));
+                            (AP, eag.HNontRepr(S)));
 
                 PartNum = DIV(SOAG.PartNum[AP] + 1, 2).to!int;
                 SOAG.PartNum[AP] = MaxPart - PartNum + 1;
@@ -110,7 +110,7 @@ int GetVisit(int R, int SO, int VN) @nogc nothrow @safe
  */
 SOAG.Instruction MapVS(int AO) nothrow
 {
-    if (!EAG.ParamBuf[SOAG.AffOcc[AO].ParamBufInd].isDef)
+    if (!eag.ParamBuf[SOAG.AffOcc[AO].ParamBufInd].isDef)
         return null;
 
     const SO = SOAG.AffOcc[AO].SymOccInd;

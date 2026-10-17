@@ -1,6 +1,6 @@
 module epsilon.soag.protocol;
 
-import EAG = epsilon.eag;
+import epsilon.eag;
 import SOAG = epsilon.soag.soag;
 import runtime;
 import std.stdio : File;
@@ -16,17 +16,17 @@ void WriteAffixVariables(int i) @safe
 {
     if (i < 0)
     {
-        if (EAG.Var[-i].Num < 0)
+        if (eag.Var[-i].Num < 0)
         {
             output.write("!");
         }
-        output.write(EAG.VarRepr(-i), EAG.Var[-i].Num);
+        output.write(eag.VarRepr(-i), eag.Var[-i].Num);
     }
     else
     {
-        for (int MA = 1; MA <= EAG.MAlt[EAG.NodeBuf[i]].Arity; ++MA)
+        for (int MA = 1; MA <= eag.MAlt[eag.NodeBuf[i]].Arity; ++MA)
         {
-            WriteAffixVariables(EAG.NodeBuf[i + MA]);
+            WriteAffixVariables(eag.NodeBuf[i + MA]);
         }
     }
 }
@@ -35,27 +35,27 @@ void WriteAffix(int i) @safe
 {
     if (i < 0)
     {
-        if (EAG.Var[-i].Num < 0)
+        if (eag.Var[-i].Num < 0)
         {
             output.write("!");
         }
-        output.write(EAG.VarRepr(-i), "(", EAG.Var[-i].Num, ") ");
+        output.write(eag.VarRepr(-i), "(", eag.Var[-i].Num, ") ");
     }
     else
     {
         int a = 0;
-        int m = EAG.MAlt[EAG.NodeBuf[i]].Right;
+        int m = eag.MAlt[eag.NodeBuf[i]].Right;
 
-        while (EAG.MembBuf[m] != EAG.nil)
+        while (eag.MembBuf[m] != EAG.nil)
         {
-            if (EAG.MembBuf[m] < 0)
+            if (eag.MembBuf[m] < 0)
             {
-                output.write(EAG.symbolTable.symbol(EAG.MTerm[-EAG.MembBuf[m]].Id), " ");
+                output.write(eag.symbolTable.symbol(eag.MTerm[-eag.MembBuf[m]].Id), " ");
             }
             else
             {
                 ++a;
-                WriteAffix(EAG.NodeBuf[i + a]);
+                WriteAffix(eag.NodeBuf[i + a]);
             }
             ++m;
         }
@@ -66,23 +66,23 @@ void WriteAffOcc(int a) @safe
 {
     int p;
     p = SOAG.AffOcc[a].ParamBufInd;
-    output.write(EAG.ParamBuf[p].isDef ? "-" : "+");
-    if (EAG.ParamBuf[p].Affixform < 0)
+    output.write(eag.ParamBuf[p].isDef ? "-" : "+");
+    if (eag.ParamBuf[p].Affixform < 0)
     {
-        output.write(EAG.VarRepr(-EAG.ParamBuf[p].Affixform));
-        output.write("(", EAG.Var[-EAG.ParamBuf[p].Affixform].Num, ") ");
+        output.write(eag.VarRepr(-eag.ParamBuf[p].Affixform));
+        output.write("(", eag.Var[-eag.ParamBuf[p].Affixform].Num, ") ");
     }
     else
     {
-        WriteAffix(EAG.ParamBuf[p].Affixform);
+        WriteAffix(eag.ParamBuf[p].Affixform);
     }
-    if (EAG.ParamBuf[p + 1].Affixform != EAG.nil)
+    if (eag.ParamBuf[p + 1].Affixform != EAG.nil)
         output.write(", ");
 }
 
 void WriteSymOcc(int s) @safe
 {
-    output.write(EAG.HNontRepr(SOAG.SymOcc[s].SymInd));
+    output.write(eag.HNontRepr(SOAG.SymOcc[s].SymInd));
     output.write("< ");
     for (int i = SOAG.SymOcc[s].AffOcc.Beg; i <= SOAG.SymOcc[s].AffOcc.End; ++i)
     {
@@ -98,7 +98,7 @@ void WriteAffOccData(int s) @safe
     WriteAffOcc(s);
     output.writeln;
     output.write("  Variables: ");
-    WriteAffixVariables(EAG.ParamBuf[SOAG.AffOcc[s].ParamBufInd].Affixform);
+    WriteAffixVariables(eag.ParamBuf[SOAG.AffOcc[s].ParamBufInd].Affixform);
     output.writeln;
     output.write("         ParamBufInd: ");
     output.write(SOAG.AffOcc[s].ParamBufInd);
@@ -221,9 +221,9 @@ void WriteTDP(int r)
         {
             output.write(i - SOAG.Rule[r].AffOcc.Beg);
             output.write(" | ");
-            output.write(EAG.ParamBuf[SOAG.AffOcc[i].ParamBufInd].isDef ? "DEF " : "APPL");
+            output.write(eag.ParamBuf[SOAG.AffOcc[i].ParamBufInd].isDef ? "DEF " : "APPL");
             output.write(" | ");
-            output.write(EAG.HNontRepr(SOAG.SymOcc[SOAG.AffOcc[i].SymOccInd].SymInd));
+            output.write(eag.HNontRepr(SOAG.SymOcc[SOAG.AffOcc[i].SymOccInd].SymInd));
             output.write(" | {");
             for (int j = SOAG.Rule[r].AffOcc.Beg; j <= SOAG.Rule[r].AffOcc.End; ++j)
             {
@@ -343,7 +343,7 @@ void WriteAffPos(int SymInd) @safe
 
 void WriteSym(int S) @safe
 {
-    output.writeln("Symbol ", EAG.HNontRepr(S), ":");
+    output.writeln("Symbol ", eag.HNontRepr(S), ":");
     output.writeln("  FirstOcc: ", SOAG.Sym[S].FirstOcc);
     WriteAffPos(S);
     output.writeln("  MaxPart: ", SOAG.Sym[S].MaxPart);

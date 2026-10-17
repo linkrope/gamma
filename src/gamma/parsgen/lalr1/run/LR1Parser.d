@@ -147,7 +147,7 @@ public class LR1Parser
 
         foreach (goTo; gotoRow)
         {
-            if (goTo.lhs.index == (cast(Nonterminal) alt.lhs.symbol).index)
+            if (goTo.lhs.index == alt.lhs.nonterminal.index)
             {
                 this.state = goTo.state;
                 this.stack.push(this.state);
@@ -204,7 +204,7 @@ public class LR1Parser
             {
                 OrderedLR1Tables.Reduce reduceAction = cast(OrderedLR1Tables.Reduce) action;
 
-                trace!"(C)Reduce %s ::=%-( %s%)"(reduceAction.alternative.lhs.symbol,
+                trace!"(C)Reduce %s ::=%-( %s%)"(reduceAction.alternative.lhs.nonterminal,
                     reduceAction.alternative.rhs.map!(node => (cast(SymbolNode) node).symbol));
                 reduce(reduceAction.alternative);
                 trace!"%s"(stack);
@@ -248,7 +248,7 @@ public class LR1Parser
             {
                 auto reduceAction = cast(OrderedLR1Tables.Reduce) action;
 
-                trace!"(I)Reduce %s ::=%-( %s%)"(reduceAction.alternative.lhs.symbol,
+                trace!"(I)Reduce %s ::=%-( %s%)"(reduceAction.alternative.lhs.nonterminal,
                     reduceAction.alternative.rhs.map!(node => (cast(SymbolNode) node).symbol));
                 reduce(reduceAction.alternative);
                 trace!"%s"(stack);
@@ -292,7 +292,7 @@ public class LR1Parser
             {
                 auto reduceAction = cast(OrderedLR1Tables.Reduce) action;
 
-                trace!"Reduce %s ::=%-( %s%)"(reduceAction.alternative.lhs.symbol,
+                trace!"Reduce %s ::=%-( %s%)"(reduceAction.alternative.lhs.nonterminal,
                     reduceAction.alternative.rhs.map!(node => (cast(SymbolNode) node).symbol));
                 reduce(reduceAction.alternative);
                 trace!"%s"(stack);

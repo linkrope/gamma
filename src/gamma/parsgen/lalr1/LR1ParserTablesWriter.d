@@ -48,7 +48,7 @@ public static void write(OrderedLR1Tables parserTables, File output)
         if (rule.alternatives.length == 0)
             continue;
 
-        ruleObject["lhs"] = (cast(Nonterminal)(cast(Alternative) rule.alternatives[0]).lhs.symbol).index;
+        ruleObject["lhs"] = (cast(Alternative) rule.alternatives[0]).lhs.nonterminal.index;
 
         JSONValue[] alternatives;
 

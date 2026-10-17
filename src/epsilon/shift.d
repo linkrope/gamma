@@ -1,6 +1,6 @@
 module epsilon.shift;
 
-import EAG = epsilon.eag;
+import epsilon.eag;
 import io : UndefPos;
 import runtime;
 import std.bitmanip : BitArray;
@@ -16,67 +16,64 @@ public void Shift()
     int Rhs;
     int Num;
     int Var;
-    BitArray GenNonts = EAG.All - EAG.Pred;
+    BitArray GenNonts = eag.All - eag.Pred;
     BitArray Del;
 
-    Del.length = EAG.NextHNont + 1;
-    EAG.NextMAlt = EAG.firstMAlt;
-    EAG.NextMemb = EAG.firstMemb;
-    EAG.NextVar = EAG.firstVar;
-    EAG.NextNode = EAG.firstNode;
-    EAG.NextParam = EAG.firstParam;
-    EAG.NextMTerm = EAG.NextHTerm - EAG.firstHTerm + EAG.firstMTerm;
-    while (EAG.NextMTerm >= EAG.MTerm.length)
-        EAG.Expand;
-    for (HT = EAG.firstHTerm; HT < EAG.NextHTerm; ++HT)
-        EAG.MTerm[HT - EAG.firstHTerm + EAG.firstMTerm].Id = EAG.HTerm[HT].Id;
-    EAG.NextMNont = EAG.NextHNont - EAG.firstHNont + EAG.firstMNont;
-    while (EAG.NextMNont >= EAG.MNont.length)
-        EAG.Expand;
-    for (int HN = EAG.firstHNont; HN < EAG.NextHNont; ++HN)
+    Del.length = eag.NextHNont + 1;
+    eag.NextMAlt = EAG.firstMAlt;
+    eag.MAlt.length = eag.NextMAlt;
+    eag.NextMemb = EAG.firstMemb;
+    eag.MembBuf.length = eag.NextMemb;
+    eag.NextVar = EAG.firstVar;
+    eag.Var.length = eag.NextVar;
+    eag.NextNode = EAG.firstNode;
+    eag.NodeBuf.length = eag.NextNode;
+    eag.NextParam = EAG.firstParam;
+    eag.ParamBuf.length = eag.NextParam;
+    eag.NextMTerm = eag.NextHTerm - EAG.firstHTerm + EAG.firstMTerm;
+    eag.MTerm.length = eag.NextMTerm;
+    for (HT = EAG.firstHTerm; HT < eag.NextHTerm; ++HT)
+        eag.MTerm[HT - EAG.firstHTerm + EAG.firstMTerm].Id = eag.HTerm[HT].Id;
+    eag.NextMNont = eag.NextHNont - EAG.firstHNont + EAG.firstMNont;
+    eag.MNont.length = eag.NextMNont;
+    for (int HN = EAG.firstHNont; HN < eag.NextHNont; ++HN)
     {
         if (GenNonts[HN])
         {
-            EAG.MNont[HN - EAG.firstHNont + EAG.firstMNont].Id = EAG.HNont[HN].NamedId;
-            EAG.MNont[HN - EAG.firstHNont + EAG.firstMNont].MRule = nil;
-            EAG.MNont[HN - EAG.firstHNont + EAG.firstMNont].IsToken = EAG.HNont[HN].IsToken;
-            HA = EAG.HNont[HN].Def.Sub;
+            eag.MNont[HN - EAG.firstHNont + EAG.firstMNont].Id = eag.HNont[HN].NamedId;
+            eag.MNont[HN - EAG.firstHNont + EAG.firstMNont].MRule = nil;
+            eag.MNont[HN - EAG.firstHNont + EAG.firstMNont].IsToken = eag.HNont[HN].IsToken;
+            HA = eag.HNont[HN].Def.Sub;
             do
             {
-                EAG.Scope = EAG.NextVar;
-                HA.Scope.Beg = EAG.NextVar;
+                eag.Scope = eag.NextVar;
+                HA.Scope.Beg = eag.NextVar;
                 HA.Formal.Pos = UndefPos;
-                HA.Formal.Params = EAG.NextParam;
-                EAG.AppParam(EAG.NextNode, UndefPos);
-                EAG.ParamBuf[EAG.NextParam - 1].isDef = false;
-                EAG.AppParam(nil, UndefPos);
-                EAG.NodeBuf[EAG.NextNode] = EAG.NextMAlt;
-                ++EAG.NextNode;
-                if (EAG.NextNode >= EAG.NodeBuf.length)
-                    EAG.Expand;
-                Rhs = EAG.NextMemb;
+                HA.Formal.Params = eag.NextParam;
+                eag.AppParam(eag.NextNode, UndefPos);
+                eag.ParamBuf[eag.NextParam - 1].isDef = false;
+                eag.AppParam(nil, UndefPos);
+                eag.AppNode(eag.NextMAlt);
+                Rhs = eag.NextMemb;
                 HF = HA.Sub;
                 Num = 2;
                 while (HF !is null)
                 {
                     if (auto term = cast(EAG.Term) HF)
                     {
-                        EAG.AppMemb(-(term.Sym - EAG.firstHTerm + EAG.firstMTerm));
+                        eag.AppMemb(-(term.Sym - EAG.firstHTerm + EAG.firstMTerm));
                     }
                     else if (GenNonts[(cast(EAG.Nont) HF).Sym])
                     {
-                        EAG.AppMemb((cast(EAG.Nont) HF).Sym - EAG.firstHNont + EAG.firstMNont);
-                        Var = EAG.FindVar((cast(EAG.Nont) HF)
+                        eag.AppMemb((cast(EAG.Nont) HF).Sym - EAG.firstHNont + EAG.firstMNont);
+                        Var = eag.FindVar((cast(EAG.Nont) HF)
                                 .Sym - EAG.firstHNont + EAG.firstMNont, Num, UndefPos, true);
-                        EAG.NodeBuf[EAG.NextNode] = -Var;
-                        ++EAG.NextNode;
-                        if (EAG.NextNode >= EAG.NodeBuf.length)
-                            EAG.Expand;
+                        eag.AppNode(-Var);
                         (cast(EAG.Nont) HF).Actual.Pos = UndefPos;
-                        (cast(EAG.Nont) HF).Actual.Params = EAG.NextParam;
-                        EAG.AppParam(-Var, UndefPos);
-                        EAG.ParamBuf[EAG.NextParam - 1].isDef = true;
-                        EAG.AppParam(nil, UndefPos);
+                        (cast(EAG.Nont) HF).Actual.Params = eag.NextParam;
+                        eag.AppParam(-Var, UndefPos);
+                        eag.ParamBuf[eag.NextParam - 1].isDef = true;
+                        eag.AppParam(nil, UndefPos);
                         ++Num;
                     }
                     else
@@ -92,73 +89,67 @@ public void Shift()
                     }
                     HF = HF.Next;
                 }
-                if (cast(EAG.Rep) EAG.HNont[HN].Def)
+                if (cast(EAG.Rep) eag.HNont[HN].Def)
                 {
-                    EAG.AppMemb(HN - EAG.firstHNont + EAG.firstMNont);
-                    Var = EAG.FindVar(HN - EAG.firstHNont + EAG.firstMNont, Num, UndefPos, true);
-                    EAG.NodeBuf[EAG.NextNode] = -Var;
-                    ++EAG.NextNode;
-                    if (EAG.NextNode >= EAG.NodeBuf.length)
-                        EAG.Expand;
+                    eag.AppMemb(HN - EAG.firstHNont + EAG.firstMNont);
+                    Var = eag.FindVar(HN - EAG.firstHNont + EAG.firstMNont, Num, UndefPos, true);
+                    eag.AppNode(-Var);
                     HA.Actual.Pos = UndefPos;
-                    HA.Actual.Params = EAG.NextParam;
-                    EAG.AppParam(-Var, UndefPos);
-                    EAG.ParamBuf[EAG.NextParam - 1].isDef = true;
-                    EAG.AppParam(nil, UndefPos);
+                    HA.Actual.Params = eag.NextParam;
+                    eag.AppParam(-Var, UndefPos);
+                    eag.ParamBuf[eag.NextParam - 1].isDef = true;
+                    eag.AppParam(nil, UndefPos);
                 }
-                EAG.AppMemb(nil);
-                EAG.AppMemb(EAG.NewMAlt(HN - EAG.firstHNont + EAG.firstMNont, Rhs));
-                HA.Scope.End = EAG.NextVar;
+                eag.AppMemb(nil);
+                eag.AppMemb(eag.NewMAlt(HN - EAG.firstHNont + EAG.firstMNont, Rhs));
+                HA.Scope.End = eag.NextVar;
                 HA = HA.Next;
             }
             while (HA !is null);
-            if (cast(EAG.Opt) EAG.HNont[HN].Def || cast(EAG.Rep) EAG.HNont[HN].Def)
+            if (cast(EAG.Opt) eag.HNont[HN].Def || cast(EAG.Rep) eag.HNont[HN].Def)
             {
-                if (auto opt = cast(EAG.Opt) EAG.HNont[HN].Def)
+                if (auto opt = cast(EAG.Opt) eag.HNont[HN].Def)
                 {
                     opt.Formal.Pos = UndefPos;
-                    opt.Formal.Params = EAG.NextParam;
-                    opt.Scope.Beg = EAG.NextVar;
-                    opt.Scope.End = EAG.NextVar;
+                    opt.Formal.Params = eag.NextParam;
+                    opt.Scope.Beg = eag.NextVar;
+                    opt.Scope.End = eag.NextVar;
                 }
-                else if (auto rep = cast(EAG.Rep) EAG.HNont[HN].Def)
+                else if (auto rep = cast(EAG.Rep) eag.HNont[HN].Def)
                 {
                     rep.Formal.Pos = UndefPos;
-                    rep.Formal.Params = EAG.NextParam;
-                    rep.Scope.Beg = EAG.NextVar;
-                    rep.Scope.End = EAG.NextVar;
+                    rep.Formal.Params = eag.NextParam;
+                    rep.Scope.Beg = eag.NextVar;
+                    rep.Scope.End = eag.NextVar;
                 }
-                EAG.AppParam(EAG.NextNode, UndefPos);
-                EAG.ParamBuf[EAG.NextParam - 1].isDef = false;
-                EAG.AppParam(nil, UndefPos);
-                EAG.NodeBuf[EAG.NextNode] = EAG.NextMAlt;
-                ++EAG.NextNode;
-                if (EAG.NextNode >= EAG.NodeBuf.length)
-                    EAG.Expand;
-                Rhs = EAG.NextMemb;
-                EAG.AppMemb(nil);
-                EAG.AppMemb(EAG.NewMAlt(HN - EAG.firstHNont + EAG.firstMNont, Rhs));
+                eag.AppParam(eag.NextNode, UndefPos);
+                eag.ParamBuf[eag.NextParam - 1].isDef = false;
+                eag.AppParam(nil, UndefPos);
+                eag.AppNode(eag.NextMAlt);
+                Rhs = eag.NextMemb;
+                eag.AppMemb(nil);
+                eag.AppMemb(eag.NewMAlt(HN - EAG.firstHNont + EAG.firstMNont, Rhs));
             }
         }
         else
         {
-            EAG.HNont[HN].Def = null;
+            eag.HNont[HN].Def = null;
             Del[HN] = true;
-            EAG.MNont[HN - EAG.firstHNont + EAG.firstMNont].Id = nil;
-            EAG.MNont[HN - EAG.firstHNont + EAG.firstMNont].MRule = nil;
-            EAG.MNont[HN - EAG.firstHNont + EAG.firstMNont].IsToken = false;
+            eag.MNont[HN - EAG.firstHNont + EAG.firstMNont].Id = nil;
+            eag.MNont[HN - EAG.firstHNont + EAG.firstMNont].MRule = nil;
+            eag.MNont[HN - EAG.firstHNont + EAG.firstMNont].IsToken = false;
         }
     }
-    EAG.NextDom = EAG.firstDom;
+    eag.NextDom = EAG.firstDom;
     foreach (HN; GenNonts.bitsSet)
     {
-        EAG.HNont[HN].Sig = EAG.NextDom;
-        EAG.AppDom('+', HN.to!int - EAG.firstHNont + EAG.firstMNont);
-        EAG.AppDom('+', nil);
+        eag.HNont[HN].Sig = eag.NextDom;
+        eag.AppDom('+', HN.to!int - EAG.firstHNont + EAG.firstMNont);
+        eag.AppDom('+', nil);
     }
-    EAG.All -= Del;
-    EAG.Pred -= Del;
-    EAG.Prod -= Del;
-    EAG.Reach -= Del;
-    EAG.Null -= Del;
+    eag.All -= Del;
+    eag.Pred -= Del;
+    eag.Prod -= Del;
+    eag.Reach -= Del;
+    eag.Null -= Del;
 }

@@ -20,14 +20,20 @@
         },
         {
             "name": "unittest",
+            "sourcePaths": ["unittest"],
+            "importPaths": ["unittest"],
+            "dflags": ["-checkaction=context"],
+            "dflags-ldc": ["-allinst"],
             "dependencies": {
                 "silly": ">=1.1.1"
             }
         },
         {
             "name": "example",
-            "sourcePaths": ["test"],
-            "importPaths": ["test"],
+            "sourcePaths": ["test", "unittest"],
+            "importPaths": ["test", "unittest"],
+            "dflags": ["-checkaction=context"],
+            "dflags-ldc": ["-allinst"],
             "preBuildCommands": ["$DUB build"],
             "dependencies": {
                 "silly": ">=1.1.1"

@@ -15,7 +15,8 @@ import std.range;
 
 version (unittest) import gamma.grammar.GrammarBuilder;
 
-// requires a (converted) grammar without EBNF expressions
+// Requires a (converted) grammar without EBNF expressions. Nonterminals without
+// rules are unproductive and non-nullable, but can still be reachable.
 public class GrammarProperties
 {
     /**
@@ -151,7 +152,7 @@ public class GrammarProperties
         if (productiveNonterminals.empty)
             computeNullablesAndProductives;
 
-        return firstProductiveAlternative[(cast(Nonterminal) alternative.lhs.symbol).index] == alternative;
+        return firstProductiveAlternative[alternative.lhs.nonterminal.index] == alternative;
     }
 
     /**
@@ -168,7 +169,7 @@ public class GrammarProperties
         if (alternatives.empty)
             return null;
 
-        return firstProductiveAlternative[(cast(Nonterminal) alternatives.front.lhs.symbol).index];
+        return firstProductiveAlternative[alternatives.front.lhs.nonterminal.index];
     }
 
     /**
@@ -195,9 +196,9 @@ public class GrammarProperties
     private void createNontOccurrences()
     {
         this.nontOccurrences = new Alternative[][this.grammar_.nonterminals.length];
-        foreach (lhs; this.grammar_.nonterminals)
+        foreach (rule; this.grammar_.rules)
         {
-            foreach (alternative; this.grammar_.ruleOf(lhs).alternatives)
+            foreach (alternative; rule.alternatives)
             {
                 foreach (i; 0 .. alternative.rhs.length)
                 {
@@ -226,9 +227,9 @@ public class GrammarProperties
          */
         size_t[Alternative] alt2Count;
 
-        foreach (lhs; this.grammar_.nonterminals)
+        foreach (rule; this.grammar_.rules)
         {
-            foreach (alternative; this.grammar_.ruleOf(lhs).alternatives)
+            foreach (alternative; rule.alternatives)
                 alt2Count[alternative] = alternative.rhs.length;
         }
         if (this.nontOccurrences.empty)
@@ -255,9 +256,11 @@ public class GrammarProperties
 
         // find all empty alternatives,
         // initialize nullableNonterminals with them and put them on the stack
-        foreach (nont; this.grammar_.nonterminals)
+        foreach (rule; this.grammar_.rules)
         {
-            foreach (alternative; this.grammar_.ruleOf(nont).alternatives)
+            auto nont = rule.lhs.nonterminal;
+
+            foreach (alternative; rule.alternatives)
             {
                 if (alt2Count[alternative] == 0 && !nullableNonterminals[nont.index])
                 {
@@ -285,9 +288,7 @@ public class GrammarProperties
                 if (count == 0) // the alternative is nullable
                 {
                     // mark the lhs nonterminal and put it on the stack
-                    assert(cast(Nonterminal) alternative.lhs.symbol);
-
-                    auto lhs = cast(Nonterminal) alternative.lhs.symbol;
+                    auto lhs = alternative.lhs.nonterminal;
 
                     if (!nullableNonterminals[lhs.index])
                     {
@@ -326,9 +327,11 @@ public class GrammarProperties
 
         // initialize productiveNonterminals with nonterminals which produces
         // terminals directly
-        foreach (nont; this.grammar_.nonterminals)
+        foreach (rule; this.grammar_.rules)
         {
-            foreach (alternative; this.grammar_.ruleOf(nont).alternatives)
+            auto nont = rule.lhs.nonterminal;
+
+            foreach (alternative; rule.alternatives)
             {
                 size_t t = 0; // the number of terminals in the alternative
 
@@ -367,9 +370,7 @@ public class GrammarProperties
                 // the alternative is productive, mark the lhs nonterminal and
                 // put it on the stack
                 {
-                    assert(cast(Nonterminal) alternative.lhs.symbol);
-
-                    auto lhs = cast(Nonterminal) alternative.lhs.symbol;
+                    auto lhs = alternative.lhs.nonterminal;
 
                     if (!productiveNonterminals[lhs.index])
                     {
@@ -420,7 +421,12 @@ public class GrammarProperties
             {
                 reachableNonterminals[nonterminal.index] = true;
 
-                foreach (alternative; this.grammar_.ruleOf(nonterminal).alternatives)
+                auto rule = this.grammar_.ruleOf(nonterminal);
+
+                if (rule is null)
+                    return;
+
+                foreach (alternative; rule.alternatives)
                     foreach (node; alternative.rhs)
                     {
                         assert(cast(SymbolNode) node);
@@ -458,7 +464,11 @@ public class GrammarProperties
         if (!this.lexicalNonterminals[nonterminal.index])
         {
             this.lexicalNonterminals[nonterminal.index] = true;
-            foreach (alternative; this.grammar_.ruleOf(nonterminal).alternatives)
+            auto rule = this.grammar_.ruleOf(nonterminal);
+
+            if (rule is null)
+                return;
+            foreach (alternative; rule.alternatives)
                 foreach (node; alternative.rhs)
                     if (cast(SymbolNode) node && cast(Nonterminal) (cast(SymbolNode) node).symbol)
                         traverseLexicalNonterminals(cast(Nonterminal) (cast(SymbolNode) node).symbol);
@@ -472,6 +482,8 @@ public class GrammarProperties
      */
     private void computeStrongNullables()
     {
+        if (this.productiveNonterminals.empty)
+            computeNullablesAndProductives;
         if (this.nontOccurrences.empty)
             createNontOccurrences;
 
@@ -482,7 +494,7 @@ public class GrammarProperties
 
         foreach (rule; this.grammar_.rules)
         {
-            Nonterminal lhs = cast(Nonterminal) rule.lhs.symbol;
+            Nonterminal lhs = rule.lhs.nonterminal;
 
             foreach (alternative; rule.alternatives)
                 foreach (node; alternative.rhs)
@@ -508,8 +520,7 @@ public class GrammarProperties
             nonStrongNullableStack.popBack;
             foreach (alternative; this.nontOccurrences[nonterminal.index])
             {
-                // assert alternative.lhs.symbol instanceof Nonterminal
-                auto lhs = cast(Nonterminal) alternative.lhs.symbol;
+                auto lhs = alternative.lhs.nonterminal;
 
                 if (!nonStrongNullables[lhs.index])
                 {
@@ -529,6 +540,47 @@ public class GrammarProperties
     public Grammar grammar()
     {
         return this.grammar_;
+    }
+}
+
+@("compute properties with an unused nonterminal without a rule")
+unittest
+{
+    with (TestGrammarBuilder())
+    {
+        rule("S: a");
+        buildNonterminal("Unused");
+
+        with (new GrammarProperties(grammar))
+        {
+            assert(!isStrongNullable(symbol("S")));
+            assert(isProductive(symbol("S")));
+            assert(!isProductive(symbol("Unused")));
+            assert(!isNullable(symbol("Unused")));
+            assert(!isReachable(symbol("Unused")));
+            assert(!isLexicalNonterminal(symbol("Unused")));
+            assert(!isReduced);
+        }
+    }
+}
+
+@("compute properties with a referenced nonterminal without a rule")
+unittest
+{
+    with (TestGrammarBuilder())
+    {
+        rule("S: a | Missing");
+
+        with (new GrammarProperties(grammar))
+        {
+            assert(!isStrongNullable(symbol("S")));
+            assert(isProductive(symbol("S")));
+            assert(!isProductive(symbol("Missing")));
+            assert(!isNullable(symbol("Missing")));
+            assert(isReachable(symbol("Missing")));
+            assert(!isLexicalNonterminal(symbol("Missing")));
+            assert(!isReduced);
+        }
     }
 }
 

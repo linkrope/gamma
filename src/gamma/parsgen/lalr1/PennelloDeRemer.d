@@ -91,7 +91,7 @@ public class PennelloDeRemer : LR1ParserGenerator
             foreach (alternative; grammar.ruleOf(nonterminal).alternatives)
             {
                 if (this.grammarProperties.isFirstProductiveAlternative(alternative))
-                    trace!"#%s for lhs %s"(i, alternative.lhs.symbol);
+                    trace!"#%s for lhs %s"(i, alternative.lhs.nonterminal);
                 ++i;
             }
         }

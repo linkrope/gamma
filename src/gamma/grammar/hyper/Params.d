@@ -1,24 +1,26 @@
 module gamma.grammar.hyper.Params;
 
-import gamma.input.earley.AffixForm;
 import gamma.util.Position;
 
-// TODO: may gamma.grammar depend on gamma.input.earley?
+/**
+ * Parameter list annotation on a hyper symbol node.
+ * The key indexes into external arrays, which holds affix forms first and affix trees after Earley parsing.
+ */
 public class Params
 {
-    private AffixForm[] affixForms_;
+    private const size_t key_;
 
     private Position position_;
 
-    public this(AffixForm[] affixForms, Position position)
+    public this(size_t key, Position position)
     {
-        this.affixForms_ = affixForms;
+        this.key_ = key;
         this.position_ = position;
     }
 
-    public AffixForm[] affixForms()
+    public size_t key() const
     {
-        return this.affixForms_;
+        return this.key_;
     }
 
     public Position position()

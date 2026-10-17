@@ -1,6 +1,6 @@
 module epsilon.sweep;
 
-import EAG = epsilon.eag;
+import epsilon.eag;
 import EmitGen = epsilon.emitgen;
 import epsilon.settings;
 import EvalGen = epsilon.slaggen;
@@ -19,7 +19,7 @@ private bool Error;
 
 public bool Test(Settings settings)
 {
-    info!"single-sweep testing %s"(EAG.BaseName);
+    info!"single-sweep testing %s"(eag.BaseName);
 
     Init;
     scope (exit)
@@ -29,13 +29,13 @@ public bool Test(Settings settings)
     if (Error)
         return false;
 
-    info!"%s grammar is single sweep"(EAG.BaseName);
+    info!"%s grammar is single sweep"(eag.BaseName);
     return true;
 }
 
 public string Generate(Settings settings)
 {
-    info!"single-sweep writing %s"(EAG.BaseName);
+    info!"single-sweep writing %s"(eag.BaseName);
     Init;
     scope (exit)
         Finit;
@@ -47,9 +47,9 @@ public string Generate(Settings settings)
 
 private void Init() nothrow
 {
-    FactorOffset = new int[EAG.NextHFactor + EAG.NextHAlt + 1];
-    GenFactors = EAG.Prod & EAG.Reach;
-    GenNonts = GenFactors - EAG.Pred;
+    FactorOffset = new int[eag.NextHFactor + eag.NextHAlt + 1];
+    GenFactors = eag.Prod & eag.Reach;
+    GenNonts = GenFactors - eag.Pred;
     Error = false;
 }
 
@@ -133,13 +133,13 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
 
     int HyperArity()
     {
-        const Nonts = EAG.All - EAG.Pred;
+        const Nonts = eag.All - eag.Pred;
         int Max = 0;
         int i;
 
         foreach (N; Nonts.bitsSet)
         {
-            EAG.Alt A = EAG.HNont[N].Def.Sub;
+            EAG.Alt A = eag.HNont[N].Def.Sub;
 
             i = 0;
             do
@@ -148,7 +148,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
                 A = A.Next;
             }
             while (A !is null);
-            if (cast(EAG.Opt) EAG.HNont[N].Def || cast(EAG.Rep) EAG.HNont[N].Def)
+            if (cast(EAG.Opt) eag.HNont[N].Def || cast(EAG.Rep) eag.HNont[N].Def)
                 ++i;
             if (i > Max)
                 Max = i;
@@ -170,13 +170,13 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
         EAG.Nont F1;
         EAG.Nont F2;
 
-        SavedNontDef = EAG.HNont[N].Def;
-        SavedNextHFactor = EAG.NextHFactor;
-        SavedNextHAlt = EAG.NextHAlt;
+        SavedNontDef = eag.HNont[N].Def;
+        SavedNextHFactor = eag.NextHFactor;
+        SavedNextHAlt = eag.NextHAlt;
 
         EAG.Grp Def = new EAG.Grp;
 
-        A = EAG.HNont[N].Def.Sub;
+        A = eag.HNont[N].Def.Sub;
         A2 = null;
         do
         {
@@ -210,11 +210,11 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
                     }
                 F = F.Next;
             }
-            if (cast(EAG.Rep) EAG.HNont[N].Def)
+            if (cast(EAG.Rep) eag.HNont[N].Def)
             {
                 F1 = new EAG.Nont;
-                F1.Ind = EAG.NextHFactor;
-                ++EAG.NextHFactor;
+                F1.Ind = eag.NextHFactor;
+                ++eag.NextHFactor;
                 F1.Prev = A1.Last;
                 A1.Last = F1;
                 if (A1.Sub is null)
@@ -231,22 +231,22 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
             A = A.Next;
         }
         while (A !is null);
-        if (cast(EAG.Opt) EAG.HNont[N].Def || cast(EAG.Rep) EAG.HNont[N].Def)
+        if (cast(EAG.Opt) eag.HNont[N].Def || cast(EAG.Rep) eag.HNont[N].Def)
         {
             A1 = new EAG.Alt;
-            A1.Ind = EAG.NextHAlt;
-            ++EAG.NextHAlt;
+            A1.Ind = eag.NextHAlt;
+            ++eag.NextHAlt;
             A1.Up = N.to!int;
             A1.Next = null;
             A1.Sub = null;
             A1.Last = null;
-            if (auto opt = cast(EAG.Opt) EAG.HNont[N].Def)
+            if (auto opt = cast(EAG.Opt) eag.HNont[N].Def)
             {
                 A1.Scope = opt.Scope;
                 A1.Formal = opt.Formal;
                 A1.Pos = opt.EmptyAltPos;
             }
-            else if (auto rep = cast(EAG.Rep) EAG.HNont[N].Def)
+            else if (auto rep = cast(EAG.Rep) eag.HNont[N].Def)
             {
                 A1.Scope = rep.Scope;
                 A1.Formal = rep.Formal;
@@ -256,14 +256,14 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
             A1.Actual.Pos = UndefPos;
             A2.Next = A1;
         }
-        EAG.HNont[N].Def = Def;
+        eag.HNont[N].Def = Def;
     }
 
     void RestoreNont(size_t N)
     {
-        EAG.HNont[N].Def = SavedNontDef;
-        EAG.NextHFactor = SavedNextHFactor;
-        EAG.NextHAlt = SavedNextHAlt;
+        eag.HNont[N].Def = SavedNontDef;
+        eag.NextHFactor = SavedNextHFactor;
+        eag.NextHAlt = SavedNextHAlt;
     }
 
     void ComputePermutation(size_t N)
@@ -325,7 +325,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
                     case appl:
                         if (!Def && !DefVars[-Node])
                         {
-                            error!"variable %s is not defined\n%s"(EAG.VarRepr(-Node), EAG.ParamBuf[P].Pos);
+                            error!"variable %s is not defined\n%s"(eag.VarRepr(-Node), eag.ParamBuf[P].Pos);
                             Error = true;
                         }
                         break;
@@ -335,15 +335,15 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
                 }
                 else
                 {
-                    for (n = 1; n <= EAG.MAlt[EAG.NodeBuf[Node]].Arity; ++n)
-                        Tree(EAG.NodeBuf[Node + n]);
+                    for (n = 1; n <= eag.MAlt[eag.NodeBuf[Node]].Arity; ++n)
+                        Tree(eag.NodeBuf[Node + n]);
                 }
             }
 
-            while (EAG.ParamBuf[P].Affixform != EAG.nil)
+            while (eag.ParamBuf[P].Affixform != EAG.nil)
             {
-                Def = EAG.ParamBuf[P].isDef;
-                Tree(EAG.ParamBuf[P].Affixform);
+                Def = eag.ParamBuf[P].isDef;
+                Tree(eag.ParamBuf[P].Affixform);
                 ++P;
             }
         }
@@ -368,7 +368,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
             --NextStack;
         }
 
-        A = EAG.HNont[N].Def.Sub;
+        A = eag.HNont[N].Def.Sub;
         do
         {
             DefVars[] = false;
@@ -385,7 +385,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
                 Factor[F.Ind].Prio = Prio;
                 ++Prio;
                 Factor[F.Ind].F = F;
-                if (!EAG.Pred[(cast(EAG.Nont) F).Sym])
+                if (!eag.Pred[(cast(EAG.Nont) F).Sym])
                 {
                     FactorOffset[F.Ind] = Offset;
                     ++Offset;
@@ -459,15 +459,15 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
         EvalGen.ComputeVarNames(N, No.embed);
         output.write("void P", N, "(TreeType Adr");
         EvalGen.GenFormalParams(N, No.parNeeded);
-        output.write(") // ", EAG.HNontRepr(N));
-        if (EAG.HNont[N].anonymous)
-            output.write(" in ", EAG.NamedHNontRepr(N));
+        output.write(") // ", eag.HNontRepr(N));
+        if (eag.HNont[N].anonymous)
+            output.write(" in ", eag.NamedHNontRepr(N));
         output.writeln;
         output.writeln("{");
         EvalGen.GenVarDecl(N);
         output.writeln("switch (MOD(Tree[Adr], hyperArityConst))");
         output.writeln("{");
-        A = EAG.HNont[N].Def.Sub;
+        A = eag.HNont[N].Def.Sub;
         AltIndex = indexOfFirstAlt;
         do
         {
@@ -481,14 +481,14 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
             {
                 if (auto nont = cast(EAG.Nont) F)
                 {
-                    if (!EAG.Pred[nont.Sym])
+                    if (!eag.Pred[nont.Sym])
                     {
                         EvalGen.GenSynPred(N, nont.Actual.Params);
                         output.write("P", nont.Sym, "(Tree[Adr + ", FactorOffset[F.Ind], "]");
                         EvalGen.GenActualParams(nont.Actual.Params, false);
-                        output.write("); // ", EAG.HNontRepr(nont.Sym));
-                        if (EAG.HNont[nont.Sym].anonymous)
-                            output.write(" in ", EAG.NamedHNontRepr(nont.Sym));
+                        output.write("); // ", eag.HNontRepr(nont.Sym));
+                        if (eag.HNont[nont.Sym].anonymous)
+                            output.write(" in ", eag.NamedHNontRepr(nont.Sym));
                         output.writeln;
                         if (EvalGen.PosNeeded(nont.Actual.Params))
                             output.writeln("Pos = PosTree[Adr + ", FactorOffset[F.Ind], "];");
@@ -499,7 +499,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
                         EvalGen.GenSynPred(N, nont.Actual.Params);
                         output.write("Pos = PosTree[Adr");
                         F1 = F.Prev;
-                        while (F1 !is null && EAG.Pred[(cast(EAG.Nont) F1).Sym])
+                        while (F1 !is null && eag.Pred[(cast(EAG.Nont) F1).Sym])
                             F1 = F1.Prev;
                         if (F1 !is null)
                             output.write(" + ", FactorOffset[F1.Ind]);
@@ -524,7 +524,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
     }
 
     enum fixName = "sweep.fix.d";
-    const name = EAG.BaseName ~ "Eval";
+    const name = eag.BaseName ~ "Eval";
     const fileName = settings.path(name ~ ".d");
 
     EvalGen.InitTest;
@@ -546,13 +546,13 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
             output.writeln;
         }
     }
-    Factor = new FactorRecord[EAG.NextHFactor + EAG.NextHAlt + 1];
-    Var = new VarRecord[EAG.NextVar + 1];
+    Factor = new FactorRecord[eag.NextHFactor + eag.NextHAlt + 1];
+    Var = new VarRecord[eag.NextVar + 1];
     Edge = new EdgeRecord[127];
-    Stack = new int[EAG.NextHFactor + 1];
+    Stack = new int[eag.NextHFactor + 1];
     DefVars = BitArray();
-    DefVars.length = EAG.NextVar + 1;
-    for (V = EAG.firstVar; V < EAG.NextVar; ++V)
+    DefVars.length = eag.NextVar + 1;
+    for (V = EAG.firstVar; V < eag.NextVar; ++V)
         Var[V].Factors = nil;
     foreach (N; GenNonts.bitsSet)
     {
@@ -572,13 +572,13 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
         {
             EmitGen.GenEmitProc(output, settings);
             InclFix('$');
-            output.write("P", EAG.StartSym);
+            output.write("P", eag.StartSym);
             InclFix('$');
             EmitGen.GenEmitCall(output, settings);
             InclFix('$');
             EmitGen.GenShowHeap(output);
             InclFix('$');
-            output.write(EAG.BaseName, "Eval");
+            output.write(eag.BaseName, "Eval");
             InclFix('$');
             output.close;
         }

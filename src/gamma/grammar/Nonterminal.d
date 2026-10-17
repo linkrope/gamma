@@ -27,7 +27,7 @@ public class Nonterminal : Symbol, Indexed
      * It cannot be greater than the number of nonterminals in the grammar
      * @return the unique index of the nonterminal
      */
-    public size_t index() const
+    public size_t index() const @safe nothrow
     {
         return this.index_;
     }

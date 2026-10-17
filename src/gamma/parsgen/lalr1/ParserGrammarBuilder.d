@@ -3,6 +3,7 @@ module gamma.parsgen.lalr1.ParserGrammarBuilder;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.GrammarBuilder;
+import gamma.grammar.LhsNode;
 import gamma.grammar.Node;
 import gamma.grammar.Nonterminal;
 import gamma.grammar.Rule;
@@ -27,7 +28,7 @@ in (grammar.isPlain)
         Node[] rhs = [new SymbolNode(originalStartSymbol, Position()), new SymbolNode(bottom, Position())];
 
         grammarBuilder.add(
-            new Alternative(new SymbolNode(extStartSymbol, Position()), rhs, Position()));
+            new Alternative(new LhsNode(extStartSymbol, Position()), rhs, Position()));
     }
 
     // Filter the pure parser grammar out of the grammar using
@@ -42,12 +43,12 @@ in (grammar.isPlain)
     {
         foreach (alternative; rule.alternatives)
         {
-            if (isTerminal(alternative.lhs.symbol))
+            if (isTerminal(alternative.lhs.nonterminal))
                 break;
-            if (isPredicate(alternative.lhs.symbol))
+            if (isPredicate(alternative.lhs.nonterminal))
                 break;
 
-            Nonterminal lhs = grammarBuilder.buildNonterminal(alternative.lhs.symbol.toString);
+            Nonterminal lhs = grammarBuilder.buildNonterminal(alternative.lhs.nonterminal.toString);
             Node[] rhs;
 
             foreach (node; alternative.rhs)
@@ -68,7 +69,7 @@ in (grammar.isPlain)
                 rhs ~= new SymbolNode(symbol, symbolNode.position);
             }
             grammarBuilder
-                .add(new Alternative(new SymbolNode(lhs, alternative.lhs.position), rhs, alternative.position));
+                .add(new Alternative(new LhsNode(lhs, alternative.lhs.position), rhs, alternative.position));
         }
     }
 

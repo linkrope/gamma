@@ -1,6 +1,7 @@
 module gamma.grammar.Rule;
 
 import gamma.grammar.Alternative;
+import gamma.grammar.LhsNode;
 import gamma.grammar.SymbolNode;
 import gamma.grammar.Visitor;
 import std.range;
@@ -20,11 +21,11 @@ public class Rule
     public this(Alternative[] alternatives)
     in (!alternatives.empty)
     {
-        auto symbol = alternatives.front.lhs.symbol;
+        auto nonterminal = alternatives.front.lhs.nonterminal;
 
         foreach (alternative; alternatives)
         {
-            assert(alternative.lhs.symbol == symbol);
+            assert(alternative.lhs.nonterminal == nonterminal);
         }
         this.alternatives_ = alternatives.dup;
     }
@@ -34,7 +35,7 @@ public class Rule
         visitor.visit(this);
     }
 
-    public SymbolNode lhs()
+    public LhsNode lhs()
     {
         return this.alternatives_.front.lhs;
     }

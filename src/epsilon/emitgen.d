@@ -1,6 +1,6 @@
 module epsilon.emitgen;
 
-import EAG = epsilon.eag;
+import epsilon.eag;
 import epsilon.settings;
 import runtime;
 import std.bitmanip : BitArray;
@@ -15,21 +15,21 @@ public void GenEmitProc(File output, Settings settings)
 {
     void CalcSets(int Nont)
     in (EAG.firstMNont <= Nont)
-    in (Nont < EAG.NextMNont)
+    in (Nont < eag.NextMNont)
     {
         int A;
         int F;
         int M;
 
-        if (EAG.MNont[Nont].IsToken)
+        if (eag.MNont[Nont].IsToken)
             Type3[Nont] = true;
-        A = EAG.MNont[Nont].MRule;
+        A = eag.MNont[Nont].MRule;
         while (A != EAG.nil)
         {
-            F = EAG.MAlt[A].Right;
-            while (EAG.MembBuf[F] != EAG.nil)
+            F = eag.MAlt[A].Right;
+            while (eag.MembBuf[F] != EAG.nil)
             {
-                M = EAG.MembBuf[F];
+                M = eag.MembBuf[F];
                 if (M > 0)
                 {
                     if (Type3[Nont] && !Type3[M])
@@ -39,14 +39,14 @@ public void GenEmitProc(File output, Settings settings)
                     }
                     if (Type2[Nont] && !Type2[M])
                     {
-                        if (!EAG.MNont[M].IsToken)
+                        if (!eag.MNont[M].IsToken)
                             Type2[M] = true;
                         CalcSets(M);
                     }
                 }
                 ++F;
             }
-            A = EAG.MAlt[A].Next;
+            A = eag.MAlt[A].Next;
         }
     }
 
@@ -73,7 +73,7 @@ public void GenEmitProc(File output, Settings settings)
                     output.write("Out.writeln; ");
             }
 
-            A = EAG.MNont[N].MRule;
+            A = eag.MNont[N].MRule;
             ANum = 1;
             output.writeln("switch (MOD(Heap[Ptr], arityConst))");
             output.writeln("{");
@@ -84,27 +84,27 @@ public void GenEmitProc(File output, Settings settings)
                     import std.stdio : stdout;  // TODO: replace with log
 
                     stdout.write("internal error: Too many meta alts in ");
-                    stdout.write(EAG.MTerm[N].Id.repr);
+                    stdout.write(eag.MTerm[N].Id.repr);
                     stdout.writeln;
                     assert(0);
                 }
-                F = EAG.MAlt[A].Right;
+                F = eag.MAlt[A].Right;
                 arity = 0;
                 output.writeln("case ", ANum, ":");
-                while (EAG.MembBuf[F] != EAG.nil)
+                while (eag.MembBuf[F] != EAG.nil)
                 {
-                    M = EAG.MembBuf[F];
+                    M = eag.MembBuf[F];
                     if (M < 0)
                     {
                         output.write("Out.write(");
-                        output.write(EAG.MTerm[-M].Id.repr);
+                        output.write(eag.MTerm[-M].Id.repr);
                         output.write("); ");
                         if (MNonts == Type2)
                             WhiteSpace;
                     }
                     else
                     {
-                        if (MNonts == Type3 || EAG.MNont[M].IsToken)
+                        if (MNonts == Type3 || eag.MNont[M].IsToken)
                             GenProcName(M, Type3);
                         else
                             GenProcName(M, Type2);
@@ -112,14 +112,14 @@ public void GenEmitProc(File output, Settings settings)
                         output.write("(Heap[Ptr + ");
                         output.write(arity);
                         output.write("]); ");
-                        if (EAG.MNont[M].IsToken && MNonts == Type2)
+                        if (eag.MNont[M].IsToken && MNonts == Type2)
                             WhiteSpace;
                     }
                     ++F;
                     output.writeln;
                 }
                 output.writeln("break;");
-                A = EAG.MAlt[A].Next;
+                A = eag.MAlt[A].Next;
                 ++ANum;
             }
             output.writeln("default:");
@@ -140,12 +140,12 @@ public void GenEmitProc(File output, Settings settings)
         }
     }
 
-    StartMNont = EAG.DomBuf[EAG.HNont[EAG.StartSym].Sig];
+    StartMNont = eag.DomBuf[eag.HNont[eag.StartSym].Sig];
     Type3 = BitArray();
-    Type3.length = EAG.NextMNont + 1;
+    Type3.length = eag.NextMNont + 1;
     Type2 = BitArray();
-    Type2.length = EAG.NextMNont + 1;
-    if (!EAG.MNont[StartMNont].IsToken)
+    Type2.length = eag.NextMNont + 1;
+    if (!eag.MNont[StartMNont].IsToken)
         Type2[StartMNont] = true;
     CalcSets(StartMNont);
     if (!Type3.bitsSet.empty)
@@ -176,7 +176,7 @@ public void GenEmitCall(File output, Settings settings)
     if (settings.write)
         output.write("!");
     output.writeln("write)");
-    output.writeln(`Out = File("`, EAG.BaseName, `.Out", "w");`);
+    output.writeln(`Out = File("`, eag.BaseName, `.Out", "w");`);
     output.writeln("else");
     output.writeln("Out = stdout;");
     output.writeln("Emit", StartMNont, "Type",  Type2[StartMNont] ? "2" : "3", "(V1);");
@@ -189,7 +189,7 @@ private string repr(int id)
     import std.format : format;
     import std.range : dropBackOne, dropOne, front, only;
 
-    const value = EAG.symbolTable.symbol(id);
+    const value = eag.symbolTable.symbol(id);
 
     if (value.front == '\'')
     {

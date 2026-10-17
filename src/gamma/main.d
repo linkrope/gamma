@@ -6,8 +6,10 @@
 module gamma.main;
 
 import argparse;
+import epsilon.eag : epsilonEAG = eag;
 import epsilon.settings;
 import gamma.grammar.Grammar;
+import gamma.input.epsilang.analyzer : EAG;
 import io : Input, read;
 import log;
 import runtime;
@@ -119,27 +121,25 @@ void command(Arguments arguments)
 
 void compile(Input input, const Arguments arguments)
 {
-    import analyzer = epsilon.analyzer;
     import ELL1Gen = epsilon.ell1gen;
     import LexGen = epsilon.lexgen;
     import Predicates = epsilon.predicates;
     import SLAGGen = epsilon.slaggen;
     import SOAGGen = epsilon.soag.soaggen;
     import Sweep = epsilon.sweep;
+    import gamma.input.EAGBuilder : toEAG;
     import std.exception : enforce;
 
-    check(input, arguments);
+    auto eag = check(input, arguments);
+
     if (arguments.lalr)
         return;
 
-    const settings = createSettings(arguments);
-
-    analyzer.Analyse(input);
-
-    enforce(analyzer.ErrorCounter == 0);
+    epsilonEAG = eag.toEAG;
 
     Predicates.Check;
 
+    const settings = createSettings(arguments);
     const isELL1 = ELL1Gen.Test(settings);
 
     enforce(isELL1);
@@ -194,19 +194,20 @@ void compile(Input input, const Arguments arguments)
 }
 
 // check hyper-grammar with new gamma Analyzer
-void check(Input input, const Arguments arguments)
+EAG check(Input input, const Arguments arguments)
 {
     import gamma.input.epsilang.analyzer : Analyzer;
 
     auto analyzer = new Analyzer;
+    auto eag = analyzer.analyze(input);
 
-    analyzer.analyze(input);
     if (arguments.lalr)
     {
         import gamma.parsgen.lalr1.PennelloDeRemer : generateParser;
 
         generateParser(analyzer.parserGrammar);
     }
+    return eag;
 }
 
 Settings createSettings(const Arguments arguments)

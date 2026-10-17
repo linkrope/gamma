@@ -9,7 +9,7 @@ public abstract class Symbol
         this.representation = representation;
     }
 
-    public override string toString() const
+    public override string toString() const @safe nothrow
     {
         return this.representation;
     }

@@ -3,6 +3,7 @@ module gamma.parsgen.lalr1.run.LR1ParserTablesReader;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.GrammarBuilder;
+import gamma.grammar.LhsNode;
 import gamma.grammar.Node;
 import gamma.grammar.Nonterminal;
 import gamma.grammar.Rule;
@@ -59,7 +60,7 @@ public class LR1ParserTablesReader
 
     static private string ruleReprFor(Alternative alt)
     {
-        return format!"%s ::=%-( %s%)"(alt.lhs.symbol, alt.rhs.map!(node => (cast(SymbolNode) node).symbol));
+        return format!"%s ::=%-( %s%)"(alt.lhs.nonterminal, alt.rhs.map!(node => (cast(SymbolNode) node).symbol));
     }
 
     private this()
@@ -178,7 +179,7 @@ public class LR1ParserTablesReader
         }
 
         auto alternative = new Alternative(
-            new SymbolNode(lhs, SimplePosition(lhs.toString)),
+            new LhsNode(lhs, SimplePosition(lhs.toString)),
             rhs,
             SimplePosition(format!"alternative #%s"(index)));
 
