@@ -167,7 +167,7 @@ builder.compareMeta();         // logs/asserts diffs — free regression check
 // add buildHyper/compareHyper ... incrementally
 ```
 
-**Transition trigger**: when ALL `compareX()` sub-phases report zero diffs consistently → implement `storeAll()` (see 3e) that writes all EAG globals in one coordinated pass and replaces all `compareX()` calls. The store sub-phases cannot be activated individually because gamma's index ordering differs from epsilon's: partial stores leave the EAG globals in an inconsistent state.
+**Transition trigger**: when ALL `compareX()` sub-phases report zero diffs consistently → implement `toEAG()` (see 3e) that constructs one complete EAG and replaces the legacy instance. The conversion sub-phases cannot be activated individually because gamma's index ordering differs from epsilon's: partial EAGs leave cross-references inconsistent.
 
 ### 3a — Meta rules
 - [x] `buildMeta(Grammar metaGrammar)`: walk meta grammar; intern names; fill builder's `MNontRecord[]`, `MAlt[]`, `MembBuf[]` mirrors
@@ -202,23 +202,23 @@ builder.compareMeta();         // logs/asserts diffs — free regression check
 
 Checkpoint per sub-phase: `dub test --build=unittest --config=example` — compare functions run automatically; mismatch output drives the next fix iteration
 
-### 3e — Store all (after all compare steps confirm zero diffs)
-Store all sub-phases must happen together in one pass. Storing partial results while epsilon's EAG globals are still intact would leave the arrays in an inconsistent state: epsilon's HNont/Alt/Factor entries embed MNont indices using epsilon's ordering; gamma's storeMeta() would overwrite MNont with gamma's ordering; the cross-references would no longer match.
+### 3e — Construct the EAG (after all compare steps confirm zero diffs)
+`toEAG()` must construct every field in one pass. Constructing partial EAGs would leave the arrays inconsistent: epsilon's HNont/Alt/Factor entries embed MNont indices using epsilon's ordering, while Gamma uses its own ordering; all cross-references must use one scheme.
 
 Therefore, once all `compareX()` report zero diffs on every example grammar:
-- [ ] Implement `storeAll()` that writes ALL EAG globals in a single coordinated pass using a single consistent indexing scheme (gamma's or a newly agreed canonical order); all cross-references (MNont refs inside HNont entries, etc.) are emitted using the same scheme
-- [ ] Remove all `compareX()` calls from `main.d`; replace with single `storeAll()` call
-- [ ] Delete `epsilon.analyzer.Analyse()` call from `main.d`
+- [x] Implement `toEAG()` that constructs a complete EAG using Gamma's consistent indexing scheme, then replace the live `eag` before downstream checks and generators run
+- [x] Remove the comparison machinery after the live `toEAG()` conversion is covered by the test suite
 
 ---
 
 ## Phase 4: Replace epsilon.analyzer in main.d
-- [ ] `src/gamma/main.d`: `check()` already calls gamma's analyzer; refactor so the analyzed Grammar models are accessible to `compile()`
-- [ ] In `compile()`: replace `analyzer.Analyse(input)` (line ~96) with call to `EAGBuilder.storeAll(metaGrammar, hyperGrammar)`
-- [ ] Move the dual-use lexer (`src/epsilon/lexer.d`) into `src/gamma/`; update all imports
-- [ ] Remove `src/gamma/input/epsilang/Scanner.d` (marked unused) now that the epsilon lexer is superseded
-- [ ] Remove `epsilon.analyzer` import once confirmed
-- [ ] Verify `Predicates.Check()` and all downstream generators still work unchanged (they read EAG globals, which are now populated by the transformer)
+- [x] Replace the legacy `ErrorCounter` guard with Gamma grammar validation
+- [x] In `compile()`: remove `analyzer.Analyse(input)`; assign the EAG returned by `EAGBuilder.toEAG()` directly
+- [x] Move the dual-use lexer (`src/epsilon/lexer.d`) into `src/gamma/`; update all imports
+- [x] Remove `src/gamma/input/epsilang/Scanner.d` (marked unused) now that the epsilon lexer is superseded
+- [x] Remove `epsilon.analyzer` import once confirmed
+- [x] Remove EAG functions used only by `epsilon.analyzer`; retain the functions required by the legacy generators
+- [x] Verify `Predicates.Check()` and all downstream generators still work unchanged (they read EAG globals, which are now populated by the transformer)
 
 Checkpoint: `dub test --build=unittest --config=example` with epsilon.analyzer removed — all tests pass
 
@@ -243,6 +243,6 @@ Checkpoint: `dub test --build=unittest --config=example` with epsilon.analyzer r
 > generated-compiler command when necessary.
 
 1. `dub test --build=unittest --config=example` after each phase and each 3x sub-phase
-2. `compareX()` methods in Phase 3 make diffs automatic on every test run — no separate tooling needed
+2. Phase 3 conversion is exercised through the remaining epsilon generators on every test run
 3. `dub run dscanner -- --styleCheck src test` after code changes
 4. After Phase 4: full `dub test --build=unittest --config=example` with epsilon.analyzer removed

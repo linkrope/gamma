@@ -1,6 +1,6 @@
 module epsilon.eag;
 
-import io : Position, UndefPos;
+import io : Position;
 import runtime;
 import std.algorithm;
 import std.bitmanip;
@@ -251,15 +251,9 @@ struct EAG
     int Scope;
     int NextHAlt;
     int NextHFactor;
-    int NOAlt;
-    int NOTerm;
-    int NONont;
-    int NOOpt;
-    int NORep;
-    int NOGrp;
+    int NontCount;
     int[] DomBuf;
     int NextDom;
-    int CurSig;
     MAltRecord[] MAlt;
     int NextMAlt;
     int MaxMArity;
@@ -273,7 +267,6 @@ struct EAG
     int NextHTerm;
     HNontRecord[] HNont;
     int NextHNont;
-    int NextAnonym;
 
     // HNont can contain gaps, so All identifies its valid entries.
     BitArray All;
@@ -292,59 +285,6 @@ void AppParam(int Affixform, Position Pos) nothrow @safe
     NextParam = cast(int) ParamBuf.length;
 }
 
-int FindMTerm(int Id) nothrow @safe
-{
-    foreach (sym; firstMTerm .. cast(int) MTerm.length)
-        if (MTerm[sym].Id == Id)
-            return sym;
-    MTerm.length = NextMTerm;
-    MTerm ~= MTermRecord(Id);
-    NextMTerm = cast(int) MTerm.length;
-    return NextMTerm - 1;
-}
-
-int FindMNont(int Id) nothrow @safe
-{
-    foreach (sym; firstMNont .. cast(int) MNont.length)
-        if (MNont[sym].Id == Id)
-            return sym;
-    MNont.length = NextMNont;
-    MNont ~= MNontRecord(Id, nil, nil, false);
-    NextMNont = cast(int) MNont.length;
-    return NextMNont - 1;
-}
-
-int FindHTerm(int Id) nothrow @safe
-{
-    foreach (sym; firstHTerm .. cast(int) HTerm.length)
-        if (HTerm[sym].Id == Id)
-            return sym;
-    HTerm.length = NextHTerm;
-    HTerm ~= HTermRecord(Id);
-    NextHTerm = cast(int) HTerm.length;
-    return NextHTerm - 1;
-}
-
-int FindHNont(int Id) nothrow @safe
-{
-    foreach (sym; firstHNont .. cast(int) HNont.length)
-        if (HNont[sym].Id == Id)
-            return sym;
-    HNont.length = NextHNont;
-    HNont ~= HNontRecord(Id, Id, -1, null, false);
-    NextHNont = cast(int) HNont.length;
-    return NextHNont - 1;
-}
-
-int NewAnonymNont(int Id) nothrow @safe
-{
-    HNont.length = NextHNont;
-    HNont ~= HNontRecord(NextAnonym, Id, -1, null, false);
-    --NextAnonym;
-    NextHNont = cast(int) HNont.length;
-    return NextHNont - 1;
-}
-
 void AppDom(char Dir, int Dom) nothrow @safe
 {
     if (Dir == '-')
@@ -352,33 +292,6 @@ void AppDom(char Dir, int Dom) nothrow @safe
     DomBuf.length = NextDom;
     DomBuf ~= Dom;
     NextDom = cast(int) DomBuf.length;
-}
-
-bool WellMatched(int Sig1, int Sig2) @nogc nothrow @safe
-{
-    if (Sig1 == Sig2)
-        return true;
-    while (DomBuf[Sig1] == DomBuf[Sig2] && DomBuf[Sig1] != nil && DomBuf[Sig2] != nil)
-    {
-        ++Sig1;
-        ++Sig2;
-    }
-    return DomBuf[Sig1] == nil && DomBuf[Sig2] == nil;
-}
-
-bool SigOK(int Sym) nothrow @safe
-{
-    if (HNont[Sym].Sig < 0)
-    {
-        HNont[Sym].Sig = CurSig;
-        AppDom('+', nil);
-        CurSig = NextDom;
-        return true;
-    }
-    DomBuf.length = NextDom;
-    DomBuf ~= nil;
-    NextDom = CurSig;
-    return WellMatched(HNont[Sym].Sig, CurSig);
 }
 
 int NewMAlt(int Sym, int Right) nothrow @safe
@@ -450,127 +363,6 @@ int FindVar(int Sym, int Num, Position Pos, bool Def) nothrow @safe
     return V;
 }
 
-void NewTerm(ref Factor F, int Sym, Position Pos) nothrow @safe
-{
-    Term F1 = new Term;
-
-    ++NOTerm;
-    F1.Next = null;
-    F1.Sym = Sym;
-    F1.Pos = Pos;
-    F1.Ind = NextHFactor;
-    ++NextHFactor;
-    if (F is null)
-    {
-        F = F1;
-        F.Prev = null;
-    }
-    else
-    {
-        F.Next = F1;
-        F1.Prev = F;
-        F = F.Next;
-    }
-}
-
-void NewNont(ref Factor F, int Sym, ParamsDesc Actual, Position Pos) nothrow @safe
-{
-    Nont F1 = new Nont;
-
-    ++NONont;
-    F1.Next = null;
-    F1.Sym = Sym;
-    F1.Actual = Actual;
-    F1.Pos = Pos;
-    F1.Ind = NextHFactor;
-    ++NextHFactor;
-    if (F is null)
-    {
-        F = F1;
-        F.Prev = null;
-    }
-    else
-    {
-        F.Next = F1;
-        F1.Prev = F;
-        F = F.Next;
-    }
-}
-
-void NewGrp(int Sym, Alt Sub) nothrow @safe
-{
-    if (HNont[Sym].Def is null)
-    {
-        Grp N = new Grp;
-
-        ++NOGrp;
-        N.Sub = Sub;
-        HNont[Sym].Def = N;
-    }
-    else
-    {
-        Alt A = (cast(Grp) HNont[Sym].Def).Sub;
-
-        while (A.Next !is null)
-            A = A.Next;
-        A.Next = Sub;
-    }
-}
-
-void NewOpt(int Sym, Alt Sub, ParamsDesc Formal, Position Pos) nothrow @safe
-{
-    Opt N = new Opt;
-
-    ++NOOpt;
-    N.Sub = Sub;
-    N.EmptyAltPos = Pos;
-    N.Scope.Beg = nil;
-    N.Scope.End = nil;
-    N.Formal = Formal;
-    HNont[Sym].Def = N;
-}
-
-void NewRep(int Sym, Alt Sub, ParamsDesc Formal, Position Pos) nothrow @safe
-{
-    Rep N = new Rep;
-
-    ++NORep;
-    N.Sub = Sub;
-    N.EmptyAltPos = Pos;
-    N.Scope.Beg = nil;
-    N.Scope.End = nil;
-    N.Formal = Formal;
-    HNont[Sym].Def = N;
-}
-
-void NewAlt(ref Alt A, int Sym, ParamsDesc Formal, ParamsDesc Actual, Factor Sub,
-        Factor Last, Position Pos) nothrow @safe
-{
-    Alt A1 = new Alt;
-
-    ++NOAlt;
-    A1.Next = null;
-    A1.Up = Sym;
-    A1.Scope.Beg = nil;
-    A1.Scope.End = nil;
-    A1.Formal = Formal;
-    A1.Actual = Actual;
-    A1.Sub = Sub;
-    A1.Last = Last;
-    A1.Pos = Pos;
-    A1.Ind = NextHAlt;
-    ++NextHAlt;
-    if (A is null)
-    {
-        A = A1;
-    }
-    else
-    {
-        A.Next = A1;
-        A = A.Next;
-    }
-}
-
 public string HTermRepr(int Term) @nogc nothrow @safe
 {
     return symbolTable.symbol(HTerm[Term].Id);
@@ -604,63 +396,6 @@ public string NamedHNontRepr(size_t Nont) @nogc nothrow @safe
     return symbolTable.symbol(HNont[Nont].NamedId);
 }
 
-void Init() nothrow
-{
-    ParamBuf = null;
-    AppParam(nil, UndefPos);
-
-    MTerm = null;
-    MTerm ~= MTermRecord.init;
-    NextMTerm = cast(int) MTerm.length;
-
-    MNont = null;
-    MNont ~= MNontRecord.init;
-    NextMNont = cast(int) MNont.length;
-
-    HTerm = null;
-    NextHTerm = cast(int) HTerm.length;
-
-    HNont = null;
-    NextHNont = cast(int) HNont.length;
-    NextAnonym = -1;
-
-    DomBuf = null;
-    AppDom('+', nil);
-    CurSig = NextDom;
-
-    MAlt = null;
-    MAlt ~= MAltRecord.init;
-    NextMAlt = cast(int) MAlt.length;
-
-    MembBuf = null;
-    MembBuf ~= 0;
-    NextMemb = cast(int) MembBuf.length;
-
-    NodeBuf = null;
-    NodeBuf ~= 0;
-    NextNode = cast(int) NodeBuf.length;
-
-    Var = null;
-    Var ~= VarRecord.init;
-    NextVar = cast(int) Var.length;
-    Scope = NextVar;
-
-    NextHAlt = firstHAlt;
-    NextHFactor = firstHFactor;
-    Null.length = 0;
-    Prod.length = 0;
-    Pred.length = 0;
-    NOAlt = 0;
-    NOTerm = 0;
-    NONont = 0;
-    NOGrp = 0;
-    NOOpt = 0;
-    NORep = 0;
-    BaseName = "nothing";
-    MaxMArity = 0;
-
-    symbolTable = new SymbolTable;
-}
 }
 
 // Transitional legacy instance. Generator entry points will receive EAG explicitly.

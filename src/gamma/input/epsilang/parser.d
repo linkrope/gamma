@@ -1,13 +1,11 @@
 module gamma.input.epsilang.parser;
 
-import epsilon.lexer;
 import gamma.grammar.affixes.Signature;
 import gamma.grammar.affixes.Term;
 import gamma.grammar.affixes.Variable;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.GrammarBuilder;
-import gamma.grammar.hyper.AnonymousNonterminal;
 import gamma.grammar.hyper.Group;
 import gamma.grammar.hyper.HyperGrammar;
 import gamma.grammar.hyper.HyperGrammarBuilder;
@@ -24,6 +22,7 @@ import gamma.grammar.Rule;
 import gamma.grammar.SymbolNode;
 import gamma.grammar.Terminal;
 import gamma.input.earley.AffixForm;
+import gamma.lexer;
 import gamma.util.Position;
 import io;
 import log;
@@ -842,8 +841,10 @@ public class Parser
         foreach (key, paramsInfo; this.paramsByKey) with (paramsInfo)
         {
             if (signature is null)
-                // TODO: error message?
+            {
+                this.lexer.addError(params.position, "no signature for affix parameters");
                 continue;
+            }
 
             foreach (affixForm, domain; zip(affixForms, signature.domains))
             {
@@ -872,22 +873,9 @@ public class Parser
 
         foreach (rule; grammar.rules)
         {
-            if (cast(AnonymousNonterminal) rule.lhs.nonterminal)
-                continue;
-            if (rule.alternatives.length != 1)
-                continue;
+            auto operator = rule.directNamedOperator;
 
-            auto alternative = rule.alternatives.front;
-            auto outerLhs = cast(HyperLhsNode) alternative.lhs;
-
-            if (outerLhs is null || outerLhs.params !is null || alternative.rhs.length != 1)
-                continue;
-
-            auto operator = cast(Operator) alternative.rhs.front;
-
-            if (operator is null || operator.params !is null)
-                continue;
-            if (!cast(AnonymousNonterminal) operator.rule.lhs.nonterminal)
+            if (operator is null)
                 continue;
 
             auto innerLhs = cast(HyperLhsNode) operator.rule.lhs;
@@ -948,7 +936,7 @@ public class Parser
             this.hyperGrammarBuilder.markErrors;
 
         return (this.lexer.ok && hyperGrammar !is null)
-            ? new HyperGrammar(hyperGrammar, this.termsByKey)
+            ? hyperGrammar.buildHyperGrammar(this.termsByKey)
             : null;
     }
 

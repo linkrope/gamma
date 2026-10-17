@@ -21,11 +21,17 @@ template log(Level level)
 
 static this()
 {
-    logger = Logger(stderr);
+    version (unittest)
+        logger = TestLogger.init;
+    else
+        logger = Logger(stderr);
     levels = Level.info | Level.warn | Level.error | Level.fatal;
 }
 
-Logger logger;
+version (unittest)
+    TestLogger logger;
+else
+    Logger logger;
 
 struct Logger
 {
@@ -49,6 +55,32 @@ struct Logger
     }
 }
 
+version (unittest)
+{
+    struct TestLogger
+    {
+        struct Entry
+        {
+            Level level;
+            string file;
+            size_t line;
+            string message;
+        }
+
+        Entry[] entries;
+
+        void log(Level level, string file, size_t line, string message) @safe
+        {
+            this.entries ~= Entry(level, file, line, message);
+        }
+
+        void clear() @safe
+        {
+            this.entries = null;
+        }
+    }
+}
+
 uint levels;
 
 enum Level
@@ -58,4 +90,24 @@ enum Level
     warn = 4, // potential problem
     error = 8, // recoverable error
     fatal = 16, // fatal failure
+}
+
+@("record and clear enabled log entries")
+unittest
+{
+    const previousLevels = levels;
+    scope (exit) levels = previousLevels;
+    levels = Level.error;
+    logger.clear;
+    scope (exit) logger.clear;
+
+    trace!"filtered";
+    error!"test %s"("message");
+
+    assert(logger.entries.length == 1);
+    assert(logger.entries[0].level == Level.error);
+    assert(logger.entries[0].message == "test message");
+    assert(logger.entries[0].file.length > 0 && logger.entries[0].line > 0);
+    logger.clear;
+    assert(logger.entries.length == 0);
 }

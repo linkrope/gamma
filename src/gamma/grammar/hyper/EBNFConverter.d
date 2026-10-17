@@ -44,6 +44,8 @@ private class EBNFConverter : HyperVisitor
 
     Node[][] rhsStack;
 
+    Nonterminal[Nonterminal] effectiveNonterminal_;
+
     void visit(Grammar grammar)
     in (grammar !is null)
     {
@@ -59,7 +61,11 @@ private class EBNFConverter : HyperVisitor
         this.rhsStack ~= null;
         alternative.rhs.each!(node => node.accept(this));
         if (!alternative.isInlinedOperator)
-            this.alternatives ~= new Alternative(alternative.lhs, this.rhsStack.back, alternative.position);
+        {
+            auto lhs = this.effectiveLhs(alternative.lhs);
+
+            this.alternatives ~= new Alternative(lhs, this.rhsStack.back, alternative.position);
+        }
         this.rhsStack.popBack;
     }
 
@@ -70,6 +76,18 @@ private class EBNFConverter : HyperVisitor
 
     void visit(Rule rule)
     {
+        if (auto operator = rule.directNamedOperator)
+        {
+            auto innerNonterminal = operator.rule.lhs.nonterminal;
+
+            this.effectiveNonterminal_[innerNonterminal] = rule.lhs.nonterminal;
+            scope (exit) this.effectiveNonterminal_.remove(innerNonterminal);
+
+            this.rhsStack ~= null;
+            operator.accept(this);
+            this.rhsStack.popBack;
+            return;
+        }
         this.lhsStack ~= rule.lhs;
         rule.alternatives.each!(alternative => alternative.accept(this));
         this.lhsStack.popBack;
@@ -77,7 +95,7 @@ private class EBNFConverter : HyperVisitor
 
     void visit(Group group)
     {
-        auto nonterminal = group.rule.lhs.nonterminal;
+        auto nonterminal = this.effectiveNonterminal(group.rule.lhs.nonterminal);
 
         this.rhsStack.back ~= new HyperSymbolNode(nonterminal, group.params, group.position);
         group.rule.accept(this);
@@ -85,7 +103,7 @@ private class EBNFConverter : HyperVisitor
 
     void visit(Option option)
     {
-        auto nonterminal = option.rule.lhs.nonterminal;
+        auto nonterminal = this.effectiveNonterminal(option.rule.lhs.nonterminal);
 
         this.rhsStack.back ~= new HyperSymbolNode(nonterminal, option.params, option.position);
         option.rule.accept(this);
@@ -98,7 +116,7 @@ private class EBNFConverter : HyperVisitor
 
     void visit(Repetition repetition)
     {
-        auto nonterminal = repetition.rule.lhs.nonterminal;
+        auto nonterminal = this.effectiveNonterminal(repetition.rule.lhs.nonterminal);
 
         this.rhsStack.back ~= new HyperSymbolNode(nonterminal, repetition.params, repetition.position);
         repetition.rule.accept(this);
@@ -114,12 +132,29 @@ private class EBNFConverter : HyperVisitor
         this.rhsStack ~= null;
         alternative.rhs.each!(node => node.accept(this));
 
-        auto nonterminal = this.lhsStack.back.nonterminal;
+        auto nonterminal = this.effectiveNonterminal(this.lhsStack.back.nonterminal);
+
         SymbolNode symbolNode = new HyperSymbolNode(nonterminal, alternative.params, alternative.position);
         Node[] rhs = this.rhsStack.back ~ symbolNode;
 
-        this.alternatives ~= new Alternative(alternative.lhs, rhs, alternative.position);
+        this.alternatives ~= new Alternative(this.effectiveLhs(alternative.lhs), rhs, alternative.position);
         this.rhsStack.popBack;
+    }
+
+    private Nonterminal effectiveNonterminal(Nonterminal nonterminal)
+    {
+        return this.effectiveNonterminal_.get(nonterminal, nonterminal);
+    }
+
+    private LhsNode effectiveLhs(LhsNode lhs)
+    {
+        auto nonterminal = this.effectiveNonterminal(lhs.nonterminal);
+
+        if (nonterminal is lhs.nonterminal)
+            return lhs;
+        if (auto hyperLhs = cast(HyperLhsNode) lhs)
+            return new HyperLhsNode(nonterminal, hyperLhs.signature, hyperLhs.params, lhs.position);
+        return new LhsNode(nonterminal, lhs.position);
     }
 
     Grammar grammar()

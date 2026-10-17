@@ -80,7 +80,7 @@ void Check()
     }
 
     HNont = new int[eag.NextHNont];
-    Edge = new  EdgeRecord[eag.NONont + 1];
+    Edge = new  EdgeRecord[eag.NontCount + 1];
     NextEdge = 0;
     Stack = new size_t[eag.NextHNont];
     Top = 0;

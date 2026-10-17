@@ -6,6 +6,7 @@
 module gamma.main;
 
 import argparse;
+import epsilon.eag : epsilonEAG = eag;
 import epsilon.settings;
 import gamma.grammar.Grammar;
 import gamma.input.epsilang.analyzer : EAG;
@@ -120,14 +121,13 @@ void command(Arguments arguments)
 
 void compile(Input input, const Arguments arguments)
 {
-    import analyzer = epsilon.analyzer;
     import ELL1Gen = epsilon.ell1gen;
     import LexGen = epsilon.lexgen;
     import Predicates = epsilon.predicates;
     import SLAGGen = epsilon.slaggen;
     import SOAGGen = epsilon.soag.soaggen;
     import Sweep = epsilon.sweep;
-    import gamma.input.EAGBuilder : EAGBuilder;
+    import gamma.input.EAGBuilder : toEAG;
     import std.exception : enforce;
 
     auto eag = check(input, arguments);
@@ -135,13 +135,7 @@ void compile(Input input, const Arguments arguments)
     if (arguments.lalr)
         return;
 
-
-    analyzer.Analyse(input);
-
-    auto builder = new EAGBuilder(eag);
-
-    enforce(builder.compare == 0, "EAGBuilder: mismatch against epsilon");
-    enforce(analyzer.ErrorCounter == 0);
+    epsilonEAG = eag.toEAG;
 
     Predicates.Check;
 

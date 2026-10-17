@@ -174,9 +174,17 @@ struct TestGrammarBuilder
     alias builder this;
 
     public Grammar grammar()
-    in (startSymbol !is null)
+    in (this.startSymbol !is null)
     {
-        return getGrammar(startSymbol);
+        // getGrammar, but without grammarIsWellDefined guard
+
+        Rule[] rules;
+
+        foreach (alternatives; this.builder.alternativesMap)
+            if (!alternatives.empty)
+                rules ~= new Rule(alternatives);
+
+        return new Grammar(this.builder.nonterminals, this.builder.terminals, rules, this.startSymbol);
     }
 
     /**

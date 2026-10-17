@@ -31,7 +31,6 @@ class Analyzer
 
     public EAG analyze(Input input)
     {
-        import gamma.grammar.hyper.EBNFConverter : convert;
         import std.exception : enforce;
 
         this.parser = new Parser(input);
@@ -68,7 +67,7 @@ class Analyzer
         {
             import gamma.grammar.hyper.PrintingHyperVisitor : toPrettyString;
 
-            this.plainHyperGrammar_ = new HyperGrammar(convert(hyperEBNFGrammar), hyperEBNFGrammar.terms);
+            this.plainHyperGrammar_ = hyperEBNFGrammar.plainHyperGrammar;
             log.trace!"transformed BNF grammar:\n%s"(this.plainHyperGrammar_.toPrettyString);
         }
 
@@ -85,28 +84,36 @@ class Analyzer
             enforce(false);
         }
         checkStartSymbolSignature;
-        foreach (nonterminal; this.plainHyperGrammar_.nonterminals)
+        foreach (rule; this.plainHyperGrammar_.rules)
+        {
+            auto nonterminal = rule.lhs.nonterminal;
+
             if (!this.hyperGrammarProperties.isProductive(nonterminal))
             {
                 import gamma.grammar.hyper.AnonymousNonterminal : AnonymousNonterminal;
 
-                const position = this.plainHyperGrammar_.ruleOf(nonterminal).lhs.position;
+                const position = rule.lhs.position;
 
                 if (cast(AnonymousNonterminal) nonterminal)
                     warn!"EBNF expression is unproductive\n%s"(position);
                 else
                     warn!"%s is unproductive\n%s"(nonterminal, position);
             }
-        foreach (nonterminal; this.plainHyperGrammar_.nonterminals)
+        }
+        foreach (rule; this.plainHyperGrammar_.rules)
+        {
+            auto nonterminal = rule.lhs.nonterminal;
+
             if (!this.hyperGrammarProperties.isReachable(nonterminal))
             {
                 import gamma.grammar.hyper.AnonymousNonterminal : AnonymousNonterminal;
 
-                const position = this.plainHyperGrammar_.ruleOf(nonterminal).lhs.position;
+                const position = rule.lhs.position;
 
                 if (!cast(AnonymousNonterminal) nonterminal)
                     warn!"%s is unreachable\n%s"(nonterminal, position);
             }
+        }
 
         return EAG(metaGrammar, hyperEBNFGrammar, this.plainHyperGrammar_,
             this.parser.getLexicalMetaNonterminals, this.parser.getLexicalHyperNonterminals);
@@ -117,7 +124,6 @@ class Analyzer
         import gamma.grammar.affixes.Direction : Direction;
         import gamma.grammar.affixes.Signature : Signature;
         import gamma.grammar.hyper.HyperLhsNode : HyperLhsNode;
-        import gamma.grammar.Nonterminal : Nonterminal;
         import std.exception : enforce;
         import std.range : front;
 

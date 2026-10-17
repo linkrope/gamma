@@ -1,128 +1,271 @@
 module gamma.input.epsilang.parser_test;
 
-import gamma.grammar.Grammar;
-import gamma.grammar.GrammarProperties;
-import gamma.grammar.hyper.EBNFConverter : convert;
-import gamma.input.epsilang.parser : Parser;
-import io : Input;
-import std.format : format;
+import gamma.input.epsilang.fixture : fixture;
+import std.string : outdent, strip;
 
-// These tests deliberately exercise the complete Gamma input pipeline.
-// The EBNF operator rules are owned by the parser, so constructing a Grammar
-// by hand would not cover the anonymous-nonterminal bookkeeping performed
-// while parsing a real .eag file.
-
-@("parse a direct EBNF group wrapper into a complete plain grammar")
+@("reject inconsistent formal signatures")
 unittest
 {
     const source = `
         n = | '1' n.
 
-        S:
-            ( <+ '1': n> '1'
-            ).
-        `;
-
-    parseAndConvertHyperGrammar(source).assertCompletePlainGrammar;
-}
-
-@("parse a nested EBNF group into a complete plain grammar")
-unittest
-{
-    const source = `
-        n = | '1' n.
-
-        S:
-            'a'
-            ( <+ '1': n> '1'
-            )
+        S <+ n>:
             'a'.
-        `;
+        S <- n>:
+            'b'.
+        `.outdent.strip;
+    const error = `
+        formal params for S differ
+        test.eag:3:3 S <+ n>:
+                       ^
+        test.eag:5:3 S <- n>:
+                       ^
+        `.outdent.strip;
 
-    parseAndConvertHyperGrammar(source).assertCompletePlainGrammar;
+    with (fixture())
+    {
+        parse(source).fail;
+
+        assert(diagnostics == [error]);
+    }
 }
 
-@("parse a direct EBNF option wrapper into a complete plain grammar")
+@("reject a missing formal signature on a later rule")
 unittest
 {
     const source = `
         n = | '1' n.
 
-        S:
-            [ <+ '1': n> '1'
-            ] <+ : n>.
-        `;
+        S <+ n>: 'a'.
+        S: 'b'.
+        `.outdent.strip;
+    const error = `
+        formal params for S differ
+        test.eag:3:3 S <+ n>: 'a'.
+                       ^
+        test.eag:4:1 S: 'b'.
+                     ^
+        `.outdent.strip;
 
-    parseAndConvertHyperGrammar(source).assertCompletePlainGrammar;
+    with (fixture())
+    {
+        parse(source).fail;
+
+        assert(diagnostics == [error]);
+    }
 }
 
-@("parse a nested EBNF option into a complete plain grammar")
+@("reject a missing formal signature on an earlier rule")
 unittest
 {
     const source = `
         n = | '1' n.
 
-        S:
-            'a'
-            [ <+ '1': n> '1'
-            ] <+ : n>
+        S: 'a'.
+        S <+ n>: 'b'.
+        `.outdent.strip;
+    const error = `
+        formal params for S differ
+        test.eag:3:1 S: 'a'.
+                     ^
+        test.eag:4:3 S <+ n>: 'b'.
+                       ^
+        `.outdent.strip;
+
+    with (fixture())
+    {
+        parse(source).fail;
+
+        assert(diagnostics == [error]);
+    }
+}
+
+@("reject missing actual parameters for a nonterminal")
+unittest
+{
+    const source = `
+        n = | '1' n.
+
+        S: A.
+        A <+ '1': n>: 'a'.
+        `.outdent.strip;
+    const error = `
+        missing actual parameters for A
+        test.eag:3:4 S: A.
+                        ^
+        `.outdent.strip;
+
+    with (fixture)
+    {
+        parse(source).fail;
+
+        assert(diagnostics == [error]);
+    }
+}
+
+@("reject missing actual parameters for a nested group")
+unittest
+{
+    const source = `
+        n = | '1' n.
+
+        S: 'a'
+            ( <+ '1': n> '1' ).
+        `.outdent.strip;
+    const error = `
+        missing actual parameters for EBNF expression
+        test.eag:4:5     ( <+ '1': n> '1' ).
+                         ^
+        `.outdent.strip;
+
+    with (fixture)
+    {
+        parse(source).fail;
+
+        assert(diagnostics == [error]);
+    }
+}
+
+@("reject missing actual parameters for a nested option")
+unittest
+{
+    const source = `
+        n = | '1' n.
+
+        S: 'a'
+            [ <+ '1': n> '1' ] <+ : n>.
+        `.outdent.strip;
+    const error = `
+        missing actual parameters for EBNF expression
+        test.eag:4:5     [ <+ '1': n> '1' ] <+ : n>.
+                         ^
+        `.outdent.strip;
+
+    with (fixture)
+    {
+        parse(source).fail;
+
+        assert(diagnostics == [error]);
+    }
+}
+
+@("reject missing actual parameters for a nested repetition")
+unittest
+{
+    const source = `
+        n = | '1' n.
+
+        S: 'a'
+            { <+ '1' n: n> '1' <n> } <+ : n>.
+        `.outdent.strip;
+    const error = `
+        missing actual parameters for EBNF expression
+        test.eag:4:5     { <+ '1' n: n> '1' <n> } <+ : n>.
+                         ^
+        `.outdent.strip;
+
+    with (fixture)
+    {
+        parse(source).fail;
+
+        assert(diagnostics == [error]);
+    }
+}
+
+@("reject actual parameters when no signature is defined")
+unittest
+{
+    const source = `
+        n = | '1' n.
+
+        S: A <'1'>.
+        A: 'a'.
+        `.outdent.strip;
+    const error = `
+        no signature for affix parameters
+        test.eag:3:6 S: A <'1'>.
+                          ^
+        `.outdent.strip;
+
+    with (fixture())
+    {
+        parse(source).fail;
+
+        assert(diagnostics == [error]);
+    }
+}
+
+@("reject a variable without a defining position")
+unittest
+{
+    const source = `
+        n = | '1' n.
+
+        S <+ n>:
+            A <n>.
+        A <- n>:
             'a'.
-        `;
+        `.outdent.strip;
+    const error = `
+        variable n never on defining position
+        test.eag:3:6 S <+ n>:
+                          ^
+        `.outdent.strip;
 
-    parseAndConvertHyperGrammar(source).assertCompletePlainGrammar;
+    with (fixture())
+    {
+        parse(source).fail;
+
+        assert(diagnostics == [error]);
+    }
 }
 
-@("parse a direct EBNF repetition wrapper into a complete plain grammar")
+@("reject an unpaired unequal variable")
 unittest
 {
     const source = `
         n = | '1' n.
 
-        S:
-            { <+ '1' n: n> '1' <n>
-            } <+ : n>.
-        `;
-
-    parseAndConvertHyperGrammar(source).assertCompletePlainGrammar;
-}
-
-@("parse a nested EBNF repetition into a complete plain grammar")
-unittest
-{
-    const source = `
-        n = | '1' n.
-
-        S:
-            'a'
-            { <+ '1' n: n> '1' <n>
-            } <+ : n>
+        S <- n>:
+            A <!n1>.
+        A <+ '1': n>:
             'a'.
-        `;
+        `.outdent.strip;
+    const error = `
+        variable n1 never on defining position
+        test.eag:4:8     A <!n1>.
+                            ^
+        `.outdent.strip;
 
-    parseAndConvertHyperGrammar(source).assertCompletePlainGrammar;
+    with (fixture())
+    {
+        parse(source).fail;
+
+        assert(diagnostics == [error]);
+    }
 }
 
-private Grammar parseAndConvertHyperGrammar(string source)
+@("reject an unequal variable without a defining position")
+unittest
 {
-    auto parser = new Parser(Input("parser-unittest.eag", source));
+    const source = `
+        n = | '1' n.
 
-    parser.parseSpecification;
-    assert(parser.getErrorCount == 0);
+        S <- n1>:
+            A <!n1>.
+        A <- n>:
+            'a'.
+        `.outdent.strip;
+    const error = `
+        variable !n1 never on defining position
+        test.eag:4:8     A <!n1>.
+                            ^
+        `.outdent.strip;
 
-    auto hyperGrammar = parser.buildHyperGrammar;
+    with (fixture())
+    {
+        parse(source).fail;
 
-    assert(hyperGrammar !is null);
-    return convert(hyperGrammar);
-}
-
-private void assertCompletePlainGrammar(Grammar grammar)
-{
-    assert(grammar.isPlain);
-    foreach (nonterminal; grammar.nonterminals)
-        assert(grammar.ruleOf(nonterminal) !is null,
-            format!"nonterminal %s has no rule"(nonterminal));
-
-    // This forces the index-based property computation as well as checking
-    // the structural invariant above.
-    assert((new GrammarProperties(grammar)).isProductive(grammar.startSymbol));
+        assert(diagnostics == [error]);
+    }
 }

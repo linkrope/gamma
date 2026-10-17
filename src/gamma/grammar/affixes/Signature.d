@@ -26,6 +26,31 @@ public class Signature
         this.position_ = position;
     }
 
+    public override bool opEquals(Object other) const
+    {
+        auto that = cast(Signature) other;
+
+        if (that is null || this.length != that.length)
+            return false;
+        foreach (index, domain; this.domains_)
+            if (domain !is that.domains_[index]
+                || this.directions_[index] != that.directions_[index])
+                return false;
+        return true;
+    }
+
+    public override size_t toHash() const
+    {
+        size_t hash = this.domains_.length;
+
+        foreach (index, domain; this.domains_)
+        {
+            hash = hash * 31 + (domain is null ? 0 : domain.index);
+            hash = hash * 31 + cast(size_t) this.directions_[index];
+        }
+        return hash;
+    }
+
     public override string toString() const
     {
         import std.format : format;
