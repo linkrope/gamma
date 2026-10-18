@@ -67,9 +67,12 @@ Result shouldFailWith(Result result, string pattern)
     return result;
 }
 
-bool matches(string input, string pattern)
+bool matches(string output, string pattern)
 {
+    import std.array : join;
     import std.regex : matchFirst, regex;
+    import std.string : splitLines;
 
-    return cast(bool) input.matchFirst(regex(pattern, "m"));
+    // match diagnostic lines consistently regardless of the output's line endings.
+    return cast(bool) output.splitLines.join("\n").matchFirst(regex(pattern, "m"));
 }
