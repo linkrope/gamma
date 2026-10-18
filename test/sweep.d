@@ -101,6 +101,20 @@ unittest
     }
 }
 
+@("single-sweep predicate position follows grammar order when evaluation is reordered")
+unittest
+{
+    with (sandbox)
+    {
+        write(buildPath(directory, "input"), "a\nb\n");
+        run!"%s --sweep --space %s --output-directory %s"(
+            gamma, buildPath("example", "predicate-order.eag"), directory)
+            .shouldPassWith("PredicateOrder grammar is single sweep");
+        run!"cd %s && %s input"(directory, dotSlash("PredicateOrder"))
+            .shouldFailWith(`error: predicate 'Matches' failed\ninput:1:1 a`);
+    }
+}
+
 @("compile single-sweep.eag as Single-Sweep and run compiler")
 unittest
 {

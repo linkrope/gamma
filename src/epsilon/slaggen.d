@@ -781,6 +781,9 @@ public void GenDeclarations(Settings settings)
     if (!TraversePass)
         output.write("S.");
     InclFix('$');
+    if (!TraversePass)
+        output.write("Pred");
+    InclFix('$');
     if (UseRefCnt)
         InclFix('$');
     else

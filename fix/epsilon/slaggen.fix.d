@@ -154,14 +154,20 @@ $ void SetErr(string message)
 
 void Error(string message)
 {
-    SetErr(message);
+    SetPredErr(message);
 }
 
 void PredError(string message)
 {
     import std.format : format;
 
-    SetErr(format!"predicate %s failed"(message));
+    SetPredErr(format!"predicate %s failed"(message));
+}
+
+void SetPredErr(string message)
+{
+    error!"%s\n%s"(message, $Pos);
+    ++ErrorCounter;
 }
 
 void AnalyseError(ref HeapType V, string message)

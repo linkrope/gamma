@@ -21,6 +21,7 @@ int RecTop;
 size_t[nToks][nSetT + 1] SetT;
 TokSet[nSet + 1] Set;
 long ErrorCounter;
+Position PredPos;
 bool IsRepairMode;
 bool ParserTabIsLoaded;
 File Out;

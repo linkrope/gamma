@@ -1,8 +1,10 @@
 module test.issues;
 
 import std.file;
+import std.format;
 import std.path;
 import std.string;
+import std.typecons : tuple;
 import test.helper;
 
 @("issue #1: grammar with unproductive start symbol")
@@ -65,3 +67,47 @@ unittest
             .shouldFailWith("syntax error, end expected");
     }
 }
+
+alias Example = tuple!("evaluator", "option", "result");
+
+static foreach (example; [
+    Example("SLAG", "", "grammar is SLAG"),
+    Example("single-sweep", "--sweep", "grammar is single sweep"),
+    Example("SOAG", "--soag", "grammar is SOAG"),
+])
+    @(format!"issue #6: %s predicate errors point to the checked identifier"(example.evaluator))
+    unittest
+    {
+        import std.range : walkLength;
+        import std.regex : matchAll, regex;
+
+        with (sandbox)
+        {
+            const input = `
+                DECL aa
+                DECL aa
+
+                APPL ab
+                APPL ba
+                `.outdent.strip;
+
+            write(buildPath(directory, "input"), input);
+
+            run!"%s %s --space %s --output-directory %s"(
+                gamma, example.option, buildPath("example", "decl-appl.eag"), directory)
+                .shouldPassWith(example.result);
+
+            const result = run!"cd %s && %s input"(directory, dotSlash("DeclAppl"));
+
+            result
+                .shouldFailWith(
+                    `error: predicate '?NotAlreadyDeclared'? failed\ninput:2:6 DECL aa`)
+                .shouldFailWith(
+                    `error: predicate '?Declared'? failed\ninput:4:6 APPL ab`)
+                .shouldFailWith(
+                    `error: predicate '?Declared'? failed\ninput:5:6 APPL ba`);
+
+            assert(result.output.matchAll(regex(`^error: predicate `, "m"))
+                .walkLength == 3, result.output);
+        }
+    }

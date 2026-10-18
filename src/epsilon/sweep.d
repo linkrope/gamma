@@ -13,6 +13,7 @@ import std.typecons;
 private const nil = 0;
 private const indexOfFirstAlt = 1;
 private int[] FactorOffset;
+private int[] predicatePositionOffset;
 private BitArray GenNonts;
 private BitArray GenFactors;
 private bool Error;
@@ -48,6 +49,7 @@ public string Generate(Settings settings)
 private void Init() nothrow
 {
     FactorOffset = new int[eag.NextHFactor + eag.NextHAlt + 1];
+    predicatePositionOffset = new int[FactorOffset.length];
     GenFactors = eag.Prod & eag.Reach;
     GenNonts = GenFactors - eag.Pred;
     Error = false;
@@ -56,6 +58,7 @@ private void Init() nothrow
 private void Finit() @nogc nothrow @safe
 {
     FactorOffset = null;
+    predicatePositionOffset = null;
 }
 
 private string GenerateMod(Flag!"createMod" createMod, Settings settings)
@@ -277,6 +280,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
         int Prio;
         int Index;
         int Offset;
+        int prevOffset;
         int NE;
         int VE;
         int V;
@@ -378,6 +382,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
             F = A.Sub;
             Prio = 0;
             Offset = 1;
+            prevOffset = 0;
             while (F !is null)
             {
                 Factor[F.Ind].Vars = nil;
@@ -388,7 +393,12 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
                 if (!eag.Pred[(cast(EAG.Nont) F).Sym])
                 {
                     FactorOffset[F.Ind] = Offset;
+                    prevOffset = Offset;
                     ++Offset;
+                }
+                else
+                {
+                    predicatePositionOffset[F.Ind] = prevOffset;
                 }
                 TravParams(right, (cast(EAG.Nont) F).Actual.Params, F);
                 if (Factor[F.Ind].CountAppl == 0)
@@ -454,7 +464,6 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
     {
         EAG.Alt A;
         EAG.Factor F;
-        EAG.Factor F1;
         int AltIndex;
         EvalGen.ComputeVarNames(N, No.embed);
         output.write("void P", N, "(TreeType Adr");
@@ -497,13 +506,13 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
                     else
                     {
                         EvalGen.GenSynPred(N, nont.Actual.Params);
-                        output.write("Pos = PosTree[Adr");
-                        F1 = F.Prev;
-                        while (F1 !is null && eag.Pred[(cast(EAG.Nont) F1).Sym])
-                            F1 = F1.Prev;
-                        if (F1 !is null)
-                            output.write(" + ", FactorOffset[F1.Ind]);
-                        output.writeln("];");
+
+                        const offset = predicatePositionOffset[F.Ind];
+
+                        if (offset == 0)
+                            output.writeln("Pos = PosTree[Adr];");
+                        else
+                            output.writeln("Pos = PosTree[Tree[Adr + ", offset, "]];");
                         EvalGen.GenPredCall(nont.Sym, nont.Actual.Params);
                         EvalGen.GenAnalPred(N, nont.Actual.Params);
                     }

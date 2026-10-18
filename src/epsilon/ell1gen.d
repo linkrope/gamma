@@ -918,8 +918,28 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                 bool TwoCalls = false;
                 BitArray Poss1 = Poss.dup;
 
+                void CapturePredicatePositions(EAG.Factor next)
+                {
+                    if (parsePass)
+                        return;
+
+                    while (next !is null)
+                    {
+                        auto nont = cast(EAG.Nont) next;
+
+                        if (nont is null || !eag.Pred[nont.Sym])
+                            break;
+
+                        output.writeln("Position predPos", next.Ind, " = S.Pos;");
+                        next = next.Next;
+                    }
+                }
+
+                CapturePredicatePositions(F);
                 while (F !is null)
                 {
+                    if (cast(EAG.Term) F || (cast(EAG.Nont) F && GenNonts[(cast(EAG.Nont) F).Sym]))
+                        CapturePredicatePositions(F.Next);
                     if (auto term = cast(EAG.Term) F)
                     {
                         if (Poss1[term.Sym - EAG.firstHTerm + firstUserTok])
@@ -1001,7 +1021,9 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                             }
                             else
                             {
+                                output.writeln("{");
                                 TraverseNont(nont.Sym, FirstNontCall, Poss1);
+                                output.writeln("}");
                             }
                             EvalGen.GenAnalPred(N, nont.Actual.Params);
                             Poss1 = AllToks.dup;
@@ -1009,6 +1031,8 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                         else if (eag.Pred[nont.Sym])
                         {
                             EvalGen.GenSynPred(N, nont.Actual.Params);
+                            if (!parsePass)
+                                output.writeln("PredPos = predPos", F.Ind, ";");
                             EvalGen.GenPredCall(nont.Sym, nont.Actual.Params);
                             EvalGen.GenAnalPred(N, nont.Actual.Params);
                         }

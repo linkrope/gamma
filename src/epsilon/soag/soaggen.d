@@ -1134,28 +1134,16 @@ private void GenVarDecls(int R) @safe
     }
 }
 
-/**
- * IN:  Regel, Nummer des Visit-Sequenz-Eintrages, Notwendigkeit der Positionszuweisung
- * OUT: -
- * SEM: Generierung der Positionszuweisung vor Prädikatprozeduraufrufen;
- *      zugewiesen wird die Position des vorhergehenden Visits
- */
-private void GenPredPos(int R, int i, ref bool PosNeeded) @safe
+private void GenPredPos(int rule, int predicate)
 {
-    int k;
+    const begin = SOAG.Rule[rule].SymOcc.Beg;
+    auto prev = predicate - 1;
 
-    if (PosNeeded)
-    {
-        --i;
-        while (cast(SOAG.Visit) SOAG.VS[i] is null && cast(SOAG.Leave) SOAG.VS[i] is null && i > SOAG.Rule[R].VS.Beg)
-            --i;
-        if (auto visit = cast(SOAG.Visit) SOAG.VS[i])
-            k = SubTreeOffset[visit.SymOcc];
-        else
-            k = SOAG.Rule[R].SymOcc.Beg;
-        output.writeln("Pos = SemTree[TreeAdr + ", k, "].Pos;");
-        PosNeeded = false;
-    }
+    while (prev > begin && SOAG.IsPredNont(prev))
+        --prev;
+
+    const offset = (prev == begin) ? 0 : SubTreeOffset[prev];
+    output.writeln("Pos = SemTree[TreeAdr + ", offset, "].Pos;");
 }
 
 /**
@@ -1175,7 +1163,6 @@ private void GenVisitRule(int R)
     int NontCnt;
     bool onlyoneVisit;
     bool first;
-    bool PosNeeded;
 
     output.writeln("void VisitRule", R, "(long Symbol, int VisitNo)");
     output.writeln("/*");
@@ -1250,7 +1237,6 @@ private void GenVisitRule(int R)
         output.writeln("case 1:");
     }
     VisitNo = 1;
-    PosNeeded = true;
     output.writeln("// Visit-beginnende Analyse");
     GenAnalPred(SOAG.Rule[R].SymOcc.Beg, VisitNo);
     for (i = SOAG.Rule[R].VS.Beg; i <= SOAG.Rule[R].VS.End; ++i)
@@ -1266,14 +1252,13 @@ private void GenVisitRule(int R)
             output.writeln("// Analyse");
             GenAnalPred(SO, VN);
             output.writeln;
-            PosNeeded = true;
         }
         else if (auto call = cast(SOAG.Call) SOAG.VS[i])
         {
             SO = call.SymOcc;
             output.writeln("// Synthese");
             GenSynPred(SO, -1);
-            GenPredPos(R, i, PosNeeded);
+            GenPredPos(R, SO);
             GenPredCall(SO);
             output.writeln("// Analyse");
             GenAnalPred(SO, -1);
@@ -1293,7 +1278,6 @@ private void GenVisitRule(int R)
             {
                 output.writeln("break;");
                 ++VisitNo;
-                PosNeeded = true;
                 output.writeln("case ", VisitNo, ":");
                 output.writeln("// Visit-beginnende Analyse");
                 GenAnalPred(SO, VisitNo);

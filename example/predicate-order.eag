@@ -1,0 +1,13 @@
+// a a -> a
+// b b -> b
+
+value = 'a' | 'b'.
+
+PredicateOrder <+ value>:
+    value <value> Matches <value, value1> value <value1>.
+
+value:
+      <+ 'a': value> 'a'
+    | <+ 'b': value> 'b'.
+
+Matches <- value, - value: value>: .
