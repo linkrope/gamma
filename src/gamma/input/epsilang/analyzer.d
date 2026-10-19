@@ -56,8 +56,7 @@ class Analyzer
             log.trace!"hyper grammar:\n%s"(hyperEBNFGrammar.toPrettyString);
         }
 
-        enforce(metaGrammar && hyperEBNFGrammar,
-            "grammar not well defined");
+        enforce(metaGrammar && hyperEBNFGrammar, "grammar not well defined");
 
         if (hyperEBNFGrammar.isPlain)
         {

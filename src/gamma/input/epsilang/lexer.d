@@ -423,8 +423,13 @@ struct Lexer
     {
         import log : error;
 
-        ++errorCount;
+        recordError;
         error!"%s\n%s"(message, position);
+    }
+
+    public void recordError()
+    {
+        ++errorCount;
     }
 
     bool ok() const @nogc nothrow pure @safe

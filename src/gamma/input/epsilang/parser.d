@@ -814,7 +814,7 @@ public class Parser
             else
                 break;
         }
-        return new AffixForm(symbolNodes, variables);
+        return new AffixForm(symbolNodes, variables, this.lexer.position);
     }
 
     private Nullable!string parseNumber()
@@ -852,8 +852,7 @@ public class Parser
 
                 this.termsByKey[key] ~= term;
                 if (term is null)
-                    // TODO: improve error position
-                    this.lexer.addError(params.position, "affix form does not match domain");
+                    this.lexer.recordError;
             }
 
             if (affixForms.length != signature.domains.length)

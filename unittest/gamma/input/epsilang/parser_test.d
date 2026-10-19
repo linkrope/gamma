@@ -3,6 +3,34 @@ module gamma.input.epsilang.parser_test;
 import gamma.input.epsilang.fixture : fixture;
 import std.string : outdent, strip;
 
+@("report invalid empty affix form")
+unittest
+{
+    const source = `
+        M = 'a'.
+
+        S <+ : M>: A <>.
+        A <- M>: .
+        `.outdent.strip;
+    const formalParamsError = `
+        unexpected end of affix form for M
+        test.eag:3:6 S <+ : M>: A <>.
+                          ^
+        `.outdent.strip;
+    const actualParamsError = `
+        unexpected end of affix form for M
+        test.eag:3:15 S <+ : M>: A <>.
+                                    ^
+        `.outdent.strip;
+
+    with (fixture())
+    {
+        parse(source).fail;
+
+        assert(diagnostics == [formalParamsError, actualParamsError]);
+    }
+}
+
 @("reject inconsistent formal signatures")
 unittest
 {

@@ -65,4 +65,8 @@ Comment:
 
 - https://clang.llvm.org/diagnostics.html
 
+## Shared Diagnostics
+
+- share a diagnostic reporter that logs and counts parser errors once
+
 ## Color

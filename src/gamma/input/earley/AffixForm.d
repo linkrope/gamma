@@ -2,6 +2,7 @@ module gamma.input.earley.AffixForm;
 
 import gamma.grammar.affixes.Variable;
 import gamma.grammar.SymbolNode;
+import gamma.util.Position;
 
 /**
  * This immutable value object represents a possible affix form.
@@ -16,10 +17,13 @@ public class AffixForm
 
     private Variable[] variables_;
 
-    public this(SymbolNode[] symbolNodes, Variable[] variables)
+    private Position endPosition_;
+
+    public this(SymbolNode[] symbolNodes, Variable[] variables, Position endPosition)
     {
         this.symbolNodes_ = symbolNodes.dup;
         this.variables_ = variables.dup;
+        this.endPosition_ = endPosition;
     }
 
     public bool isSingleVariable() const
@@ -35,6 +39,11 @@ public class AffixForm
     public Variable[] variables()
     {
         return this.variables_;
+    }
+
+    public Position endPosition() const
+    {
+        return this.endPosition_;
     }
 }
 
@@ -58,6 +67,7 @@ in (line.lineSplitter.drop(1).empty)
     import std.conv : to;
     import std.typecons : Nullable, tuple;
     import std.uni : isNumber, isWhite;
+    import std.utf : count;
 
     SymbolNode[] symbolNodes;
     Variable[] variables;
@@ -87,7 +97,7 @@ in (line.lineSplitter.drop(1).empty)
             variables ~= new Variable(unequal, nonterminal, number, position);
     }
 
-    return new AffixForm(symbolNodes, variables);
+    return new AffixForm(symbolNodes, variables, Position("string", 1, line.count + 1, line));
 }
 
 private Symbol symbolFromGrammar(Grammar grammar, const string representation)

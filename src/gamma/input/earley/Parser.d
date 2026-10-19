@@ -66,7 +66,7 @@ public class Parser
         Alternative alternative = new Alternative(new LhsNode(augmentedStartSymbol, Position()), rhs, Position());
         SymbolNode[] symbolNodes = affixForm.symbolNodes;
 
-        symbolNodes ~= new SymbolNode(endSymbol, Position());
+        symbolNodes ~= new SymbolNode(endSymbol, affixForm.endPosition);
 
         ItemSet itemSet = ItemSet.initialItemSet(alternative, grammar);
 
@@ -78,7 +78,10 @@ public class Parser
 
             if (itemSet.items.empty)
             {
-                error!"syntax error: unexpected %s\n%s"(symbol, symbolNode.position);
+                if (symbol is endSymbol)
+                    error!"unexpected end of affix form for %s\n%s"(startSymbol, symbolNode.position);
+                else
+                    error!"unexpected %s in affix form for %s\n%s"(symbol, startSymbol, symbolNode.position);
                 return null;
             }
         }
