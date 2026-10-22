@@ -265,7 +265,7 @@ public class LR1Parser
         for (;;)
         {
             // The parser is acting normally: it consumes input and does shift and reduce actions
-            // until a systax error or halt is detected.
+            // until a syntax error or halt is detected.
             Action action = nextAction;
 
             if (action is null)
