@@ -43,8 +43,10 @@ jobs:
           compiler: ${{ inputs.compiler_version }}
 
       - name: Build & run tests
+        env:
+          # Forces DUB to look in the checkout for packages.
+          DUBPATH: ${{ github.workspace }}
         run: |
-          dub add-local .
           dub build --build=${{inputs.build_type}}
           dub test --build=unittest --config=example
 
