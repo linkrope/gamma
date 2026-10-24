@@ -42,8 +42,10 @@ jobs:
         with:
           compiler: ${{ inputs.compiler_version }}
 
-      - name: Register checkout as a local Dub package
-        run: dub add-local .
+      - name: Use checkout as local Gamma runtime package
+        run: |
+          dub remove gamma --non-interactive || true
+          dub add-local .
 
       - name: Build & run tests
         run: |
