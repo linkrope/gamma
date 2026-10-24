@@ -42,10 +42,18 @@ jobs:
         with:
           compiler: ${{ inputs.compiler_version }}
 
-      - name: Register package globally using absolute path
+      - name: Force DUB to use local workspace globally
         run: |
-          # We use sudo and --system to make it available globally
-          sudo dub add-local "${{ github.workspace }}" --system
+          # Create the local dub configuration directory if it doesn't exist
+          mkdir -p ~/.dub
+
+          # Inject the absolute path of the workspace into global selections
+          echo '{
+            "fileVersion": 1,
+            "versions": {
+              "gamma": { "path": "${{ github.workspace }}" }
+            }
+          }' > ~/.dub/dub.selections.json
 
       - name: Build & run tests
         run: |
