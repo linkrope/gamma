@@ -7,7 +7,7 @@
     "sourcePaths": ["include", "src"],
     "importPaths": ["include", "src"],
     "mainSourceFile": "src/gamma/main.d",
-    "stringImportPaths": ["fix/epsilon"],
+    "stringImportPaths": ["fix"],
     "buildTypes": {
         "release-gamma": {
             "buildOptions": ["debugMode", "optimize", "inline", "debugInfo"]
@@ -50,7 +50,14 @@
             "targetType": "staticLibrary",
             "sourcePaths": ["include"],
             "importPaths": ["include", "src"],
-            "sourceFiles": ["src/io.d", "src/log.d", "src/epsilon/soag/listacks.d"]
+            "sourceFiles": [
+                "src/io.d",
+                "src/log.d",
+                "src/epsilon/soag/listacks.d",
+                "src/gamma/runtime/lr/LR1ParserTables.d",
+                "src/gamma/runtime/lr/LR1Parser.d",
+                "src/gamma/runtime/Lexer.d"
+            ]
         }
     ]
 }

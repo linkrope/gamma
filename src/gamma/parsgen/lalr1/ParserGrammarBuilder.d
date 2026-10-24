@@ -3,6 +3,7 @@ module gamma.parsgen.lalr1.ParserGrammarBuilder;
 import gamma.grammar.Alternative;
 import gamma.grammar.Grammar;
 import gamma.grammar.GrammarBuilder;
+import gamma.grammar.GrammarProperties;
 import gamma.grammar.LhsNode;
 import gamma.grammar.Node;
 import gamma.grammar.Nonterminal;
@@ -10,7 +11,34 @@ import gamma.grammar.Rule;
 import gamma.grammar.Symbol;
 import gamma.grammar.SymbolNode;
 import gamma.grammar.Terminal;
+import gamma.input.epsilang.analyzer : EAG;
 import gamma.util.Position;
+import log;
+
+public Grammar toParserGrammar(EAG eag)
+{
+    import gamma.grammar.PrintingVisitor : toPrettyString;
+
+    auto hyperGrammarProperties = new GrammarProperties(eag.plainHyperGrammar,
+        eag.lexicalHyperNonterminals);
+
+    bool isTerminal(Symbol symbol)
+    {
+        return hyperGrammarProperties.isLexicalNonterminal(symbol);
+    }
+
+    bool isPredicate(Symbol symbol)
+    {
+        return symbol != eag.plainHyperGrammar.startSymbol
+            && hyperGrammarProperties.isStrongNullable(symbol);
+    }
+
+    auto parserGrammar = eag.plainHyperGrammar
+        .toExtendedParserGrammar(&isTerminal, &isPredicate);
+
+    trace!"parser grammar:\n%s"(parserGrammar.toPrettyString);
+    return parserGrammar;
+}
 
 // TODO: by using the grammar builder the indexes of the symbols will be changed
 public Grammar toExtendedParserGrammar(Grammar grammar,

@@ -6,10 +6,9 @@
 module gamma.main;
 
 import argparse;
-import epsilon.eag : epsilonEAG = eag;
+import epsilon.eag : EpsilonEAG = EAG, epsilonEAG = eag;
 import epsilon.settings;
-import gamma.grammar.Grammar;
-import gamma.input.epsilang.analyzer : EAG;
+import gamma.input.epsilang.analyzer : Analyzer, EAG;
 import io : Input, read;
 import log;
 import runtime;
@@ -75,6 +74,30 @@ struct Arguments
 
     @(NamedArgument.Description("Use dub to build compiled compiler"))
     bool dub;
+
+    void validateOptions() const
+    {
+        import core.stdc.stdlib : exit, EXIT_FAILURE;
+        import std.typecons : tuple;
+
+        alias Conflict = tuple!("option1", "option2");
+
+        static foreach (conflict; [
+            Conflict("lalr", "slag"),
+            Conflict("lalr", "sweep"),
+            Conflict("slag", "sweep"),
+            Conflict("slag", "soag"),
+            Conflict("sweep", "soag"),
+        ])
+        {
+            if (__traits(getMember, this, conflict.option1)
+                && __traits(getMember, this, conflict.option2))
+            {
+                error!"--%s cannot be combined with --%s"(conflict.option1, conflict.option2);
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
 }
 
 void command(Arguments arguments)
@@ -82,10 +105,16 @@ void command(Arguments arguments)
     import core.stdc.stdlib : exit, EXIT_FAILURE;
     import std.exception : ErrnoException;
 
+    arguments.validateOptions;
     with (arguments)
     {
         if (verbose)
             levels |= Level.trace;
+
+        if (lalr)
+        {
+            soag = true;
+        }
 
         if (!slag && !sweep && !soag)
         {
@@ -130,16 +159,25 @@ void compile(Input input, const Arguments arguments)
     import gamma.input.EAGBuilder : toEAG;
     import std.exception : enforce;
 
-    auto eag = check(input, arguments);
-
-    if (arguments.lalr)
-        return;
+    const settings = createSettings(arguments);
+    auto eag = (new Analyzer).analyze(input);
 
     epsilonEAG = eag.toEAG;
 
+    if (arguments.lalr)
+    {
+        const fileNames = generateLRParser(epsilonEAG, eag, settings);
+
+        settings.outputDirectory.generateRecipe(fileNames, arguments);
+
+        if (!arguments.generate)
+            settings.outputDirectory.build(fileNames, arguments);
+
+        return;
+    }
+
     Predicates.Check;
 
-    const settings = createSettings(arguments);
     const isELL1 = ELL1Gen.Test(settings);
 
     enforce(isELL1);
@@ -193,21 +231,20 @@ void compile(Input input, const Arguments arguments)
         settings.outputDirectory.build(fileNames, arguments);
 }
 
-// check hyper-grammar with new gamma Analyzer
-EAG check(Input input, const Arguments arguments)
+string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, const Settings settings)
 {
-    import gamma.input.epsilang.analyzer : Analyzer;
+    import LexGen = epsilon.lexgen;
+    import gamma.parsgen.lalr1.CodeGenerator : generateCode;
+    import gamma.parsgen.lalr1.ParserGrammarBuilder : toParserGrammar;
+    import gamma.parsgen.lalr1.PennelloDeRemer : generateParser;
 
-    auto analyzer = new Analyzer;
-    auto eag = analyzer.analyze(input);
+    string[] fileNames = null;
+    auto parserTables = generateParser(eag.toParserGrammar);
 
-    if (arguments.lalr)
-    {
-        import gamma.parsgen.lalr1.PennelloDeRemer : generateParser;
+    fileNames ~= generateCode(epsilonEAG, parserTables, settings);
+    fileNames ~= LexGen.Generate(settings);
 
-        generateParser(analyzer.parserGrammar);
-    }
-    return eag;
+    return fileNames;
 }
 
 Settings createSettings(const Arguments arguments)
@@ -266,7 +303,8 @@ void generateRecipe(const string outputDirectory, const string[] fileNames, cons
     const name = fileNames.front.baseName(".d");
     const targetPath = absolutePath(arguments.outputDirectory.empty ? "." : arguments.outputDirectory);
 
-    buildPath(outputDirectory, "dub.json").write(format!content(name, targetPath, fileNames.dup.map!baseName));
+    buildPath(outputDirectory, "dub.json")
+        .write(format!content(name, targetPath, fileNames.map!baseName));
 }
 
 void build(const string outputDirectory, const string[] fileNames, const Arguments arguments)
@@ -280,7 +318,7 @@ void build(const string outputDirectory, const string[] fileNames, const Argumen
 
     string[] args;
 
-    if (arguments.dub)
+    if (arguments.dub || arguments.lalr)
     {
         args = ["dub", "build"];
     }
@@ -290,7 +328,7 @@ void build(const string outputDirectory, const string[] fileNames, const Argumen
         const name = fileNames.front.baseName(".d");
         const targetPath = absolutePath(arguments.outputDirectory.empty ? "." : arguments.outputDirectory);
 
-        args = compiler ~ fileNames.dup.map!baseName.array ~ "-g" ~ "-J."
+        args = compiler ~ fileNames.map!baseName.array ~ "-g" ~ "-J."
             ~ absolutePath("include/runtime.d")
             ~ absolutePath("src/io.d") ~ absolutePath("src/log.d") ~ absolutePath("src/epsilon/soag/listacks.d")
             ~ format!"-of=%s"(buildPath(targetPath, name.executableName));
