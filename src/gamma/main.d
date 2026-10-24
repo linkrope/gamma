@@ -308,11 +308,12 @@ string runtimeDependency(const Arguments arguments)
 {
     import std.json : JSONValue;
     import std.path : absolutePath, buildNormalizedPath;
+    import std.string : tr;
 
     if (arguments.runtime.empty)
         return `"*"`;
 
-    const path = buildNormalizedPath(arguments.runtime.absolutePath);
+    const path = arguments.runtime.absolutePath.buildNormalizedPath.tr(`\`, "/");
 
     return JSONValue(["path": JSONValue(path)]).toString;
 }
