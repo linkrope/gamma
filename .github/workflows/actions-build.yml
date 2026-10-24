@@ -42,10 +42,12 @@ jobs:
         with:
           compiler: ${{ inputs.compiler_version }}
 
+      - name: Register package globally using absolute path
+        run: |
+          # We use sudo and --system to make it available globally
+          sudo dub add-local "${{ github.workspace }}" --system
+
       - name: Build & run tests
-        env:
-          # Forces DUB to look in the checkout for packages.
-          DUBPATH: ${{ github.workspace }}
         run: |
           dub build --build=${{inputs.build_type}}
           dub test --build=unittest --config=example
