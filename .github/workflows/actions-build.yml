@@ -42,19 +42,6 @@ jobs:
         with:
           compiler: ${{ inputs.compiler_version }}
 
-      - name: Force DUB to use local workspace globally
-        run: |
-          # Create the local dub configuration directory if it doesn't exist
-          mkdir -p ~/.dub
-
-          # Inject the absolute path of the workspace into global selections
-          echo '{
-            "fileVersion": 1,
-            "versions": {
-              "gamma": { "path": "${{ github.workspace }}" }
-            }
-          }' > ~/.dub/dub.selections.json
-
       - name: Build & run tests
         run: |
           dub build --build=${{inputs.build_type}}

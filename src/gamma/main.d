@@ -69,6 +69,9 @@ struct Arguments
     @(NamedArgument("output-directory").Placeholder("DIRECTORY").Description("Write compiled compiler to DIRECTORY"))
     string outputDirectory;
 
+    @(NamedArgument("runtime").Placeholder("DIRECTORY").Description("Use the gamma runtime package in DIRECTORY"))
+    string runtime;
+
     @(NamedArgument.Description("Show error positions language-server friendly as offsets"))
     bool offset;
 
@@ -84,7 +87,6 @@ struct Arguments
 
         static foreach (conflict; [
             Conflict("lalr", "slag"),
-            Conflict("lalr", "sweep"),
             Conflict("slag", "sweep"),
             Conflict("slag", "soag"),
             Conflict("sweep", "soag"),
@@ -111,15 +113,10 @@ void command(Arguments arguments)
         if (verbose)
             levels |= Level.trace;
 
-        if (lalr)
-        {
-            soag = true;
-        }
-
         if (!slag && !sweep && !soag)
         {
             // try all evaluators until one fits
-            slag = true;
+            slag = !lalr;
             sweep = true;
             soag = true;
         }
@@ -296,7 +293,7 @@ void generateRecipe(const string outputDirectory, const string[] fileNames, cons
             "sourceFiles": [%(%s, %)],
             "stringImportPaths": ["."],
             "dependencies": {
-                "gamma:runtime": "*"
+                "gamma:runtime": %s
             }
         }
         `.outdent.stripLeft;
@@ -304,7 +301,20 @@ void generateRecipe(const string outputDirectory, const string[] fileNames, cons
     const targetPath = absolutePath(arguments.outputDirectory.empty ? "." : arguments.outputDirectory);
 
     buildPath(outputDirectory, "dub.json")
-        .write(format!content(name, targetPath, fileNames.map!baseName));
+        .write(format!content(name, targetPath, fileNames.map!baseName, arguments.runtimeDependency));
+}
+
+string runtimeDependency(const Arguments arguments)
+{
+    import std.json : JSONValue;
+    import std.path : absolutePath, buildNormalizedPath;
+
+    if (arguments.runtime.empty)
+        return `"*"`;
+
+    const path = buildNormalizedPath(arguments.runtime.absolutePath);
+
+    return JSONValue(["path": JSONValue(path)]).toString;
 }
 
 void build(const string outputDirectory, const string[] fileNames, const Arguments arguments)

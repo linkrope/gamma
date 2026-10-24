@@ -8,7 +8,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"%s --lalr %s --output-directory %s"(
+        run!"%s --lalr --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "left-recursion.eag"), directory)
             .shouldPassWith("LexGen writing S");
         run!"cd %s && echo '1 + 2 * 3' | %s"(directory, dotSlash("S"))
@@ -21,7 +21,7 @@ unittest
 {
     with (sandbox)
     {
-        run!"%s --lalr %s --output-directory %s"(
+        run!"%s --lalr --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "left-recursion.eag"), directory)
             .shouldPassWith("LexGen writing S");
         run!"cd %s && echo '2 ** 3' | %s"(directory, dotSlash("S"))
