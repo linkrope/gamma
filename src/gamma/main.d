@@ -281,14 +281,14 @@ void generateRecipe(const string outputDirectory, const string[] fileNames, cons
 {
     import std.algorithm : map;
     import std.file : write;
-    import std.path : absolutePath, baseName, buildPath;
+    import std.path : baseName, buildPath;
     import std.string : format, outdent, stripLeft;
 
     enum content = `
         {
             "name": "compiler",
             "targetName": "%s",
-            "targetPath": "%s",
+            "targetPath": %s,
             "targetType": "executable",
             "sourceFiles": [%(%s, %)],
             "stringImportPaths": ["."],
@@ -298,24 +298,19 @@ void generateRecipe(const string outputDirectory, const string[] fileNames, cons
         }
         `.outdent.stripLeft;
     const name = fileNames.front.baseName(".d");
-    const targetPath = absolutePath(arguments.outputDirectory.empty ? "." : arguments.outputDirectory);
-
+    const outputPath = arguments.outputDirectory.empty ? "." : arguments.outputDirectory;
     buildPath(outputDirectory, "dub.json")
-        .write(format!content(name, targetPath, fileNames.map!baseName, arguments.runtimeDependency));
+        .write(format!content(name, outputPath.jsonPathLiteral, fileNames.map!baseName, arguments.runtimeDependency));
 }
 
 string runtimeDependency(const Arguments arguments)
 {
-    import std.json : JSONValue;
-    import std.path : absolutePath, buildNormalizedPath;
-    import std.string : tr;
+    import std.format : format;
 
     if (arguments.runtime.empty)
         return `"*"`;
 
-    const path = arguments.runtime.absolutePath.buildNormalizedPath.tr(`\`, "/");
-
-    return JSONValue(["path": JSONValue(path)]).toString;
+    return format!`{"path": %s}`(arguments.runtime.jsonPathLiteral);
 }
 
 void build(const string outputDirectory, const string[] fileNames, const Arguments arguments)
@@ -351,6 +346,16 @@ void build(const string outputDirectory, const string[] fileNames, const Argumen
 
     if (status)
         exit(status);
+}
+
+string jsonPathLiteral(const string path)
+{
+    import std.json : JSONValue;
+    import std.path : absolutePath, buildNormalizedPath;
+    import std.string : tr;
+
+    // use forward slashes so DUB can read Windows paths from JSON
+    return JSONValue(path.absolutePath.buildNormalizedPath.tr(`\`, "/")).toString;
 }
 
 string executableName(const string name)
