@@ -63,6 +63,11 @@ in (grammar.isPlain)
     // - help which nonterminal symbols are "lexical nonterminals"
     // - help which RHS symbol occurrences are "predicates"
     // Any alternative/rule the LHS of which is not a nonterminal of the parser grammar is skipped.
+
+    // Current restriction: contrary to the rules above, LALR has --p
+    // semantics, so marked lexical rules and their occurrences remain parser
+    // rules until a conventional lexer recognizes them as tokens.
+
     // For the remaining RHS's, SymbolNode's are
     // - not copied to the corresponding parser grammar RHS if they represent a "predicate"
     // - copied to the parser grammar as a terminal if they represent a "lexical nonterminal"
@@ -71,8 +76,6 @@ in (grammar.isPlain)
     {
         foreach (alternative; rule.alternatives)
         {
-            if (isTerminal(alternative.lhs.nonterminal))
-                break;
             if (isPredicate(alternative.lhs.nonterminal))
                 break;
 
@@ -90,7 +93,7 @@ in (grammar.isPlain)
 
                 Symbol symbol;
 
-                if (isTerminal(symbolNode.symbol) || cast(Terminal) symbolNode.symbol)
+                if (cast(Terminal) symbolNode.symbol)
                     symbol = grammarBuilder.buildTerminal(symbolNode.symbol.toString);
                 else
                     symbol = grammarBuilder.buildNonterminal(symbolNode.symbol.toString);

@@ -3,7 +3,6 @@ module gamma.parsgen.lalr1.CodeGenerator;
 import epsilon.eag : EAG;
 import epsilon.settings : Settings;
 import gamma.parsgen.lalr1.OrderedLR1Tables;
-import std.exception : enforce;
 
 public string[] generateCode(EAG eag, OrderedLR1Tables parserTables, Settings settings)
 {
@@ -19,18 +18,13 @@ public string[] generateCode(EAG eag, OrderedLR1Tables parserTables, Settings se
     foreach (lexerTerminal; EAG.firstHTerm .. eag.NextHTerm)
     {
         const representation = eag.symbolTable.symbol(eag.HTerm[lexerTerminal].Id);
-        bool found = false;
 
         foreach (parserTerminal; parserTables.grammar.terminals)
-        {
             if (parserTerminal.toString == representation)
             {
                 lexerTokenToParserToken[lexerTerminal + 3] = cast(int) parserTerminal.index;
-                found = true;
                 break;
             }
-        }
-        enforce(found, format!"No parser terminal for lexer token %s"(representation));
     }
 
     const name = eag.BaseName;

@@ -46,9 +46,18 @@ produced for that option.
 - `ParseTree.toString` emits deterministic GraphViz DOT.  Inner nodes show
   their LHS nonterminal name and leaves show terminal representations.  Do
   not print pointer addresses.
-- The existing generated Epsilon lexer remains unchanged.  A small generated
-  wrapper calls `S.Get(Tok)`, exposes `S.Pos`, and maps lexer token IDs to the
-  compact table terminal IDs, including lexer EOF to table `(end)`.
+- The LALR MVP deliberately has `--p` semantics: it preserves starred
+  hyper-nonterminal productions in the parser grammar and consumes the
+  existing generated lexer's primitive tokens.  Therefore `--lalr`
+  temporarily implies `--p`; do not claim that the MVP recognizes `*` rules
+  as lexer tokens.
+- A later conventional longest-match lexer stage changes the default LALR
+  behavior.  It recognizes starred hyper-nonterminals as lexer tokens, so
+  `--lalr` no longer implies `--p`; `--lalr --p` retains the MVP's primitive
+  token behavior.
+- The MVP's small generated wrapper calls `S.Get(Tok)`, exposes `S.Pos`, and
+  maps primitive lexer token IDs to compact table terminal IDs, including
+  lexer EOF to table `(end)`.
 - Predicate nodes are omitted because they derive the empty word ambiguously.
   The later transformation obtains their runtime position from the next real
   terminal leaf in source order, or from `ParseTree.endPosition` at EOF.
@@ -70,28 +79,30 @@ produced for that option.
 
 ## Implementation steps
 
-### 1. Generate a parser-only LALR executable
+### [x] 1. Generate a parser-only LALR executable
 
-Replace the `--lalr` early return with the smallest executable backend.  For
-an EAG, Gamma must generate and build a compiler that:
+Implemented. For an EAG, Gamma generates and builds a compiler that:
 
 1. generates the existing lexer;
-2. embeds the currently generated single parser-table file using D's `import`
-   expression;
-3. runs `gamma.runtime.lr.LR1Parser` through the generated lexer
+2. builds the parser grammar with `--p` semantics: starred hyper-nonterminals
+   remain grammar productions rather than lexer terminals;
+3. emits a generated D parser-table module with compact immutable arrays;
+4. runs `gamma.runtime.lr.LR1Parser` through the generated lexer
    wrapper;
-4. stops immediately on the first syntax error with a failing process status;
+5. stops immediately on the first syntax error with a failing process status;
    and
-5. prints `OK` on valid input.
+6. prints `OK` on valid input.
 
 This step deliberately has no parse tree, recovery tree, Epsilon evaluator,
 or compiler output.  It proves that the generated lexer, token mapping,
 embedded current table format, and table-driven LALR runtime work in one
-executable.  Retain the current JSON table for this intermediate step; do not
-add extra sidecar mapping files.
+executable.  It also deliberately does not implement starred-rule token
+boundaries: for now `--lalr` is equivalent to `--lalr --p`.  Retain the
+generated D table module for this intermediate step; do not add extra sidecar
+mapping files.
 
-Add a valid-input generated-compiler integration test expecting `OK` and an
-invalid-input test expecting failure.
+Coverage includes a valid-input generated-compiler integration test expecting
+`OK` and an invalid-input test expecting failure.
 
 Checkpoint:
 
@@ -101,12 +112,7 @@ dub test
 dub test --config=example
 ```
 
-## Follow-up
-
-Make the single-sweep evaluator work with `--lalr`. Once it is supported,
-stop forcing SOAG as the only LALR evaluator and allow `--lalr --sweep`.
-
-### 2. Add the parser-tree model
+### [ ] 2. Add the parser-tree model
 
 Add focused LALR runtime types for `ParseTree`, recursive `SumType` nodes,
 and GraphViz rendering.  Keep them distinct from grammar-definition nodes.
@@ -130,7 +136,7 @@ dub test
 dub test --config=example
 ```
 
-### 3. Construct the tree during shift and reduce
+### [ ] 3. Construct the tree during shift and reduce
 
 Maintain a semantic stack alongside LR states in `LR1Parser`.
 
@@ -155,7 +161,7 @@ dub test
 dub test --config=example
 ```
 
-### 4. Print trees from generated LALR compilers
+### [ ] 4. Print trees from generated LALR compilers
 
 Change the parser-only compiler from step 1 so valid input prints
 `ParseTree.toString` instead of `OK`.  Keep the same lexer wrapper and
@@ -169,7 +175,7 @@ dub test
 dub test --config=example
 ```
 
-### 5. Add recovery-tree replay
+### [ ] 5. Add recovery-tree replay
 
 After valid-input trees are correct, extend LR repair simulation to maintain
 semantic values as well as LR states.  Inserted terminals are synthetic with
@@ -185,7 +191,7 @@ dub test
 dub test --config=example
 ```
 
-### 6. Preserve parser-to-EAG provenance
+### [ ] 6. Preserve parser-to-EAG provenance
 
 Make `ParserGrammarBuilder` return both the cloned parser grammar and cloned
 parser-alternative -> source plain-grammar-alternative mapping.  At table
@@ -202,7 +208,7 @@ dub test
 dub test --config=example
 ```
 
-### 7. Implement the removable Gamma-to-Epsilon transformation
+### [ ] 7. Implement the removable Gamma-to-Epsilon transformation
 
 Generate a separate module that transforms a completed Gamma tree into the
 existing Epsilon `Tree`/`PosTree` ABI used by `TraverseSyntaxTree`.
@@ -234,12 +240,15 @@ dub test
 dub test --config=example
 ```
 
-### 8. Enable LALR evaluator execution
+### [ ] 8. Enable LALR evaluator execution
 
 Use the transformation result to invoke the selected single-sweep or SOAG
 evaluator on error-free input.  Reject `--lalr --slag`; preserve LL as the
 default and retain its current behavior.  Do not run `ELL1Gen.Test` for this
 backend; preserve the single-sweep-then-SOAG evaluator selection order.
+The MVP still has `--p` semantics, so `--lalr` continues to imply `--p` at
+this point.  Once single-sweep is supported, stop forcing SOAG as the only
+LALR evaluator and allow `--lalr --sweep`.
 
 Checkpoint:
 
@@ -249,7 +258,35 @@ dub test
 dub test --config=example
 ```
 
-### 9. Add focused LALR regression coverage
+### [ ] 9. Generate the conventional longest-match LALR lexer
+
+Only after error-free parse-tree transformation and evaluator execution work,
+replace the MVP's implicit `--p` lexer behavior.
+
+- Generate a conventional longest-match lexer for the starred
+  hyper-nonterminals, using the established `*` token semantics.
+- Make plain `--lalr` use that lexer, so a starred rule is delivered to the
+  LALR parser as one token and whitespace terminates it as in the legacy ELL
+  pipeline.
+- Keep `--lalr --p` on the MVP path: starred rules remain parser productions
+  over primitive lexer tokens.
+- Define and test tie-breaking for overlapping starred rules, token-boundary
+  positions, whitespace within and between tokens, and invalid-token
+  diagnostics.
+
+The lexer must be generated as a conventional longest-match lexer, not as a
+parser-state-aware scanner.  This keeps the LALR parser/table runtime focused
+on parsing and gives tokenization its own testable contract.
+
+Checkpoint:
+
+```sh
+dub build
+dub test
+dub test --config=example
+```
+
+### [ ] 10. Add focused LALR regression coverage
 
 Do not double every expensive generated-compiler fixture.  Add a small
 LL/LALR equivalence subset covering one single-sweep compiler, one SOAG
@@ -272,18 +309,19 @@ dub test
 dub test --config=example
 ```
 
-### 10. Decide permanent table packaging with a spike
+### [x] 11. Package parser tables as generated D source
 
-After tree and bridge metadata are real, compare one real table embedded as:
+Decision: generate D source with compact immutable array initializers. Each
+generated compiler includes an `*LRTables.d` module containing
+`LR1ParserTables`; no runtime JSON parsing or reconstructed `gamma.grammar`
+objects are used.
 
-1. generated D source with compact immutable array initializers; and
-2. one imported text resource processed at compile time into compact arrays.
+When tree and bridge metadata are added, emit their compact projection records
+into this same generated module. No additional table-packaging spike is
+needed unless that metadata introduces a concrete problem with generated D.
 
-Judge generated-code clarity, compile time, startup time, and ability to carry
-all parser/projection data without extra files.  Then replace runtime JSON
-parsing and reconstructed `gamma.grammar` objects with compact table records.
-The generated compiler must be self-contained in either case.  JSON may
-remain a developer/debug export.
+The generated compiler is self-contained. JSON may remain a developer/debug
+export.
 
 Checkpoint:
 
