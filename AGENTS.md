@@ -33,6 +33,7 @@ The current pipeline analyzes the input with `gamma.input.epsilang.Analyzer`, co
 - Avoid bare `true` or `false` arguments: use `std.typecons.Flag` parameters and `Yes` or `No` at call sites.
 - Prefer `.front` to `[0]` for range and array access.
 - Prefer newspaper style: place a function or type below its last use.
+- Write multi-line expected test text as `` `...`.outdent.strip ``.
 - Write concise imperative commit messages, such as `Add error handling`.
 
 Canonical grammar examples live in `example/`; add examples there for regression coverage. The files in `fix/` are string-imported patches embedded by the code generators and must be retained.

@@ -30,7 +30,7 @@ produced for that option.
   error with `--slag`.
 - LALR supports single-sweep and SOAG only.  Keep the existing preference:
   single-sweep first, SOAG second.
-- The LALR runtime owns a Gamma parse tree and contains no Epsilon IDs, heap
+- The shared parser runtime owns a Gamma parse tree and contains no Epsilon IDs, heap
   addresses, evaluator code, or predicate nodes.
 - Define `ParseNode` as a recursive `std.sumtype.SumType` with separate
   `Terminal` and `Rule` variants.  Rule children use `This*[]` or equivalent
@@ -68,8 +68,8 @@ produced for that option.
 - Gamma lowers EBNF options and repetitions into anonymous BNF nonterminals.
   The Epsilon transformation must fold them into Epsilon's logical
   `Opt`/`Rep` rules, including their distinguished empty alternative.
-- On recovered input, eventually return a best-effort tree with synthetic
-  terminals at `UndefPos`, but never transform or evaluate it when the parser
+- On recovered input, return a best-effort tree for diagnostics. Inserted
+  terminals use `UndefPos`; never transform or evaluate a tree when the parser
   error count is nonzero.
 - The Epsilon bridge is separate and removable: it transforms a completed
   Gamma tree into the existing Epsilon `Tree`/`PosTree` evaluator ABI, rather
@@ -104,17 +104,9 @@ mapping files.
 Coverage includes a valid-input generated-compiler integration test expecting
 `OK` and an invalid-input test expecting failure.
 
-Checkpoint:
+### [x] 2. Add the parser-tree model
 
-```sh
-dub build
-dub test
-dub test --config=example
-```
-
-### [ ] 2. Add the parser-tree model
-
-Add focused LALR runtime types for `ParseTree`, recursive `SumType` nodes,
+Add focused parser runtime types for `ParseTree`, recursive `SumType` nodes,
 and GraphViz rendering.  Keep them distinct from grammar-definition nodes.
 
 Enforce these invariants:
@@ -127,14 +119,6 @@ Enforce these invariants:
 
 Add permanent unit tests for terminal/rule distinction, rule IDs, child order,
 positions, root selection, and deterministic DOT.
-
-Checkpoint:
-
-```sh
-dub build
-dub test
-dub test --config=example
-```
 
 ### [ ] 3. Construct the tree during shift and reduce
 
@@ -153,43 +137,19 @@ Use a temporary runtime fixture with the current table writer/reader and a
 test scanner to inspect a DOT tree.  It can be removed after end-to-end LALR
 evaluator coverage exists.
 
-Checkpoint:
-
-```sh
-dub build
-dub test
-dub test --config=example
-```
-
 ### [ ] 4. Print trees from generated LALR compilers
 
 Change the parser-only compiler from step 1 so valid input prints
 `ParseTree.toString` instead of `OK`.  Keep the same lexer wrapper and
 embedded current table.  Do not yet generate or call an Epsilon evaluator.
 
-Checkpoint:
-
-```sh
-dub build
-dub test
-dub test --config=example
-```
-
 ### [ ] 5. Add recovery-tree replay
 
 After valid-input trees are correct, extend LR repair simulation to maintain
-semantic values as well as LR states.  Inserted terminals are synthetic with
-`UndefPos`; successful recovery returns an error-marked best-effort tree.
-Transformation and evaluation remain disabled when errors occurred.  Add
+semantic values as well as LR states. Inserted terminals use `UndefPos`.
+Successful recovery returns a best-effort tree for inspection, but
+transformation and evaluation remain disabled when errors occurred. Add
 focused recovery tests before enabling any evaluator path for repaired input.
-
-Checkpoint:
-
-```sh
-dub build
-dub test
-dub test --config=example
-```
 
 ### [ ] 6. Preserve parser-to-EAG provenance
 
@@ -199,14 +159,6 @@ emission, derive stable `ruleAlt`-keyed projection data from it.  This uses
 the existing anonymous-nonterminal identities that connect plain BNF to the
 original EBNF and Epsilon EAG representations.  Retain compact parser symbol
 IDs for table size; do not attempt to preserve source IDs in parser tables.
-
-Checkpoint:
-
-```sh
-dub build
-dub test
-dub test --config=example
-```
 
 ### [ ] 7. Implement the removable Gamma-to-Epsilon transformation
 
@@ -232,14 +184,6 @@ from the current LL parser and from `LALR -> ParseTree -> transformation` for
 group, option, repetition, and predicate cases.  Do not compare incidental
 heap addresses.
 
-Checkpoint:
-
-```sh
-dub build
-dub test
-dub test --config=example
-```
-
 ### [ ] 8. Enable LALR evaluator execution
 
 Use the transformation result to invoke the selected single-sweep or SOAG
@@ -249,14 +193,6 @@ backend; preserve the single-sweep-then-SOAG evaluator selection order.
 The MVP still has `--p` semantics, so `--lalr` continues to imply `--p` at
 this point.  Once single-sweep is supported, stop forcing SOAG as the only
 LALR evaluator and allow `--lalr --sweep`.
-
-Checkpoint:
-
-```sh
-dub build
-dub test
-dub test --config=example
-```
 
 ### [ ] 9. Generate the conventional longest-match LALR lexer
 
@@ -278,14 +214,6 @@ The lexer must be generated as a conventional longest-match lexer, not as a
 parser-state-aware scanner.  This keeps the LALR parser/table runtime focused
 on parsing and gives tokenization its own testable contract.
 
-Checkpoint:
-
-```sh
-dub build
-dub test
-dub test --config=example
-```
-
 ### [ ] 10. Add focused LALR regression coverage
 
 Do not double every expensive generated-compiler fixture.  Add a small
@@ -301,14 +229,6 @@ the existing static-foreach style with this support matrix:
 Add canonical `example/` grammars accepted by LALR but rejected by LL(1).
 They prove the backend's added value and verify the ELL(1) gate is bypassed.
 
-Checkpoint:
-
-```sh
-dub build
-dub test
-dub test --config=example
-```
-
 ### [x] 11. Package parser tables as generated D source
 
 Decision: generate D source with compact immutable array initializers. Each
@@ -322,14 +242,6 @@ needed unless that metadata introduces a concrete problem with generated D.
 
 The generated compiler is self-contained. JSON may remain a developer/debug
 export.
-
-Checkpoint:
-
-```sh
-dub build
-dub test
-dub test --config=example
-```
 
 ## Future TODO
 
@@ -345,16 +257,10 @@ hold:
 - representative generation, generated-compiler build, and generated-runtime
   performance are not materially worse without a documented reason.
 
-## Required final verification
+## Validation
 
-Every implementation step must leave the repository compiling and all tests
-passing.  The primary regression check before committing is:
-
-```sh
-dub test --config=example
-```
-
-Run the complete verification set at each checkpoint and before handoff:
+Run the complete verification set after every completed implementation step
+and before handoff. The primary regression check is `dub test --config=example`:
 
 ```sh
 dub build

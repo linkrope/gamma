@@ -56,6 +56,8 @@
                 "src/epsilon/soag/listacks.d",
                 "src/gamma/runtime/lr/LR1ParserTables.d",
                 "src/gamma/runtime/lr/LR1Parser.d",
+                "src/gamma/runtime/ParseTree.d",
+                "src/gamma/runtime/ParseTreeWriter.d",
                 "src/gamma/runtime/Lexer.d"
             ]
         }
