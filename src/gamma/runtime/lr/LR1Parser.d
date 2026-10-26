@@ -2,7 +2,8 @@ module gamma.runtime.lr.LR1Parser;
 
 import gamma.runtime.Lexer;
 import gamma.runtime.lr.LR1ParserTables;
-import io : Position;
+import gamma.runtime.ParseTree;
+import io : Position, UndefPos;
 import log;
 import std.bitmanip : BitArray;
 import std.format;
@@ -10,9 +11,10 @@ import std.range;
 import std.sumtype : match;
 
 /**
- * An LR(1) parser driven by generated parser tables. It realizes automatic
- * error correction according to J. Röhrich, "Methods for the Automatic
- * Construction of Error Correcting Parsers", Acta Informatica 13 (1980).
+ * An LR(1) parser driven by generated parser tables.
+ * It realizes automatic error correction according to J. Röhrich,
+ * "Methods for the Automatic Construction of Error Correcting Parsers",
+ * Acta Informatica 13 (1980).
  *
  * @author SöKa
  */
@@ -32,6 +34,8 @@ public class LR1Parser
 
     private Stack stack;
 
+    private ParseNode*[] treeStack;
+
     private size_t errorCount_;
 
     public this(LR1ParserTables parserTables, Lexer lexer)
@@ -45,7 +49,7 @@ public class LR1Parser
         return this.errorCount_;
     }
 
-    public void parse()
+    public ParseTree parse()
     {
         stack.push(0);
         for (;;)
@@ -68,6 +72,7 @@ public class LR1Parser
                     haveLookahead = false;
                     state = shift.state;
                     stack.push(state);
+                    treeStack ~= new ParseNode(TerminalNode(lookahead, lookaheadPosition));
                     trace!"%s"(stack);
                     return false;
                 },
@@ -86,7 +91,7 @@ public class LR1Parser
             );
             if (halted)
             {
-                return;
+                return parseTree;
             }
         }
     }
@@ -96,6 +101,7 @@ public class LR1Parser
         // Phase 1: Compute a parse continuation from the parser stack at the
         // syntax error and collect candidate anchor terminals.
         auto stackSnapshot = stack;
+        auto treeStackSnapshot = treeStack.dup;
         const stateSnapshot = state;
         BitArray anchors;
 
@@ -123,6 +129,7 @@ public class LR1Parser
                     trace!"(C)Shift %s"(shift.lookahead);
                     state = shift.state;
                     stack.push(state);
+                    treeStack ~= new ParseNode(TerminalNode(shift.lookahead, UndefPos));
                     return true;
                 },
                 (const Reduce reduceAction)
@@ -158,6 +165,7 @@ public class LR1Parser
         // prefix, inserting terminals until the anchor can be shifted.
         state = stateSnapshot;
         stack = stackSnapshot;
+        treeStack = treeStackSnapshot;
         for (;;)
         {
             if (canShift(lookahead))
@@ -170,6 +178,7 @@ public class LR1Parser
                     info!"Inserting %s"(parserTables.terminalRepresentation(cast(int) shift.lookahead));
                     state = shift.state;
                     stack.push(state);
+                    treeStack ~= new ParseNode(TerminalNode(shift.lookahead, UndefPos));
                 },
                 (const Reduce reduceAction)
                 {
@@ -230,6 +239,13 @@ public class LR1Parser
     {
         const rule = parserTables.rules[ruleIndex];
 
+        assert(rule.rhsLength <= treeStack.length);
+
+        auto children = treeStack[$ - rule.rhsLength .. $];
+        auto rulePosition = children.empty ? lookaheadPosition : position(*children.front);
+
+        treeStack.length -= rule.rhsLength;
+        treeStack ~= new ParseNode(RuleNode(ruleIndex, children, rulePosition));
         stack.pop(rule.rhsLength);
         foreach (goTo; parserTables.gotosFor(stack.top))
         {
@@ -251,6 +267,13 @@ public class LR1Parser
             lookahead = lexer.nextToken;
             lookaheadPosition = lexer.position;
         }
+    }
+
+    private ParseTree parseTree()
+    {
+        assert(treeStack.length == 1);
+
+        return ParseTree(treeStack.back, lookaheadPosition);
     }
 
 }
@@ -277,7 +300,7 @@ private bool isContinuationAction(const Action action)
 
 private string terminalRepresentation(const LR1ParserTables parserTables, int terminal)
 {
-    if (0 <= terminal && terminal < parserTables.terminalRepresentations.length)
+    if (0 <= terminal && terminal < parserTables.terminalCount)
         return parserTables.terminalRepresentations[terminal];
 
     return format!"terminal %s"(terminal);
@@ -303,7 +326,7 @@ private struct Stack
     }
 
     void pop(size_t count)
-    in (count < values.length)
+    in (count <= values.length)
     {
         foreach (i; 0 .. count)
             values.popBack;

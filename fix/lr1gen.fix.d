@@ -5,7 +5,6 @@ import $;
 import gamma.runtime.lr.LR1Parser : LR1Parser;
 import gamma.runtime.Lexer : Lexer;
 import io : Input, Position, read;
-import std.stdio : stdin, writeln;
 
 private enum lexerTokenToParserToken = $;
 
@@ -41,15 +40,29 @@ class GeneratedLexer : Lexer
 int main(string[] args)
 {
     import core.stdc.stdlib : EXIT_FAILURE;
+    import gamma.runtime.ParseTreeWriter : ParseTreeWriter;
+    import log : Level, levels, trace;
+    import std.getopt : getopt;
+    import std.stdio : stdin, writeln;
+
+    bool verbose;
+
+    getopt(args, "verbose|v", &verbose);
+    if (verbose)
+        levels |= Level.trace;
 
     Input input = args.length > 1 ? read(args[1]) : read("stdin", stdin);
     auto lexer = new GeneratedLexer(input, cast(int) tables.eofTerminal);
     auto parser = new LR1Parser(tables, lexer);
+    auto tree = parser.parse;
+    auto writer = ParseTreeWriter(tables.terminalRepresentations, tables.rules);
 
-    parser.parse;
-    if (parser.errorCount != 0)
-        return EXIT_FAILURE;
-    writeln("OK");
-    return 0;
+    trace!"%s"(writer.write(tree));
+
+    if (parser.errorCount == 0)
+        writeln("OK");
+
+
+    return (parser.errorCount == 0) ? 0 : EXIT_FAILURE;
 }
 $

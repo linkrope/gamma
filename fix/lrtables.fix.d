@@ -10,6 +10,5 @@ public immutable LR1ParserTables tables = LR1ParserTables(
     $,
     $,
     $,
-    $,
 );
 $

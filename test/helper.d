@@ -76,3 +76,12 @@ bool matches(string output, string pattern)
     // match diagnostic lines consistently regardless of the output's line endings.
     return cast(bool) output.splitLines.join("\n").matchFirst(regex(pattern, "m"));
 }
+
+string escape(string value)
+{
+    import std.array : array;
+    import std.conv : to;
+    import std.regex : escaper;
+
+    return value.escaper.array.to!string;
+}

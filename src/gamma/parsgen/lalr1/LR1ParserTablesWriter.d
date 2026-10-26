@@ -67,7 +67,11 @@ public void write(string fileName, string moduleName, OrderedLR1Tables parserTab
     foreach (rule; parserTables.grammar.rules)
     {
         foreach (alternative; rule.alternatives)
-            rules ~= format!"Rule(%s, %s)"(alternative.lhs.nonterminal.index, alternative.rhs.length);
+            rules ~= format!"Rule(%s, %s, %s)"(
+                alternative.lhs.nonterminal.index,
+                alternative.lhs.nonterminal.toString.quoted,
+                alternative.rhs.length,
+            );
     }
 
     const terminalRepresentations = parserTables.grammar.terminals
@@ -93,8 +97,6 @@ public void write(string fileName, string moduleName, OrderedLR1Tables parserTab
     output.write(moduleName);
     includeFix('$');
     output.write(parserTables.eof.index);
-    includeFix('$');
-    output.write(parserTables.grammar.terminals.length);
     includeFix('$');
     output.write(actions.arrayLiteral);
     includeFix('$');

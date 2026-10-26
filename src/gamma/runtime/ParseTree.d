@@ -9,7 +9,7 @@ public struct ParseTree
 
     const Position endPosition;
 
-    public this(ParseNode* root, Position endPosition)
+    public this(ParseNode* root, const Position endPosition)
     in (root !is null)
     {
         this.root = root;
@@ -17,18 +17,18 @@ public struct ParseTree
     }
 }
 
-public alias ParseNode = SumType!(Terminal, Rule);
+public alias ParseNode = SumType!(TerminalNode, RuleNode);
 
 /**
  * A terminal occurrence in the parse.
  */
-public struct Terminal
+public struct TerminalNode
 {
     const size_t terminal;
 
     const Position position;
 
-    public this(size_t terminal, Position position)
+    public this(size_t terminal, const Position position)
     {
         this.terminal = terminal;
         this.position = position;
@@ -38,7 +38,7 @@ public struct Terminal
 /**
  * A grammar-rule application, with children in RHS order.
  */
-public struct Rule
+public struct RuleNode
 {
     const size_t ruleAlt;
 
@@ -46,7 +46,7 @@ public struct Rule
 
     const Position position;
 
-    public this(size_t ruleAlt, ParseNode*[] children, Position position)
+    public this(size_t ruleAlt, const ParseNode*[] children, const Position position)
     {
         this.ruleAlt = ruleAlt;
         this.children = children.dup;
@@ -57,7 +57,7 @@ public struct Rule
 public const(Position) position(const ParseNode node)
 {
     return node.match!(
-        (const Terminal terminal) => terminal.position,
-        (const Rule rule) => rule.position,
+        (const TerminalNode terminal) => terminal.position,
+        (const RuleNode rule) => rule.position,
     );
 }

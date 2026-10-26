@@ -1,9 +1,9 @@
 module gamma.runtime.ParseTreeWriter;
 
+import gamma.runtime.lr.LR1ParserTables : Rule;
 import gamma.runtime.ParseTree;
-import std.array : appender;
 import std.format : format;
-import std.range : isOutputRange, put;
+import std.range;
 import std.sumtype : get, match;
 
 /**
@@ -11,20 +11,22 @@ import std.sumtype : get, match;
  */
 public struct ParseTreeWriter
 {
-    private string[] terminalRepresentations;
+    private const string[] terminalRepresentations;
 
-    private string[] ruleLhsRepresentations;
+    private const Rule[] rules;
 
     private size_t nextNode;
 
-    public this(string[] terminalRepresentations, string[] ruleLhsRepresentations)
+    public this(const string[] terminalRepresentations, const Rule[] rules)
     {
         this.terminalRepresentations = terminalRepresentations.dup;
-        this.ruleLhsRepresentations = ruleLhsRepresentations.dup;
+        this.rules = rules.dup;
     }
 
     public string write(const ParseTree tree)
     {
+        import std.array : appender;
+
         auto result = appender!string;
 
         result.put("digraph ParseTree {\n  node [shape=box];\n");
@@ -39,17 +41,22 @@ public struct ParseTreeWriter
     if (isOutputRange!(Writer, char))
     {
         const nodeNumber = this.nextNode++;
-        const label = (*node).match!(
-            (const Terminal terminal) => terminalLabel(terminal),
-            (const Rule rule) => ruleLabel(rule),
-        );
+        const label = (*node).match!(node => label(node));
 
         writer.put(format!"  n%s [label=\"%s\"];\n"(nodeNumber, label.escape));
 
         (*node).match!(
-            (const Rule rule)
+            (const RuleNode ruleNode)
             {
-                foreach (child; rule.children)
+                if (ruleNode.children.empty)
+                {
+                    const childNumber = this.nextNode++;
+
+                    writer.put(format!"  n%s [label=\"ε\"];\n"(childNumber));
+                    writer.put(format!"  n%s -> n%s;\n"(nodeNumber, childNumber));
+                }
+
+                foreach (child; ruleNode.children)
                 {
                     const childNumber = writeNode(writer, child);
 
@@ -62,17 +69,48 @@ public struct ParseTreeWriter
         return nodeNumber;
     }
 
-    private string terminalLabel(const Terminal terminal)
-    in (terminal.terminal < this.terminalRepresentations.length)
+    private string label(const TerminalNode terminalNode)
+    in (terminalNode.terminal < this.terminalRepresentations.length)
     {
-        return this.terminalRepresentations[terminal.terminal];
+        return this.terminalRepresentations[terminalNode.terminal];
     }
 
-    private string ruleLabel(const Rule rule)
-    in (rule.ruleAlt < this.ruleLhsRepresentations.length)
+    private string label(const RuleNode ruleNode)
+    in (ruleNode.ruleAlt < this.rules.length)
     {
-        return this.ruleLhsRepresentations[rule.ruleAlt];
+        return this.rules[ruleNode.ruleAlt].lhsName;
     }
+}
+
+@("render parse trees as deterministic DOT")
+unittest
+{
+    import io : UndefPos;
+    import std.string : outdent, strip;
+
+    auto a = new ParseNode(TerminalNode(0, UndefPos));
+    auto b = new ParseNode(TerminalNode(1, UndefPos));
+    auto empty = new ParseNode(RuleNode(0, [], UndefPos));
+    auto aSb = new ParseNode(RuleNode(1, [a, empty, b], UndefPos));
+    auto tree = ParseTree(aSb, UndefPos);
+    auto writer = ParseTreeWriter(["a", "b"], [Rule(0, "S", 0), Rule(0, "S", 3)]);
+
+    const expected = `
+        digraph ParseTree {
+          node [shape=box];
+          n0 [label="S"];
+          n1 [label="a"];
+          n0 -> n1;
+          n2 [label="S"];
+          n3 [label="ε"];
+          n2 -> n3;
+          n0 -> n2;
+          n4 [label="b"];
+          n0 -> n4;
+        }
+        `.outdent.strip;
+
+    assert(writer.write(tree).strip == expected);
 }
 
 private string escape(string value)
@@ -82,25 +120,9 @@ private string escape(string value)
     return value.replace(`\`, `\\`).replace(`"`, `\"`).replace("\n", `\n`);
 }
 
-@("render parse trees as deterministic DOT")
+@("escape special characters")
 unittest
 {
-    import io : UndefPos;
-    import std.string : outdent, strip;
-
-    auto terminal = new ParseNode(Terminal(0, UndefPos));
-    auto root = new ParseNode(Rule(0, [terminal], UndefPos));
-    auto tree = ParseTree(root, UndefPos);
-    auto writer = ParseTreeWriter(["a\"\\"], ["Start"]);
-
-    const expected = `
-        digraph ParseTree {
-          node [shape=box];
-          n0 [label="Start"];
-          n1 [label="a\"\\"];
-          n0 -> n1;
-        }
-        `.outdent.strip;
-
-    assert(writer.write(tree).strip == expected);
+    assert(escape(`"` ~ `\`) == `\"\\`);
+    assert(escape("\n") == `\n`);
 }

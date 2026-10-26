@@ -120,28 +120,26 @@ Enforce these invariants:
 Add permanent unit tests for terminal/rule distinction, rule IDs, child order,
 positions, root selection, and deterministic DOT.
 
-### [ ] 3. Construct the tree during shift and reduce
+### [x] 3. Construct the tree during shift and reduce
 
-Maintain a semantic stack alongside LR states in `LR1Parser`.
+Maintain a tree stack alongside LR states in `LR1Parser`.
 
 - Shift pushes a terminal node.
 - Reduce pops exactly the RHS count, restores left-to-right order, creates a
   rule node with `ruleAlt`, and pushes it.
-- Halt discards the EOF semantic value and returns the existing user-start
-  node; never create the augmented-start node.
+- Halt returns the existing user-start node; never create the augmented-start
+  node.
 - Correct the existing `ParserStack.pop` contract before depending on it in
   debug builds.
 - Preserve table display metadata for DOT labels.
 
-Use a temporary runtime fixture with the current table writer/reader and a
-test scanner to inspect a DOT tree.  It can be removed after end-to-end LALR
-evaluator coverage exists.
+Use the generated-compiler integration test to inspect a DOT tree.
 
-### [ ] 4. Print trees from generated LALR compilers
+### [x] 4. Trace trees from generated LALR compilers
 
-Change the parser-only compiler from step 1 so valid input prints
-`ParseTree.toString` instead of `OK`.  Keep the same lexer wrapper and
-embedded current table.  Do not yet generate or call an Epsilon evaluator.
+Keep `OK` on standard output for valid input. With `--verbose`, write the
+`ParseTree` DOT rendering to the trace log. Keep the same lexer wrapper and
+embedded current table. Do not yet generate or call an Epsilon evaluator.
 
 ### [ ] 5. Add recovery-tree replay
 
