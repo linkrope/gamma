@@ -141,7 +141,7 @@ Keep `OK` on standard output for valid input. With `--verbose`, write the
 `ParseTree` DOT rendering to the trace log. Keep the same lexer wrapper and
 embedded current table. Do not yet generate or call an Epsilon evaluator.
 
-### [ ] 5. Add recovery-tree replay
+### [x] 5. Add recovery-tree replay
 
 After valid-input trees are correct, extend LR repair simulation to maintain
 semantic values as well as LR states. Inserted terminals use `UndefPos`.

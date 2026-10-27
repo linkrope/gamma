@@ -47,22 +47,24 @@ string dotSlash(string name)
     return buildPath(".", name);
 }
 
-Result shouldPassWith(Result result, string pattern)
+Result shouldPassWith(Result result, string[] patterns...)
 {
     with (result)
     {
         assert(status == 0, output);
-        assert(output.matches(pattern), output);
+        foreach (pattern; patterns)
+            assert(output.matches(pattern), output);
     }
     return result;
 }
 
-Result shouldFailWith(Result result, string pattern)
+Result shouldFailWith(Result result, string[] patterns...)
 {
     with (result)
     {
         assert(status != 0, output);
-        assert(output.matches(pattern), output);
+        foreach (pattern; patterns)
+            assert(output.matches(pattern), output);
     }
     return result;
 }
