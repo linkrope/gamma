@@ -15,7 +15,20 @@ import gamma.input.epsilang.analyzer : EAG;
 import gamma.util.Position;
 import log;
 
-public Grammar toParserGrammar(EAG eag)
+/**
+ * A compact parser grammar with mappings
+ * from its terminals and nonterminals to their original counterparts.
+ */
+public struct ParserGrammar
+{
+    Grammar grammar;
+
+    Terminal[Terminal] terminals;
+
+    Nonterminal[Nonterminal] nonterminals;
+}
+
+public ParserGrammar toParserGrammar(EAG eag)
 {
     import gamma.grammar.PrintingVisitor : toPrettyString;
 
@@ -36,18 +49,21 @@ public Grammar toParserGrammar(EAG eag)
     auto parserGrammar = eag.plainHyperGrammar
         .toExtendedParserGrammar(&isTerminal, &isPredicate);
 
-    trace!"parser grammar:\n%s"(parserGrammar.toPrettyString);
+    trace!"parser grammar:\n%s"(parserGrammar.grammar.toPrettyString);
     return parserGrammar;
 }
 
-// TODO: by using the grammar builder the indexes of the symbols will be changed
-public Grammar toExtendedParserGrammar(Grammar grammar,
+public ParserGrammar toExtendedParserGrammar(Grammar grammar,
     bool delegate(Symbol) isTerminal,
     bool delegate(Symbol) isPredicate)
 in (grammar.isPlain)
 {
     GrammarBuilder grammarBuilder;
-    Symbol originalStartSymbol = grammarBuilder.buildNonterminal(grammar.startSymbol.toString);
+    Terminal[Terminal] terminals;
+    Nonterminal[Nonterminal] nonterminals;
+
+    Nonterminal originalStartSymbol = grammarBuilder.buildNonterminal(grammar.startSymbol.toString);
+    nonterminals[originalStartSymbol] = grammar.startSymbol;
     Nonterminal extStartSymbol = grammarBuilder.buildNonterminal("(Start)");
 
     // --- Go ahead with rest of parser generation... ---
@@ -82,6 +98,7 @@ in (grammar.isPlain)
             Nonterminal lhs = grammarBuilder.buildNonterminal(alternative.lhs.nonterminal.toString);
             Node[] rhs;
 
+            nonterminals[lhs] = alternative.lhs.nonterminal;
             foreach (node; alternative.rhs)
             {
                 assert(cast(SymbolNode) node);
@@ -93,10 +110,21 @@ in (grammar.isPlain)
 
                 Symbol symbol;
 
-                if (cast(Terminal) symbolNode.symbol)
-                    symbol = grammarBuilder.buildTerminal(symbolNode.symbol.toString);
+                if (auto terminal = cast(Terminal) symbolNode.symbol)
+                {
+                    auto parserTerminal = grammarBuilder.buildTerminal(terminal.toString);
+
+                    symbol = parserTerminal;
+                    terminals[parserTerminal] = terminal;
+                }
                 else
-                    symbol = grammarBuilder.buildNonterminal(symbolNode.symbol.toString);
+                {
+                    auto nonterminal = cast(Nonterminal) symbolNode.symbol;
+                    auto parserNonterminal = grammarBuilder.buildNonterminal(nonterminal.toString);
+
+                    symbol = parserNonterminal;
+                    nonterminals[parserNonterminal] = nonterminal;
+                }
                 rhs ~= new SymbolNode(symbol, symbolNode.position);
             }
             grammarBuilder
@@ -104,5 +132,5 @@ in (grammar.isPlain)
         }
     }
 
-    return grammarBuilder.getGrammar(extStartSymbol);
+    return ParserGrammar(grammarBuilder.getGrammar(extStartSymbol), terminals, nonterminals);
 }

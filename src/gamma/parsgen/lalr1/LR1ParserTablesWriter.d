@@ -1,8 +1,10 @@
 module gamma.parsgen.lalr1.LR1ParserTablesWriter;
 
 import gamma.parsgen.lalr1.OrderedLR1Tables;
+import gamma.parsgen.lalr1.ParserGrammarBuilder : ParserGrammar;
 
-public void write(string fileName, string moduleName, OrderedLR1Tables parserTables)
+public void write(string fileName, string moduleName,
+    OrderedLR1Tables parserTables, ParserGrammar parserGrammar)
 {
     import gamma.grammar.Alternative : Alternative;
     import io : Input;
@@ -67,16 +69,31 @@ public void write(string fileName, string moduleName, OrderedLR1Tables parserTab
     foreach (rule; parserTables.grammar.rules)
     {
         foreach (alternative; rule.alternatives)
-            rules ~= format!"Rule(%s, %s, %s)"(
+            rules ~= format!"Rule(%s, %s)"(
                 alternative.lhs.nonterminal.index,
-                alternative.lhs.nonterminal.toString.quoted,
                 alternative.rhs.length,
             );
     }
 
-    const terminalRepresentations = parserTables.grammar.terminals
-        .map!(terminal => terminal.toString.quoted)
-        .array;
+    string[] terminals = null;
+
+    foreach (parserTerminal; parserTables.grammar.terminals)
+    {
+        if (auto terminal = parserTerminal in parserGrammar.terminals)
+            terminals ~= format!"Symbol(%s, %s)"((*terminal).index, (*terminal).toString.quoted);
+        else
+            terminals ~= format!"Symbol(size_t.max, %s)"(parserTerminal.toString.quoted);
+    }
+
+    string[] nonterminals = null;
+
+    foreach (parserNonterminal; parserTables.grammar.nonterminals)
+    {
+        if (auto nonterminal = parserNonterminal in parserGrammar.nonterminals)
+            nonterminals ~= format!"Symbol(%s, %s)"((*nonterminal).index, (*nonterminal).toString.quoted);
+        else
+            nonterminals ~= format!"Symbol(size_t.max, %s)"(parserNonterminal.toString.quoted);
+    }
 
     enum fixName = "lrtables.fix.d";
     Input fix = Input(fixName, import(fixName));
@@ -108,7 +125,9 @@ public void write(string fileName, string moduleName, OrderedLR1Tables parserTab
     includeFix('$');
     output.write(rules.arrayLiteral);
     includeFix('$');
-    output.write(terminalRepresentations.arrayLiteral);
+    output.write(terminals.arrayLiteral);
+    includeFix('$');
+    output.write(nonterminals.arrayLiteral);
     includeFix('$');
     output.close;
 }

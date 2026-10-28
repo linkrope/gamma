@@ -72,7 +72,7 @@ public class LR1Parser
                     haveLookahead = false;
                     state = shift.state;
                     stack.push(state);
-                    treeStack ~= new ParseNode(TerminalNode(lookahead, lookaheadPosition));
+                    treeStack ~= terminalNode(lookahead, lookaheadPosition);
                     trace!"%s"(stack);
                     return false;
                 },
@@ -129,7 +129,7 @@ public class LR1Parser
                     trace!"(C)Shift %s"(shift.lookahead);
                     state = shift.state;
                     stack.push(state);
-                    treeStack ~= new ParseNode(TerminalNode(shift.lookahead, UndefPos));
+                    treeStack ~= terminalNode(shift.lookahead, UndefPos);
                     return true;
                 },
                 (const Reduce reduceAction)
@@ -178,7 +178,7 @@ public class LR1Parser
                     info!"Inserting %s"(parserTables.terminalRepresentation(cast(int) shift.lookahead));
                     state = shift.state;
                     stack.push(state);
-                    treeStack ~= new ParseNode(TerminalNode(shift.lookahead, UndefPos));
+                    treeStack ~= terminalNode(shift.lookahead, UndefPos);
                 },
                 (const Reduce reduceAction)
                 {
@@ -245,7 +245,7 @@ public class LR1Parser
         auto rulePosition = children.empty ? lookaheadPosition : position(*children.front);
 
         treeStack.length -= rule.rhsLength;
-        treeStack ~= new ParseNode(RuleNode(ruleIndex, children, rulePosition));
+        treeStack ~= ruleNode(rule, children, rulePosition);
         stack.pop(rule.rhsLength);
         foreach (goTo; parserTables.gotosFor(stack.top))
         {
@@ -276,6 +276,21 @@ public class LR1Parser
         return ParseTree(treeStack.back, lookaheadPosition);
     }
 
+    private ParseNode* terminalNode(size_t terminal, const Position position)
+    {
+        const terminalIndex = parserTables.terminals[terminal].index;
+
+        return new ParseNode(TerminalNode(terminalIndex, position));
+    }
+
+    private ParseNode* ruleNode(const Rule rule, const(ParseNode*[]) children,
+        const Position position)
+    {
+        const lhsIndex = parserTables.nonterminals[rule.lhs].index;
+
+        return new ParseNode(RuleNode(lhsIndex, children, position));
+    }
+
 }
 
 private const(Action)[] actionsFor(const LR1ParserTables parserTables, size_t state)
@@ -301,7 +316,7 @@ private bool isContinuationAction(const Action action)
 private string terminalRepresentation(const LR1ParserTables parserTables, int terminal)
 {
     if (0 <= terminal && terminal < parserTables.terminalCount)
-        return parserTables.terminalRepresentations[terminal];
+        return parserTables.terminals[terminal].name;
 
     return format!"terminal %s"(terminal);
 }

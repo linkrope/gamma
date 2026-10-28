@@ -149,14 +149,14 @@ Successful recovery returns a best-effort tree for inspection, but
 transformation and evaluation remain disabled when errors occurred. Add
 focused recovery tests before enabling any evaluator path for repaired input.
 
-### [ ] 6. Preserve parser-to-EAG provenance
+### [x] 6. Preserve parser-to-grammar symbol provenance
 
-Make `ParserGrammarBuilder` return both the cloned parser grammar and cloned
-parser-alternative -> source plain-grammar-alternative mapping.  At table
-emission, derive stable `ruleAlt`-keyed projection data from it.  This uses
-the existing anonymous-nonterminal identities that connect plain BNF to the
-original EBNF and Epsilon EAG representations.  Retain compact parser symbol
-IDs for table size; do not attempt to preserve source IDs in parser tables.
+Make `ParserGrammarBuilder` return the cloned parser grammar plus mappings
+from its terminals and nonterminals to the corresponding original grammar
+symbols. At table emission, use the mappings to emit original indexes and
+representations. Parser grammar IDs remain compact in tables; shifts and
+reductions store original terminal and LHS nonterminal indexes in the parse
+tree. Do not attempt to preserve source IDs in parser tables.
 
 ### [ ] 7. Implement the removable Gamma-to-Epsilon transformation
 

@@ -55,7 +55,7 @@ int main(string[] args)
     auto lexer = new GeneratedLexer(input, cast(int) tables.eofTerminal);
     auto parser = new LR1Parser(tables, lexer);
     auto tree = parser.parse;
-    auto writer = ParseTreeWriter(tables.terminalRepresentations, tables.rules);
+    auto writer = ParseTreeWriter(tables.terminals, tables.nonterminals);
 
     trace!"%s"(writer.write(tree));
 

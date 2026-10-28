@@ -1,5 +1,6 @@
 module test.helper;
 
+import std.range;
 import std.typecons;
 
 Sandbox sandbox()
@@ -48,6 +49,7 @@ string dotSlash(string name)
 }
 
 Result shouldPassWith(Result result, string[] patterns...)
+in (!patterns.empty)
 {
     with (result)
     {
@@ -59,6 +61,7 @@ Result shouldPassWith(Result result, string[] patterns...)
 }
 
 Result shouldFailWith(Result result, string[] patterns...)
+in (!patterns.empty)
 {
     with (result)
     {

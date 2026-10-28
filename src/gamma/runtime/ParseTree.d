@@ -36,19 +36,19 @@ public struct TerminalNode
 }
 
 /**
- * A grammar-rule application, with children in RHS order.
+ * A grammar-rule application, with LHS index and children in RHS order.
  */
 public struct RuleNode
 {
-    const size_t ruleAlt;
+    const size_t lhs;
 
     const(ParseNode*[]) children;
 
     const Position position;
 
-    public this(size_t ruleAlt, const ParseNode*[] children, const Position position)
+    public this(size_t lhs, const ParseNode*[] children, const Position position)
     {
-        this.ruleAlt = ruleAlt;
+        this.lhs = lhs;
         this.children = children.dup;
         this.position = position;
     }

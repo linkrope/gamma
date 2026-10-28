@@ -3,8 +3,10 @@ module gamma.parsgen.lalr1.CodeGenerator;
 import epsilon.eag : EAG;
 import epsilon.settings : Settings;
 import gamma.parsgen.lalr1.OrderedLR1Tables;
+import gamma.parsgen.lalr1.ParserGrammarBuilder : ParserGrammar;
 
-public string[] generateCode(EAG eag, OrderedLR1Tables parserTables, Settings settings)
+public string[] generateCode(EAG eag, OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
+    Settings settings)
 {
     import io : Input;
     import std.format : format;
@@ -68,6 +70,6 @@ public string[] generateCode(EAG eag, OrderedLR1Tables parserTables, Settings se
 
     import gamma.parsgen.lalr1.LR1ParserTablesWriter : write;
 
-    tablesFileName.write(tablesModuleName, parserTables);
+    tablesFileName.write(tablesModuleName, parserTables, parserGrammar);
     return [fileName, tablesFileName];
 }

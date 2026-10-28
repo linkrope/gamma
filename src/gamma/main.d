@@ -236,9 +236,10 @@ string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, const Settings setting
     import gamma.parsgen.lalr1.PennelloDeRemer : generateParser;
 
     string[] fileNames = null;
-    auto parserTables = generateParser(eag.toParserGrammar);
+    auto parserGrammar = eag.toParserGrammar;
+    auto parserTables = generateParser(parserGrammar.grammar);
 
-    fileNames ~= generateCode(epsilonEAG, parserTables, settings);
+    fileNames ~= generateCode(epsilonEAG, parserTables, parserGrammar, settings);
     fileNames ~= LexGen.Generate(settings);
 
     return fileNames;

@@ -1,6 +1,6 @@
 module gamma.runtime.ParseTreeWriter;
 
-import gamma.runtime.lr.LR1ParserTables : Rule;
+import gamma.runtime.lr.LR1ParserTables : Symbol;
 import gamma.runtime.ParseTree;
 import std.format : format;
 import std.range;
@@ -11,16 +11,24 @@ import std.sumtype : get, match;
  */
 public struct ParseTreeWriter
 {
-    private const string[] terminalRepresentations;
+    private const string[size_t] terminalNames;
 
-    private const Rule[] rules;
+    private const string[size_t] nonterminalNames;
 
     private size_t nextNode;
 
-    public this(const string[] terminalRepresentations, const Rule[] rules)
+    public this(const Symbol[] terminals, const Symbol[] nonterminals)
     {
-        this.terminalRepresentations = terminalRepresentations.dup;
-        this.rules = rules.dup;
+        import std.algorithm : map;
+        import std.array : assocArray;
+        import std.typecons : tuple;
+
+        this.terminalNames = terminals
+            .map!(symbol => tuple(cast(size_t) symbol.index, symbol.name))
+            .assocArray;
+        this.nonterminalNames = nonterminals
+            .map!(symbol => tuple(cast(size_t) symbol.index, symbol.name))
+            .assocArray;
     }
 
     public string write(const ParseTree tree)
@@ -70,15 +78,19 @@ public struct ParseTreeWriter
     }
 
     private string label(const TerminalNode terminalNode)
-    in (terminalNode.terminal < this.terminalRepresentations.length)
     {
-        return this.terminalRepresentations[terminalNode.terminal];
+        auto name = terminalNode.terminal in this.terminalNames;
+
+        assert(name !is null);
+        return *name;
     }
 
     private string label(const RuleNode ruleNode)
-    in (ruleNode.ruleAlt < this.rules.length)
     {
-        return this.rules[ruleNode.ruleAlt].lhsName;
+        auto name = ruleNode.lhs in this.nonterminalNames;
+
+        assert(name !is null);
+        return *name;
     }
 }
 
@@ -88,12 +100,14 @@ unittest
     import io : UndefPos;
     import std.string : outdent, strip;
 
-    auto a = new ParseNode(TerminalNode(0, UndefPos));
-    auto b = new ParseNode(TerminalNode(1, UndefPos));
-    auto empty = new ParseNode(RuleNode(0, [], UndefPos));
-    auto aSb = new ParseNode(RuleNode(1, [a, empty, b], UndefPos));
+    auto a = new ParseNode(TerminalNode(1, UndefPos));
+    auto b = new ParseNode(TerminalNode(3, UndefPos));
+    auto empty = new ParseNode(RuleNode(4, [], UndefPos));
+    auto aSb = new ParseNode(RuleNode(4, [a, empty, b], UndefPos));
     auto tree = ParseTree(aSb, UndefPos);
-    auto writer = ParseTreeWriter(["a", "b"], [Rule(0, "S", 0), Rule(0, "S", 3)]);
+    auto writer = ParseTreeWriter(
+        [Symbol(1, "a"), Symbol(3, "b")],
+        [Symbol(4, "S")]);
 
     const expected = `
         digraph ParseTree {

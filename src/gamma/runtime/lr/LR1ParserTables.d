@@ -16,12 +16,21 @@ public immutable struct LR1ParserTables
 
     Rule[] rules;
 
-    string[] terminalRepresentations;
+    Symbol[] terminals;
+
+    Symbol[] nonterminals;
 
     public size_t terminalCount() const
     {
-        return terminalRepresentations.length;
+        return terminals.length;
     }
+}
+
+public struct Symbol
+{
+    size_t index;
+
+    string name;
 }
 
 public alias Action = SumType!(Shift, Reduce, Halt);
@@ -61,8 +70,6 @@ public struct Goto
 public struct Rule
 {
     size_t lhs;
-
-    string lhsName;
 
     size_t rhsLength;
 }
