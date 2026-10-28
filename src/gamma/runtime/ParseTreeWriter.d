@@ -102,8 +102,8 @@ unittest
 
     auto a = new ParseNode(TerminalNode(1, UndefPos));
     auto b = new ParseNode(TerminalNode(3, UndefPos));
-    auto empty = new ParseNode(RuleNode(4, [], UndefPos));
-    auto aSb = new ParseNode(RuleNode(4, [a, empty, b], UndefPos));
+    auto empty = new ParseNode(RuleNode(4, 2, [], UndefPos));
+    auto aSb = new ParseNode(RuleNode(4, 1, [a, empty, b], UndefPos));
     auto tree = ParseTree(aSb, UndefPos);
     auto writer = ParseTreeWriter(
         [Symbol(1, "a"), Symbol(3, "b")],

@@ -133,3 +133,17 @@ unittest
             .shouldPassWith("^OK$");
     }
 }
+
+@("compile ebnf.eag and run LR parser without crashing")
+unittest
+{
+    with (sandbox)
+    {
+        run!"%s --lalr --runtime . %s --output-directory %s"(
+            gamma, buildPath("example", "ebnf.eag"), directory)
+            .shouldPassWith("LexGen writing S");
+        write(buildPath(directory, "input"), "a, , ab");
+        run!"cd %s && %s input"(directory, dotSlash("S"))
+            .shouldPassWith("^OK$");
+    }
+}

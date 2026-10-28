@@ -42,13 +42,18 @@ public struct RuleNode
 {
     const size_t lhs;
 
+    /// One-based alternative index within the original rules of the LHS.
+    const size_t alternative;
+
     const(ParseNode*[]) children;
 
     const Position position;
 
-    public this(size_t lhs, const ParseNode*[] children, const Position position)
+    public this(size_t lhs, size_t alternative, const ParseNode*[] children,
+        const Position position)
     {
         this.lhs = lhs;
+        this.alternative = alternative;
         this.children = children.dup;
         this.position = position;
     }

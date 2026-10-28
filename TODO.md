@@ -13,6 +13,14 @@ The epsilon analyzer has been removed.
 - but this makes `"\""` and `'"'` two different terminal symbols
 - take, for example, the code from the gamma Scanner
 
+## Predicate Position
+
+- Shall a failing predicate report the preceding terminal's position,
+  especially when that terminal is nested deeply?
+- Is this relevant in practice, or is this only a theoretical question?
+- What about analysis predicates of LHS:
+  using the following terminal seems to be more promising for them.
+
 ## compiled compiler
 
 - swap options `--info` and `--verbose`

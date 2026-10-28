@@ -37,9 +37,9 @@ produced for that option.
   indirection.  Do not add a visitor hierarchy or extend
   `gamma.runtime.Node`.
 - A terminal stores its parser-table terminal ID, start-only `io.Position`,
-  and synthetic flag.  A rule stores its stable table `ruleAlt` ID, start
-  position, and ordered children.  Shift creates a terminal; reduce creates a
-  rule.
+  and synthetic flag. A rule stores its one-based local alternative number,
+  start position, and ordered children. Shift creates a terminal; reduce
+  creates a rule.
 - `ParseTree` contains the user grammar start-symbol root and final lexer
   cursor position.  The augmented `(Start)` rule and EOF are parser machinery,
   not tree nodes.
@@ -59,12 +59,13 @@ produced for that option.
   maps primitive lexer token IDs to compact table terminal IDs, including
   lexer EOF to table `(end)`.
 - Predicate nodes are omitted because they derive the empty word ambiguously.
-  The later transformation obtains their runtime position from the next real
-  terminal leaf in source order, or from `ParseTree.endPosition` at EOF.
-- `ParserGrammarBuilder` must preserve a map from each cloned parser
-  alternative to its source `plainHyperGrammar` alternative.  Parser grammar
-  IDs remain compact.  The mapping is later emitted as a `ruleAlt` projection;
-  never reconstruct it by names or BNF-shape guesses.
+  The transformation preserves rule and direct-child positions in `PosTree`.
+  Finding a preceding terminal leaf through nested rules for predicate errors
+  is deferred to `TODO.md`.
+- `ParserGrammarBuilder` preserves source-local alternative order. Parser
+  grammar IDs remain compact, while each table rule carries its one-based
+  local alternative number. This ordinal corresponds to the logical Epsilon
+  alternative; never reconstruct it by names or BNF-shape guesses.
 - Gamma lowers EBNF options and repetitions into anonymous BNF nonterminals.
   The Epsilon transformation must fold them into Epsilon's logical
   `Opt`/`Rep` rules, including their distinguished empty alternative.
@@ -126,7 +127,7 @@ Maintain a tree stack alongside LR states in `LR1Parser`.
 
 - Shift pushes a terminal node.
 - Reduce pops exactly the RHS count, restores left-to-right order, creates a
-  rule node with `ruleAlt`, and pushes it.
+  rule node with its local alternative number, and pushes it.
 - Halt returns the existing user-start node; never create the augmented-start
   node.
 - Correct the existing `ParserStack.pop` contract before depending on it in
@@ -154,23 +155,27 @@ focused recovery tests before enabling any evaluator path for repaired input.
 Make `ParserGrammarBuilder` return the cloned parser grammar plus mappings
 from its terminals and nonterminals to the corresponding original grammar
 symbols. At table emission, use the mappings to emit original indexes and
-representations. Parser grammar IDs remain compact in tables; shifts and
-reductions store original terminal and LHS nonterminal indexes in the parse
-tree. Do not attempt to preserve source IDs in parser tables.
+representations. Preserve local alternative order and emit its one-based
+ordinal in each table rule. Parser grammar IDs remain compact; shifts and
+reductions store original terminal and LHS nonterminal indexes plus the local
+alternative ordinal in the parse tree. Do not attempt to preserve source IDs
+in parser tables.
 
-### [ ] 7. Implement the removable Gamma-to-Epsilon transformation
+### [x] 7. Implement the removable Gamma-to-Epsilon transformation
 
 Generate a separate module that transforms a completed Gamma tree into the
 existing Epsilon `Tree`/`PosTree` ABI used by `TraverseSyntaxTree`.
 
 It owns all Epsilon knowledge:
 
-- map each `ruleAlt` to its Epsilon hyper-nonterminal and local alternative;
+- use each rule's local alternative ordinal; the static evaluator traversal
+  already supplies the corresponding Epsilon hyper-nonterminal;
 - fold Gamma's lowered anonymous option/repetition/group nodes into Epsilon's
   logical EAG representation, including Epsilon's special empty alternative;
 - omit terminal leaves from Epsilon's heap while preserving required direct
   non-predicate child ordering;
-- reconstruct predicate positions from the next real terminal boundary; and
+- preserve the structural `PosTree` positions used by the existing evaluators;
+  defer deep preceding-terminal lookup for predicate errors to `TODO.md`; and
 - pass the user-start heap address and existing hyper-arity value to the
   evaluator.
 

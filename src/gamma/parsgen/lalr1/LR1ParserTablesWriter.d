@@ -12,6 +12,7 @@ public void write(string fileName, string moduleName,
     import std.array : array;
     import std.exception : enforce;
     import std.format : format;
+    import std.range : enumerate;
     import std.stdio : File;
 
     size_t[Alternative] alternativeIndices = null;
@@ -68,11 +69,14 @@ public void write(string fileName, string moduleName,
     string[] rules = null;
     foreach (rule; parserTables.grammar.rules)
     {
-        foreach (alternative; rule.alternatives)
-            rules ~= format!"Rule(%s, %s)"(
+        foreach (count, alternative; rule.alternatives.enumerate)
+        {
+            rules ~= format!"Rule(%s, %s, %s)"(
                 alternative.lhs.nonterminal.index,
                 alternative.rhs.length,
+                count + 1,
             );
+        }
     }
 
     string[] terminals = null;

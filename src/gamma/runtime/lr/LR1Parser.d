@@ -288,7 +288,7 @@ public class LR1Parser
     {
         const lhsIndex = parserTables.nonterminals[rule.lhs].index;
 
-        return new ParseNode(RuleNode(lhsIndex, children, position));
+        return new ParseNode(RuleNode(lhsIndex, rule.alternative, children, position));
     }
 
 }

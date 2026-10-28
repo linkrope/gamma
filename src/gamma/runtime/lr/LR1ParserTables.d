@@ -72,4 +72,7 @@ public struct Rule
     size_t lhs;
 
     size_t rhsLength;
+
+    /// One-based alternative index within the original rules of the LHS.
+    size_t alternative;
 }

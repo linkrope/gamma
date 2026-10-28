@@ -2,6 +2,7 @@ module $;
 
 import $Lex;
 import $;
+import $;
 import gamma.runtime.lr.LR1Parser : LR1Parser;
 import gamma.runtime.Lexer : Lexer;
 import io : Input, Position, read;
@@ -60,7 +61,12 @@ int main(string[] args)
     trace!"%s"(writer.write(tree));
 
     if (parser.errorCount == 0)
+    {
+        auto epsilonTree = transform(tree);
+
+        assert(epsilonTree.tree.length == epsilonTree.positions.length);
         writeln("OK");
+    }
 
 
     return (parser.errorCount == 0) ? 0 : EXIT_FAILURE;
