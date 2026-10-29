@@ -1,0 +1,8 @@
+{
+    "name": "gamma",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "remoteUser": "vscode",
+    "postCreateCommand": "ldc2 --version && dub --version"
+}

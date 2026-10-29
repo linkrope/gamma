@@ -13,7 +13,7 @@ information on Extended Affix Grammars and compiler generators, and more.
 
 ## Usage
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/linkrope/gamma)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/linkrope/gamma)
 
 Run _gamma_ to generate a compiler for some of the available [examples](example).
 For example:
