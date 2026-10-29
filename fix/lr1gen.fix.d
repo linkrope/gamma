@@ -3,6 +3,7 @@ module $;
 import $Lex;
 import $;
 import $;
+import Eval = $;
 import gamma.runtime.lr.LR1Parser : LR1Parser;
 import gamma.runtime.Lexer : Lexer;
 import io : Input, Position, read;
@@ -47,8 +48,14 @@ int main(string[] args)
     import std.stdio : stdin, writeln;
 
     bool verbose;
+    bool info;
+    bool write;
 
-    getopt(args, "verbose|v", &verbose);
+    getopt(args,
+        "info|i", &info,
+        "verbose|v", &verbose,
+        "write|w", &write,
+    );
     if (verbose)
         levels |= Level.trace;
 
@@ -62,9 +69,14 @@ int main(string[] args)
 
     if (parser.errorCount == 0)
     {
+        if (!Eval.EvalInitSucceeds())
+            return EXIT_FAILURE;
+
         auto epsilonTree = transform(tree);
 
         assert(epsilonTree.tree.length == epsilonTree.positions.length);
+        Eval.TraverseSyntaxTree(epsilonTree.tree, epsilonTree.positions, 0, epsilonTree.root,
+            epsilonTree.hyperArity, info, write);
         writeln("OK");
     }
 

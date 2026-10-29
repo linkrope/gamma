@@ -5,15 +5,18 @@ import epsilon.settings : Settings;
 import gamma.parsgen.lalr1.OrderedLR1Tables;
 import gamma.parsgen.lalr1.ParserGrammarBuilder : ParserGrammar;
 
-public string[] generateCode(EAG eag, OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
-    Settings settings)
+public string[] generateCode(EAG eag,
+    OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
+    string evaluatorModuleName, Settings settings)
 {
     with (generateEpsilonBridgeModule(eag, parserGrammar, settings))
-        return generateLR1Modules(eag, parserTables, parserGrammar,  moduleName, settings) ~ fileName;
+        return generateLR1Modules(eag, parserTables, parserGrammar, moduleName, evaluatorModuleName,
+            settings) ~ fileName;
 }
 
-private string[] generateLR1Modules(EAG eag, OrderedLR1Tables parserTables,
-    ParserGrammar parserGrammar, string bridgeModuleName, Settings settings)
+private string[] generateLR1Modules(EAG eag,
+    OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
+    string bridgeModuleName, string evaluatorModuleName, Settings settings)
 {
     import gamma.parsgen.lalr1.LR1ParserTablesWriter : writeTables = write;
     import io : Input;
@@ -67,6 +70,8 @@ private string[] generateLR1Modules(EAG eag, OrderedLR1Tables parserTables,
     output.write(tablesModuleName);
     includeFix('$');
     output.write(bridgeModuleName);
+    includeFix('$');
+    output.write(evaluatorModuleName);
     includeFix('$');
     output.write(tokenMap);
     includeFix('$');

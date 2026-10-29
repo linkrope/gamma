@@ -161,25 +161,17 @@ void compile(Input input, const Arguments arguments)
 
     epsilonEAG = eag.toEAG;
 
-    if (arguments.lalr)
-    {
-        const fileNames = generateLRParser(epsilonEAG, eag, settings);
-
-        settings.outputDirectory.generateRecipe(fileNames, arguments);
-
-        if (!arguments.generate)
-            settings.outputDirectory.build(fileNames, arguments);
-
-        return;
-    }
-
     Predicates.Check;
 
-    const isELL1 = ELL1Gen.Test(settings);
+    if (!arguments.lalr)
+    {
+        const isELL1 = ELL1Gen.Test(settings);
 
-    enforce(isELL1);
+        enforce(isELL1);
+    }
 
-    string[] fileNames;
+    auto fileNames = [LexGen.Generate(settings)];
+    bool needsTree = false;
     bool success = false;
 
     if (arguments.slag)
@@ -188,7 +180,6 @@ void compile(Input input, const Arguments arguments)
 
         if (isSLAG)
         {
-            fileNames = LexGen.Generate(settings) ~ fileNames;
             fileNames = ELL1Gen.Generate(settings) ~ fileNames;
             success = true;
         }
@@ -199,16 +190,15 @@ void compile(Input input, const Arguments arguments)
 
         if (isSweep)
         {
-            fileNames = LexGen.Generate(settings) ~ fileNames;
             fileNames = Sweep.Generate(settings) ~ fileNames;
-            fileNames = ELL1Gen.GenerateParser(settings) ~ fileNames;
+            needsTree = true;
             success = true;
         }
     }
     if (!success && arguments.soag)
     {
-        fileNames = LexGen.Generate(settings) ~ fileNames;
         fileNames = SOAGGen.Generate(settings) ~ fileNames;
+        needsTree = true;
         if (arguments.verbose)
         {
             import protocol = epsilon.soag.protocol;
@@ -216,11 +206,21 @@ void compile(Input input, const Arguments arguments)
             protocol.WriteRulesL4;
             protocol.WriteSyms;
         }
-        fileNames = ELL1Gen.GenerateParser(settings) ~ fileNames;
         success = true;
     }
 
     enforce(success);
+
+    if (arguments.lalr)
+    {
+        const evaluatorModuleName = epsilonEAG.BaseName ~ "Eval";
+
+        fileNames = generateLRParser(epsilonEAG, eag, evaluatorModuleName, settings) ~ fileNames;
+    }
+    else if (needsTree)
+    {
+        fileNames = ELL1Gen.GenerateParser(settings) ~ fileNames;
+    }
 
     settings.outputDirectory.generateRecipe(fileNames, arguments);
 
@@ -228,21 +228,17 @@ void compile(Input input, const Arguments arguments)
         settings.outputDirectory.build(fileNames, arguments);
 }
 
-string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, const Settings settings)
+string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, string evaluatorModuleName,
+    const Settings settings)
 {
-    import LexGen = epsilon.lexgen;
     import gamma.parsgen.lalr1.CodeGenerator : generateCode;
     import gamma.parsgen.lalr1.ParserGrammarBuilder : toParserGrammar;
     import gamma.parsgen.lalr1.PennelloDeRemer : generateParser;
 
-    string[] fileNames = null;
     auto parserGrammar = eag.toParserGrammar;
     auto parserTables = generateParser(parserGrammar.grammar);
 
-    fileNames ~= generateCode(epsilonEAG, parserTables, parserGrammar, settings);
-    fileNames ~= LexGen.Generate(settings);
-
-    return fileNames;
+    return generateCode(epsilonEAG, parserTables, parserGrammar, evaluatorModuleName, settings);
 }
 
 Settings createSettings(const Arguments arguments)

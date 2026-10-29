@@ -5,6 +5,19 @@ import std.path : buildPath;
 import std.string;
 import test.helper;
 
+@("compile abc.eag as as LALR, Single-Sweep and run compiler")
+unittest
+{
+    with (sandbox)
+    {
+        run!"%s --lalr --sweep --space --runtime . %s --output-directory %s"(
+            gamma, buildPath("example", "abc.eag"), directory)
+            .shouldPassWith("S grammar is single sweep");
+        run!"cd %s && echo a a a b b b c c c | %s"(directory, dotSlash("S"))
+            .shouldPassWith("^1 1 1 \\nOK$");
+    }
+}
+
 @("compile left-recursion.eag and run LR parser")
 unittest
 {
@@ -124,13 +137,16 @@ unittest
 {
     with (sandbox)
     {
-        run!"%s --lalr --runtime . %s --output-directory %s"(
+        run!"%s --lalr --space --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "decl-appl.eag"), directory)
             .shouldPassWith("LexGen writing DeclAppl");
         // current restriction: --lalr ignores `*`, so whitespace is accepted within `id*`
         write(buildPath(directory, "input"), "DECL a b APPL b a");
         run!"cd %s && %s input"(directory, dotSlash("DeclAppl"))
-            .shouldPassWith("^OK$");
+            .shouldFailWith(
+                "error: predicate 'Declared' failed",
+                "input:1:15 DECL a b APPL b a",
+            );
     }
 }
 

@@ -187,7 +187,7 @@ from the current LL parser and from `LALR -> ParseTree -> transformation` for
 group, option, repetition, and predicate cases.  Do not compare incidental
 heap addresses.
 
-### [ ] 8. Enable LALR evaluator execution
+### [x] 8. Enable LALR evaluator execution
 
 Use the transformation result to invoke the selected single-sweep or SOAG
 evaluator on error-free input.  Reject `--lalr --slag`; preserve LL as the
