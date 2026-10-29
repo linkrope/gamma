@@ -4,5 +4,16 @@
         "dockerfile": "Dockerfile"
     },
     "remoteUser": "vscode",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "webfreak.code-d",
+                "grammarcraft.epsilon-eag-extension-pack",
+                "grammarcraft.epsilon-eag",
+                "grammarcraft.epsilon-eag-dark-theme",
+                "grammarcraft.epsilon-eag-light-theme"
+            ]
+        }
+    },
     "postCreateCommand": "ldc2 --version && dub --version"
 }
