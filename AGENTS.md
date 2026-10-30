@@ -30,11 +30,14 @@ The current pipeline analyzes the input with `gamma.input.epsilang.Analyzer`, co
 - Prefer a well-named helper function to a block preceded by an explanatory comment.
 - Make defensive copies of constructor arrays with `.dup`.
 - Use D `in` contracts for preconditions.
+- Initialize variables explicitly; use `= 0` or `= false` instead of relying on default initialization.
 - Avoid bare `true` or `false` arguments: use `std.typecons.Flag` parameters and `Yes` or `No` at call sites.
 - Prefer `.front` to `[0]` for range and array access.
+- Prefer newspaper style: place a function or type below its last use.
+- Write multi-line expected test text as `` `...`.outdent.strip ``.
 - Write concise imperative commit messages, such as `Add error handling`.
 
-Canonical grammar examples live in `example/`; add examples there for regression coverage. The files in `fix/epsilon/` are string-imported patches embedded by the code generators and must be retained.
+Canonical grammar examples live in `example/`; add examples there for regression coverage. The files in `fix/` are string-imported patches embedded by the code generators and must be retained.
 
 ## Key files
 

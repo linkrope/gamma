@@ -1,5 +1,6 @@
 module test.helper;
 
+import std.range;
 import std.typecons;
 
 Sandbox sandbox()
@@ -47,22 +48,26 @@ string dotSlash(string name)
     return buildPath(".", name);
 }
 
-Result shouldPassWith(Result result, string pattern)
+Result shouldPassWith(Result result, string[] patterns...)
+in (!patterns.empty)
 {
     with (result)
     {
         assert(status == 0, output);
-        assert(output.matches(pattern), output);
+        foreach (pattern; patterns)
+            assert(output.matches(pattern), output);
     }
     return result;
 }
 
-Result shouldFailWith(Result result, string pattern)
+Result shouldFailWith(Result result, string[] patterns...)
+in (!patterns.empty)
 {
     with (result)
     {
         assert(status != 0, output);
-        assert(output.matches(pattern), output);
+        foreach (pattern; patterns)
+            assert(output.matches(pattern), output);
     }
     return result;
 }
@@ -75,4 +80,13 @@ bool matches(string output, string pattern)
 
     // match diagnostic lines consistently regardless of the output's line endings.
     return cast(bool) output.splitLines.join("\n").matchFirst(regex(pattern, "m"));
+}
+
+string escape(string value)
+{
+    import std.array : array;
+    import std.conv : to;
+    import std.regex : escaper;
+
+    return value.escaper.array.to!string;
 }

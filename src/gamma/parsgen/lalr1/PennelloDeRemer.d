@@ -24,19 +24,14 @@ private alias State = LRMachine.State;
 
 private alias Transition = LRMachine.Transition;
 
-public void generateParser(Grammar grammar)
+public OrderedLR1Tables generateParser(Grammar grammar)
 {
-    import gamma.parsgen.lalr1.LR1ParserTablesWriter : write;
     import gamma.parsgen.lalr1.SimpleLR1ConflictResolver : SimpleLR1ConflictResolver;
-    import std.stdio : File;
 
-    const name = "parser-tables.json";
     auto parserGenerator = new PennelloDeRemer;
     auto conflictResolver = new SimpleLR1ConflictResolver(grammar);
-    auto parserTables = parserGenerator.computeParser(grammar, conflictResolver);
 
-    info!"writing %s"(name);
-    write(parserTables, File(name, "w"));
+    return parserGenerator.computeParser(grammar, conflictResolver);
 }
 
 /**

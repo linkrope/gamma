@@ -101,13 +101,11 @@ static foreach (example; [
 
             result
                 .shouldFailWith(
-                    `error: predicate '?NotAlreadyDeclared'? failed\ninput:2:6 DECL aa`)
-                .shouldFailWith(
-                    `error: predicate '?Declared'? failed\ninput:4:6 APPL ab`)
-                .shouldFailWith(
-                    `error: predicate '?Declared'? failed\ninput:5:6 APPL ba`);
+                    `error: predicate '?NotAlreadyDeclared'? failed\ninput:2:6 DECL aa`,
+                    `error: predicate '?Declared'? failed\ninput:4:6 APPL ab`,
+                    `error: predicate '?Declared'? failed\ninput:5:6 APPL ba`,
+                );
 
-            assert(result.output.matchAll(regex(`^error: predicate `, "m"))
-                .walkLength == 3, result.output);
+            assert(result.output.matchAll(regex(`^error: predicate `, "m")).walkLength == 3, result.output);
         }
     }

@@ -6,10 +6,9 @@
 module gamma.main;
 
 import argparse;
-import epsilon.eag : epsilonEAG = eag;
+import epsilon.eag : EpsilonEAG = EAG, epsilonEAG = eag;
 import epsilon.settings;
-import gamma.grammar.Grammar;
-import gamma.input.epsilang.analyzer : EAG;
+import gamma.input.epsilang.analyzer : Analyzer, EAG;
 import io : Input, read;
 import log;
 import runtime;
@@ -70,11 +69,37 @@ struct Arguments
     @(NamedArgument("output-directory").Placeholder("DIRECTORY").Description("Write compiled compiler to DIRECTORY"))
     string outputDirectory;
 
+    @(NamedArgument("runtime").Placeholder("DIRECTORY").Description("Use the gamma runtime package in DIRECTORY"))
+    string runtime;
+
     @(NamedArgument.Description("Show error positions language-server friendly as offsets"))
     bool offset;
 
     @(NamedArgument.Description("Use dub to build compiled compiler"))
     bool dub;
+
+    void validateOptions() const
+    {
+        import core.stdc.stdlib : exit, EXIT_FAILURE;
+        import std.typecons : tuple;
+
+        alias Conflict = tuple!("option1", "option2");
+
+        static foreach (conflict; [
+            Conflict("lalr", "slag"),
+            Conflict("slag", "sweep"),
+            Conflict("slag", "soag"),
+            Conflict("sweep", "soag"),
+        ])
+        {
+            if (__traits(getMember, this, conflict.option1)
+                && __traits(getMember, this, conflict.option2))
+            {
+                error!"--%s cannot be combined with --%s"(conflict.option1, conflict.option2);
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
 }
 
 void command(Arguments arguments)
@@ -82,6 +107,7 @@ void command(Arguments arguments)
     import core.stdc.stdlib : exit, EXIT_FAILURE;
     import std.exception : ErrnoException;
 
+    arguments.validateOptions;
     with (arguments)
     {
         if (verbose)
@@ -90,7 +116,7 @@ void command(Arguments arguments)
         if (!slag && !sweep && !soag)
         {
             // try all evaluators until one fits
-            slag = true;
+            slag = !lalr;
             sweep = true;
             soag = true;
         }
@@ -130,21 +156,22 @@ void compile(Input input, const Arguments arguments)
     import gamma.input.EAGBuilder : toEAG;
     import std.exception : enforce;
 
-    auto eag = check(input, arguments);
-
-    if (arguments.lalr)
-        return;
+    const settings = createSettings(arguments);
+    auto eag = (new Analyzer).analyze(input);
 
     epsilonEAG = eag.toEAG;
 
     Predicates.Check;
 
-    const settings = createSettings(arguments);
-    const isELL1 = ELL1Gen.Test(settings);
+    if (!arguments.lalr)
+    {
+        const isELL1 = ELL1Gen.Test(settings);
 
-    enforce(isELL1);
+        enforce(isELL1);
+    }
 
-    string[] fileNames;
+    auto fileNames = [LexGen.Generate(settings)];
+    bool needsTree = false;
     bool success = false;
 
     if (arguments.slag)
@@ -153,7 +180,6 @@ void compile(Input input, const Arguments arguments)
 
         if (isSLAG)
         {
-            fileNames = LexGen.Generate(settings) ~ fileNames;
             fileNames = ELL1Gen.Generate(settings) ~ fileNames;
             success = true;
         }
@@ -164,16 +190,15 @@ void compile(Input input, const Arguments arguments)
 
         if (isSweep)
         {
-            fileNames = LexGen.Generate(settings) ~ fileNames;
             fileNames = Sweep.Generate(settings) ~ fileNames;
-            fileNames = ELL1Gen.GenerateParser(settings) ~ fileNames;
+            needsTree = true;
             success = true;
         }
     }
     if (!success && arguments.soag)
     {
-        fileNames = LexGen.Generate(settings) ~ fileNames;
         fileNames = SOAGGen.Generate(settings) ~ fileNames;
+        needsTree = true;
         if (arguments.verbose)
         {
             import protocol = epsilon.soag.protocol;
@@ -181,11 +206,21 @@ void compile(Input input, const Arguments arguments)
             protocol.WriteRulesL4;
             protocol.WriteSyms;
         }
-        fileNames = ELL1Gen.GenerateParser(settings) ~ fileNames;
         success = true;
     }
 
     enforce(success);
+
+    if (arguments.lalr)
+    {
+        const evaluatorModuleName = epsilonEAG.BaseName ~ "Eval";
+
+        fileNames = generateLRParser(epsilonEAG, eag, evaluatorModuleName, settings) ~ fileNames;
+    }
+    else if (needsTree)
+    {
+        fileNames = ELL1Gen.GenerateParser(settings) ~ fileNames;
+    }
 
     settings.outputDirectory.generateRecipe(fileNames, arguments);
 
@@ -193,21 +228,17 @@ void compile(Input input, const Arguments arguments)
         settings.outputDirectory.build(fileNames, arguments);
 }
 
-// check hyper-grammar with new gamma Analyzer
-EAG check(Input input, const Arguments arguments)
+string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, string evaluatorModuleName,
+    const Settings settings)
 {
-    import gamma.input.epsilang.analyzer : Analyzer;
+    import gamma.parsgen.lalr1.CodeGenerator : generateCode;
+    import gamma.parsgen.lalr1.ParserGrammarBuilder : toParserGrammar;
+    import gamma.parsgen.lalr1.PennelloDeRemer : generateParser;
 
-    auto analyzer = new Analyzer;
-    auto eag = analyzer.analyze(input);
+    auto parserGrammar = eag.toParserGrammar;
+    auto parserTables = generateParser(parserGrammar.grammar);
 
-    if (arguments.lalr)
-    {
-        import gamma.parsgen.lalr1.PennelloDeRemer : generateParser;
-
-        generateParser(analyzer.parserGrammar);
-    }
-    return eag;
+    return generateCode(epsilonEAG, parserTables, parserGrammar, evaluatorModuleName, settings);
 }
 
 Settings createSettings(const Arguments arguments)
@@ -247,26 +278,36 @@ void generateRecipe(const string outputDirectory, const string[] fileNames, cons
 {
     import std.algorithm : map;
     import std.file : write;
-    import std.path : absolutePath, baseName, buildPath;
+    import std.path : baseName, buildPath;
     import std.string : format, outdent, stripLeft;
 
     enum content = `
         {
             "name": "compiler",
             "targetName": "%s",
-            "targetPath": "%s",
+            "targetPath": %s,
             "targetType": "executable",
             "sourceFiles": [%(%s, %)],
             "stringImportPaths": ["."],
             "dependencies": {
-                "gamma:runtime": "*"
+                "gamma:runtime": %s
             }
         }
         `.outdent.stripLeft;
     const name = fileNames.front.baseName(".d");
-    const targetPath = absolutePath(arguments.outputDirectory.empty ? "." : arguments.outputDirectory);
+    const outputPath = arguments.outputDirectory.empty ? "." : arguments.outputDirectory;
+    buildPath(outputDirectory, "dub.json")
+        .write(format!content(name, outputPath.jsonPathLiteral, fileNames.map!baseName, arguments.runtimeDependency));
+}
 
-    buildPath(outputDirectory, "dub.json").write(format!content(name, targetPath, fileNames.dup.map!baseName));
+string runtimeDependency(const Arguments arguments)
+{
+    import std.format : format;
+
+    if (arguments.runtime.empty)
+        return `"*"`;
+
+    return format!`{"path": %s}`(arguments.runtime.jsonPathLiteral);
 }
 
 void build(const string outputDirectory, const string[] fileNames, const Arguments arguments)
@@ -280,7 +321,7 @@ void build(const string outputDirectory, const string[] fileNames, const Argumen
 
     string[] args;
 
-    if (arguments.dub)
+    if (arguments.dub || arguments.lalr)
     {
         args = ["dub", "build"];
     }
@@ -290,7 +331,7 @@ void build(const string outputDirectory, const string[] fileNames, const Argumen
         const name = fileNames.front.baseName(".d");
         const targetPath = absolutePath(arguments.outputDirectory.empty ? "." : arguments.outputDirectory);
 
-        args = compiler ~ fileNames.dup.map!baseName.array ~ "-g" ~ "-J."
+        args = compiler ~ fileNames.map!baseName.array ~ "-g" ~ "-J."
             ~ absolutePath("include/runtime.d")
             ~ absolutePath("src/io.d") ~ absolutePath("src/log.d") ~ absolutePath("src/epsilon/soag/listacks.d")
             ~ format!"-of=%s"(buildPath(targetPath, name.executableName));
@@ -302,6 +343,16 @@ void build(const string outputDirectory, const string[] fileNames, const Argumen
 
     if (status)
         exit(status);
+}
+
+string jsonPathLiteral(const string path)
+{
+    import std.json : JSONValue;
+    import std.path : absolutePath, buildNormalizedPath;
+    import std.string : tr;
+
+    // use forward slashes so DUB can read Windows paths from JSON
+    return JSONValue(path.absolutePath.buildNormalizedPath.tr(`\`, "/")).toString;
 }
 
 string executableName(const string name)

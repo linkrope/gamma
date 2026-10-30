@@ -138,33 +138,4 @@ class Analyzer
             enforce(false);
         }
     }
-
-    public Grammar parserGrammar()
-    {
-        import gamma.grammar.Symbol : Symbol;
-        import gamma.parsgen.lalr1.ParserGrammarBuilder : toExtendedParserGrammar;
-
-        bool isTerminal(Symbol symbol)
-        {
-            return this.hyperGrammarProperties.isLexicalNonterminal(symbol);
-        }
-
-        bool isPredicate(Symbol symbol)
-        {
-            // bad things happen when the start symbol is taken as a predicate
-            return symbol != this.plainHyperGrammar_.startSymbol
-                && this.hyperGrammarProperties.isStrongNullable(symbol);
-        }
-
-        auto parserGrammar = this.plainHyperGrammar_
-            .toExtendedParserGrammar(&isTerminal, &isPredicate);
-
-        // TODO
-        {
-            import gamma.grammar.PrintingVisitor : toPrettyString;
-
-            trace!"parser grammar:\n%s"(parserGrammar.toPrettyString);
-        }
-        return parserGrammar;
-    }
 }

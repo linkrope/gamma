@@ -1,145 +1,157 @@
 module gamma.parsgen.lalr1.LR1ParserTablesWriter;
 
-import gamma.grammar.Alternative;
-import gamma.grammar.Node;
-import gamma.grammar.Nonterminal;
-import gamma.grammar.Rule;
-import gamma.grammar.Symbol;
-import gamma.grammar.SymbolNode;
-import gamma.grammar.Terminal;
 import gamma.parsgen.lalr1.OrderedLR1Tables;
-import std.algorithm;
-import std.array;
-import std.json;
-import std.stdio : File;
+import gamma.parsgen.lalr1.ParserGrammarBuilder : ParserGrammar;
 
-/**
- * Writes an OrderedLR1Tables representation to a given output file.
- */
-public static void write(OrderedLR1Tables parserTables, File output)
+public void write(string fileName, string moduleName,
+    OrderedLR1Tables parserTables, ParserGrammar parserGrammar)
 {
-    JSONValue[string] grammarObject;
-    JSONValue[] nonterminals;
+    import gamma.grammar.Alternative : Alternative;
+    import io : Input;
+    import std.algorithm : map;
+    import std.array : array;
+    import std.exception : enforce;
+    import std.format : format;
+    import std.range : enumerate;
+    import std.stdio : File;
 
-    foreach (nonterminal; parserTables.grammar.nonterminals)
-        nonterminals ~= JSONValue([
-            "index": JSONValue(nonterminal.index),
-            "repr": JSONValue(nonterminal.toString),
-        ]);
-    grammarObject["nonterminals"] = nonterminals;
-
-    JSONValue[] terminals;
-
-    foreach (terminal; parserTables.grammar.terminals)
-        terminals ~= JSONValue([
-            "index": JSONValue(terminal.index),
-            "repr": JSONValue(terminal.toString),
-        ]);
-    grammarObject["terminals"] = terminals;
-
-    JSONValue[] rules;
-    size_t altIndex = 0;
-    size_t[Alternative] alt2IndexMap;
+    size_t[Alternative] alternativeIndices = null;
+    size_t alternativeIndex = 0;
 
     foreach (rule; parserTables.grammar.rules)
-    {
-        JSONValue[string] ruleObject;
-
-        if (rule.alternatives.length == 0)
-            continue;
-
-        ruleObject["lhs"] = (cast(Alternative) rule.alternatives[0]).lhs.nonterminal.index;
-
-        JSONValue[] alternatives;
-
         foreach (alternative; rule.alternatives)
-        {
-            JSONValue[string] alternativeObject;
+            alternativeIndices[alternative] = alternativeIndex++;
 
-            alternativeObject["index"] = altIndex;
-            alt2IndexMap[alternative] = altIndex;
-            ++altIndex;
-
-            JSONValue[] symbols;
-
-            foreach (node; alternative.rhs)
-            {
-                assert(cast(SymbolNode) node);
-
-                auto symbol = (cast(SymbolNode) node).symbol;
-
-                if (cast(Terminal) symbol)
-                    symbols ~= JSONValue([
-                        "type": JSONValue("terminal"),
-                        "index": JSONValue((cast(Terminal) symbol).index),
-                    ]);
-                else if (cast(Nonterminal) symbol)
-                    symbols ~= JSONValue([
-                        "type": JSONValue("nonterminal"),
-                        "index": JSONValue((cast(Nonterminal) symbol).index)
-                    ]);
-            }
-            alternativeObject["rhs"] = symbols;
-            alternatives ~= JSONValue(alternativeObject);
-        }
-        ruleObject["alternatives"] = alternatives;
-        rules ~= JSONValue(ruleObject);
-    }
-    grammarObject["rules"] = rules;
-    grammarObject["startSymbol"] = ["index": parserTables.grammar.startSymbol.index];
-
-    JSONValue[] states;
+    size_t[] actionOffsets = [0];
+    string[] actions = null;
 
     foreach (state; 0 .. parserTables.stateCount)
     {
-        JSONValue[string] stateObject;
-
-        stateObject["index"] = state;
-
-        JSONValue[] actions;
-
         foreach (action; parserTables.getSortedParserActionRow(state))
         {
-            JSONValue[string] actionObject;
-
-            actionObject["on"] = action.lookahead.index;
-            if (cast(OrderedLR1Tables.Shift) action)
+            if (auto shift = cast(OrderedLR1Tables.Shift) action)
             {
-                actionObject["type"] = "shift";
-                actionObject["to"] = (cast(OrderedLR1Tables.Shift) action).state;
+                actions ~= format!"Action(Shift(%s, %s, %s))"(
+                    action.lookahead.index, shift.state, action.isContinuationAction);
             }
-            else if (cast(OrderedLR1Tables.Reduce) action)
+            else if (auto reduce = cast(OrderedLR1Tables.Reduce) action)
             {
-                OrderedLR1Tables.Reduce ra = cast(OrderedLR1Tables.Reduce) action;
-
-                actionObject["type"] = "reduce";
-                actionObject["ruleAlt"] = alt2IndexMap[ra.alternative];
+                actions ~= format!"Action(Reduce(%s, %s, %s))"(
+                    action.lookahead.index, alternativeIndices[reduce.alternative], action.isContinuationAction);
             }
-            else if (cast(OrderedLR1Tables.Halt) action)
+            else
             {
-                actionObject["type"] = "halt";
+                actions ~= format!"Action(Halt(%s, %s))"(
+                    action.lookahead.index, action.isContinuationAction);
             }
-            if (action.isContinuationAction)
-                actionObject["continues"] = true;
-            actions ~= JSONValue(actionObject);
         }
-        stateObject["actions"] = actions;
-
-        JSONValue[] transitions;
-
-        foreach (g; parserTables.getSortedGotoRow(state))
-            transitions ~= JSONValue([
-                "on": JSONValue(g.lhs.index),
-                "to": JSONValue(g.state),
-            ]);
-        stateObject["transitions"] = transitions;
-        states ~= JSONValue(stateObject);
+        actionOffsets ~= actions.length;
     }
 
-    JSONValue value = [
-        "grammar": JSONValue(grammarObject),
-        "states": JSONValue(states),
-        ];
+    const actionOffsetLiterals = actionOffsets
+        .map!(offset => format!"%s"(offset))
+        .array;
 
-    output.writeln(value.toPrettyString);
+    size_t[] gotoOffsets = [0];
+    string[] gotos = null;
+
+    foreach (state; 0 .. parserTables.stateCount)
+    {
+        foreach (goTo; parserTables.getSortedGotoRow(state))
+            gotos ~= format!"Goto(%s, %s)"(goTo.lhs.index, goTo.state);
+        gotoOffsets ~= gotos.length;
+    }
+
+    const gotoOffsetLiterals = gotoOffsets
+        .map!(offset => format!"%s"(offset))
+        .array;
+
+    string[] rules = null;
+    foreach (rule; parserTables.grammar.rules)
+    {
+        foreach (count, alternative; rule.alternatives.enumerate)
+        {
+            rules ~= format!"Rule(%s, %s, %s)"(
+                alternative.lhs.nonterminal.index,
+                alternative.rhs.length,
+                count + 1,
+            );
+        }
+    }
+
+    string[] terminals = null;
+
+    foreach (parserTerminal; parserTables.grammar.terminals)
+    {
+        if (auto terminal = parserTerminal in parserGrammar.terminals)
+            terminals ~= format!"Symbol(%s, %s)"((*terminal).index, (*terminal).toString.quoted);
+        else
+            terminals ~= format!"Symbol(size_t.max, %s)"(parserTerminal.toString.quoted);
+    }
+
+    string[] nonterminals = null;
+
+    foreach (parserNonterminal; parserTables.grammar.nonterminals)
+    {
+        if (auto nonterminal = parserNonterminal in parserGrammar.nonterminals)
+            nonterminals ~= format!"Symbol(%s, %s)"((*nonterminal).index, (*nonterminal).toString.quoted);
+        else
+            nonterminals ~= format!"Symbol(size_t.max, %s)"(parserNonterminal.toString.quoted);
+    }
+
+    enum fixName = "lrtables.fix.d";
+    Input fix = Input(fixName, import(fixName));
+    File output = File(fileName, "w");
+
+    void includeFix(char terminator)
+    {
+        while (fix.front != terminator)
+        {
+            enforce(fix.front != 0, "unexpected end of lrtables.fix.d");
+            output.write(fix.front);
+            fix.popFront;
+        }
+        fix.popFront;
+    }
+
+    includeFix('$');
+    output.write(moduleName);
+    includeFix('$');
+    output.write(parserTables.eof.index);
+    includeFix('$');
+    output.write(actions.arrayLiteral);
+    includeFix('$');
+    output.write(actionOffsetLiterals.arrayLiteral);
+    includeFix('$');
+    output.write(gotos.arrayLiteral);
+    includeFix('$');
+    output.write(gotoOffsetLiterals.arrayLiteral);
+    includeFix('$');
+    output.write(rules.arrayLiteral);
+    includeFix('$');
+    output.write(terminals.arrayLiteral);
+    includeFix('$');
+    output.write(nonterminals.arrayLiteral);
+    includeFix('$');
+    output.close;
+}
+
+private string arrayLiteral(const string[] items)
+{
+    import std.array : join;
+    import std.range : empty;
+
+    enum indent = "    ";
+
+    if (items.empty)
+        return "[]";
+
+    return "[\n" ~ indent ~ indent ~ items.join(",\n" ~ indent ~ indent) ~ "\n" ~ indent ~ "]";
+}
+
+private string quoted(const string text)
+{
+    import std.string : translate;
+
+    return `"` ~ text.translate(['\\': `\\`, '"': `\"`]) ~ `"`;
 }
