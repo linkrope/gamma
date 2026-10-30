@@ -132,6 +132,23 @@ unittest
     }
 }
 
+@("compile left-recursion.eag and repair an unknown LR token")
+unittest
+{
+    with (sandbox)
+    {
+        run!"%s --lalr --runtime . %s --output-directory %s"(
+            gamma, buildPath("example", "left-recursion.eag"), directory)
+            .shouldPassWith("LexGen writing S");
+        write(buildPath(directory, "input"), "2 @ * 3");
+        run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
+            .shouldFailWith(
+                `error: Syntax error! Repairing input...`.escape,
+                `info: Deleting unknown token`,
+            );
+    }
+}
+
 @("compile decl-appl.eag and run LR parser")
 unittest
 {

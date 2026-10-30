@@ -154,7 +154,7 @@ public class LR1Parser
 
         // Phase 2: Delete input until an anchor terminal is reached.
         needLookahead;
-        while (!anchors[lookahead])
+        while (lookahead < 0 || !anchors[lookahead])
         {
             info!"Deleting %s"(parserTables.terminalRepresentation(lookahead));
             haveLookahead = false;
@@ -318,7 +318,7 @@ private string terminalRepresentation(const LR1ParserTables parserTables, int te
     if (0 <= terminal && terminal < parserTables.terminalCount)
         return parserTables.terminals[terminal].name;
 
-    return format!"terminal %s"(terminal);
+    return "unknown token";
 }
 
 private struct Stack
