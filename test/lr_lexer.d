@@ -1,5 +1,6 @@
 module test.lr_lexer;
 
+import std.file : write;
 import std.path : buildPath;
 import test.helper;
 
@@ -11,7 +12,8 @@ unittest
         run!"%s --lalr --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "lr-lexer-test.eag"), directory)
             .shouldPassWith("Linking S");
-        run!"cd %s && echo ' \\t< <=(*(**)*)if x <=' | %s --verbose"(directory, dotSlash("S"))
+        write(buildPath(directory, "input"), " \t< <=(*(**)*)if x <=");
+        run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
             .shouldPassWith(
                 "trace: LR lexer terminal '<'",
                 "trace: LR lexer terminal '<='",
