@@ -172,25 +172,33 @@ public class LR1Parser
                 break;
 
             const action = nextContinuationAction;
-            action.match!(
+            const halted = action.match!(
                 (const Shift shift)
                 {
                     info!"Inserting %s"(parserTables.terminalRepresentation(cast(int) shift.lookahead));
                     state = shift.state;
                     stack.push(state);
                     treeStack ~= terminalNode(shift.lookahead, UndefPos);
+                    return false;
                 },
                 (const Reduce reduceAction)
                 {
                     trace!"(I)Reduce %s"(reduceAction.rule);
                     reduce(reduceAction.rule);
                     trace!"%s"(stack);
+                    return false;
                 },
                 (const Halt halt)
                 {
-                    assert(false, format!"Expecting a shift or reduce action at state %s"(state));
+                    return true;
                 },
             );
+
+            if (halted)
+            {
+                info!"Continuing parse in normal mode.";
+                return;
+            }
         }
 
         // The erroneous input has now been repaired.

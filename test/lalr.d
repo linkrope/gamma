@@ -149,6 +149,22 @@ unittest
     }
 }
 
+@("recover out-of-order LR input at end of file")
+unittest
+{
+    with (sandbox)
+    {
+        run!"%s --lalr --runtime . %s --output-directory %s"(
+            gamma, buildPath("example", "abc.eag"), directory)
+            .shouldPassWith("Linking S");
+        run!"cd %s && echo 'ba' | %s"(directory, dotSlash("S"))
+            .shouldFailWith(
+                `error: Syntax error! Repairing input...`.escape,
+                "info: End of parsing",
+            );
+    }
+}
+
 @("compile decl-appl.eag and run LR parser")
 unittest
 {
