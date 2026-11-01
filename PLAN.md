@@ -16,11 +16,12 @@ The lexer is a module with one interface:
 nextToken() -> Token | end | lexical error
 ```
 
-A `Token` identifies one source-level terminal, has start and end positions,
-and, for a starred hyper-nonterminal, contains its completed Gamma `RuleNode`
-derivation. A consuming parser maps this source-level identity to its own
-token domain. The lexer contains no Epsilon heap addresses, evaluator code,
-or outer-parser state.
+A `Token` identifies one source-level terminal, has the existing Gamma `Position`
+at which it begins, and, for a starred hyper-nonterminal, contains its
+completed Gamma `RuleNode` derivation. A consuming parser maps this source-level
+identity to its own token domain. The lexer contains no Epsilon heap addresses,
+evaluator code, or outer-parser state. There is no lexical span type: `Position`
+is the position representation throughout Gamma.
 
 ## Design decisions
 
@@ -49,7 +50,7 @@ separated source tokens. Therefore one lexer can resolve both:
 
 The lexer advances through source characters and records every prefix that
 would accept with virtual `(token-end)`. It commits the latest accepted
-prefix when no candidate can continue or when trivia establishes a boundary.
+prefix when no candidate can continue or when `WhiteSpace` establishes a boundary.
 The virtual marker is a prefix-membership query, not a source boundary.
 
 The initial implementation may snapshot a lexical LR configuration and apply
@@ -60,8 +61,12 @@ this mechanism; later optimization must not change its contract.
 Choose a result as follows:
 
 1. Prefer the candidate consuming the most source characters.
-2. On equal length, prefer the candidate declared earlier in source order.
-3. For multiple derivations of the selected candidate, use a documented,
+2. On equal length, prefer a quoted-terminal candidate over a starred
+   hyper-nonterminal candidate.  Candidate and rule declaration order has no
+   effect.
+3. If two distinct candidates of the same kind still tie, reject the lexical
+   grammar as ambiguous.  For multiple derivations of the selected candidate,
+   use a documented,
    deterministic alternative-order policy or reject the grammar. Never depend
    on table or hash iteration order.
 
@@ -70,8 +75,8 @@ Choose a result as follows:
 The generated lexical grammar must be LALR. Its lexical conflict policy is:
 
 - shift while a longer candidate remains possible;
-- on virtual end, resolve equal-length candidate conflicts by declared source
-  priority;
+- on virtual end, resolve an equal-length terminal/starred-rule conflict in
+  favour of the terminal, and report every remaining candidate conflict;
 - report all other unresolved conflicts as lexical-grammar generation errors.
 
 This accepts natural left-recursive definitions such as `id` and leaves room
@@ -84,7 +89,7 @@ hardcoded as described below.
 An ordinary quoted-terminal token supplies a terminal leaf. A starred token
 supplies the complete `RuleNode` tree made by the lexical parser: original
 Gamma nonterminal IDs, one-based local alternative ordinals, ordered children,
-and source positions.
+and `Position` values.
 
 This is required for evaluation. Literal leaves may be omitted by a tree
 bridge, but a starred rule tree contains the derivation that computes the
@@ -101,7 +106,7 @@ next character. If no accepted prefix exists at a source position, emit one
 lexical diagnostic there, make documented forward progress, and prevent
 evaluation. Parser repair belongs only to the outer syntax parser.
 
-### Initial trivia policy
+### Initial `WhiteSpace` policy
 
 The first implementation retains the established hardcoded rules:
 
@@ -110,9 +115,9 @@ The first implementation retains the established hardcoded rules:
 - Whitespace is not silently accepted inside an ordinary starred token.
 
 The EAG surface syntax reserves leading-`:` `WhiteSpaceRule` definitions. A
-later step must retain and analyze them, then replace the hardcoded trivia
-logic with generated whitespace/comment rules. The outer parser must never
-be responsible for trivia.
+later step must retain and analyze them, then replace the hardcoded
+`WhiteSpace` logic with generated whitespace/comment rules. The outer parser
+must never be responsible for `WhiteSpace`.
 
 ## Architecture
 
@@ -133,7 +138,8 @@ EAG
 
 The lexical projection lowers quoted terminals to Unicode character sequences,
 retains source rule/alternative provenance, creates the combined root, and
-records candidate source order. The outer-parser projection is separate.
+records each candidate's source identity and kind. The outer-parser projection
+is separate.
 
 In plain `--lalr`, starred occurrences become parser terminals. In
 `--lalr --p`, they remain parser productions and the established primitive
@@ -141,75 +147,83 @@ lexer path is unchanged.
 
 ## Implementation steps
 
-### 1. Specify the lexical-only vertical slice
+- [x] 1. Make hardcoded `WhiteSpace` a working lexer — `dub test` passes its
+  Unicode-whitespace, nested-comment, EOF, and unterminated-comment checks.
+- [ ] 2. Generate and run a terminal-only LALR lexer — a generated lex-only
+  executable passes terminal-only acceptance tests.
+- [ ] 3. Add starred rules to the generated lexer — the canonical
+  left-recursive identifier fixture passes its lex-only acceptance test.
+- [ ] 4. Connect plain LALR parsing — generated compiler/evaluator tests pass.
+- [ ] 5. Add diagnostics and tracing — focused generated-compiler diagnostic
+  tests pass.
+- [ ] 6. Evaluate reuse by ELL-generated compilers — shared-fixture
+  equivalence tests establish whether the adapter is viable.
+- [ ] 7. Generate `WhiteSpace` from `WhiteSpaceRule` — custom-`WhiteSpace`
+  tests pass.
+- [ ] 8. Broaden regression coverage and measure cost — the full validation
+  suite passes and benchmark results are recorded.
 
-Create one canonical grammar and checked expected token sequence covering,
-in one run:
+### 1. Make hardcoded `WhiteSpace` a working lexer
 
-- direct terminals including `<` and `<=`;
-- a left-recursive starred identifier;
-- a keyword that also belongs to the identifier language;
-- adjacent tokens, leading/trailing whitespace, and hardcoded nested
-  comments; and
-- EOF directly after a token.
+Add `gamma.runtime.lr.LR1Lexer`, a Gamma-only lexer whose first implementation
+advances through Unicode `WhiteSpace` and nested `(* ... *)` comments. It
+is an input range: `empty` means end of input, `front` returns the next
+non-`WhiteSpace` `dchar`, and `popFront` advances to the following one. Its
+`position` is the existing `Position` of `front`. It reports an unterminated
+comment. It does not yet recognize grammar tokens.
 
-The generated lex-only runner arrives in step 5. Its contract is fixed here:
-it reads source, writes a deterministic sequence of token identities and
-spans, and may print a deterministic tree for starred tokens. It must not
-invoke an outer parser or evaluator.
+Use focused unit tests as its smoke-test harness: prove that it skips leading,
+inter-token, and trailing `WhiteSpace`, then reaches EOF. This is the first
+working milestone; it has no LALR tables, parser, token model, or evaluator.
+The terminal-only milestone changes this same range's element type from
+`dchar` to source-level `Token`; there is no disposable pre-lexer.
 
-### 2. Define source-level lexical data
+### 2. Generate and run a terminal-only LALR lexer
 
-Add Gamma-only runtime types for `Token`, source spans, and lexical errors.
-The types distinguish quoted terminals, starred rules with a `RuleNode`
-derivation, end of input, and a reported lexical failure.
+Add Gamma-only `Token` and lexical-error types now that the `Lexer` has a
+consumer. A result distinguishes a quoted terminal, end of input, and a
+reported failure. Every diagnostic and token location uses the existing
+`Position`; do not introduce a span type. Token identities remain original
+Gamma symbols, never compact table IDs.
 
-Use original Gamma symbol identities here, never compact LALR table IDs. Add
-unit tests for spans, ownership, and the invariant that a starred result has a
-rule root while a literal result does not.
+Project only quoted terminals into a combined lexical grammar and add the
+generated root and virtual end-of-token marker. Lower terminals to Unicode
+characters and reject lexical conflicts that are not resolved by longest
+match. Preserve source provenance and original identities.
 
-### 3. Build the lexical grammar projection
+Reuse `PennelloDeRemer`, the LALR table records, and the table writer to
+generate terminal-only tables. Add a no-repair lexical LR runner separate from
+the error-correcting `LR1Parser`; it may share action records and reduction
+helpers, but never recovery. It buffers Unicode input, tests virtual-end
+acceptance without consuming source, records the furthest accepted terminal,
+and rewinds any over-read characters before the next token.
 
-Project analyzed EAG data into one lexical grammar.
+Make this a standalone executable that prints deterministic terminal
+identities and their `Position` values. Prove `<` versus `<=`, adjacent
+terminals, hardcoded `WhiteSpace`, and EOF immediately after a terminal. There is
+still no starred rule, outer parser, tree bridge, or evaluator.
 
-- Lower quoted terminals to their Unicode character sequences.
-- Include each starred hyper-nonterminal and required lexical helper rules.
-- Add the generated root and virtual end-of-token marker.
-- Preserve source order, local alternative ordinals, and original IDs.
-- Record candidate source priority.
-- Reject nullable starred tokens and unsupported lexical conflicts.
+### 3. Add starred rules to the generated lexer
 
-Add generator tests for shared prefixes (`<`/`<=`) and keyword/identifier
-overlap. Ensure neither candidate is lost before priority is applied.
+Extend the projection and lexical LR runner with starred hyper-nonterminal
+candidates and the helper rules they require. A starred result retains its
+complete Gamma `RuleNode`; a literal result has no rule root. Reject nullable
+starred tokens and lexical conflicts that remain after the stated precedence.
 
-### 4. Implement the no-repair lexical LR runtime
+The canonical fixture is `example/lexical-vertical-slice.eag`; its exact input
+and expected token identities are backtick strings beside its regression test
+in `test/lexical_vertical_slice.d`. Its `id` rule is directly left-recursive
+in both the meta and hyper grammar. It proves that LALR lexing, rather than a
+regular-expression shortcut, handles the identifier recursion. It also
+establishes terminal-over-starred precedence for `if` and `id*`, and
+longest-match precedence for `ifx`.
 
-Add a lexical recognizer separate from the error-correcting outer `LR1Parser`.
-It may share table records and tree reduction helpers, but its observable
-behaviour is distinct.
+Extend the lex-only executable to print deterministic starred-rule trees.
+Test left-recursive identifiers, keyword/identifier precedence, failed
+prefixes, and nested-comment `WhiteSpace`. Verify that no recovery action is
+available.
 
-It must:
-
-- consume buffered Unicode source characters;
-- maintain the live lexical LR configuration;
-- test virtual-end acceptance without consuming source;
-- retain the furthest accepted token and its tree;
-- retain or rewind over-read input before beginning the next token;
-- enforce longest-match and source-priority selection; and
-- report failure without inserting, deleting, or synthesizing input.
-
-Unit-test left-recursive identifiers, overlapping operators,
-keyword-versus-identifier precedence, failed prefixes, and nested-comment
-trivia. Verify that no recovery action is available.
-
-### 5. Generate and run the standalone lexer
-
-Generate a lexical table module and the lex-only executable from steps 1–4.
-Make the lexical-only acceptance tests pass. Inspect emitted tokens and
-starred-rule trees. There is still no outer parser, tree bridge, or evaluator
-in this milestone.
-
-### 6. Connect plain LALR parsing
+### 4. Connect plain LALR parsing
 
 Make parser-grammar projection mode-dependent:
 
@@ -218,29 +232,37 @@ Make parser-grammar projection mode-dependent:
 - `--lalr --p` preserves the established primitive-token parser grammar and
   lexer behaviour.
 
-Generate an adapter from source-level tokens to compact LALR table terminals.
-Extend the parser/lexer handoff so a shift pushes a supplied starred-rule tree
-and otherwise creates the usual terminal leaf.
+Replace the existing `gamma.runtime.Lexer` handoff, which can return only an
+`int` token ID and a `Position`. The replacement handoff carries the compact
+LALR terminal ID, `Position`, and an optional supplied parse tree. On SHIFT,
+`LR1Parser` pushes the supplied starred-rule tree; for a quoted terminal it
+creates the usual terminal leaf. This is required to preserve a lexical
+derivation through the outer parser's tree stack.
+
+Generate the source-level-token-to-compact-terminal adapter for plain
+`--lalr`. Its result must retain the supplied tree instead of reducing it to
+an `int`. Update `--lalr --p` to use the replacement handoff as well, while
+keeping its established primitive-token behaviour.
 
 Run generated compilers with evaluators. Verify that an identifier affix still
 receives the same value through its lexical derivation, and that evaluation
 does not run after a lexical error.
 
-### 7. Add diagnostics and tracing
+### 5. Add diagnostics and tracing
 
-Report lexical errors at the beginning of the unrecognized input. Keep them
-separate from outer syntax-error recovery messages.
+Report lexical errors at the beginning of the unrecognized input using
+`Position`. Keep them separate from outer syntax-error recovery messages.
 
-Verbose tracing should reveal emitted tokens, spans, selected priorities, and
-lexical trees without printing addresses. Add generated-compiler tests for
-invalid characters, unterminated hardcoded comments, invalid token prefixes,
-and line/column positions.
+Verbose tracing should reveal emitted tokens, their `Position`, selected
+precedence, and lexical trees without printing addresses. Add generated-
+compiler tests for invalid characters, unterminated hardcoded comments,
+invalid token prefixes, and line/column positions.
 
-### 8. Evaluate reuse by ELL-generated compilers
+### 6. Evaluate reuse by ELL-generated compilers
 
 The lexical result is source-level rather than LALR-table-specific, so an ELL
 adapter is possible. Investigate an optional ELL mode that consumes the same
-generated lexical stream instead of its parser-state-dependent scanner.
+generated lexical stream instead of its parser-state-dependent lexer.
 
 It must map token identities to the ELL token domain, preserve starred-rule
 derivations for ELL evaluation, retain legacy ELL behaviour until equivalence
@@ -250,27 +272,27 @@ shared fixture set.
 ELL reuse is not a prerequisite for plain LALR lexing. It is an adapter made
 possible by the lexer seam, not a reason to couple the parser runtimes.
 
-### 9. Generate trivia from `WhiteSpaceRule`
+### 7. Generate `WhiteSpace` from `WhiteSpaceRule`
 
 Extend EAG analysis so `WhiteSpaceRule` definitions are retained as analyzed
 grammar data rather than skipped. Specify separator/comment roles, priority,
 and nesting semantics.
 
-Generate trivia recognition from those definitions, replacing the initial
-hardcoded whitespace/comment logic. Preserve the lexical interface and the
-rule that trivia terminates ordinary tokens unless a defined lexical rule
-explicitly consumes it.
+Generate `WhiteSpace` recognition from those definitions, replacing the
+initial hardcoded whitespace/comment logic. Preserve the lexical interface and
+the rule that `WhiteSpace` terminates ordinary tokens unless a defined lexical
+rule explicitly consumes it.
 
 Test custom separators, comments, nesting, adjacency to tokens, and malformed
-trivia.
+`WhiteSpace`.
 
-### 10. Broaden regression coverage and measure cost
+### 8. Broaden regression coverage and measure cost
 
 Add focused coverage for:
 
 | Parser | Lexer mode | Evaluators |
 | --- | --- | --- |
-| ELL | legacy scanner | SLAG, single-sweep, SOAG |
+| ELL | legacy lexer | SLAG, single-sweep, SOAG |
 | LALR | generated lexical parser | single-sweep, SOAG |
 | LALR | `--p` primitive path | single-sweep, SOAG |
 | ELL, if implemented | generated lexical parser | supported ELL evaluators |
@@ -290,7 +312,10 @@ measured regression.
 - Do not implement generalized LR parsing; reject unsupported lexical
   conflicts precisely.
 - Do not replace `--lalr --p` before plain `--lalr` is proven.
-- Do not replace hardcoded trivia before `WhiteSpaceRule` semantics are
+- Remove `gamma.runtime.Lexer` and the legacy generated `GeneratedLexer` once
+  both plain `--lalr` and `--lalr --p` use the replacement tree-carrying
+  handoff.
+- Do not replace hardcoded `WhiteSpace` before `WhiteSpaceRule` semantics are
   analyzed and tested.
 
 ## Validation

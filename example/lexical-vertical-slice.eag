@@ -1,0 +1,27 @@
+// Canonical lexer-only vertical-slice grammar.  Its source and expected token
+// sequence are beside the regression test in test/lexical_vertical_slice.d.
+
+S = .
+
+Op = '<' | '<=' | 'if'.
+
+S <+ : S>:
+    Op Op Op id Op.
+
+Op:
+      '<'
+    | '<='
+    | 'if'.
+
+letter = 'i' | 'f' | 'x'.
+
+letter:
+      'i'
+    | 'f'
+    | 'x'.
+
+id* = letter | id letter.
+
+id*:
+      id letter
+    | letter.
