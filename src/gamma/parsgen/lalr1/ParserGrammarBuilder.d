@@ -80,9 +80,9 @@ in (grammar.isPlain)
     // - help which RHS symbol occurrences are "predicates"
     // Any alternative/rule the LHS of which is not a nonterminal of the parser grammar is skipped.
 
-    // Current restriction: contrary to the rules above, LALR has --p
-    // semantics, so marked lexical rules and their occurrences remain parser
-    // rules until a conventional lexer recognizes them as tokens.
+    // Current restriction: LALR has --p semantics,
+    // so marked lexical rules and their occurrences remain parser rules.
+    // The generated LR lexer recognizes the quoted terminals they use.
 
     // For the remaining RHS's, SymbolNode's are
     // - not copied to the corresponding parser grammar RHS if they represent a "predicate"

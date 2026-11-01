@@ -1,40 +1,75 @@
 module $;
 
-import $Lex;
+import $ : lexerTables = tables, candidateTerminals, terminalNames;
 import $;
 import $;
 import Eval = $;
 import gamma.runtime.lr.LR1Parser : LR1Parser;
+import gamma.runtime.lr.LR1Lexer : LR1Lexer, Token;
 import gamma.runtime.Lexer : Lexer;
 import io : Input, Position, read;
+import log : trace;
 
-private enum lexerTokenToParserToken = $;
+private enum terminalToParserToken = $;
 
 class GeneratedLexer : Lexer
 {
     private int eofToken;
 
+    private LR1Lexer lrLexer;
+
+    private Position position_;
+
     public this(Input input, int eofToken)
     {
-        $Lex.Init(input);
         this.eofToken = eofToken;
+        this.position_ = input.position;
+        this.lrLexer = LR1Lexer(input, lexerTables, candidateTerminals);
     }
 
     public int nextToken()
     {
-        int lexerToken;
+        if (lrLexer.empty)
+            return eofToken;
 
-        $Lex.Get(lexerToken);
-        if (lexerToken == 0)
-            return this.eofToken;
-        if (lexerToken < 0 || lexerToken >= lexerTokenToParserToken.length)
+        const token = lrLexer.front;
+
+        position_ = token.position;
+        traceToken(token);
+        lrLexer.popFront;
+
+        final switch (token.kind)
+        {
+        case Token.Kind.terminal:
+            if (token.terminal >= terminalToParserToken.length)
+                return -1;
+            return terminalToParserToken[token.terminal];
+        case Token.Kind.end:
+            return eofToken;
+        case Token.Kind.error:
             return -1;
-        return lexerTokenToParserToken[lexerToken];
+        }
     }
 
     public Position position()
     {
-        return $Lex.Pos;
+        return position_;
+    }
+
+    private void traceToken(Token token)
+    {
+        final switch (token.kind)
+        {
+        case Token.Kind.terminal:
+            trace!"LR lexer terminal %s\n%s"(terminalNames[token.terminal], token.position);
+            return;
+        case Token.Kind.end:
+            trace!"LR lexer end";
+            return;
+        case Token.Kind.error:
+            trace!"LR lexer error\n%s"(token.position);
+            return;
+        }
     }
 
 }

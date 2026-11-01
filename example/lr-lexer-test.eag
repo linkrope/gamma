@@ -1,5 +1,5 @@
-// Canonical lexer-only vertical-slice grammar.  Its source and expected token
-// sequence are beside the regression test in test/lexical_vertical_slice.d.
+// test grammar for LR lexer longest match
+// with left-recursive starred nonterminal
 
 S = .
 

@@ -149,10 +149,10 @@ lexer path is unchanged.
 
 - [x] 1. Make hardcoded `WhiteSpace` a working lexer — `dub test` passes its
   Unicode-whitespace, nested-comment, EOF, and unterminated-comment checks.
-- [ ] 2. Generate and run a terminal-only LALR lexer — a generated lex-only
-  executable passes terminal-only acceptance tests.
+- [x] 2. Generate and run a terminal-only LALR lexer — generated LALR
+  compilers trace terminal-only acceptance through a parallel lexical runner.
 - [ ] 3. Add starred rules to the generated lexer — the canonical
-  left-recursive identifier fixture passes its lex-only acceptance test.
+  left-recursive identifier fixture passes its generated-compiler trace test.
 - [ ] 4. Connect plain LALR parsing — generated compiler/evaluator tests pass.
 - [ ] 5. Add diagnostics and tracing — focused generated-compiler diagnostic
   tests pass.
@@ -198,10 +198,13 @@ helpers, but never recovery. It buffers Unicode input, tests virtual-end
 acceptance without consuming source, records the furthest accepted terminal,
 and rewinds any over-read characters before the next token.
 
-Make this a standalone executable that prints deterministic terminal
-identities and their `Position` values. Prove `<` versus `<=`, adjacent
-terminals, hardcoded `WhiteSpace`, and EOF immediately after a terminal. There is
-still no starred rule, outer parser, tree bridge, or evaluator.
+Generate the lexical tables into the normal LALR compiler. Its legacy lexer
+remains the parser input; a second `LR1Lexer` consumes a copied `Input` in
+parallel and emits deterministic terminal identities and their `Position`
+values under `--verbose`. Prove `<` versus `<=`, adjacent terminals,
+hardcoded `WhiteSpace`, and EOF immediately after a terminal. There is still
+no starred rule, outer parser handoff, tree bridge, or evaluator use of the
+new lexer.
 
 ### 3. Add starred rules to the generated lexer
 
@@ -210,18 +213,18 @@ candidates and the helper rules they require. A starred result retains its
 complete Gamma `RuleNode`; a literal result has no rule root. Reject nullable
 starred tokens and lexical conflicts that remain after the stated precedence.
 
-The canonical fixture is `example/lexical-vertical-slice.eag`; its exact input
+The canonical fixture is `example/lr-lexer-test.eag`; its exact input
 and expected token identities are backtick strings beside its regression test
-in `test/lexical_vertical_slice.d`. Its `id` rule is directly left-recursive
+in `test/lr_lexer.d`. Its `id` rule is directly left-recursive
 in both the meta and hyper grammar. It proves that LALR lexing, rather than a
 regular-expression shortcut, handles the identifier recursion. It also
 establishes terminal-over-starred precedence for `if` and `id*`, and
 longest-match precedence for `ifx`.
 
-Extend the lex-only executable to print deterministic starred-rule trees.
-Test left-recursive identifiers, keyword/identifier precedence, failed
-prefixes, and nested-comment `WhiteSpace`. Verify that no recovery action is
-available.
+Extend the generated compiler's lexical trace to print deterministic
+starred-rule trees. Test left-recursive identifiers, keyword/identifier
+precedence, failed prefixes, and nested-comment `WhiteSpace`. Verify that no
+recovery action is available.
 
 ### 4. Connect plain LALR parsing
 

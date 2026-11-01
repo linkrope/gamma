@@ -170,7 +170,11 @@ void compile(Input input, const Arguments arguments)
         enforce(isELL1);
     }
 
-    auto fileNames = [LexGen.Generate(settings)];
+    string[] fileNames = null;
+
+    if (!arguments.lalr)
+        fileNames = [LexGen.Generate(settings)];
+
     bool needsTree = false;
     bool success = false;
 
@@ -214,8 +218,10 @@ void compile(Input input, const Arguments arguments)
     if (arguments.lalr)
     {
         const evaluatorModuleName = epsilonEAG.BaseName ~ "Eval";
+        auto lexer = generateLRLexer(eag, settings);
 
-        fileNames = generateLRParser(epsilonEAG, eag, evaluatorModuleName, settings) ~ fileNames;
+        fileNames = generateLRParser(epsilonEAG, eag, evaluatorModuleName, lexer.moduleName,
+            settings) ~ lexer.fileName ~ fileNames;
     }
     else if (needsTree)
     {
@@ -229,7 +235,7 @@ void compile(Input input, const Arguments arguments)
 }
 
 string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, string evaluatorModuleName,
-    const Settings settings)
+    string lexerTablesModuleName, const Settings settings)
 {
     import gamma.parsgen.lalr1.CodeGenerator : generateCode;
     import gamma.parsgen.lalr1.ParserGrammarBuilder : toParserGrammar;
@@ -238,7 +244,21 @@ string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, string evaluatorModule
     auto parserGrammar = eag.toParserGrammar;
     auto parserTables = generateParser(parserGrammar.grammar);
 
-    return generateCode(epsilonEAG, parserTables, parserGrammar, evaluatorModuleName, settings);
+    return generateCode(epsilonEAG, parserTables, parserGrammar, evaluatorModuleName,
+        lexerTablesModuleName, settings);
+}
+
+auto generateLRLexer(EAG eag, const Settings settings)
+{
+    import gamma.parsgen.lalr1.CodeGenerator : generateLexerCode;
+    import gamma.parsgen.lalr1.LexerGrammarBuilder : toLexerGrammar;
+    import gamma.parsgen.lalr1.PennelloDeRemer : generateParser;
+
+    auto lexerGrammar = eag.toLexerGrammar;
+    auto lexerTables = generateParser(lexerGrammar.grammar);
+
+    return generateLexerCode(lexerTables, lexerGrammar,
+        eag.plainHyperGrammar.startSymbol.toString, settings);
 }
 
 Settings createSettings(const Arguments arguments)
@@ -297,7 +317,8 @@ void generateRecipe(const string outputDirectory, const string[] fileNames, cons
     const name = fileNames.front.baseName(".d");
     const outputPath = arguments.outputDirectory.empty ? "." : arguments.outputDirectory;
     buildPath(outputDirectory, "dub.json")
-        .write(format!content(name, outputPath.jsonPathLiteral, fileNames.map!baseName, arguments.runtimeDependency));
+        .write(format!content(name, outputPath.jsonPathLiteral, fileNames.map!baseName,
+            arguments.runtimeDependency));
 }
 
 string runtimeDependency(const Arguments arguments)

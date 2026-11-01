@@ -60,7 +60,7 @@ unittest
 
         run!"%s --lalr --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "left-recursion.eag"), directory)
-            .shouldPassWith("LexGen writing S");
+            .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "1 + 2");
         run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
             .shouldPassWith(parseTree.escape);
@@ -121,7 +121,7 @@ unittest
 
         run!"%s --lalr --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "left-recursion.eag"), directory)
-            .shouldPassWith("LexGen writing S");
+            .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "2 ** 3");
         run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
             .shouldFailWith(
@@ -139,7 +139,7 @@ unittest
     {
         run!"%s --lalr --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "left-recursion.eag"), directory)
-            .shouldPassWith("LexGen writing S");
+            .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "2 @ * 3");
         run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
             .shouldFailWith(
@@ -156,7 +156,7 @@ unittest
     {
         run!"%s --lalr --space --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "decl-appl.eag"), directory)
-            .shouldPassWith("LexGen writing DeclAppl");
+            .shouldPassWith("DeclAppl grammar is single sweep");
         // current restriction: --lalr ignores `*`, so whitespace is accepted within `id*`
         write(buildPath(directory, "input"), "DECL a b APPL b a");
         run!"cd %s && %s input"(directory, dotSlash("DeclAppl"))
@@ -174,7 +174,7 @@ unittest
     {
         run!"%s --lalr --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "ebnf.eag"), directory)
-            .shouldPassWith("LexGen writing S");
+            .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "a, , ab");
         run!"cd %s && %s input"(directory, dotSlash("S"))
             .shouldPassWith("^OK$");

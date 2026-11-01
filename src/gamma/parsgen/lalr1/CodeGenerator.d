@@ -2,96 +2,114 @@ module gamma.parsgen.lalr1.CodeGenerator;
 
 import epsilon.eag : EAG;
 import epsilon.settings : Settings;
+import gamma.parsgen.lalr1.FixWriter : includeFix;
+import gamma.parsgen.lalr1.LexerGrammarBuilder : LexerGrammar;
 import gamma.parsgen.lalr1.OrderedLR1Tables;
 import gamma.parsgen.lalr1.ParserGrammarBuilder : ParserGrammar;
 
 public string[] generateCode(EAG eag,
     OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
-    string evaluatorModuleName, Settings settings)
+    string evaluatorModuleName, string lexerTablesModuleName, Settings settings)
 {
     with (generateEpsilonBridgeModule(eag, parserGrammar, settings))
         return generateLR1Modules(eag, parserTables, parserGrammar, moduleName, evaluatorModuleName,
-            settings) ~ fileName;
+            lexerTablesModuleName, settings)
+            ~ fileName;
+}
+
+public auto generateLexerCode(OrderedLR1Tables lexerTables, LexerGrammar lexerGrammar,
+    string compilerName, Settings settings)
+{
+    import gamma.parsgen.lalr1.LR1TablesWriter : createTables, writeModule;
+    import std.typecons : tuple;
+
+    auto tables = lexerTables.createTables;
+    const moduleName = compilerName ~ "LexerTables";
+    const fileName = settings.path(moduleName ~ ".d");
+
+    size_t[] candidates;
+    size_t alternativeCount = 0;
+    foreach (rule; lexerGrammar.grammar.rules)
+        alternativeCount += rule.alternatives.length;
+    candidates.length = alternativeCount;
+    candidates[] = size_t.max;
+    foreach (rule; lexerGrammar.grammar.rules)
+    {
+        foreach (alternative; rule.alternatives)
+        {
+            if (auto terminal = alternative in lexerGrammar.candidateTerminals)
+                candidates[tables.alternativeIndex(alternative)] = (*terminal).index;
+        }
+    }
+
+    tables.setLexerMetadata(candidates, lexerGrammar.terminalNames);
+    fileName.writeModule(moduleName, tables);
+    return tuple!("fileName", "moduleName")(fileName, moduleName);
 }
 
 private string[] generateLR1Modules(EAG eag,
     OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
-    string bridgeModuleName, string evaluatorModuleName, Settings settings)
+    string bridgeModuleName, string evaluatorModuleName, string lexerTablesModuleName,
+    Settings settings)
 {
-    import gamma.parsgen.lalr1.LR1ParserTablesWriter : writeTables = write;
+    import gamma.parsgen.lalr1.LR1TablesWriter : createTables, writeModule;
     import io : Input;
     import std.format : format;
     import std.stdio : File;
-
-    int[] lexerTokenToParserToken = null;
-
-    lexerTokenToParserToken.length = eag.NextHTerm + 3;
-    lexerTokenToParserToken[] = -1;
-
-    foreach (lexerTerminal; EAG.firstHTerm .. eag.NextHTerm)
-    {
-        const representation = eag.symbolTable.symbol(eag.HTerm[lexerTerminal].Id);
-
-        foreach (parserTerminal; parserTables.grammar.terminals)
-            if (parserTerminal.toString == representation)
-            {
-                lexerTokenToParserToken[lexerTerminal + 3] = cast(int) parserTerminal.index;
-                break;
-            }
-    }
 
     const name = eag.BaseName;
     const fileName = settings.path(name ~ ".d");
     const tablesModuleName = name ~ "LRTables";
     const tablesFileName = settings.path(tablesModuleName ~ ".d");
-    const tokenMap = format!"[%(%s, %)]"(lexerTokenToParserToken);
+    const tokenMap = format!"[%(%s, %)]"(parserGrammar.terminalToParserToken);
     enum fixName = "lr1gen.fix.d";
     Input fix = Input(fixName, import(fixName));
     File output = File(fileName, "w");
 
-    void includeFix(char terminator)
-    {
-        import std.exception : enforce;
-
-        while (fix.front != terminator)
-        {
-            enforce(fix.front != 0, "unexpected end of lr1gen.fix.d");
-            output.write(fix.front);
-            fix.popFront;
-        }
-        fix.popFront;
-    }
-
-    includeFix('$');
+    includeFix(fix, output, '$', fixName);
     output.write(name);
-    includeFix('$');
-    output.write(name);
-    includeFix('$');
+    includeFix(fix, output, '$', fixName);
+    output.write(lexerTablesModuleName);
+    includeFix(fix, output, '$', fixName);
     output.write(tablesModuleName);
-    includeFix('$');
+    includeFix(fix, output, '$', fixName);
     output.write(bridgeModuleName);
-    includeFix('$');
+    includeFix(fix, output, '$', fixName);
     output.write(evaluatorModuleName);
-    includeFix('$');
+    includeFix(fix, output, '$', fixName);
     output.write(tokenMap);
-    includeFix('$');
-    output.write(name);
-    includeFix('$');
-    output.write(name);
-    includeFix('$');
-    output.write(name);
-    includeFix('$');
+    includeFix(fix, output, '$', fixName);
     output.close;
 
-    tablesFileName.writeTables(tablesModuleName, parserTables, parserGrammar);
+    auto tables = parserTables.createTables(parserGrammar.terminals, parserGrammar.nonterminals);
+
+    tablesFileName.writeModule(tablesModuleName, tables);
+
     return [fileName, tablesFileName];
+}
+
+private int[] terminalToParserToken(ParserGrammar parserGrammar)
+{
+    int[] result;
+
+    foreach (parserTerminal, terminal; parserGrammar.terminals)
+    {
+        if (terminal.index >= result.length)
+        {
+            const oldLength = result.length;
+
+            result.length = terminal.index + 1;
+            result[oldLength .. $] = -1;
+        }
+        result[terminal.index] = cast(int) parserTerminal.index;
+    }
+    return result;
 }
 
 private auto generateEpsilonBridgeModule(EAG eag, ParserGrammar parserGrammar,
     Settings settings)
 {
     import io : Input;
-    import std.exception : enforce;
     import std.stdio : File;
     import std.typecons : tuple;
 
@@ -102,36 +120,28 @@ private auto generateEpsilonBridgeModule(EAG eag, ParserGrammar parserGrammar,
     Input fix = Input(fixName, import(fixName));
     File output = File(fileName, "w");
 
-    void includeFix(char terminator)
-    {
-        while (fix.front != terminator)
-        {
-            enforce(fix.front != 0, "unexpected end of lrepsilonbridge.fix.d");
-            output.write(fix.front);
-            fix.popFront;
-        }
-        fix.popFront;
-    }
-
-    includeFix('$');
+    includeFix(fix, output, '$', fixName);
     output.write(moduleName);
-    includeFix('$');
+    includeFix(fix, output, '$', fixName);
     output.write(hyperArity);
-    includeFix('$');
+    includeFix(fix, output, '$', fixName);
     output.close;
+
     return tuple!("fileName", "moduleName")(fileName, moduleName);
 }
 
 private int hyperArity(ParserGrammar parserGrammar)
 {
-    int maximumAlternatives;
+    int maximumAlternatives = 0;
 
     foreach (rule; parserGrammar.grammar.rules)
         if (cast(int) rule.alternatives.length > maximumAlternatives)
             maximumAlternatives = cast(int) rule.alternatives.length;
 
     int result = 1;
+
     while (result <= maximumAlternatives)
         result *= 2;
+
     return result;
 }
