@@ -1,80 +1,65 @@
-## Merger of epsilon and gamma
+# Parked ideas
 
-The gamma input parser and analyzer now parse and validate EAG specifications,
-including affix forms. `gamma.input.EAGBuilder` converts the resulting model
-to epsilon's EAG model for the existing LL(1)-based compiler generators.
-The epsilon analyzer has been removed.
+Possible future work, open questions, and side projects.
+These are neither priorities nor implementation commitments.
+When an idea becomes active, move its rationale and specification
+to the relevant documentation, then remove it from this file.
 
-- Continue merging the remaining epsilon generator stages with gamma.
+## Migration and architecture
 
-## Escape Sequences
+- **Continue merging epsilon into gamma.**
+  Pick the next coherent Epsilon topic and assimilate it into Gamma.
+- **Structure generated code.**
+  Replace direct code fragments with an explicit representation,
+  such as an abstract syntax tree or other intermediate language nodes.
+- **Use sum types where they clarify legacy state models.**
+  Identify a concrete subtype hierarchy before pursuing this.
 
-- epsilon blindly copies escape sequences to the generated compiler
-- but this makes `"\""` and `'"'` two different terminal symbols
-- take, for example, the code from the gamma Scanner
+## Compiler behavior and diagnostics
 
-## Predicate Position
+- **Escape sequences.**
+  Give equivalent escape spellings one terminal-symbol identity
+  in generated compilers rather than copying their source spellings.
+- **Predicate positions.**
+  Decide where a failing predicate should be reported,
+  including predicates after deeply nested terminals
+  and analysis predicates on a left-hand side.
+- **Generated-compiler output modes.**
+  Investigate the current behavior, then separate detailed parser diagnostics
+  from developer trace output.
+- **Expressive, shared diagnostics.**
+  Introduce one diagnostic reporter that owns reporting and error counting,
+  and make generated-compiler diagnostics more useful.
+- **Colorized Gamma output.**
+  Use terminal color where it improves Gamma's diagnostics or other user-facing output.
 
-- Shall a failing predicate report the preceding terminal's position,
-  especially when that terminal is nested deeply?
-- Is this relevant in practice, or is this only a theoretical question?
-- What about analysis predicates of LHS:
-  using the following terminal seems to be more promising for them.
+## Language and compiler experiments
 
-## compiled compiler
+- **EAG-specified EBNF lowering.**
+  Write an EAG-to-EAG compiler that lowers EBNF EAGs to BNF EAGs, including abbreviations.
+  This is primarily a showcase for EAGs rather than production work.
+- **Unicode lexer generation.**
+  Replace the generated lexer's UTF-8 decision-tree workaround
+  and consider a reserved `alpha` nonterminal for a Unicode letter.
+- **Lexer declarations.**
+  Explore declarative whitespace and comment rules:
 
-- swap options `--info` and `--verbose`
-  - `--info` should give detailed parser error messages
-  - `--verbose` should print debug output
+  ```
+  WhiteSpaces:
+      "WHITESPACES" "ARE" char { "," char } ";" .
 
-## epsilang.eag
+  Comments:
+      Comment { ";" Comment } ";" .
+  Comment:
+      "COMMENTS" "FROM" char [ char ] "TO" char [ char ] ["NESTED"] .
+  ```
 
-- specify the lowering for EBNF and various abbreviations as an EAG
+- **RISC interpreter revival.**
+  Extract and revive the ideal-RISC interpreter used by the Oberon-0 EAG
+  in a separate project like this
+  [the Asm directory](https://github.com/linkrope/programming-languages-and-compilers/tree/main/Asm).
 
-## Expand
+## Cleanup experiments
 
-- use ~ instead of Expand
-
-## Code Generation
-
-- create abstract syntax tree instead of writing code fragments
-
-## Code Generation
-
-- create intermediate language nodes
-
-## UTF-8
-
-- rewrite decision-tree implementation in generated lexer
-  (current one is a workaround for the change to UTF-8 support)
-- add reserved nonterminal "alpha" for Unicode letter?
-
-## RISC Assembler
-
-- revive RISC assembler?
-
-## Lexer Generation
-
-```
-WhiteSpaces:
-    "WHITESPACES" "ARE" char { "," char } ";" .
-
-Comments:
-    Comment { ";" Comment } ";" .
-Comment:
-    "COMMENTS" "FROM" char [ char ] "TO" char [ char ] ["NESTED"] .
-```
-
-## Replace Subtyping with Sum Type
-
-- https://github.com/pbackus/sumtype
-
-## Expressive Diagnostics
-
-- https://clang.llvm.org/diagnostics.html
-
-## Shared Diagnostics
-
-- share a diagnostic reporter that logs and counts parser errors once
-
-## Color
+- **Replace `Expand` helpers with `~`.**
+  Array concatenation makes the affected implementations clearer and more idiomatic.

@@ -82,7 +82,7 @@ public struct LR1Lexer
         const tokenPosition = input.position;
         size_t[] states = [0];
         size_t acceptedTerminal = size_t.max;
-        Input acceptedInput;
+        Input remainingInput;
 
         for (;;)
         {
@@ -91,7 +91,7 @@ public struct LR1Lexer
             if (candidate != size_t.max)
             {
                 acceptedTerminal = candidate;
-                acceptedInput = input;
+                remainingInput = input;
             }
 
             if (input.empty)
@@ -109,7 +109,7 @@ public struct LR1Lexer
 
         if (acceptedTerminal != size_t.max)
         {
-            input = acceptedInput;
+            input = remainingInput;
             token = Token(Token.Kind.terminal, acceptedTerminal, tokenPosition);
 
             return;
@@ -233,6 +233,7 @@ public struct LR1Lexer
                 (const Reduce reduceAction)
                 {
                     const sourceTerminal = candidateTerminals[reduceAction.rule];
+
                     if (sourceTerminal != size_t.max)
                         candidate = sourceTerminal;
                     reduce(states, reduceAction.rule);
@@ -262,7 +263,9 @@ public struct LR1Lexer
     private void reduce(ref size_t[] states, size_t ruleIndex) const
     {
         const rule = parserTables.rules[ruleIndex];
+
         assert(rule.rhsLength < states.length);
+
         states.length -= rule.rhsLength;
 
         foreach (goTo; parserTables.gotos[
