@@ -20,6 +20,8 @@ public struct Token
     Position position;
 
     const(ParseNode)* rule;
+
+    Nullable!string errorMessage;
 }
 
 /**
@@ -80,7 +82,8 @@ public struct LR1Lexer
     {
         if (!skipWhiteSpace)
         {
-            token = Token(Token.Kind.error, size_t.max, whiteSpaceErrorPosition);
+            token = Token(Token.Kind.error, size_t.max, whiteSpaceErrorPosition,
+                errorMessage: "comment not closed at end of text".nullable);
             return;
         }
         if (input.empty)

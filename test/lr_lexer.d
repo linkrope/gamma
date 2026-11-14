@@ -94,7 +94,7 @@ unittest
     }
 }
 
-@("delete a lexer error during LR parser repair")
+@("repair lexical error without evaluation")
 unittest
 {
     with (sandbox)
@@ -103,12 +103,35 @@ unittest
             gamma, buildPath("example", "lr-lexer-test.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "@ifif");
-        run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
-            .shouldFailWith(
-                "trace: lexer error",
-                "info: Deleting unknown token",
-                "trace: lexer nonterminal id",
-            );
+        auto result = run!"cd %s && %s --verbose input"(directory, dotSlash("S"));
+
+        result.shouldFailWith(
+            "error: unknown token",
+            "input:1:1",
+            `error: Syntax error! Repairing input...`.escape,
+            "info: Deleting unknown token",
+            "trace: lexer nonterminal id",
+        );
+    }
+}
+
+@("repair unterminated nested comment")
+unittest
+{
+    with (sandbox)
+    {
+        run!"%s --lalr --runtime . %s --output-directory %s"(
+            gamma, buildPath("example", "lr-lexer-test.eag"), directory)
+            .shouldPassWith("S grammar is single sweep");
+        write(buildPath(directory, "input"), "(*(*)");
+        auto result = run!"cd %s && %s --verbose input"(directory, dotSlash("S"));
+
+        result.shouldFailWith(
+            "error: comment not closed at end of text",
+            "input:1:1",
+            `error: Syntax error! Repairing input...`.escape,
+            "info: End of parsing",
+        );
     }
 }
 

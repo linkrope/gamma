@@ -10,7 +10,7 @@ import gamma.runtime.lr.ParseTreeLexer : ParseTreeLexer;
 import gamma.runtime.ParseTree : ParseNode, RuleNode, TerminalNode;
 import gamma.runtime.lr.LR1ParserTables : Symbol;
 import io : Input, Position, read;
-import log : trace;
+import log : error, trace;
 import std.sumtype : get;
 
 private enum int[] terminalToParserToken = $;
@@ -95,7 +95,7 @@ class GeneratedLexer : ParseTreeLexer
             trace!"lexer end";
             return;
         case Token.Kind.error:
-            trace!"lexer error\n%s"(token.position);
+            error!"%s\n%s"(token.errorMessage.get("unknown token"), token.position);
             return;
         }
     }
@@ -136,20 +136,20 @@ int main(string[] args)
 
     trace!"%s"(writer.write(tree));
 
-    if (parser.errorCount == 0)
-    {
-        if (!Eval.EvalInitSucceeds())
-            return EXIT_FAILURE;
+    if (parser.errorCount != 0)
+        return EXIT_FAILURE;
 
-        auto epsilonTree = transform(tree);
+    if (!Eval.EvalInitSucceeds)
+        return EXIT_FAILURE;
 
-        assert(epsilonTree.tree.length == epsilonTree.positions.length);
-        Eval.TraverseSyntaxTree(epsilonTree.tree, epsilonTree.positions, 0, epsilonTree.root,
-            epsilonTree.hyperArity, info, write);
-        writeln("OK");
-    }
+    auto epsilonTree = transform(tree);
+
+    assert(epsilonTree.tree.length == epsilonTree.positions.length);
+    Eval.TraverseSyntaxTree(epsilonTree.tree, epsilonTree.positions, 0, epsilonTree.root,
+        epsilonTree.hyperArity, info, write);
+    writeln("OK");
 
 
-    return (parser.errorCount == 0) ? 0 : EXIT_FAILURE;
+    return 0;
 }
 $

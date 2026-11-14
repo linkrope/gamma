@@ -67,7 +67,7 @@ unittest
     }
 }
 
-@("compile left-recursion.eag and run LR parser on invalid input")
+@("compile left-recursion.eag and repair invalid syntax input")
 unittest
 {
     with (sandbox)
@@ -132,7 +132,7 @@ unittest
     }
 }
 
-@("compile left-recursion.eag and repair an unknown LR token")
+@("compile left-recursion.eag and repair an unknown lexical token")
 unittest
 {
     with (sandbox)
@@ -143,8 +143,10 @@ unittest
         write(buildPath(directory, "input"), "2 @ * 3");
         run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
             .shouldFailWith(
+                "error: unknown token",
+                "input:1:3",
                 `error: Syntax error! Repairing input...`.escape,
-                `info: Deleting unknown token`,
+                "info: Deleting unknown token",
             );
     }
 }
