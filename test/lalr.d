@@ -1,7 +1,7 @@
 module test.lalr;
 
 import std.file : write;
-import std.path : buildPath;
+import std.path : absolutePath, buildPath;
 import std.string;
 import test.helper;
 
@@ -179,6 +179,20 @@ unittest
                 "error: predicate 'Declared' failed",
                 "input:1:14 DECL ab APPL ba",
             );
+    }
+}
+
+@("compile oberon0.eag as LALR and run Oberon-0 compiler on BigSample")
+unittest
+{
+    with (sandbox)
+    {
+        run!"%s --lalr --space --runtime . %s --output-directory %s"(
+            gamma, buildPath("example", "oberon0.eag"), directory)
+            .shouldPassWith("OberonO grammar is single sweep");
+        run!"cd %s && %s %s"(directory, dotSlash("OberonO"),
+            absolutePath("test/oberon0/BigSample.Mod"))
+            .shouldPassWith("^^L1 .* RET 0 $$");
     }
 }
 
