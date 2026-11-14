@@ -79,14 +79,11 @@ and is being assimilated into Gamma's new code.
 - Browse the [examples] for runnable grammars.
 - Run `./gamma --help` to see compiler-generation options.
 - To run Gamma locally, install the [D toolchain].
+- Enable pre-commit hook to run checks before each commit:
+  ```sh
+  git config --local core.hooksPath .githooks
+  ```
 
-## Development
-
-Enable the repository's pre-commit hook to run the test suite and style check before each commit:
-
-    git config --local core.hooksPath .githooks
-
-[dub]: http://code.dlang.org/
 [extended affix grammar]: https://en.wikipedia.org/wiki/Extended_affix_grammar
 [attribute grammars]: https://en.wikipedia.org/wiki/Attribute_grammar
 [declaration/application example]: example/decl-appl.eag
