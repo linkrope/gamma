@@ -139,7 +139,7 @@ int main(string[] args)
     if (parser.errorCount != 0)
         return EXIT_FAILURE;
 
-    if (!Eval.EvalInitSucceeds)
+    if (!Eval.EvalInitSucceeds())
         return EXIT_FAILURE;
 
     auto epsilonTree = transform(tree);
