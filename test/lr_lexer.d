@@ -2,23 +2,80 @@ module test.lr_lexer;
 
 import std.file : write;
 import std.path : buildPath;
+import std.string : outdent, strip;
 import test.helper;
 
-@("trace lexer terminals and lexical nonterminals")
+@("trace LR lexer precedence, whitespace, and comments from generated compiler")
 unittest
 {
     with (sandbox)
     {
+        const parseTree = `
+            trace: digraph ParseTree {
+              node [shape=box];
+              n0 [label="S"];
+              n1 [label="_1"];
+              n2 [label="'if'"];
+              n1 -> n2;
+              n3 [label="_1"];
+              n4 [label="op"];
+              n5 [label="'<'"];
+              n4 -> n5;
+              n3 -> n4;
+              n6 [label="_1"];
+              n7 [label="op"];
+              n8 [label="'<='"];
+              n7 -> n8;
+              n6 -> n7;
+              n9 [label="_1"];
+              n10 [label="id"];
+              n11 [label="id"];
+              n12 [label="id"];
+              n13 [label="id"];
+              n14 [label="letter"];
+              n15 [label="'i'"];
+              n14 -> n15;
+              n13 -> n14;
+              n12 -> n13;
+              n16 [label="letter"];
+              n17 [label="'f'"];
+              n16 -> n17;
+              n12 -> n16;
+              n11 -> n12;
+              n18 [label="letter"];
+              n19 [label="'i'"];
+              n18 -> n19;
+              n11 -> n18;
+              n10 -> n11;
+              n20 [label="letter"];
+              n21 [label="'f'"];
+              n20 -> n21;
+              n10 -> n20;
+              n9 -> n10;
+              n22 [label="_1"];
+              n23 [label="ε"];
+              n22 -> n23;
+              n9 -> n22;
+              n6 -> n9;
+              n3 -> n6;
+              n1 -> n3;
+              n0 -> n1;
+            }
+            `.outdent.strip;
+
         run!"%s --lalr --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "lr-lexer-test.eag"), directory)
-            .shouldPassWith("Linking S");
-        write(buildPath(directory, "input"), " \t< <=(*(**)*)if ifif");
+            .shouldPassWith("S grammar is single sweep");
+        // \u2003 is Unicode EM SPACE, exercising non-ASCII whitespace boundaries.
+        // The nested comment contains U+1F600 GRINNING FACE to show that its content is ignored.
+        write(buildPath(directory, "input"), "\u2003if<\u2003<=(*(*\U0001F600*)*)ifif");
         run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
             .shouldPassWith(
+                "trace: lexer terminal 'if'",
                 "trace: lexer terminal '<'",
                 "trace: lexer terminal '<='",
-                "trace: lexer terminal 'if'",
                 "trace: lexer nonterminal id",
+                parseTree.escape,
             );
     }
 }
@@ -44,7 +101,7 @@ unittest
     {
         run!"%s --lalr --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "lr-lexer-test.eag"), directory)
-            .shouldPassWith("Linking S");
+            .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "@ifif");
         run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
             .shouldFailWith(

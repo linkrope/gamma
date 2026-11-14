@@ -122,7 +122,8 @@ SOAG is the most general backend: it derives direct/transitive affix dependencie
 
 ```text
 plain hyper grammar ──> parser projection ──> LALR tables ──> LR runtime
-quoted terminals    ──> character grammar  ──> LALR tables ──> longest-match lexer
+quoted terminals and starred lexical nonterminals
+                    ──> character grammar  ──> LALR tables ──> longest-match lexer
                                                      │
                                                      └─ parse-tree bridge ──> Epsilon evaluator
 ```
@@ -138,7 +139,6 @@ At runtime, `LR1Lexer` implements longest-match tokenization with whitespace/com
 - Epsilang whitespace-rule declarations are intentionally unsupported.
 - Earley affix parsing keeps one derivation and does not report ambiguity.
 - `Parser.getErrorCount` returns placeholder `42` for any error.
-- LALR currently ignores lexical `*` token-mark semantics.
 - Some legacy error paths still use `assert` placeholders.
 - Template-driven Epsilon generation and its global IR are acknowledged migration debt.
 

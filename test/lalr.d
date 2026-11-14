@@ -156,7 +156,7 @@ unittest
     {
         run!"%s --lalr --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "abc.eag"), directory)
-            .shouldPassWith("Linking S");
+            .shouldPassWith("S grammar is single sweep");
         run!"cd %s && echo 'ba' | %s"(directory, dotSlash("S"))
             .shouldFailWith(
                 `error: Syntax error! Repairing input...`.escape,
