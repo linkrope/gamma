@@ -254,41 +254,6 @@ private int GetAffixCount(int R) @nogc nothrow @safe
 }
 
 /**
- * IN:  -
- * OUT: Hyper-Arity-Konstante
- * SEM: Liefert die Arity-Konstante für den Ableitungsbaum, der durch den Parser erzeugt wird;
- *      müsste eigentlich von SLAG geliefert werden (in Sweep wurde es auch intern definiert,
- *      deshalb wird es hier für spätere Module exportiert)
- */
-private int HyperArity() nothrow
-{
-    const Nonts = eag.All - eag.Pred;
-    int Max = 0;
-    int i;
-
-    foreach (N; Nonts.bitsSet)
-    {
-        EAG.Alt A = eag.HNont[N].Def.Sub;
-
-        i = 0;
-        do
-        {
-            ++i;
-            A = A.Next;
-        }
-        while (A !is null);
-        if (cast(EAG.Opt) eag.HNont[N].Def || cast(EAG.Rep) eag.HNont[N].Def)
-            ++i;
-        if (i > Max)
-            Max = i;
-    }
-    i = 1;
-    while (i <= Max)
-        i = i * 2;
-    return i;
-}
-
-/**
  * SEM: Initialisierung der Datenstrukturen des Moduls
  */
 private void Init() nothrow
@@ -1403,7 +1368,7 @@ private string GenerateModule(Settings settings)
     InclFix('$');
     output.write(name);
     InclFix('$');
-    output.write(HyperArity());
+    output.write(eag.hyperArity);
     InclFix('$');
     GenConstDeclarations;
     InclFix('$');
