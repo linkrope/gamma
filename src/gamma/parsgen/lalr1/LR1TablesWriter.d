@@ -5,7 +5,9 @@ import gamma.grammar.Nonterminal;
 import gamma.grammar.Terminal;
 import gamma.parsgen.lalr1.FixWriter : includeFix;
 import gamma.parsgen.lalr1.OrderedLR1Tables;
+import gamma.runtime.lr.LR1ParserTables : LexerCandidate, LexerRule;
 import std.stdio : File;
+import std.typecons : Nullable;
 
 public struct LR1Tables
 {
@@ -25,9 +27,13 @@ public struct LR1Tables
 
     private string nonterminals;
 
-    private string candidateTerminals;
+    private string lexerCandidates;
+
+    private string lexerRules;
 
     private string terminalNames;
+
+    private string nonterminalNames;
 
     private size_t[Alternative] alternativeIndices;
 
@@ -37,15 +43,19 @@ public struct LR1Tables
         return alternativeIndices[alternative];
     }
 
-    public void setLexerMetadata(const size_t[] candidateTerminals,
-        const string[] terminalNames)
+    public void setLexerMetadata(const Nullable!LexerCandidate[] candidates,
+        const LexerRule[] rules, const string[] terminalNames, const string[] nonterminalNames)
     {
-        string[] names;
-        foreach (terminalName; terminalNames)
-            names ~= terminalName.quoted;
+        import std.algorithm : map;
+        import std.array : array;
 
-        this.candidateTerminals = candidateTerminals.literal;
-        this.terminalNames = names.arrayLiteral;
+        const terminalNameLiterals = terminalNames.map!(name => name.quoted).array;
+        const nonterminalNameLiterals = nonterminalNames.map!(name => name.quoted).array;
+
+        this.lexerCandidates = candidates.literal;
+        this.lexerRules = rules.literal;
+        this.terminalNames = terminalNameLiterals.arrayLiteral;
+        this.nonterminalNames = nonterminalNameLiterals.arrayLiteral;
     }
 
 }
@@ -122,8 +132,10 @@ public LR1Tables createTables(OrderedLR1Tables parserTables,
     result.rules = rules.arrayLiteral;
     result.terminals = terminals.arrayLiteral;
     result.nonterminals = nonterminals.arrayLiteral;
-    result.candidateTerminals = "[]";
+    result.lexerCandidates = "[]";
+    result.lexerRules = "[]";
     result.terminalNames = "[]";
+    result.nonterminalNames = "[]";
     return result;
 }
 
@@ -153,9 +165,13 @@ public void writeModule(string fileName, string moduleName, LR1Tables tables)
     includeFix(fix, output, '$', fixName);
     output.write(tables.nonterminals);
     includeFix(fix, output, '$', fixName);
-    output.write(tables.candidateTerminals);
+    output.write(tables.lexerCandidates);
+    includeFix(fix, output, '$', fixName);
+    output.write(tables.lexerRules);
     includeFix(fix, output, '$', fixName);
     output.write(tables.terminalNames);
+    includeFix(fix, output, '$', fixName);
+    output.write(tables.nonterminalNames);
     includeFix(fix, output, '$', fixName);
     output.close;
 }
@@ -178,17 +194,46 @@ private string symbolLiteral(ParserSymbol, Symbol)(ParserSymbol parserSymbol,
     return format!"Symbol(size_t.max, %s)"(parserSymbol.toString.quoted);
 }
 
+private string literal(const size_t[] values)
+{
+    import std.format : format;
+
+    return format!"[%(%s, %)]"(values);
+}
+
+private string literal(const Nullable!LexerCandidate[] candidates)
+{
+    import std.algorithm : map;
+    import std.array : array;
+    import std.format : format;
+
+    const values = candidates
+        .map!(candidate => candidate.isNull
+            ? "Nullable!LexerCandidate()"
+            : format!"LexerCandidate(LexerCandidate.Kind.%s, %s).nullable"(
+                candidate.get.kind, candidate.get.symbol))
+        .array;
+
+    return values.arrayLiteral;
+}
+
+private string literal(const LexerRule[] rules)
+{
+    import std.algorithm : map;
+    import std.array : array;
+    import std.format : format;
+
+    const values = rules
+        .map!(rule => format!"LexerRule(%s, %s, %s)"(rule.nonterminal, rule.alternative, rule.terminal))
+        .array;
+
+    return values.arrayLiteral;
+}
+
 private string arrayLiteral(const string[] items)
 {
     import std.array : join;
     import std.range : empty;
 
     return items.empty ? "[]" : "[\n        " ~ items.join(",\n        ") ~ "\n    ]";
-}
-
-private string literal(const size_t[] values)
-{
-    import std.format : format;
-
-    return format!"[%(%s, %)]"(values);
 }

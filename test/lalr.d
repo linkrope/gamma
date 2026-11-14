@@ -173,12 +173,11 @@ unittest
         run!"%s --lalr --space --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "decl-appl.eag"), directory)
             .shouldPassWith("DeclAppl grammar is single sweep");
-        // current restriction: --lalr ignores `*`, so whitespace is accepted within `id*`
-        write(buildPath(directory, "input"), "DECL a b APPL b a");
+        write(buildPath(directory, "input"), "DECL ab APPL ba");
         run!"cd %s && %s input"(directory, dotSlash("DeclAppl"))
             .shouldFailWith(
                 "error: predicate 'Declared' failed",
-                "input:1:15 DECL a b APPL b a",
+                "input:1:14 DECL ab APPL ba",
             );
     }
 }

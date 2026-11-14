@@ -1,18 +1,24 @@
 module $;
 
-import $ : lexerTables = tables, candidateTerminals, terminalNames;
+import $ : lexerTables = tables, lexerCandidates, lexerRules, terminalNames, nonterminalNames;
 import $;
 import $;
 import Eval = $;
 import gamma.runtime.lr.LR1Parser : LR1Parser;
 import gamma.runtime.lr.LR1Lexer : LR1Lexer, Token;
-import gamma.runtime.Lexer : Lexer;
+import gamma.runtime.lr.ParseTreeLexer : ParseTreeLexer;
+import gamma.runtime.ParseTree : ParseNode, RuleNode, TerminalNode;
+import gamma.runtime.lr.LR1ParserTables : Symbol;
 import io : Input, Position, read;
 import log : trace;
+import std.sumtype : get;
 
-private enum terminalToParserToken = $;
+private enum int[] terminalToParserToken = $;
+private enum int[] lexicalNonterminalToParserToken = $;
+private enum sourceTerminals = $;
+private enum sourceNonterminals = $;
 
-class GeneratedLexer : Lexer
+class GeneratedLexer : ParseTreeLexer
 {
     private int eofToken;
 
@@ -20,19 +26,22 @@ class GeneratedLexer : Lexer
 
     private Position position_;
 
+    private const(ParseNode)* parseNode_;
+
     public this(Input input, int eofToken)
     {
         this.eofToken = eofToken;
         this.position_ = input.position;
-        this.lrLexer = LR1Lexer(input, lexerTables, candidateTerminals);
+        this.lrLexer = LR1Lexer(input, lexerTables, lexerCandidates, lexerRules, terminalNames);
     }
 
     public int nextToken()
     {
+        parseNode_ = null;
         if (lrLexer.empty)
             return eofToken;
 
-        const token = lrLexer.front;
+        auto token = lrLexer.front;
 
         position_ = token.position;
         traceToken(token);
@@ -41,9 +50,17 @@ class GeneratedLexer : Lexer
         final switch (token.kind)
         {
         case Token.Kind.terminal:
+            parseNode_ = new ParseNode(TerminalNode(token.terminal, position_));
             if (token.terminal >= terminalToParserToken.length)
                 return -1;
             return terminalToParserToken[token.terminal];
+        case Token.Kind.nonterminal:
+            const nonterminal = token.nonterminalIndex;
+
+            parseNode_ = token.rule;
+            if (nonterminal >= lexicalNonterminalToParserToken.length)
+                return -1;
+            return lexicalNonterminalToParserToken[nonterminal];
         case Token.Kind.end:
             return eofToken;
         case Token.Kind.error:
@@ -56,22 +73,39 @@ class GeneratedLexer : Lexer
         return position_;
     }
 
+    public const(ParseNode)* parseNode() const
+    in (parseNode_ !is null)
+    {
+        return parseNode_;
+    }
+
     private void traceToken(Token token)
     {
         final switch (token.kind)
         {
         case Token.Kind.terminal:
-            trace!"LR lexer terminal %s\n%s"(terminalNames[token.terminal], token.position);
+            trace!"lexer terminal %s\n%s"(terminalNames[token.terminal], token.position);
+            return;
+        case Token.Kind.nonterminal:
+            const nonterminal = token.nonterminalIndex;
+
+            trace!"lexer nonterminal %s\n%s"(nonterminalNames[nonterminal], token.position);
             return;
         case Token.Kind.end:
-            trace!"LR lexer end";
+            trace!"lexer end";
             return;
         case Token.Kind.error:
-            trace!"LR lexer error\n%s"(token.position);
+            trace!"lexer error\n%s"(token.position);
             return;
         }
     }
 
+}
+
+private size_t nonterminalIndex(Token token)
+in (token.kind == Token.Kind.nonterminal)
+{
+    return (*token.rule).get!(const RuleNode).lhs;
 }
 
 int main(string[] args)
@@ -98,7 +132,7 @@ int main(string[] args)
     auto lexer = new GeneratedLexer(input, cast(int) tables.eofTerminal);
     auto parser = new LR1Parser(tables, lexer);
     auto tree = parser.parse;
-    auto writer = ParseTreeWriter(tables.terminals, tables.nonterminals);
+    auto writer = ParseTreeWriter(sourceTerminals, sourceNonterminals);
 
     trace!"%s"(writer.write(tree));
 

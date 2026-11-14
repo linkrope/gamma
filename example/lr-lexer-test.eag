@@ -1,27 +1,19 @@
 // test grammar for LR lexer longest match
-// with left-recursive starred nonterminal
+// with left-recursive lexical nonterminal
 
 S = .
 
-Op = '<' | '<=' | 'if'.
-
 S <+ : S>:
-    Op Op Op id Op.
+  { op | id | 'if'}.
 
-Op:
-      '<'
-    | '<='
-    | 'if'.
+op: '<' | '<='.
 
-letter = 'i' | 'f' | 'x'.
+letter = 'f' | 'i'.
 
-letter:
-      'i'
-    | 'f'
-    | 'x'.
+letter: 'f' | 'i'.
 
 id* = letter | id letter.
 
 id*:
-      id letter
-    | letter.
+    id letter
+  | letter.

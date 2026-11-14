@@ -13,7 +13,9 @@ import gamma.grammar.SymbolNode;
 import gamma.grammar.Terminal;
 import gamma.input.epsilang.analyzer : EAG;
 import gamma.util.Position;
+import io : UndefPos;
 import log;
+import std.typecons : Flag, No;
 
 /**
  * A compact parser grammar with mappings
@@ -25,10 +27,13 @@ public struct ParserGrammar
 
     Terminal[Terminal] terminals;
 
+    Nonterminal[Terminal] lexicalTerminals;
+
     Nonterminal[Nonterminal] nonterminals;
 }
 
-public ParserGrammar toParserGrammar(EAG eag)
+public ParserGrammar toParserGrammar(EAG eag,
+    Flag!"parsesLexicalNonterminals" parsesLexicalNonterminals = No.parsesLexicalNonterminals)
 {
     import gamma.grammar.PrintingVisitor : toPrettyString;
 
@@ -37,7 +42,8 @@ public ParserGrammar toParserGrammar(EAG eag)
 
     bool isTerminal(Symbol symbol)
     {
-        return hyperGrammarProperties.isLexicalNonterminal(symbol);
+        return !parsesLexicalNonterminals
+            && hyperGrammarProperties.isLexicalNonterminal(symbol);
     }
 
     bool isPredicate(Symbol symbol)
@@ -60,6 +66,7 @@ in (grammar.isPlain)
 {
     GrammarBuilder grammarBuilder;
     Terminal[Terminal] terminals;
+    Nonterminal[Terminal] lexicalTerminals;
     Nonterminal[Nonterminal] nonterminals;
 
     Nonterminal originalStartSymbol = grammarBuilder.buildNonterminal(grammar.startSymbol.toString);
@@ -69,20 +76,15 @@ in (grammar.isPlain)
     // --- Go ahead with rest of parser generation... ---
     {
         Terminal bottom = grammarBuilder.buildTerminal("(end)");
-        Node[] rhs = [new SymbolNode(originalStartSymbol, Position()), new SymbolNode(bottom, Position())];
+        Node[] rhs = [new SymbolNode(originalStartSymbol, UndefPos), new SymbolNode(bottom, UndefPos)];
 
-        grammarBuilder.add(
-            new Alternative(new LhsNode(extStartSymbol, Position()), rhs, Position()));
+        grammarBuilder.add(new Alternative(new LhsNode(extStartSymbol, UndefPos), rhs, UndefPos));
     }
 
     // Filter the pure parser grammar out of the grammar using
     // - help which nonterminal symbols are "lexical nonterminals"
     // - help which RHS symbol occurrences are "predicates"
     // Any alternative/rule the LHS of which is not a nonterminal of the parser grammar is skipped.
-
-    // Current restriction: LALR has --p semantics,
-    // so marked lexical rules and their occurrences remain parser rules.
-    // The generated LR lexer recognizes the quoted terminals they use.
 
     // For the remaining RHS's, SymbolNode's are
     // - not copied to the corresponding parser grammar RHS if they represent a "predicate"
@@ -92,11 +94,11 @@ in (grammar.isPlain)
     {
         foreach (alternative; rule.alternatives)
         {
-            if (isPredicate(alternative.lhs.nonterminal))
+            if (isPredicate(alternative.lhs.nonterminal) || isTerminal(alternative.lhs.nonterminal))
                 break;
 
             Nonterminal lhs = grammarBuilder.buildNonterminal(alternative.lhs.nonterminal.toString);
-            Node[] rhs;
+            Node[] rhs = null;
 
             nonterminals[lhs] = alternative.lhs.nonterminal;
             foreach (node; alternative.rhs)
@@ -120,10 +122,21 @@ in (grammar.isPlain)
                 else
                 {
                     auto nonterminal = cast(Nonterminal) symbolNode.symbol;
-                    auto parserNonterminal = grammarBuilder.buildNonterminal(nonterminal.toString);
 
-                    symbol = parserNonterminal;
-                    nonterminals[parserNonterminal] = nonterminal;
+                    if (isTerminal(nonterminal))
+                    {
+                        auto parserTerminal = grammarBuilder.buildTerminal(nonterminal.toString);
+
+                        symbol = parserTerminal;
+                        lexicalTerminals[parserTerminal] = nonterminal;
+                    }
+                    else
+                    {
+                        auto parserNonterminal = grammarBuilder.buildNonterminal(nonterminal.toString);
+
+                        symbol = parserNonterminal;
+                        nonterminals[parserNonterminal] = nonterminal;
+                    }
                 }
                 rhs ~= new SymbolNode(symbol, symbolNode.position);
             }
@@ -132,5 +145,6 @@ in (grammar.isPlain)
         }
     }
 
-    return ParserGrammar(grammarBuilder.getGrammar(extStartSymbol), terminals, nonterminals);
+    return ParserGrammar(grammarBuilder.getGrammar(extStartSymbol),
+        terminals, lexicalTerminals, nonterminals);
 }

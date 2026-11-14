@@ -1,9 +1,9 @@
 module gamma.runtime.lr.LR1Parser;
 
-import gamma.runtime.Lexer;
 import gamma.runtime.lr.LR1ParserTables;
+import gamma.runtime.lr.ParseTreeLexer;
 import gamma.runtime.ParseTree;
-import io : Position, UndefPos;
+import io : Position;
 import log;
 import std.bitmanip : BitArray;
 import std.format;
@@ -22,7 +22,7 @@ public class LR1Parser
 {
     private LR1ParserTables parserTables;
 
-    private Lexer lexer;
+    private ParseTreeLexer lexer;
 
     private bool haveLookahead;
 
@@ -38,7 +38,8 @@ public class LR1Parser
 
     private size_t errorCount_;
 
-    public this(LR1ParserTables parserTables, Lexer lexer)
+    public this(LR1ParserTables parserTables, ParseTreeLexer lexer)
+    in (lexer !is null)
     {
         this.parserTables = parserTables;
         this.lexer = lexer;
@@ -72,7 +73,8 @@ public class LR1Parser
                     haveLookahead = false;
                     state = shift.state;
                     stack.push(state);
-                    treeStack ~= terminalNode(lookahead, lookaheadPosition);
+                    // Lexer nodes are allocated mutable and are never changed after publication.
+                    treeStack ~= cast(ParseNode*) lexer.parseNode;
                     trace!"%s"(stack);
                     return false;
                 },
@@ -129,7 +131,7 @@ public class LR1Parser
                     trace!"(C)Shift %s"(shift.lookahead);
                     state = shift.state;
                     stack.push(state);
-                    treeStack ~= terminalNode(shift.lookahead, UndefPos);
+                    treeStack ~= terminalNode(shift.lookahead, lookaheadPosition);
                     return true;
                 },
                 (const Reduce reduceAction)
@@ -178,7 +180,7 @@ public class LR1Parser
                     info!"Inserting %s"(parserTables.terminalRepresentation(cast(int) shift.lookahead));
                     state = shift.state;
                     stack.push(state);
-                    treeStack ~= terminalNode(shift.lookahead, UndefPos);
+                    treeStack ~= terminalNode(shift.lookahead, lookaheadPosition);
                     return false;
                 },
                 (const Reduce reduceAction)

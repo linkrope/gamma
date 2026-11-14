@@ -166,6 +166,7 @@ class LRMachine
         void computeTransitions()
         {
             import std.algorithm : sort, SwapStrategy;
+            import std.range : empty;
 
             /*
              * Compute ordered closure of this.kernelItems[].
@@ -203,7 +204,7 @@ class LRMachine
             /*
              * Any new states / item sets at all?
              */
-            if (newItems.length == 0)
+            if (newItems.empty)
                 return;
 
             /*

@@ -234,31 +234,43 @@ void compile(Input input, const Arguments arguments)
         settings.outputDirectory.build(fileNames, arguments);
 }
 
+auto generateLRLexer(EAG eag, const Settings settings)
+{
+    import gamma.parsgen.lalr1.CodeGenerator : generateLexerCode;
+    import gamma.parsgen.lalr1.LexerConflictResolver : LexerConflictResolver;
+    import gamma.parsgen.lalr1.LexerGrammarBuilder : toLexerGrammar;
+    import gamma.parsgen.lalr1.PennelloDeRemer : generateParser;
+    import std.typecons : No, Yes;
+
+    const parsesLexicalNonterminals = settings.p
+        ? Yes.parsesLexicalNonterminals
+        : No.parsesLexicalNonterminals;
+    auto lexerGrammar = eag.toLexerGrammar(parsesLexicalNonterminals);
+    auto conflictResolver = new LexerConflictResolver(lexerGrammar.grammar,
+        lexerGrammar.tokenEnd, lexerGrammar.helpersByTerminal,
+        lexerGrammar.lexicalNonterminalOwners, lexerGrammar.nonterminalNames);
+    auto lexerTables = generateParser(lexerGrammar.grammar, conflictResolver);
+
+    return generateLexerCode(lexerTables, lexerGrammar,
+        eag.plainHyperGrammar.startSymbol.toString, settings);
+}
+
 string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, string evaluatorModuleName,
     string lexerTablesModuleName, const Settings settings)
 {
     import gamma.parsgen.lalr1.CodeGenerator : generateCode;
     import gamma.parsgen.lalr1.ParserGrammarBuilder : toParserGrammar;
     import gamma.parsgen.lalr1.PennelloDeRemer : generateParser;
+    import std.typecons : No, Yes;
 
-    auto parserGrammar = eag.toParserGrammar;
+    const parsesLexicalNonterminals = settings.p
+        ? Yes.parsesLexicalNonterminals
+        : No.parsesLexicalNonterminals;
+    auto parserGrammar = eag.toParserGrammar(parsesLexicalNonterminals);
     auto parserTables = generateParser(parserGrammar.grammar);
 
-    return generateCode(epsilonEAG, parserTables, parserGrammar, evaluatorModuleName,
+    return generateCode(epsilonEAG, eag, parserTables, parserGrammar, evaluatorModuleName,
         lexerTablesModuleName, settings);
-}
-
-auto generateLRLexer(EAG eag, const Settings settings)
-{
-    import gamma.parsgen.lalr1.CodeGenerator : generateLexerCode;
-    import gamma.parsgen.lalr1.LexerGrammarBuilder : toLexerGrammar;
-    import gamma.parsgen.lalr1.PennelloDeRemer : generateParser;
-
-    auto lexerGrammar = eag.toLexerGrammar;
-    auto lexerTables = generateParser(lexerGrammar.grammar);
-
-    return generateLexerCode(lexerTables, lexerGrammar,
-        eag.plainHyperGrammar.startSymbol.toString, settings);
 }
 
 Settings createSettings(const Arguments arguments)

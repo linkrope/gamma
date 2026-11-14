@@ -1,14 +1,16 @@
 module gamma.runtime.lr.LR1Lexer;
 
 import gamma.runtime.lr.LR1ParserTables;
+import gamma.runtime.ParseTree : nodePosition = position, ParseNode, RuleNode, TerminalNode;
 import io : Input, Position;
-import std.range : back;
+import std.range : back, empty, front;
 import std.sumtype : match;
+import std.typecons : Nullable, nullable;
 import std.uni : isWhite;
 
 public struct Token
 {
-    public enum Kind { terminal, end, error }
+    public enum Kind { terminal, nonterminal, end, error }
 
     Kind kind;
 
@@ -16,13 +18,14 @@ public struct Token
     size_t terminal = size_t.max;
 
     Position position;
+
+    const(ParseNode)* rule;
 }
 
 /**
- * A no-repair LR lexer.
- * It recognizes one longest quoted terminal at a time,
- * using (token-end) only as a virtual lookahead:
- * it is never consumed from the source input.
+ * An LR lexer that recognizes one longest quoted terminal or nonterminal at a time,
+ * using (token-end) only as a virtual lookahead: it is never consumed from the source input.
+ * It emits one error token for every unrecognized source character.
  */
 public struct LR1Lexer
 {
@@ -32,18 +35,25 @@ public struct LR1Lexer
 
     private immutable LR1ParserTables parserTables;
 
-    private immutable size_t[] candidateTerminals;
+    private immutable Nullable!LexerCandidate[] candidates;
+
+    private immutable LexerRule[] rules;
+
+    private immutable string[] terminalNames;
 
     private size_t[string] characterTerminals;
 
     private Position whiteSpaceErrorPosition;
 
     public this(Input input, immutable LR1ParserTables parserTables,
-        immutable size_t[] candidateTerminals)
+        immutable Nullable!LexerCandidate[] candidates,
+        immutable LexerRule[] rules, immutable string[] terminalNames)
     {
         this.input = input;
         this.parserTables = parserTables;
-        this.candidateTerminals = candidateTerminals;
+        this.candidates = candidates;
+        this.rules = rules;
+        this.terminalNames = terminalNames;
         foreach (index, terminal; parserTables.terminals)
             this.characterTerminals[terminal.name] = index;
         readToken;
@@ -79,19 +89,32 @@ public struct LR1Lexer
             return;
         }
 
-        const tokenPosition = input.position;
+        const position = input.position;
         size_t[] states = [0];
-        size_t acceptedTerminal = size_t.max;
+        ParseNode*[] nodes = null;
+        Nullable!Token acceptedToken;
         Input remainingInput;
+        const literal = literalCandidate;
+
+        if (!literal.isNull)
+        {
+            const literalResult = literal.get;
+
+            acceptedToken = Token(Token.Kind.terminal, literalResult.terminal, position).nullable;
+            remainingInput = literalResult.remainingInput;
+        }
 
         for (;;)
         {
-            const candidate = candidateAtVirtualEnd(states);
+            auto candidate = candidateAtVirtualEnd(states, nodes, input.position);
 
-            if (candidate != size_t.max)
+            if (!candidate.isNull)
             {
-                acceptedTerminal = candidate;
-                remainingInput = input;
+                if (acceptedToken.isNull || input.index > remainingInput.index)
+                {
+                    acceptedToken = candidate;
+                    remainingInput = input;
+                }
             }
 
             if (input.empty)
@@ -101,27 +124,60 @@ public struct LR1Lexer
 
             const terminal = characterTerminals.get(input.front.to!string, size_t.max);
 
-            if (terminal == size_t.max || !consume(states, terminal))
+            if (terminal == size_t.max || !consume(states, nodes, terminal, input.position))
                 break;
 
             input.popFront;
         }
 
-        if (acceptedTerminal != size_t.max)
+        if (!acceptedToken.isNull)
         {
+            auto result = acceptedToken.get;
+
             input = remainingInput;
-            token = Token(Token.Kind.terminal, acceptedTerminal, tokenPosition);
+            result.position = position;
+            token = result;
 
             return;
         }
 
         input.popFront;
-        token = Token(Token.Kind.error, size_t.max, tokenPosition);
+        token = Token(Token.Kind.error, size_t.max, position);
     }
 
     private dchar next()
     {
         return input.empty ? 0 : input.front;
+    }
+
+    private Nullable!LiteralResult literalCandidate() const
+    {
+        import std.utf : byDchar;
+
+        Nullable!LiteralResult result;
+
+        foreach (terminal, name; terminalNames)
+        {
+            if (name.empty)
+                continue;
+
+            Input cursor = input;
+            const representation = name[1 .. $ - 1];
+
+            foreach (character; representation.byDchar)
+            {
+                if (cursor.empty || cursor.front != character)
+                    break;
+                cursor.popFront;
+            }
+
+            if (cursor.index - input.index != representation.length)
+                continue;
+            if (result.isNull || cursor.index > result.get.remainingInput.index)
+                result = LiteralResult(terminal, cursor);
+        }
+
+        return result;
     }
 
     private bool skipWhiteSpace()
@@ -181,7 +237,8 @@ public struct LR1Lexer
     /**
      * Applies all reductions needed before shifting `terminal`.
      */
-    private bool consume(ref size_t[] states, size_t terminal) const
+    private bool consume(ref size_t[] states, ref ParseNode*[] nodes, size_t terminal,
+        const Position position) const
     {
         for (;;)
         {
@@ -194,11 +251,12 @@ public struct LR1Lexer
                 (const Shift shift)
                 {
                     states ~= shift.state;
+                    nodes ~= new ParseNode(TerminalNode(size_t.max, position));
                     return true;
                 },
                 (const Reduce reduceAction)
                 {
-                    reduce(states, reduceAction.rule);
+                    reduce(states, nodes, reduceAction.rule, position);
                     return false;
                 },
                 (const Halt halt) => false,
@@ -212,17 +270,20 @@ public struct LR1Lexer
     /**
      * Parses the virtual end marker against a snapshot.
      */
-    private size_t candidateAtVirtualEnd(const size_t[] originalStates) const
+    private Nullable!Token candidateAtVirtualEnd(const size_t[] originalStates,
+        ParseNode*[] originalNodes, const Position position) const
     {
         size_t[] states = originalStates.dup;
-        size_t candidate = size_t.max;
+        ParseNode*[] nodes = originalNodes.dup;
+        Nullable!LexerCandidate matchedCandidate;
+        size_t matchedRule = size_t.max;
 
         for (;;)
         {
             Action action;
 
             if (!actionFor(states.back, parserTables.eofTerminal, action))
-                return size_t.max;
+                return Nullable!Token();
 
             const completed = action.match!(
                 (const Shift shift)
@@ -232,18 +293,38 @@ public struct LR1Lexer
                 },
                 (const Reduce reduceAction)
                 {
-                    const sourceTerminal = candidateTerminals[reduceAction.rule];
+                    const candidate = candidates[reduceAction.rule];
 
-                    if (sourceTerminal != size_t.max)
-                        candidate = sourceTerminal;
-                    reduce(states, reduceAction.rule);
+                    if (!candidate.isNull)
+                    {
+                        matchedCandidate = candidate;
+                        matchedRule = reduceAction.rule;
+                        return true;
+                    }
+                    reduce(states, nodes, reduceAction.rule, position);
                     return false;
                 },
                 (const Halt halt) => true,
             );
 
             if (completed)
-                return candidate;
+            {
+                if (matchedCandidate.isNull)
+                    return Nullable!Token();
+
+                const candidate = matchedCandidate.get;
+
+                if (candidate.kind == LexerCandidate.Kind.terminal)
+                    return Token(Token.Kind.terminal, candidate.symbol, position).nullable;
+
+                assert(candidate.kind == LexerCandidate.Kind.nonterminal);
+
+                auto sourceRule = nodes[$ - parserTables.rules[matchedRule].rhsLength];
+
+                assert(sourceRule !is null);
+
+                return Token(Token.Kind.nonterminal, size_t.max, position, sourceRule).nullable;
+            }
         }
     }
 
@@ -260,13 +341,30 @@ public struct LR1Lexer
         return false;
     }
 
-    private void reduce(ref size_t[] states, size_t ruleIndex) const
+    private void reduce(ref size_t[] states, ref ParseNode*[] nodes,
+        size_t ruleIndex, const Position position) const
     {
         const rule = parserTables.rules[ruleIndex];
 
         assert(rule.rhsLength < states.length);
 
         states.length -= rule.rhsLength;
+
+        assert(rule.rhsLength <= nodes.length);
+
+        auto children = nodes[$ - rule.rhsLength .. $];
+
+        nodes.length -= rule.rhsLength;
+
+        const source = rules[ruleIndex];
+
+        if (source.terminal != size_t.max)
+            nodes ~= new ParseNode(TerminalNode(source.terminal, nodePosition(*children.front)));
+        else if (source.nonterminal != size_t.max)
+            nodes ~= new ParseNode(RuleNode(source.nonterminal, source.alternative, children,
+                children.empty ? position : nodePosition(*children.front)));
+        else
+            nodes ~= children.length == 1 ? children.front : null;
 
         foreach (goTo; parserTables.gotos[
             parserTables.gotoOffsets[states.back] .. parserTables.gotoOffsets[states.back + 1]])
@@ -280,6 +378,13 @@ public struct LR1Lexer
 
         assert(false, "missing lexer goto action");
     }
+}
+
+private struct LiteralResult
+{
+    size_t terminal;
+
+    Input remainingInput;
 }
 
 @("skip Unicode WhiteSpace")
@@ -319,5 +424,5 @@ unittest
 
 version (unittest) private LR1Lexer lexer(string text)
 {
-    return LR1Lexer(Input("input", text), LR1ParserTables(), candidateTerminals: null);
+    return LR1Lexer(Input("input", text), LR1ParserTables(), candidates: null, rules: null, terminalNames: null);
 }
