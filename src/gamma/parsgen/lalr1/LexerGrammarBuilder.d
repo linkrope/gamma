@@ -70,6 +70,16 @@ public LexerGrammar toLexerGrammar(EAG eag,
 
     auto properties = new GrammarProperties(eag.plainHyperGrammar, lexicalRoots);
 
+    foreach (nonterminal, isLexicalRoot; lexicalRoots)
+    {
+        if (isLexicalRoot && properties.isNullable(nonterminal))
+        {
+            eag.plainHyperGrammar.ruleOf(nonterminal).lhs.position
+                .markError("nullable lexical nonterminal " ~ nonterminal.toString);
+            throw new Exception("nullable lexical nonterminal");
+        }
+    }
+
     foreach (nonterminal; eag.plainHyperGrammar.nonterminals)
     {
         nonterminalNames[nonterminal.index] = nonterminal.toString;

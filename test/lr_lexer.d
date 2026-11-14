@@ -115,6 +115,27 @@ unittest
     }
 }
 
+@("reject nullable lexical nonterminal")
+unittest
+{
+    with (sandbox)
+    {
+        const grammar = `
+            S = .
+
+            S <+ : S>: a.
+
+            a*: ['a'].
+            `;
+
+        const fileName = buildPath(directory, "nullable-lexical-nonterminal.eag");
+
+        write(fileName, grammar);
+        run!"%s --lalr --runtime . %s --output-directory %s"(gamma, fileName, directory)
+            .shouldFailWith("error: nullable lexical nonterminal a");
+    }
+}
+
 @("repair unterminated nested comment")
 unittest
 {

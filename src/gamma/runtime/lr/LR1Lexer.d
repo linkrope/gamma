@@ -96,7 +96,7 @@ public struct LR1Lexer
         size_t[] states = [0];
         ParseNode*[] nodes = null;
         Nullable!Token acceptedToken;
-        Input remainingInput;
+        Input remainingInput = input;
         const literal = literalCandidate;
 
         if (!literal.isNull)
@@ -113,7 +113,7 @@ public struct LR1Lexer
 
             if (!candidate.isNull)
             {
-                if (acceptedToken.isNull || input.index > remainingInput.index)
+                if (input.index > remainingInput.index)
                 {
                     acceptedToken = candidate;
                     remainingInput = input;
