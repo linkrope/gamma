@@ -94,7 +94,7 @@ public struct LR1Lexer
 
         const position = input.position;
         size_t[] states = [0];
-        ParseNode*[] nodes = null;
+        const(ParseNode)*[] nodes = null;
         Nullable!Token acceptedToken;
         Input remainingInput = input;
         const literal = literalCandidate;
@@ -240,7 +240,7 @@ public struct LR1Lexer
     /**
      * Applies all reductions needed before shifting `terminal`.
      */
-    private bool consume(ref size_t[] states, ref ParseNode*[] nodes, size_t terminal,
+    private bool consume(ref size_t[] states, ref const(ParseNode)*[] nodes, size_t terminal,
         const Position position) const
     {
         for (;;)
@@ -274,10 +274,10 @@ public struct LR1Lexer
      * Parses the virtual end marker against a snapshot.
      */
     private Nullable!Token candidateAtVirtualEnd(const size_t[] originalStates,
-        ParseNode*[] originalNodes, const Position position) const
+        const(ParseNode)*[] originalNodes, const Position position) const
     {
         size_t[] states = originalStates.dup;
-        ParseNode*[] nodes = originalNodes.dup;
+        const(ParseNode)*[] nodes = originalNodes.dup;
         Nullable!LexerCandidate matchedCandidate;
         size_t matchedRule = size_t.max;
 
@@ -344,7 +344,7 @@ public struct LR1Lexer
         return false;
     }
 
-    private void reduce(ref size_t[] states, ref ParseNode*[] nodes,
+    private void reduce(ref size_t[] states, ref const(ParseNode)*[] nodes,
         size_t ruleIndex, const Position position) const
     {
         const rule = parserTables.rules[ruleIndex];

@@ -34,7 +34,7 @@ public class LR1Parser
 
     private Stack stack;
 
-    private ParseNode*[] treeStack;
+    private const(ParseNode)*[] treeStack;
 
     private size_t errorCount_;
 
@@ -73,8 +73,7 @@ public class LR1Parser
                     haveLookahead = false;
                     state = shift.state;
                     stack.push(state);
-                    // Lexer nodes are allocated mutable and are never changed after publication.
-                    treeStack ~= cast(ParseNode*) lexer.parseNode;
+                    treeStack ~= lexer.parseNode;
                     trace!"%s"(stack);
                     return false;
                 },
@@ -286,14 +285,14 @@ public class LR1Parser
         return ParseTree(treeStack.back, lookaheadPosition);
     }
 
-    private ParseNode* terminalNode(size_t terminal, const Position position)
+    private const(ParseNode)* terminalNode(size_t terminal, const Position position)
     {
         const terminalIndex = parserTables.terminals[terminal].index;
 
         return new ParseNode(TerminalNode(terminalIndex, position));
     }
 
-    private ParseNode* ruleNode(const Rule rule, const(ParseNode*[]) children,
+    private const(ParseNode)* ruleNode(const Rule rule, const(ParseNode)*[] children,
         const Position position)
     {
         const lhsIndex = parserTables.nonterminals[rule.lhs].index;
