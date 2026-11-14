@@ -1,0 +1,19 @@
+// test grammar for LR lexer longest match
+// with left-recursive lexical nonterminal
+
+S = .
+
+S <+ : S>:
+  { op | id | 'if'}.
+
+op: '<' | '<='.
+
+letter = 'f' | 'i'.
+
+letter: 'f' | 'i'.
+
+id* = letter | id letter.
+
+id*:
+    id letter
+  | letter.

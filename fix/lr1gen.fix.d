@@ -1,42 +1,111 @@
 module $;
 
-import $Lex;
+import $ : lexerTables = tables, lexerCandidates, lexerRules, terminalNames, nonterminalNames;
 import $;
 import $;
 import Eval = $;
 import gamma.runtime.lr.LR1Parser : LR1Parser;
-import gamma.runtime.Lexer : Lexer;
+import gamma.runtime.lr.LR1Lexer : LR1Lexer, Token;
+import gamma.runtime.lr.ParseTreeLexer : ParseTreeLexer;
+import gamma.runtime.ParseTree : ParseNode, RuleNode, TerminalNode;
+import gamma.runtime.lr.LR1ParserTables : Symbol;
 import io : Input, Position, read;
+import log : error, trace;
+import std.sumtype : get;
 
-private enum lexerTokenToParserToken = $;
+private enum int[] terminalToParserToken = $;
+private enum int[] lexicalNonterminalToParserToken = $;
+private enum sourceTerminals = $;
+private enum sourceNonterminals = $;
 
-class GeneratedLexer : Lexer
+class GeneratedLexer : ParseTreeLexer
 {
     private int eofToken;
 
+    private LR1Lexer lrLexer;
+
+    private Position position_;
+
+    private const(ParseNode)* parseNode_;
+
     public this(Input input, int eofToken)
     {
-        $Lex.Init(input);
         this.eofToken = eofToken;
+        this.position_ = input.position;
+        this.lrLexer = LR1Lexer(input, lexerTables, lexerCandidates, lexerRules, terminalNames);
     }
 
     public int nextToken()
     {
-        int lexerToken;
+        parseNode_ = null;
+        if (lrLexer.empty)
+            return eofToken;
 
-        $Lex.Get(lexerToken);
-        if (lexerToken == 0)
-            return this.eofToken;
-        if (lexerToken < 0 || lexerToken >= lexerTokenToParserToken.length)
+        auto token = lrLexer.front;
+
+        position_ = token.position;
+        traceToken(token);
+        lrLexer.popFront;
+
+        final switch (token.kind)
+        {
+        case Token.Kind.terminal:
+            parseNode_ = new ParseNode(TerminalNode(token.terminal, position_));
+            if (token.terminal >= terminalToParserToken.length)
+                return -1;
+            return terminalToParserToken[token.terminal];
+        case Token.Kind.nonterminal:
+            const nonterminal = token.nonterminalIndex;
+
+            parseNode_ = token.rule;
+            if (nonterminal >= lexicalNonterminalToParserToken.length)
+                return -1;
+            return lexicalNonterminalToParserToken[nonterminal];
+        case Token.Kind.end:
+            return eofToken;
+        case Token.Kind.error:
             return -1;
-        return lexerTokenToParserToken[lexerToken];
+        }
     }
 
     public Position position()
     {
-        return $Lex.Pos;
+        return position_;
     }
 
+    public const(ParseNode)* parseNode() const
+    in (parseNode_ !is null)
+    {
+        return parseNode_;
+    }
+
+    private void traceToken(Token token)
+    {
+        final switch (token.kind)
+        {
+        case Token.Kind.terminal:
+            trace!"lexer terminal %s\n%s"(terminalNames[token.terminal], token.position);
+            return;
+        case Token.Kind.nonterminal:
+            const nonterminal = token.nonterminalIndex;
+
+            trace!"lexer nonterminal %s\n%s"(nonterminalNames[nonterminal], token.position);
+            return;
+        case Token.Kind.end:
+            trace!"lexer end";
+            return;
+        case Token.Kind.error:
+            error!"%s\n%s"(token.errorMessage.get("unknown token"), token.position);
+            return;
+        }
+    }
+
+}
+
+private size_t nonterminalIndex(Token token)
+in (token.kind == Token.Kind.nonterminal)
+{
+    return (*token.rule).get!(const RuleNode).lhs;
 }
 
 int main(string[] args)
@@ -63,24 +132,24 @@ int main(string[] args)
     auto lexer = new GeneratedLexer(input, cast(int) tables.eofTerminal);
     auto parser = new LR1Parser(tables, lexer);
     auto tree = parser.parse;
-    auto writer = ParseTreeWriter(tables.terminals, tables.nonterminals);
+    auto writer = ParseTreeWriter(sourceTerminals, sourceNonterminals);
 
     trace!"%s"(writer.write(tree));
 
-    if (parser.errorCount == 0)
-    {
-        if (!Eval.EvalInitSucceeds())
-            return EXIT_FAILURE;
+    if (parser.errorCount != 0)
+        return EXIT_FAILURE;
 
-        auto epsilonTree = transform(tree);
+    if (!Eval.EvalInitSucceeds())
+        return EXIT_FAILURE;
 
-        assert(epsilonTree.tree.length == epsilonTree.positions.length);
-        Eval.TraverseSyntaxTree(epsilonTree.tree, epsilonTree.positions, 0, epsilonTree.root,
-            epsilonTree.hyperArity, info, write);
-        writeln("OK");
-    }
+    auto epsilonTree = transform(tree);
+
+    assert(epsilonTree.tree.length == epsilonTree.positions.length);
+    Eval.TraverseSyntaxTree(epsilonTree.tree, epsilonTree.positions, 0, epsilonTree.root,
+        epsilonTree.hyperArity, info, write);
+    writeln("OK");
 
 
-    return (parser.errorCount == 0) ? 0 : EXIT_FAILURE;
+    return 0;
 }
 $

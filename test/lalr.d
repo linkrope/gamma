@@ -1,7 +1,7 @@
 module test.lalr;
 
 import std.file : write;
-import std.path : buildPath;
+import std.path : absolutePath, buildPath;
 import std.string;
 import test.helper;
 
@@ -60,14 +60,14 @@ unittest
 
         run!"%s --lalr --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "left-recursion.eag"), directory)
-            .shouldPassWith("LexGen writing S");
+            .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "1 + 2");
         run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
             .shouldPassWith(parseTree.escape);
     }
 }
 
-@("compile left-recursion.eag and run LR parser on invalid input")
+@("compile left-recursion.eag and repair invalid syntax input")
 unittest
 {
     with (sandbox)
@@ -121,7 +121,7 @@ unittest
 
         run!"%s --lalr --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "left-recursion.eag"), directory)
-            .shouldPassWith("LexGen writing S");
+            .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "2 ** 3");
         run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
             .shouldFailWith(
@@ -132,19 +132,37 @@ unittest
     }
 }
 
-@("compile left-recursion.eag and repair an unknown LR token")
+@("compile left-recursion.eag and repair an unknown lexical token")
 unittest
 {
     with (sandbox)
     {
         run!"%s --lalr --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "left-recursion.eag"), directory)
-            .shouldPassWith("LexGen writing S");
+            .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "2 @ * 3");
         run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
             .shouldFailWith(
+                "error: unknown token",
+                "input:1:3",
                 `error: Syntax error! Repairing input...`.escape,
-                `info: Deleting unknown token`,
+                "info: Deleting unknown token",
+            );
+    }
+}
+
+@("recover out-of-order LR input at end of file")
+unittest
+{
+    with (sandbox)
+    {
+        run!"%s --lalr --runtime . %s --output-directory %s"(
+            gamma, buildPath("example", "abc.eag"), directory)
+            .shouldPassWith("S grammar is single sweep");
+        run!"cd %s && echo 'ba' | %s"(directory, dotSlash("S"))
+            .shouldFailWith(
+                `error: Syntax error! Repairing input...`.escape,
+                "info: End of parsing",
             );
     }
 }
@@ -156,14 +174,27 @@ unittest
     {
         run!"%s --lalr --space --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "decl-appl.eag"), directory)
-            .shouldPassWith("LexGen writing DeclAppl");
-        // current restriction: --lalr ignores `*`, so whitespace is accepted within `id*`
-        write(buildPath(directory, "input"), "DECL a b APPL b a");
+            .shouldPassWith("DeclAppl grammar is single sweep");
+        write(buildPath(directory, "input"), "DECL ab APPL ba");
         run!"cd %s && %s input"(directory, dotSlash("DeclAppl"))
             .shouldFailWith(
                 "error: predicate 'Declared' failed",
-                "input:1:15 DECL a b APPL b a",
+                "input:1:14 DECL ab APPL ba",
             );
+    }
+}
+
+@("compile oberon0.eag as LALR and run Oberon-0 compiler on BigSample")
+unittest
+{
+    with (sandbox)
+    {
+        run!"%s --lalr --space --runtime . %s --output-directory %s"(
+            gamma, buildPath("example", "oberon0.eag"), directory)
+            .shouldPassWith("OberonO grammar is single sweep");
+        run!"cd %s && %s %s"(directory, dotSlash("OberonO"),
+            absolutePath("test/oberon0/BigSample.Mod"))
+            .shouldPassWith("^^L1 .* RET 0 $$");
     }
 }
 
@@ -174,7 +205,7 @@ unittest
     {
         run!"%s --lalr --runtime . %s --output-directory %s"(
             gamma, buildPath("example", "ebnf.eag"), directory)
-            .shouldPassWith("LexGen writing S");
+            .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "a, , ab");
         run!"cd %s && %s input"(directory, dotSlash("S"))
             .shouldPassWith("^OK$");

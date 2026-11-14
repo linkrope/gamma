@@ -134,34 +134,6 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
         Fix.popFront;
     }
 
-    int HyperArity()
-    {
-        const Nonts = eag.All - eag.Pred;
-        int Max = 0;
-        int i;
-
-        foreach (N; Nonts.bitsSet)
-        {
-            EAG.Alt A = eag.HNont[N].Def.Sub;
-
-            i = 0;
-            do
-            {
-                ++i;
-                A = A.Next;
-            }
-            while (A !is null);
-            if (cast(EAG.Opt) eag.HNont[N].Def || cast(EAG.Rep) eag.HNont[N].Def)
-                ++i;
-            if (i > Max)
-                Max = i;
-        }
-        i = 1;
-        while (i <= Max)
-            i = i * 2;
-        return i;
-    }
-
     void SaveAndPatchNont(size_t N)
     {
         import std.conv : to;
@@ -548,7 +520,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
             InclFix('$');
             output.write(name);
             InclFix('$');
-            output.write(HyperArity());
+            output.write(eag.hyperArity);
             InclFix('$');
             EvalGen.GenDeclarations(settings);
             EvalGen.GenPredProcs;

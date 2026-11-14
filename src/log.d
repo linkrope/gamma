@@ -1,5 +1,6 @@
 module log;
 
+import std.range : empty, front;
 import std.stdio;
 
 alias trace = log!(Level.trace);
@@ -105,9 +106,15 @@ unittest
     error!"test %s"("message");
 
     assert(logger.entries.length == 1);
-    assert(logger.entries[0].level == Level.error);
-    assert(logger.entries[0].message == "test message");
-    assert(logger.entries[0].file.length > 0 && logger.entries[0].line > 0);
+
+    with (logger.entries.front)
+    {
+        assert(level == Level.error);
+        assert(message == "test message");
+        assert(file.length > 0 && line > 0);
+    }
+
     logger.clear;
-    assert(logger.entries.length == 0);
+
+    assert(logger.entries.empty);
 }

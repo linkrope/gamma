@@ -17,6 +17,7 @@ import gamma.parsgen.lalr1.OrderedLR1Tables;
 import gamma.parsgen.lalr1.SCCSetComputation;
 import gamma.util.Indexed;
 import gamma.util.Position;
+import io : UndefPos;
 import log;
 import std.bitmanip : BitArray;
 
@@ -28,8 +29,12 @@ public OrderedLR1Tables generateParser(Grammar grammar)
 {
     import gamma.parsgen.lalr1.SimpleLR1ConflictResolver : SimpleLR1ConflictResolver;
 
+    return generateParser(grammar, new SimpleLR1ConflictResolver(grammar));
+}
+
+public OrderedLR1Tables generateParser(Grammar grammar, LR1ConflictResolver conflictResolver)
+{
     auto parserGenerator = new PennelloDeRemer;
-    auto conflictResolver = new SimpleLR1ConflictResolver(grammar);
 
     return parserGenerator.computeParser(grammar, conflictResolver);
 }
@@ -181,7 +186,7 @@ public class PennelloDeRemer : LR1ParserGenerator
 
         if (alts !is null && alts.length == 1)
             pos = alts[0].lhs.position;
-        if (pos == Position())
+        if (pos == UndefPos)
         {
             Node[] rhs = alts[0].rhs;
 
@@ -195,7 +200,7 @@ public class PennelloDeRemer : LR1ParserGenerator
             }
         }
 
-        if (pos != Position())
+        if (pos != UndefPos)
             pos.markError(message);
         else
             error!"%s"(message);

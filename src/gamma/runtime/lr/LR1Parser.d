@@ -1,9 +1,9 @@
 module gamma.runtime.lr.LR1Parser;
 
-import gamma.runtime.Lexer;
 import gamma.runtime.lr.LR1ParserTables;
+import gamma.runtime.lr.ParseTreeLexer;
 import gamma.runtime.ParseTree;
-import io : Position, UndefPos;
+import io : Position;
 import log;
 import std.bitmanip : BitArray;
 import std.format;
@@ -22,7 +22,7 @@ public class LR1Parser
 {
     private LR1ParserTables parserTables;
 
-    private Lexer lexer;
+    private ParseTreeLexer lexer;
 
     private bool haveLookahead;
 
@@ -34,11 +34,12 @@ public class LR1Parser
 
     private Stack stack;
 
-    private ParseNode*[] treeStack;
+    private const(ParseNode)*[] treeStack;
 
     private size_t errorCount_;
 
-    public this(LR1ParserTables parserTables, Lexer lexer)
+    public this(LR1ParserTables parserTables, ParseTreeLexer lexer)
+    in (lexer !is null)
     {
         this.parserTables = parserTables;
         this.lexer = lexer;
@@ -72,7 +73,7 @@ public class LR1Parser
                     haveLookahead = false;
                     state = shift.state;
                     stack.push(state);
-                    treeStack ~= terminalNode(lookahead, lookaheadPosition);
+                    treeStack ~= lexer.parseNode;
                     trace!"%s"(stack);
                     return false;
                 },
@@ -129,7 +130,7 @@ public class LR1Parser
                     trace!"(C)Shift %s"(shift.lookahead);
                     state = shift.state;
                     stack.push(state);
-                    treeStack ~= terminalNode(shift.lookahead, UndefPos);
+                    treeStack ~= terminalNode(shift.lookahead, lookaheadPosition);
                     return true;
                 },
                 (const Reduce reduceAction)
@@ -172,25 +173,33 @@ public class LR1Parser
                 break;
 
             const action = nextContinuationAction;
-            action.match!(
+            const halted = action.match!(
                 (const Shift shift)
                 {
                     info!"Inserting %s"(parserTables.terminalRepresentation(cast(int) shift.lookahead));
                     state = shift.state;
                     stack.push(state);
-                    treeStack ~= terminalNode(shift.lookahead, UndefPos);
+                    treeStack ~= terminalNode(shift.lookahead, lookaheadPosition);
+                    return false;
                 },
                 (const Reduce reduceAction)
                 {
                     trace!"(I)Reduce %s"(reduceAction.rule);
                     reduce(reduceAction.rule);
                     trace!"%s"(stack);
+                    return false;
                 },
                 (const Halt halt)
                 {
-                    assert(false, format!"Expecting a shift or reduce action at state %s"(state));
+                    return true;
                 },
             );
+
+            if (halted)
+            {
+                info!"Continuing parse in normal mode.";
+                return;
+            }
         }
 
         // The erroneous input has now been repaired.
@@ -276,14 +285,14 @@ public class LR1Parser
         return ParseTree(treeStack.back, lookaheadPosition);
     }
 
-    private ParseNode* terminalNode(size_t terminal, const Position position)
+    private const(ParseNode)* terminalNode(size_t terminal, const Position position)
     {
         const terminalIndex = parserTables.terminals[terminal].index;
 
         return new ParseNode(TerminalNode(terminalIndex, position));
     }
 
-    private ParseNode* ruleNode(const Rule rule, const(ParseNode*[]) children,
+    private const(ParseNode)* ruleNode(const Rule rule, const(ParseNode)*[] children,
         const Position position)
     {
         const lhsIndex = parserTables.nonterminals[rule.lhs].index;

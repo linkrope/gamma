@@ -633,7 +633,7 @@ private class EAGBuilder
     private EAG.ParamsDesc buildAffixTermsParamsDesc(
         Term[] terms, int sig, bool isLhs, Position pos)
     {
-        if (terms.length == 0)
+        if (terms.empty)
             return EAG.ParamsDesc(EAG.empty, pos);
 
         const startParam = this.nextParam;

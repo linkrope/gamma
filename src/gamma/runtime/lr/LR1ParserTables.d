@@ -76,3 +76,25 @@ public struct Rule
     /// One-based alternative index within the original rules of the LHS.
     size_t alternative;
 }
+
+public struct LexerCandidate
+{
+    public enum Kind { terminal, nonterminal }
+
+    Kind kind;
+
+    size_t symbol = size_t.max;
+}
+
+/**
+ * Maps a lexer-table reduction back to a source grammar node.
+ * Exactly one of `nonterminal` and `terminal` is set for a source reduction.
+ */
+public struct LexerRule
+{
+    size_t nonterminal = size_t.max;
+
+    size_t alternative = size_t.max;
+
+    size_t terminal = size_t.max;
+}

@@ -363,6 +363,37 @@ int FindVar(int Sym, int Num, Position Pos, bool Def) nothrow @safe
     return V;
 }
 
+public int hyperArity()
+{
+    const nonterminals = All - Pred;
+    int maximumAlternativeCount = 0;
+
+    foreach (nonterminal; nonterminals.bitsSet)
+    {
+        auto alternative = HNont[nonterminal].Def.Sub;
+        int alternativeCount = 0;
+
+        do
+        {
+            ++alternativeCount;
+            alternative = alternative.Next;
+        }
+        while (alternative !is null);
+
+        if (cast(Opt) HNont[nonterminal].Def || cast(Rep) HNont[nonterminal].Def)
+            ++alternativeCount;
+        if (alternativeCount > maximumAlternativeCount)
+            maximumAlternativeCount = alternativeCount;
+    }
+
+    int arity = 1;
+
+    while (arity <= maximumAlternativeCount)
+        arity *= 2;
+
+    return arity;
+}
+
 public string HTermRepr(int Term) @nogc nothrow @safe
 {
     return symbolTable.symbol(HTerm[Term].Id);

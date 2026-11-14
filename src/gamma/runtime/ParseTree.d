@@ -9,7 +9,7 @@ public struct ParseTree
 
     const Position endPosition;
 
-    public this(ParseNode* root, const Position endPosition)
+    public this(const(ParseNode)* root, const Position endPosition)
     in (root !is null)
     {
         this.root = root;
@@ -45,11 +45,11 @@ public struct RuleNode
     /// One-based alternative index within the original rules of the LHS.
     const size_t alternative;
 
-    const(ParseNode*[]) children;
+    const(ParseNode)*[] children;
 
     const Position position;
 
-    public this(size_t lhs, size_t alternative, const ParseNode*[] children,
+    public this(size_t lhs, size_t alternative, const(ParseNode)*[] children,
         const Position position)
     {
         this.lhs = lhs;
