@@ -29,5 +29,11 @@ For example:
 
     dub run -- example/abc.eag
 
+## Development
+
+Enable the repository's pre-commit hook to run the test suite and style check before each commit:
+
+    git config --local core.hooksPath .githooks
+
 [dub]: http://code.dlang.org/
 [extended affix grammar]: https://en.wikipedia.org/wiki/Extended_affix_grammar
