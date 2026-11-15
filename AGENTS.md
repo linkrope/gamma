@@ -8,12 +8,12 @@
 
 ### Issue tracker
 
-Issues and specs are tracked in GitHub Issues. See `docs/agents/issue-tracker.md`.
+Issues and specs are tracked in GitHub Issues. See `doc/agents/issue-tracker.md`.
 
 ### Triage labels
 
-This repository has no configured triage-label vocabulary. See `docs/agents/triage-labels.md`.
+This repository has no configured triage-label vocabulary. See `doc/agents/triage-labels.md`.
 
 ### Domain docs
 
-This is a single-context repository. See `docs/agents/domain.md`.
+This is a single-context repository. See `doc/agents/domain.md`.
