@@ -5,7 +5,7 @@ import log;
 import runtime;
 import std.stdio;
 
-const hyperArityConst = $;
+const hyperArityMask = $;
 alias TreeType = long;
 // alias HeapType = long;
 
@@ -17,14 +17,14 @@ File Out;
 
 $
 
-void TraverseSyntaxTree(TreeType[] Tree1, Position[] PosTree1, long ErrCounter, TreeType Adr, int HyperArity,
+void TraverseSyntaxTree(TreeType[] Tree1, Position[] PosTree1, long ErrCounter, TreeType Adr, int HyperArityMask,
         bool info_, bool write)
 {
     import std.exception : enforce;
     HeapType V1;
 
-    enforce(HyperArity == hyperArityConst,
-        "internal error: wrong arity constant");
+    enforce(HyperArityMask == hyperArityMask,
+        "internal error: wrong arity mask");
 
     Tree = Tree1;
     PosTree = PosTree1;

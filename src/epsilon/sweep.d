@@ -446,7 +446,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
         output.writeln;
         output.writeln("{");
         EvalGen.GenVarDecl(N);
-        output.writeln("switch (MOD(Tree[Adr], hyperArityConst))");
+        output.writeln("switch (Tree[Adr] & hyperArityMask)");
         output.writeln("{");
         A = eag.HNont[N].Def.Sub;
         AltIndex = indexOfFirstAlt;
@@ -520,7 +520,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
             InclFix('$');
             output.write(name);
             InclFix('$');
-            output.write(eag.hyperArity);
+            output.write(eag.hyperArityMask);
             InclFix('$');
             EvalGen.GenDeclarations(settings);
             EvalGen.GenPredProcs;

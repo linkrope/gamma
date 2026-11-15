@@ -9,7 +9,7 @@ import std.stdio;
 const nil = -1;
 const initialStorageSize = 128;
 const syntacticPart = 0;
-const hyperArityConst = $;
+const hyperArityMask = $;
 $
 alias TreeType = long;
 // alias HeapType = long;
@@ -72,14 +72,14 @@ void Init()
     $
 }
 
-void TraverseSyntaxTree(TreeType[] Tree1, Position[] PosTree1, long ErrCounter, TreeType Adr, int HyperArity,
+void TraverseSyntaxTree(TreeType[] Tree1, Position[] PosTree1, long ErrCounter, TreeType Adr, int HyperArityMask,
         bool info_, bool write)
 {
     IndexType StartSymbol;
     HeapType V1;
 
-    if (HyperArity != hyperArityConst)
-        throw new Exception("internal error: 'arityConst' is wrong");
+    if (HyperArityMask != hyperArityMask)
+        throw new Exception("internal error: wrong arity mask");
     Tree = Tree1;
     PosTree = PosTree1;
     ErrorCounter = ErrCounter;
@@ -87,7 +87,7 @@ void TraverseSyntaxTree(TreeType[] Tree1, Position[] PosTree1, long ErrCounter, 
     StartSymbol = NextSemTree;
     SemTree[StartSymbol] = new SemTreeEntry;
     SemTree[StartSymbol].Adr = Adr;
-    SemTree[StartSymbol].Rule = MOD($Tree[Adr], hyperArityConst);
+    SemTree[StartSymbol].Rule = $Tree[Adr] & hyperArityMask;
     ++NextSemTree;
     Visit(StartSymbol, syntacticPart);
     Visit(StartSymbol, 1);

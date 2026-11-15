@@ -1401,7 +1401,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
     InclFix('$');
     if (parsePass)
     {
-        output.writeln("Eval.TraverseSyntaxTree(Heap, PosHeap, ErrorCounter, V1, arityConst, info_, write);");
+        output.writeln("Eval.TraverseSyntaxTree(Heap, PosHeap, ErrorCounter, V1, arityConst - 1, info_, write);");
         output.writeln("if (info_)");
         output.writeln("{");
         output.writeln(`stdout.write("    syntax tree uses twice ");`);

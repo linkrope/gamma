@@ -363,7 +363,7 @@ struct EAG
         return V;
     }
 
-    public int hyperArity()
+    public int hyperArityMask()
     {
         const nonterminals = All - Pred;
         int maximumAlternativeCount = 0;
@@ -388,10 +388,11 @@ struct EAG
 
         int arity = 1;
 
+        // evaluators use arity - 1 as bit mask
         while (arity <= maximumAlternativeCount)
             arity *= 2;
 
-        return arity;
+        return arity - 1;
     }
 
     public string HTermRepr(int Term) @nogc nothrow @safe

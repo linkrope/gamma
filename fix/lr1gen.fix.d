@@ -146,7 +146,7 @@ int main(string[] args)
 
     assert(epsilonTree.tree.length == epsilonTree.positions.length);
     Eval.TraverseSyntaxTree(epsilonTree.tree, epsilonTree.positions, 0, epsilonTree.root,
-        epsilonTree.hyperArity, info, write);
+        epsilonTree.hyperArityMask, info, write);
     writeln("OK");
 
 

@@ -9,7 +9,7 @@ public struct EpsilonSyntaxTree
     long[] tree;
     Position[] positions;
     long root;
-    int hyperArity;
+    int hyperArityMask;
 }
 
 public EpsilonSyntaxTree transform(const ParseTree parseTree)
@@ -17,7 +17,7 @@ public EpsilonSyntaxTree transform(const ParseTree parseTree)
     EpsilonSyntaxTree result;
 
     result.root = encodeNode(parseTree.root, result);
-    result.hyperArity = $;
+    result.hyperArityMask = $;
     return result;
 }
 

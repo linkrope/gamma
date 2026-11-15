@@ -174,7 +174,7 @@ private auto generateEpsilonBridgeModule(EpsilonEAG epsilonEAG, ParserGrammar pa
 
     const moduleName = epsilonEAG.BaseName ~ "LREpsilonBridge";
     const fileName = settings.path(moduleName ~ ".d");
-    const hyperArity = epsilonEAG.hyperArity;
+    const hyperArityMask = epsilonEAG.hyperArityMask;
     enum fixName = "lrepsilonbridge.fix.d";
     Input fix = Input(fixName, import(fixName));
     File output = File(fileName, "w");
@@ -182,7 +182,7 @@ private auto generateEpsilonBridgeModule(EpsilonEAG epsilonEAG, ParserGrammar pa
     includeFix(fix, output, '$', fixName);
     output.write(moduleName);
     includeFix(fix, output, '$', fixName);
-    output.write(hyperArity);
+    output.write(hyperArityMask);
     includeFix(fix, output, '$', fixName);
     output.close;
 

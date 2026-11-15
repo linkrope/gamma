@@ -1164,7 +1164,7 @@ private void GenVisitRule(int R)
         {
             output.writeln("S = new SemTreeEntry;");
             output.writeln("S.Adr = Tree[TreeAdr + ", SubTreeOffset[SO], "];");
-            output.writeln("S.Rule = ", FirstRule[SOAG.SymOcc[SO].SymInd] - 1, " + MOD(Tree[S.Adr], hyperArityConst);");
+            output.writeln("S.Rule = ", FirstRule[SOAG.SymOcc[SO].SymInd] - 1, " + (Tree[S.Adr] & hyperArityMask);");
             output.writeln("SemTree[NextSemTree] = S; ++NextSemTree;");
         }
     }
@@ -1365,7 +1365,7 @@ private string GenerateModule(Settings settings)
     InclFix('$');
     output.write(name);
     InclFix('$');
-    output.write(eag.hyperArity);
+    output.write(eag.hyperArityMask);
     InclFix('$');
     GenConstDeclarations;
     InclFix('$');
