@@ -1,0 +1,42 @@
+@startuml
+package epsilon {
+    package soag as epsilon.soag {}
+}
+package gamma {
+    package grammar as gamma.grammar {
+        package affixes as gamma.grammar.affixes {}
+        package hyper as gamma.grammar.hyper {}
+    }
+    package input as gamma.input {
+        package earley as gamma.input.earley {}
+        package epsilang as gamma.input.epsilang {}
+
+        gamma.input.epsilang ..> gamma.input.earley
+    }
+    package parsgen as gamma.parsgen {
+        package lalr1 as gamma.parsgen.lalr1 {}
+    }
+    package runtime as gamma.runtime {
+        package lr as gamma.runtime.lr {}
+    }
+    package util as gamma.util {}
+
+    gamma.grammar ..> gamma.util
+    gamma.grammar.affixes ..> gamma.grammar
+    gamma.grammar.hyper ..[#red]> gamma.input.epsilang
+    gamma.input ..> gamma.grammar.hyper
+    gamma.input.earley ..> gamma.grammar.affixes
+    gamma.input.epsilang ..> gamma.grammar.hyper
+    gamma.parsgen.lalr1 ..> gamma.input.epsilang
+    gamma.parsgen.lalr1 ..> gamma.runtime.lr
+    gamma.runtime ..[#red]> gamma.runtime.lr
+    gamma.runtime.lr ..> gamma.runtime
+}
+
+epsilon.soag ..> epsilon
+gamma ..> epsilon.soag
+gamma ..> gamma.input
+gamma ..> gamma.parsgen.lalr1
+gamma.input ..> epsilon
+gamma.parsgen.lalr1 ..> epsilon
+@enduml

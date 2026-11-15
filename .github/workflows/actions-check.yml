@@ -22,10 +22,17 @@ jobs:
 
     - run: |
         dub fetch dscanner@0.15.2
+        dub fetch depend@0.4.0
 
     - name: Check style
       run: |
         dub run dscanner -- --styleCheck src test
+
+    - name: Check dependency model
+      run: |
+        dub run depend -- \
+          --check doc/dependencies.puml \
+          $(rg --files src include unittest -g '*.d' | sort)
 
     - name: Check formatting
       run: |

@@ -3,6 +3,7 @@ set -eu
 
 dub test
 dub run dscanner -- --styleCheck src test
+dub run depend -- --check doc/dependencies.puml $(rg --files src include unittest -g '*.d' | sort)
 
 # Check staged, standalone D sources.
 # The fix/ directory contains templates with generator placeholders,
