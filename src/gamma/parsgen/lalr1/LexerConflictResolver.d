@@ -23,7 +23,7 @@ public class LexerConflictResolver : LR1ConflictResolver
     private string[] nonterminalNames;
 
     public this(Grammar grammar, Terminal tokenEnd, Nonterminal[Terminal] helpersByTerminal,
-        size_t[][Nonterminal] lexicalNonterminalOwners, string[] nonterminalNames)
+            size_t[][Nonterminal] lexicalNonterminalOwners, string[] nonterminalNames)
     {
         this.grammar = grammar;
         this.tokenEnd = tokenEnd;
@@ -46,7 +46,7 @@ public class LexerConflictResolver : LR1ConflictResolver
             const owners = ownersFor(first, second);
 
             first.position.markError(format!"ambiguous lexical nonterminals %s and %s"(
-                nonterminalNames[owners[0]], nonterminalNames[owners[1]]));
+                    nonterminalNames[owners[0]], nonterminalNames[owners[1]]));
 
             throw new Exception("ambiguous lexical nonterminals");
         }

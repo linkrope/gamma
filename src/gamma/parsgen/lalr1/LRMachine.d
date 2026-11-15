@@ -137,7 +137,7 @@ class LRMachine
             // such that the closure item belonging to the continuation grammar precedes the other closure items.
             if (cast(Nonterminal) item.symbolBehindDot)
             {
-                LRItem [] closureItems = this.outer.items[(cast(Nonterminal) item.symbolBehindDot).index];
+                LRItem[] closureItems = this.outer.items[(cast(Nonterminal) item.symbolBehindDot).index];
 
                 for (size_t j = 0, n = closureItems.length; j < n; ++j)
                 {
@@ -175,16 +175,18 @@ class LRMachine
              */
             LRItem[] orderedClosureItemList;
 
+            // dfmt off
             forEachOrderedClosureItem(
-                new class LRItemProcessor
-                {
-                    public void process(LRItem item)
+                    new class LRItemProcessor
                     {
-                        orderedClosureItemList ~= item;
+                        public void process(LRItem item)
+                        {
+                            orderedClosureItemList ~= item;
+                        }
                     }
-                }
-                );
-            this.orderedClosureItems = cast(LRItem []) orderedClosureItemList;
+            );
+            // dfmt on
+            this.orderedClosureItems = cast(LRItem[]) orderedClosureItemList;
 
             trace!"state %s%-(\n%s%)"(index, this.orderedClosureItems);
 
@@ -215,7 +217,7 @@ class LRMachine
              * "stable" sort, i.e. it does not change the order of equal members w.r.t. the
              * given Comparator.
              */
-            LRItem[] sortedItems = cast(LRItem []) newItems;
+            LRItem[] sortedItems = cast(LRItem[]) newItems;
 
             sortedItems.sort!((a, b) => itemSetPartitioner(a, b) < 0, SwapStrategy.stable);
 
@@ -255,7 +257,7 @@ class LRMachine
                 ++m;
             }
 
-            this.outgoing = new Transition [m];
+            this.outgoing = new Transition[m];
             for (size_t i = 0, j = transitions.length - m; i < m; ++i, ++j)
                 this.outgoing[i] = transitions[j];
         }
@@ -318,7 +320,7 @@ class LRMachine
 
                 for (size_t j = alt.rhs.length + 1; j > 0; --j)
                     item = new LRItem(this.nextItemId++, alt,
-                        grammarProperties.isFirstProductiveAlternative(alt), j - 1, item);
+                            grammarProperties.isFirstProductiveAlternative(alt), j - 1, item);
                 this.items[lhs.index][i] = item;
             }
         }
@@ -363,11 +365,6 @@ class LRMachine
     {
         return this.nextItemId;
     }
-
-//    private LRItem shiftedDotItemOf(LRItem item)
-//    {
-//        return item.nextItem;
-//    }
 }
 
 private int itemSetPartitioner(LRItem i1, LRItem i2)
@@ -375,17 +372,17 @@ private int itemSetPartitioner(LRItem i1, LRItem i2)
     import std.conv : to;
 
     if (i1.symbolPrecedingDot !is null && i2.symbolPrecedingDot !is null
-        && i1.symbolPrecedingDot != i2.symbolPrecedingDot)
+            && i1.symbolPrecedingDot != i2.symbolPrecedingDot)
     {
         int n1;
         int n2;
 
         if (cast(Terminal) i1.symbolPrecedingDot)
-            n1 = - (cast(Terminal) i1.symbolPrecedingDot).index.to!int - 1;
+            n1 = -(cast(Terminal) i1.symbolPrecedingDot).index.to!int - 1;
         else
             n1 = (cast(Nonterminal) i1.symbolPrecedingDot).index.to!int;
         if (cast(Terminal) i2.symbolPrecedingDot)
-            n2 = - (cast(Terminal) i2.symbolPrecedingDot).index.to!int - 1;
+            n2 = -(cast(Terminal) i2.symbolPrecedingDot).index.to!int - 1;
         else
             n2 = (cast(Nonterminal) i2.symbolPrecedingDot).index.to!int;
         return n1 - n2;
@@ -416,83 +413,73 @@ unittest
 
             assert(states.length == 10);
             // state 0
-            assert(states[0].orderedClosureItems.to!(string[]) ==
-                [
-                    `G -> . E "=" E`,
-                    `E => . T`,
-                    `T => . f`,
-                    `T -> . T "*" f`,
-                    `E -> . E "+" T`
-                ]);
+            assert(states[0].orderedClosureItems.to!(string[]) == [
+                `G -> . E "=" E`,
+                `E => . T`,
+                `T => . f`,
+                `T -> . T "*" f`,
+                `E -> . E "+" T`
+            ]);
             assert(getTransition(states[0], symbol("f")).to == states[1]);
             assert(getTransition(states[0], symbol("E")).to == states[2]);
             assert(getTransition(states[0], symbol("T")).to == states[3]);
             // state 1
-            assert(states[1].orderedClosureItems.to!(string[]) ==
-                [
-                    `T => f .`,
-                ]);
+            assert(states[1].orderedClosureItems.to!(string[]) == [
+                `T => f .`,
+            ]);
             // state 2
-            assert(states[2].orderedClosureItems.to!(string[]) ==
-                [
-                    `G -> E . "=" E`,
-                    `E -> E . "+" T`,
-                ]);
+            assert(states[2].orderedClosureItems.to!(string[]) == [
+                `G -> E . "=" E`,
+                `E -> E . "+" T`,
+            ]);
             assert(getTransition(states[2], symbol("+")).to == states[4]);
             assert(getTransition(states[2], symbol("=")).to == states[5]);
             // state 3
-            assert(states[3].orderedClosureItems.to!(string[]) ==
-                [
-                    `E => T .`,
-                    `T -> T . "*" f`,
-                ]);
+            assert(states[3].orderedClosureItems.to!(string[]) == [
+                `E => T .`,
+                `T -> T . "*" f`,
+            ]);
             assert(getTransition(states[3], symbol("*")).to == states[6]);
             // state 4
-            assert(states[4].orderedClosureItems.to!(string[]) ==
-                [
-                    `E -> E "+" . T`,
-                    `T => . f`,
-                    `T -> . T "*" f`,
-                ]);
+            assert(states[4].orderedClosureItems.to!(string[]) == [
+                `E -> E "+" . T`,
+                `T => . f`,
+                `T -> . T "*" f`,
+            ]);
             assert(getTransition(states[4], symbol("f")).to == states[1]);
             assert(getTransition(states[4], symbol("T")).to == states[7]);
             // state 5
-            assert(states[5].orderedClosureItems.to!(string[]) ==
-                [
-                    `G -> E "=" . E`,
-                    `E => . T`,
-                    `T => . f`,
-                    `T -> . T "*" f`,
-                    `E -> . E "+" T`,
-                ]);
+            assert(states[5].orderedClosureItems.to!(string[]) == [
+                `G -> E "=" . E`,
+                `E => . T`,
+                `T => . f`,
+                `T -> . T "*" f`,
+                `E -> . E "+" T`,
+            ]);
             assert(getTransition(states[5], symbol("f")).to == states[1]);
             assert(getTransition(states[5], symbol("E")).to == states[8]);
             assert(getTransition(states[5], symbol("T")).to == states[3]);
             // state 6
-            assert(states[6].orderedClosureItems.to!(string[]) ==
-                [
-                    `T -> T "*" . f`,
-                ]);
+            assert(states[6].orderedClosureItems.to!(string[]) == [
+                `T -> T "*" . f`,
+            ]);
             assert(getTransition(states[6], symbol("f")).to == states[9]);
             // state 7
-            assert(states[7].orderedClosureItems.to!(string[]) ==
-                [
-                    `E -> E "+" T .`,
-                    `T -> T . "*" f`,
-                ]);
+            assert(states[7].orderedClosureItems.to!(string[]) == [
+                `E -> E "+" T .`,
+                `T -> T . "*" f`,
+            ]);
             assert(getTransition(states[7], symbol("*")).to == states[6]);
             // state 8
-            assert(states[8].orderedClosureItems.to!(string[]) ==
-                [
-                    `G -> E "=" E .`,
-                    `E -> E . "+" T`,
-                ]);
+            assert(states[8].orderedClosureItems.to!(string[]) == [
+                `G -> E "=" E .`,
+                `E -> E . "+" T`,
+            ]);
             assert(getTransition(states[8], symbol("+")).to == states[4]);
             // state 9
-            assert(states[9].orderedClosureItems.to!(string[]) ==
-                [
-                    `T -> T "*" f .`,
-                ]);
+            assert(states[9].orderedClosureItems.to!(string[]) == [
+                `T -> T "*" f .`,
+            ]);
         }
     }
 }

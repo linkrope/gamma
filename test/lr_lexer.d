@@ -64,19 +64,19 @@ unittest
             `.outdent.strip;
 
         run!"%s --lalr --runtime . %s --output-directory %s"(
-            gamma, buildPath("example", "lr-lexer-test.eag"), directory)
+                gamma, buildPath("example", "lr-lexer-test.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         // \u2003 is Unicode EM SPACE, exercising non-ASCII whitespace boundaries.
         // The nested comment contains U+1F600 GRINNING FACE to show that its content is ignored.
         write(buildPath(directory, "input"), "\u2003if<\u2003<=(*(*\U0001F600*)*)ifif");
         run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
             .shouldPassWith(
-                "trace: lexer terminal 'if'",
-                "trace: lexer terminal '<'",
-                "trace: lexer terminal '<='",
-                "trace: lexer nonterminal id",
-                parseTree.escape,
-            );
+                    "trace: lexer terminal 'if'",
+                    "trace: lexer terminal '<'",
+                    "trace: lexer terminal '<='",
+                    "trace: lexer nonterminal id",
+                    parseTree.escape,
+        );
     }
 }
 
@@ -86,7 +86,7 @@ unittest
     with (sandbox)
     {
         run!"%s --lalr -p --space --runtime . %s --output-directory %s"(
-            gamma, buildPath("example", "decl-appl.eag"), directory)
+                gamma, buildPath("example", "decl-appl.eag"), directory)
             .shouldPassWith("DeclAppl grammar is single sweep");
         write(buildPath(directory, "input"), "DECL a b APPL a b");
         run!"cd %s && %s input"(directory, dotSlash("DeclAppl"))
@@ -100,17 +100,17 @@ unittest
     with (sandbox)
     {
         run!"%s --lalr --runtime . %s --output-directory %s"(
-            gamma, buildPath("example", "lr-lexer-test.eag"), directory)
+                gamma, buildPath("example", "lr-lexer-test.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "@ifif");
         auto result = run!"cd %s && %s --verbose input"(directory, dotSlash("S"));
 
         result.shouldFailWith(
-            "error: unknown token",
-            "input:1:1",
-            `error: Syntax error! Repairing input...`.escape,
-            "info: Deleting unknown token",
-            "trace: lexer nonterminal id",
+                "error: unknown token",
+                "input:1:1",
+                `error: Syntax error! Repairing input...`.escape,
+                "info: Deleting unknown token",
+                "trace: lexer nonterminal id",
         );
     }
 }
@@ -142,16 +142,16 @@ unittest
     with (sandbox)
     {
         run!"%s --lalr --runtime . %s --output-directory %s"(
-            gamma, buildPath("example", "lr-lexer-test.eag"), directory)
+                gamma, buildPath("example", "lr-lexer-test.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "(*(*)");
         auto result = run!"cd %s && %s --verbose input"(directory, dotSlash("S"));
 
         result.shouldFailWith(
-            "error: comment not closed at end of text",
-            "input:1:1",
-            `error: Syntax error! Repairing input...`.escape,
-            "info: End of parsing",
+                "error: comment not closed at end of text",
+                "input:1:1",
+                `error: Syntax error! Repairing input...`.escape,
+                "info: End of parsing",
         );
     }
 }

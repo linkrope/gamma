@@ -10,8 +10,11 @@ import gamma.grammar.SymbolNode;
 import gamma.grammar.Terminal;
 import std.range;
 
-version (unittest) import gamma.grammar.Node;
-version (unittest) import gamma.util.Position;
+version (unittest)
+{
+    import gamma.grammar.Node;
+    import gamma.util.Position;
+}
 
 public struct GrammarBuilder
 {
@@ -131,7 +134,7 @@ public struct GrammarBuilder
             Nonterminal B = buildNonterminal("B");
             Node[] rhs = [new SymbolNode(B, position)];
 
-            add(new Alternative(new LhsNode(A, position), rhs , position));
+            add(new Alternative(new LhsNode(A, position), rhs, position));
 
             markErrors;
 
@@ -161,9 +164,7 @@ public struct GrammarBuilder
     }
 }
 
-version (unittest):
-
-import std.algorithm;
+version (unittest)  : import std.algorithm;
 
 struct TestGrammarBuilder
 {
@@ -238,8 +239,7 @@ struct TestGrammarBuilder
             return buildNonterminal(representation);
         else if (representation.front.isLower)
             return buildTerminal(representation);
-        else
-            // quote escaped representation
+        else // quote escaped representation
             return buildTerminal(format!"%(%s%)"(only(representation)));
     }
 }

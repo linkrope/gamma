@@ -19,16 +19,16 @@ public class ParserGrammarProperties : GrammarProperties
 {
     private bool[Indexed][] rightDeriv;
 
-	/**
+    /**
 	 * Constructor for ParserGrammarProperties.
 	 * @param grammar The grammar of which to present the properties.
 	 */
-	public this(Grammar grammar)
+    public this(Grammar grammar)
     in (grammar.isPlain)
-	{
-		super(grammar);
+    {
+        super(grammar);
         computeRightDerivationLeaders;
-	}
+    }
 
     /**
      * Computes which nonterminals may appear as the leading symbol in a
@@ -44,6 +44,7 @@ public class ParserGrammarProperties : GrammarProperties
             .array;
 
         rightDeriv = new bool[Indexed][this.grammar.nonterminals.length];
+        // dfmt off
         SCCSetComputation.computeSets(
             nodes,
             new class SCCSetComputation.TransitionEnumerator
@@ -79,7 +80,9 @@ public class ParserGrammarProperties : GrammarProperties
                     foreach (indexed; rightDeriv[y.index].byKey)
                         rightDeriv[x.index][indexed] = true;
                 }
-            });
+            },
+        );
+        //dfmt on
 
         // Debug output
         foreach (nont1; this.grammar.nonterminals)
@@ -88,7 +91,7 @@ public class ParserGrammarProperties : GrammarProperties
 
             foreach (indexedNont; rightDeriv[nont1.index].byKey)
             {
-            	assert(cast(Nonterminal) indexedNont);
+                assert(cast(Nonterminal) indexedNont);
 
                 nonterminals ~= cast(Nonterminal) indexedNont;
             }

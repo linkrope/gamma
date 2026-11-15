@@ -45,6 +45,7 @@ public struct ParseTreeWriter
         return result[];
     }
 
+    // dfmt off
     private size_t writeNode(Writer)(ref Writer writer, const(ParseNode)* node)
     if (isOutputRange!(Writer, char))
     {
@@ -76,6 +77,7 @@ public struct ParseTreeWriter
 
         return nodeNumber;
     }
+    // dfmt on
 
     private string label(const TerminalNode terminalNode)
     {
@@ -106,8 +108,9 @@ unittest
     auto aSb = new ParseNode(RuleNode(4, 1, [a, empty, b], UndefPos));
     auto tree = ParseTree(aSb, UndefPos);
     auto writer = ParseTreeWriter(
-        [Symbol(1, "a"), Symbol(3, "b")],
-        [Symbol(4, "S")]);
+            [Symbol(1, "a"), Symbol(3, "b")],
+            [Symbol(4, "S")],
+    );
 
     const expected = `
         digraph ParseTree {

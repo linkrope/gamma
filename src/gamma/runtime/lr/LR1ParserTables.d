@@ -79,7 +79,11 @@ public struct Rule
 
 public struct LexerCandidate
 {
-    public enum Kind { terminal, nonterminal }
+    public enum Kind
+    {
+        terminal,
+        nonterminal,
+    }
 
     Kind kind;
 

@@ -115,7 +115,7 @@ class Analyzer
         }
 
         return EAG(metaGrammar, hyperEBNFGrammar, this.plainHyperGrammar_,
-            this.parser.getLexicalMetaNonterminals, this.parser.getLexicalHyperNonterminals);
+                this.parser.getLexicalMetaNonterminals, this.parser.getLexicalHyperNonterminals);
     }
 
     private void checkStartSymbolSignature()
@@ -133,7 +133,7 @@ class Analyzer
         if (signature is null || signature.length != 1 || signature.direction.front != Direction.output)
         {
             error!"start symbol %s must have exactly one output affix\n%s"(startSymbol,
-                signature ? signature.position : startLhs ? startLhs.position : UndefPos);
+                    signature ? signature.position : startLhs ? startLhs.position : UndefPos);
 
             enforce(false);
         }

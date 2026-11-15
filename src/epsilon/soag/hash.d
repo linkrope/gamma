@@ -120,7 +120,7 @@ bool IsIn(SOAG.Instruction I) @safe
 
     const Index = HashIndex(I);
 
-    return HashTab[Index] !is null;
+    return HashTab[Index]!is null;
 }
 
 /**

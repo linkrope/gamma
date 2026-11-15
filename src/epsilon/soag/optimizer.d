@@ -43,12 +43,12 @@ void IncludeVDS(int S, int VN1, int VN2) nothrow @safe
 
 void WriteVDS()
 {
-    import std.stdio : stdout;  // TODO: replace with log
+    import std.stdio : stdout; // TODO: replace with log
 
     stdout.writeln("Inhalt VDS:");
     for (size_t i = ALists.firstIndex; i <= VDS.Last; i += 3)
         stdout.writeln(eag.HNontRepr(VDS.Elem[i]), ", ", VDS.Elem[i + 1], ", ", VDS.Elem[i + 2]);
-        stdout.writeln;
+    stdout.writeln;
 }
 
 /**
@@ -76,12 +76,12 @@ void IncludeVS(int S, int VN) nothrow @safe
 
 void WriteVS()
 {
-    import std.stdio : stdout;  // TODO: replace with log
+    import std.stdio : stdout; // TODO: replace with log
 
     stdout.writeln("Inhalt VS:");
     for (size_t i = ALists.firstIndex; i <= VS.Last; i += 2)
         stdout.writeln(eag.HNontRepr(VS.Elem[i]), ", ", VS.Elem[i + 1]);
-        stdout.writeln;
+    stdout.writeln;
 }
 
 /**

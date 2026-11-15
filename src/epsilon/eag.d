@@ -278,155 +278,154 @@ struct EAG
     string BaseName;
     SymbolTable symbolTable;
 
-void AppParam(int Affixform, Position Pos) nothrow @safe
-{
-    ParamBuf.length = NextParam;
-    ParamBuf ~= ParamRecord(Affixform, Pos, false);
-    NextParam = cast(int) ParamBuf.length;
-}
-
-void AppDom(char Dir, int Dom) nothrow @safe
-{
-    if (Dir == '-')
-        Dom = -Dom;
-    DomBuf.length = NextDom;
-    DomBuf ~= Dom;
-    NextDom = cast(int) DomBuf.length;
-}
-
-int NewMAlt(int Sym, int Right) nothrow @safe
-{
-    int Arity;
-    int i;
-
-    MAlt.length = NextMAlt;
-    const alt = NextMAlt;
-
-    if (MNont[Sym].MRule == nil)
-        MNont[Sym].MRule = alt;
-    else
-        MAlt[MNont[Sym].Last].Next = alt;
-    MNont[Sym].Last = alt;
-    i = Right;
-    Arity = 0;
-    while (MembBuf[i] != 0)
+    void AppParam(int Affixform, Position Pos) nothrow @safe
     {
-        if (MembBuf[i] > 0)
-            ++Arity;
-        ++i;
+        ParamBuf.length = NextParam;
+        ParamBuf ~= ParamRecord(Affixform, Pos, false);
+        NextParam = cast(int) ParamBuf.length;
     }
-    if (Arity > MaxMArity)
-        MaxMArity = Arity;
-    MAlt ~= MAltRecord(Sym, Right, Arity, nil);
-    NextMAlt = cast(int) MAlt.length;
-    return alt;
-}
 
-void AppMemb(int Val) nothrow @safe
-{
-    MembBuf.length = NextMemb;
-    MembBuf ~= Val;
-    NextMemb = cast(int) MembBuf.length;
-}
-
-void AppNode(int Val) nothrow @safe
-{
-    NodeBuf.length = NextNode;
-    NodeBuf ~= Val;
-    NextNode = cast(int) NodeBuf.length;
-}
-
-int FindVar(int Sym, int Num, Position Pos, bool Def) nothrow @safe
-{
-    int V = Scope;
-
-    while (V < NextVar && (Var[V].Sym != Sym || Var[V].Num != Num))
-        ++V;
-    if (V == NextVar)
+    void AppDom(char Dir, int Dom) nothrow @safe
     {
-        V = Scope;
-        while (V < NextVar && (Var[V].Sym != Sym || Var[V].Num != -Num))
+        if (Dir == '-')
+            Dom = -Dom;
+        DomBuf.length = NextDom;
+        DomBuf ~= Dom;
+        NextDom = cast(int) DomBuf.length;
+    }
+
+    int NewMAlt(int Sym, int Right) nothrow @safe
+    {
+        int Arity;
+        int i;
+
+        MAlt.length = NextMAlt;
+        const alt = NextMAlt;
+
+        if (MNont[Sym].MRule == nil)
+            MNont[Sym].MRule = alt;
+        else
+            MAlt[MNont[Sym].Last].Next = alt;
+        MNont[Sym].Last = alt;
+        i = Right;
+        Arity = 0;
+        while (MembBuf[i] != 0)
+        {
+            if (MembBuf[i] > 0)
+                ++Arity;
+            ++i;
+        }
+        if (Arity > MaxMArity)
+            MaxMArity = Arity;
+        MAlt ~= MAltRecord(Sym, Right, Arity, nil);
+        NextMAlt = cast(int) MAlt.length;
+        return alt;
+    }
+
+    void AppMemb(int Val) nothrow @safe
+    {
+        MembBuf.length = NextMemb;
+        MembBuf ~= Val;
+        NextMemb = cast(int) MembBuf.length;
+    }
+
+    void AppNode(int Val) nothrow @safe
+    {
+        NodeBuf.length = NextNode;
+        NodeBuf ~= Val;
+        NextNode = cast(int) NodeBuf.length;
+    }
+
+    int FindVar(int Sym, int Num, Position Pos, bool Def) nothrow @safe
+    {
+        int V = Scope;
+
+        while (V < NextVar && (Var[V].Sym != Sym || Var[V].Num != Num))
             ++V;
-        if (V != NextVar)
+        if (V == NextVar)
         {
-            Var[V].Neg = NextVar;
+            V = Scope;
+            while (V < NextVar && (Var[V].Sym != Sym || Var[V].Num != -Num))
+                ++V;
+            if (V != NextVar)
+            {
+                Var[V].Neg = NextVar;
+            }
+            Var.length = NextVar;
+            Var ~= VarRecord(Sym, Num, V == NextVar ? nil : V, Pos, Def);
+            V = NextVar;
+            NextVar = cast(int) Var.length;
         }
-        Var.length = NextVar;
-        Var ~= VarRecord(Sym, Num, V == NextVar ? nil : V, Pos, Def);
-        V = NextVar;
-        NextVar = cast(int) Var.length;
-    }
-    else
-    {
-        Var[V].Def = Var[V].Def || Def;
-    }
-    return V;
-}
-
-public int hyperArity()
-{
-    const nonterminals = All - Pred;
-    int maximumAlternativeCount = 0;
-
-    foreach (nonterminal; nonterminals.bitsSet)
-    {
-        auto alternative = HNont[nonterminal].Def.Sub;
-        int alternativeCount = 0;
-
-        do
+        else
         {
-            ++alternativeCount;
-            alternative = alternative.Next;
+            Var[V].Def = Var[V].Def || Def;
         }
-        while (alternative !is null);
-
-        if (cast(Opt) HNont[nonterminal].Def || cast(Rep) HNont[nonterminal].Def)
-            ++alternativeCount;
-        if (alternativeCount > maximumAlternativeCount)
-            maximumAlternativeCount = alternativeCount;
+        return V;
     }
 
-    int arity = 1;
+    public int hyperArity()
+    {
+        const nonterminals = All - Pred;
+        int maximumAlternativeCount = 0;
 
-    while (arity <= maximumAlternativeCount)
-        arity *= 2;
+        foreach (nonterminal; nonterminals.bitsSet)
+        {
+            auto alternative = HNont[nonterminal].Def.Sub;
+            int alternativeCount = 0;
 
-    return arity;
-}
+            do
+            {
+                ++alternativeCount;
+                alternative = alternative.Next;
+            }
+            while (alternative !is null);
 
-public string HTermRepr(int Term) @nogc nothrow @safe
-{
-    return symbolTable.symbol(HTerm[Term].Id);
-}
+            if (cast(Opt) HNont[nonterminal].Def || cast(Rep) HNont[nonterminal].Def)
+                ++alternativeCount;
+            if (alternativeCount > maximumAlternativeCount)
+                maximumAlternativeCount = alternativeCount;
+        }
 
-public string HNontRepr(size_t Nont) @safe
-{
-    import std.format : format;
+        int arity = 1;
 
-    if (HNont[Nont].anonymous)
-        return format!"A%s"(-HNont[Nont].Id);
-    return symbolTable.symbol(HNont[Nont].Id);
-}
+        while (arity <= maximumAlternativeCount)
+            arity *= 2;
 
-public string VarRepr(int V) nothrow @safe
-{
-    import std.math : abs;
+        return arity;
+    }
 
-    string result;
+    public string HTermRepr(int Term) @nogc nothrow @safe
+    {
+        return symbolTable.symbol(HTerm[Term].Id);
+    }
 
-    if (Var[V].Num < 0)
-        result ~= '!';
-    result ~= symbolTable.symbol(MNont[Var[V].Sym].Id);
-    if (abs(Var[V].Num) > 1)
-        result ~= symbolTable.symbol(abs(Var[V].Num) - 2);
-    return result;
-}
+    public string HNontRepr(size_t Nont) @safe
+    {
+        import std.format : format;
 
-public string NamedHNontRepr(size_t Nont) @nogc nothrow @safe
-{
-    return symbolTable.symbol(HNont[Nont].NamedId);
-}
+        if (HNont[Nont].anonymous)
+            return format!"A%s"(-HNont[Nont].Id);
+        return symbolTable.symbol(HNont[Nont].Id);
+    }
 
+    public string VarRepr(int V) nothrow @safe
+    {
+        import std.math : abs;
+
+        string result;
+
+        if (Var[V].Num < 0)
+            result ~= '!';
+        result ~= symbolTable.symbol(MNont[Var[V].Sym].Id);
+        if (abs(Var[V].Num) > 1)
+            result ~= symbolTable.symbol(abs(Var[V].Num) - 2);
+        return result;
+    }
+
+    public string NamedHNontRepr(size_t Nont) @nogc nothrow @safe
+    {
+        return symbolTable.symbol(HNont[Nont].NamedId);
+    }
 }
 
 // Transitional legacy instance. Generator entry points will receive EAG explicitly.

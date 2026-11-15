@@ -21,9 +21,9 @@ public interface LR1ConflictResolver
      *     if the reduce is favored; <code>null</code> if neither is accepted.
      */
     Object resolveShiftReduceConflict(
-        Terminal terminal,
-        Alternative alternative,
-        size_t state);
+            Terminal terminal,
+            Alternative alternative,
+            size_t state);
 
     /**
      * Calls for resolution of a reduce/reduce parser conflict:
@@ -39,10 +39,10 @@ public interface LR1ConflictResolver
      *     or <code>null</code> if neither is accepted.
      */
     Object resolveReduceReduceConflict(
-        Alternative alternative1,
-        Alternative alternative2,
-        Terminal terminal,
-        size_t state);
+            Alternative alternative1,
+            Alternative alternative2,
+            Terminal terminal,
+            size_t state);
 
     /**
      * Notifies that there is a parser conflict at state <code>state</code>

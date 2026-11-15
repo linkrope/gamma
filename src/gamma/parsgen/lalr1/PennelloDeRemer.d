@@ -129,7 +129,7 @@ public class PennelloDeRemer : LR1ParserGenerator
 
         if (startAlt.rhs is null || startAlt.rhs.length != 2)
             nonPositionMark("Not an extended grammar.");
-        if (!(cast(Nonterminal) (cast(SymbolNode) startAlt.rhs[0]).symbol))
+        if (!(cast(Nonterminal)(cast(SymbolNode) startAlt.rhs[0]).symbol))
             nonPositionMark("Not an extended grammar.");
 
         Symbol extendedStartSymbol = this.grammar.startSymbol;
@@ -245,7 +245,7 @@ public class PennelloDeRemer : LR1ParserGenerator
         {
             public void visitNeighborsOf(Indexed nontTrans, SCCSetComputation.TransitionWalker walker)
             {
-                    // The "reads" relation is computed on demand.
+                // The "reads" relation is computed on demand.
                 LRMachine.State q = (cast(LRMachine.Transition) nontTrans).to;
 
                 if (q.outgoing !is null)
@@ -370,7 +370,7 @@ public class PennelloDeRemer : LR1ParserGenerator
         {
             public void initSet(Indexed nontTrans)
             {
-                    // "follow" Set initialization already done!
+                // "follow" Set initialization already done!
             }
 
             public void includeSet(Indexed nontTrans1, Indexed nontTrans2)
@@ -497,7 +497,7 @@ public class PennelloDeRemer : LR1ParserGenerator
         size_t[] parserActionRowPrev = new size_t[grammar.terminals.length + 1];
         size_t HEAD = grammar.terminals.length;
 
-        return new class (grammar) OrderedLR1Tables
+        return new class(grammar) OrderedLR1Tables
         {
             private Grammar grammar_;
 
@@ -512,9 +512,11 @@ public class PennelloDeRemer : LR1ParserGenerator
                 this.grammar_ = grammar;
                 this.parserActionRows = new Action[][states.length];
                 this.gotoRows = new Goto[][states.length];
+                // dfmt off
                 this.eofSymbol = cast(Terminal)
                     (cast(SymbolNode)(cast(Alternative) grammar.ruleOf(grammar.startSymbol).alternatives[0]).rhs[1])
                     .symbol;
+                // dfmt on
             }
 
             public Grammar grammar()
@@ -558,8 +560,8 @@ public class PennelloDeRemer : LR1ParserGenerator
                     if (alt != origAlt)
                     {
                         Object o = lr1ConflictResolver.resolveReduceReduceConflict(origAlt, alt,
-                            grammar.terminal(lookaheadIndex),
-                            stateIndex);
+                                grammar.terminal(lookaheadIndex),
+                                stateIndex);
 
                         if (o == alt)
                         {
@@ -596,7 +598,7 @@ public class PennelloDeRemer : LR1ParserGenerator
                         }
                     }
                 }
-                else if (parserActionRow[lookaheadIndex] !is null)
+                else if (parserActionRow[lookaheadIndex]!is null)
                 {
                     // (parserActionRow[lookaheadIndex] instanceof OrderedLR1Tables.Halt)
                     lr1ConflictResolver.noteHaltConflictOn(alt, stateIndex);
@@ -624,7 +626,7 @@ public class PennelloDeRemer : LR1ParserGenerator
                     unlinkFromParserActionList(lookaheadIndex);
                     prependToParserActionList(lookaheadIndex);
                 }
-                else if (parserActionRow[lookaheadIndex] !is null)
+                else if (parserActionRow[lookaheadIndex]!is null)
                 {
                     // parserActionRow[lookaheadIndex] instanceof OrderedLR1Tables.Reduce
                     auto reduce = cast(OrderedLR1Tables.Reduce) parserActionRow[lookaheadIndex];
@@ -655,7 +657,7 @@ public class PennelloDeRemer : LR1ParserGenerator
             {
                 size_t lookaheadIndex = eof.index; // PROBLEM!! eof not part of original grammar; eof.index??
 
-                if (parserActionRow[lookaheadIndex] !is null)
+                if (parserActionRow[lookaheadIndex]!is null)
                 {
                     // cast(OrderedLR1Tables.Reduce) parserActionRow[lookaheadIndex]
                     auto reduce = cast(OrderedLR1Tables.Reduce) parserActionRow[lookaheadIndex];
@@ -670,7 +672,7 @@ public class PennelloDeRemer : LR1ParserGenerator
 
             public Action[] getSortedParserActionRow(size_t stateIndex)
             {
-                if (parserActionRows[stateIndex] !is null)
+                if (parserActionRows[stateIndex]!is null)
                     return parserActionRows[stateIndex];
 
                 auto state = cast(LRMachine.State) states[stateIndex];
@@ -697,8 +699,8 @@ public class PennelloDeRemer : LR1ParserGenerator
                         enterHalt(state.index);
                     else if (cast(Terminal) item.symbolBehindDot)
                         enterShift(state.index,
-                            cast(Terminal) item.symbolBehindDot,
-                            lrMachine.getTransition(state, item.symbolBehindDot).to.index);
+                                cast(Terminal) item.symbolBehindDot,
+                                lrMachine.getTransition(state, item.symbolBehindDot).to.index);
                 }
                 // Set Action.isContinuationAction field(s) in second pass
                 size_t ca = parserActionRowNext[HEAD];
@@ -714,7 +716,7 @@ public class PennelloDeRemer : LR1ParserGenerator
                         {
                             OrderedLR1Tables.Action a = parserActionRow[ca];
                             if (cast(OrderedLR1Tables.Reduce) a
-                                && (cast(OrderedLR1Tables.Reduce) a).alternative == alt)
+                                    && (cast(OrderedLR1Tables.Reduce) a).alternative == alt)
                                 a.isContinuationAction = true;
                         }
                     }
@@ -725,7 +727,7 @@ public class PennelloDeRemer : LR1ParserGenerator
                 Action[] rowAsList;
 
                 for (size_t t = 0; t < parserActionRow.length; ++t)
-                    if (parserActionRow[t] !is null)
+                    if (parserActionRow[t]!is null)
                         rowAsList ~= parserActionRow[t];
                 parserActionRows[stateIndex] = rowAsList;
                 return parserActionRows[stateIndex];
@@ -733,7 +735,7 @@ public class PennelloDeRemer : LR1ParserGenerator
 
             public Goto[] getSortedGotoRow(size_t stateIndex)
             {
-                if (gotoRows[stateIndex] !is null)
+                if (gotoRows[stateIndex]!is null)
                     return gotoRows[stateIndex];
 
                 auto state = cast(LRMachine.State) states[stateIndex];

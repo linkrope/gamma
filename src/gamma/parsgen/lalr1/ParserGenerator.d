@@ -6,5 +6,5 @@ public interface ParserGenerator
 {
     void[] computeParser(Grammar grammar);
 
-    void emit(/* ... */);
+    void emit();
 }

@@ -43,11 +43,11 @@ private class EAGBuilder
     // These buffers use EAG indices directly. Index 0 is unused where the
     // corresponding EAG firstX constant is 1.
 
-    private EAG.MNontRecord[] mNont;   // index 0 unused (EAG.firstMNont = 1)
-    private EAG.MTermRecord[] mTerm;   // index 0 unused (EAG.firstMTerm = 1)
-    private EAG.MAltRecord[]  mAlt;    // index 0 unused (EAG.firstMAlt  = 1)
-    private int[]             membBuf; // index 0 unused (EAG.firstMemb  = 1)
-    private int               maxMArity;
+    private EAG.MNontRecord[] mNont; // index 0 unused (EAG.firstMNont = 1)
+    private EAG.MTermRecord[] mTerm; // index 0 unused (EAG.firstMTerm = 1)
+    private EAG.MAltRecord[] mAlt; // index 0 unused (EAG.firstMAlt  = 1)
+    private int[] membBuf; // index 0 unused (EAG.firstMemb  = 1)
+    private int maxMArity;
 
     // Symbol-table ID -> EAG index.
     private int[int] mNontById;
@@ -63,13 +63,13 @@ private class EAGBuilder
     // Every nonterminal object -> its hNont index (covers named and anonymous).
     private int[Nonterminal] hNontByNonterminal;
     // Symbol-table ID -> hTerm index.
-    private int[int]         hTermById;
+    private int[int] hTermById;
 
     // Negative IDs distinguish anonymous nonterminals from named symbols.
     private int hNextAnonym = -1;
 
     // Alternatives and factors have independent dense indices.
-    private int nextHAlt    = EAG.firstHAlt;
+    private int nextHAlt = EAG.firstHAlt;
     private int nextHFactor = EAG.firstHFactor;
 
     // Grammar properties use the EAG hyper-nonterminal indices.
@@ -80,23 +80,63 @@ private class EAGBuilder
     // Affix buffers are owned separately so they can be reset together.
 
     private AffixBuilder affixBuilder;
-    private ref int[] domBuf() { return this.affixBuilder.domBuf; }
-    private ref int nextDom() { return this.affixBuilder.nextDom; }
-    private ref int curSig() { return this.affixBuilder.curSig; }
-    private ref EAG.ParamRecord[] paramBuf() { return this.affixBuilder.paramBuf; }
-    private ref int nextParam() { return this.affixBuilder.nextParam; }
-    private ref int[] nodeBuf() { return this.affixBuilder.nodeBuf; }
-    private ref int nextNode() { return this.affixBuilder.nextNode; }
-    private ref EAG.VarRecord[] varBuf() { return this.affixBuilder.varBuf; }
-    private ref int nextVarBuf() { return this.affixBuilder.nextVarBuf; }
-    private ref int currentScope() { return this.affixBuilder.currentScope; }
+
+    private ref int[] domBuf()
+    {
+        return this.affixBuilder.domBuf;
+    }
+
+    private ref int nextDom()
+    {
+        return this.affixBuilder.nextDom;
+    }
+
+    private ref int curSig()
+    {
+        return this.affixBuilder.curSig;
+    }
+
+    private ref EAG.ParamRecord[] paramBuf()
+    {
+        return this.affixBuilder.paramBuf;
+    }
+
+    private ref int nextParam()
+    {
+        return this.affixBuilder.nextParam;
+    }
+
+    private ref int[] nodeBuf()
+    {
+        return this.affixBuilder.nodeBuf;
+    }
+
+    private ref int nextNode()
+    {
+        return this.affixBuilder.nextNode;
+    }
+
+    private ref EAG.VarRecord[] varBuf()
+    {
+        return this.affixBuilder.varBuf;
+    }
+
+    private ref int nextVarBuf()
+    {
+        return this.affixBuilder.nextVarBuf;
+    }
+
+    private ref int currentScope()
+    {
+        return this.affixBuilder.currentScope;
+    }
 
     // Maps built during hyper-structure construction (used by buildAffixes)
-    private Alternative[EAG.Alt]  alternativeByAlt;  // EAG.Alt  → gamma Alternative
-    private Rule[int]             ruleByHNontSym;    // hNont idx → grammar Rule
-    private Params[int]           endParamsByHNontSym; // hNont idx → endParams of Opt/Rep operator
-    private EAG.Nont[size_t]      nontByParamsKey;   // params.key → EAG.Nont factor
-    private int[Alternative]      altToGammaMAlt;    // meta Alternative → mAlt index
+    private Alternative[EAG.Alt] alternativeByAlt; // EAG.Alt  → gamma Alternative
+    private Rule[int] ruleByHNontSym; // hNont idx → grammar Rule
+    private Params[int] endParamsByHNontSym; // hNont idx → endParams of Opt/Rep operator
+    private EAG.Nont[size_t] nontByParamsKey; // params.key → EAG.Nont factor
+    private int[Alternative] altToGammaMAlt; // meta Alternative → mAlt index
 
     this(GammaEAG eag)
     {
@@ -104,9 +144,9 @@ private class EAGBuilder
         this.symbolTable = new SymbolTable;
 
         // Reserve slot 0 in each array so real entries start at index 1
-        this.mNont   = new EAG.MNontRecord[1];
-        this.mTerm   = new EAG.MTermRecord[1];
-        this.mAlt    = new EAG.MAltRecord[1];
+        this.mNont = new EAG.MNontRecord[1];
+        this.mTerm = new EAG.MTermRecord[1];
+        this.mAlt = new EAG.MAltRecord[1];
         this.membBuf = new int[1];
 
         buildMeta;
@@ -186,7 +226,9 @@ private class EAGBuilder
     {
         foreach (rule; this.eag.metaGrammar.rules)
         {
-            if (rule is null) continue;
+            if (rule is null)
+                continue;
+
             Nonterminal nonterminal = (cast(LhsNode) rule.lhs).nonterminal;
             const lhsSym = internMNont(nonterminal.toString);
 
@@ -241,10 +283,11 @@ private class EAGBuilder
         // operator nodes and processed recursively by buildHyperFactor.
         foreach (rule; this.eag.hyperEBNFGrammar.rules)
         {
-            if (rule is null) continue;
+            if (rule is null)
+                continue;
 
             Nonterminal nonterminal = rule.lhs.nonterminal;
-            const int   gammaSym   = findOrCreateHNont(nonterminal);
+            const int gammaSym = findOrCreateHNont(nonterminal);
             this.ruleByHNontSym[gammaSym] = rule;
 
             this.hNont[gammaSym].IsToken =
@@ -258,7 +301,7 @@ private class EAGBuilder
             }
 
             EAG.Alt firstAlt = null;
-            EAG.Alt lastAlt  = null;
+            EAG.Alt lastAlt = null;
 
             foreach (alternative; rule.alternatives)
                 buildHyperAlt(gammaSym, alternative, firstAlt, lastAlt);
@@ -284,26 +327,26 @@ private class EAGBuilder
     }
 
     private void buildHyperAlt(int lhsSym, Alternative alternative,
-                                ref EAG.Alt firstAlt, ref EAG.Alt lastAlt)
+            ref EAG.Alt firstAlt, ref EAG.Alt lastAlt)
     {
         EAG.Factor firstFactor = null;
-        EAG.Factor lastFactor  = null;
+        EAG.Factor lastFactor = null;
 
         foreach (node; alternative.rhs)
             buildHyperFactor(node, firstFactor, lastFactor);
 
         auto alt = new EAG.Alt;
 
-        alt.Up        = lhsSym;
-        alt.Sub       = firstFactor;
-        alt.Last      = lastFactor;
-        alt.Formal    = EAG.ParamsDesc.init;
-        alt.Actual    = EAG.ParamsDesc.init;
+        alt.Up = lhsSym;
+        alt.Sub = firstFactor;
+        alt.Last = lastFactor;
+        alt.Formal = EAG.ParamsDesc.init;
+        alt.Actual = EAG.ParamsDesc.init;
         alt.Scope.Beg = EAG.nil;
         alt.Scope.End = EAG.nil;
-        alt.Pos       = alternative.position;
-        alt.Ind       = this.nextHAlt++;
-        alt.Next      = null;
+        alt.Pos = alternative.position;
+        alt.Ind = this.nextHAlt++;
+        alt.Next = null;
 
         this.alternativeByAlt[alt] = alternative;
 
@@ -316,8 +359,8 @@ private class EAGBuilder
 
     private void buildHyperFactor(Node node, ref EAG.Factor firstFactor, ref EAG.Factor lastFactor)
     {
-        import gamma.grammar.hyper.Group      : HyperGroup = Group;
-        import gamma.grammar.hyper.Option     : HyperOption = Option;
+        import gamma.grammar.hyper.Group : HyperGroup = Group;
+        import gamma.grammar.hyper.Option : HyperOption = Option;
         import gamma.grammar.hyper.Repetition : HyperRepetition = Repetition;
 
         if (auto grp = cast(HyperGroup) node)
@@ -355,11 +398,11 @@ private class EAGBuilder
         {
             if (cast(Terminal) sn.symbol)
                 appendHTerm(firstFactor, lastFactor,
-                    findOrCreateHTerm(sn.symbol.toString), sn.position);
+                        findOrCreateHTerm(sn.symbol.toString), sn.position);
             else
             {
                 appendHNont(firstFactor, lastFactor,
-                    findOrCreateHNont(cast(Nonterminal) sn.symbol), sn.position);
+                        findOrCreateHNont(cast(Nonterminal) sn.symbol), sn.position);
                 if (auto hsn = cast(HyperSymbolNode) sn)
                     if (hsn.params !is null)
                         this.nontByParamsKey[hsn.params.key] = cast(EAG.Nont) lastFactor;
@@ -369,8 +412,8 @@ private class EAGBuilder
 
     private void buildDirectOperatorDefinition(int target, Operator op)
     {
-        import gamma.grammar.hyper.Group      : HyperGroup = Group;
-        import gamma.grammar.hyper.Option     : HyperOption = Option;
+        import gamma.grammar.hyper.Group : HyperGroup = Group;
+        import gamma.grammar.hyper.Option : HyperOption = Option;
         import gamma.grammar.hyper.Repetition : HyperRepetition = Repetition;
 
         if (auto group = cast(HyperGroup) op)
@@ -394,7 +437,7 @@ private class EAGBuilder
     private void buildHyperGrpDefinition(int target, Rule rule)
     {
         EAG.Alt firstAlt = null;
-        EAG.Alt lastAlt  = null;
+        EAG.Alt lastAlt = null;
 
         this.ruleByHNontSym[target] = rule;
 
@@ -410,7 +453,7 @@ private class EAGBuilder
     private void buildHyperOptDefinition(int target, Rule rule, Position position)
     {
         EAG.Alt firstAlt = null;
-        EAG.Alt lastAlt  = null;
+        EAG.Alt lastAlt = null;
 
         this.ruleByHNontSym[target] = rule;
 
@@ -419,18 +462,18 @@ private class EAGBuilder
 
         auto opt = new EAG.Opt;
 
-        opt.Sub         = firstAlt;
+        opt.Sub = firstAlt;
         opt.EmptyAltPos = position;
-        opt.Scope.Beg   = EAG.nil;
-        opt.Scope.End   = EAG.nil;
-        opt.Formal      = EAG.ParamsDesc.init;
+        opt.Scope.Beg = EAG.nil;
+        opt.Scope.End = EAG.nil;
+        opt.Formal = EAG.ParamsDesc.init;
         this.hNont[target].Def = opt;
     }
 
     private void buildHyperRepDefinition(int target, Rule rule, Position position)
     {
         EAG.Alt firstAlt = null;
-        EAG.Alt lastAlt  = null;
+        EAG.Alt lastAlt = null;
 
         this.ruleByHNontSym[target] = rule;
 
@@ -439,11 +482,11 @@ private class EAGBuilder
 
         auto rep = new EAG.Rep;
 
-        rep.Sub         = firstAlt;
+        rep.Sub = firstAlt;
         rep.EmptyAltPos = position;
-        rep.Scope.Beg   = EAG.nil;
-        rep.Scope.End   = EAG.nil;
-        rep.Formal      = EAG.ParamsDesc.init;
+        rep.Scope.Beg = EAG.nil;
+        rep.Scope.End = EAG.nil;
+        rep.Formal = EAG.ParamsDesc.init;
         this.hNont[target].Def = rep;
     }
 
@@ -492,7 +535,7 @@ private class EAGBuilder
             if (auto rep = cast(EAG.Rep) this.hNont[gammaSym].Def)
             {
                 this.currentScope = this.nextVarBuf;
-                rep.Scope.Beg      = this.nextVarBuf;
+                rep.Scope.Beg = this.nextVarBuf;
                 Params endP = this.endParamsByHNontSym.get(gammaSym, null);
                 if (endP !is null)
                 {
@@ -504,7 +547,7 @@ private class EAGBuilder
             else if (auto opt = cast(EAG.Opt) this.hNont[gammaSym].Def)
             {
                 this.currentScope = this.nextVarBuf;
-                opt.Scope.Beg      = this.nextVarBuf;
+                opt.Scope.Beg = this.nextVarBuf;
                 Params endP = this.endParamsByHNontSym.get(gammaSym, null);
                 if (endP !is null)
                 {
@@ -515,21 +558,19 @@ private class EAGBuilder
             }
 
             // --- Walk each Alt ---
-            for (EAG.Alt gammaAlt = this.hNont[gammaSym].Def.Sub;
-                 gammaAlt !is null;
-                 gammaAlt = gammaAlt.Next)
+            for (EAG.Alt gammaAlt = this.hNont[gammaSym].Def.Sub; gammaAlt !is null; gammaAlt = gammaAlt.Next)
             {
                 Alternative alternative = this.alternativeByAlt.get(gammaAlt, null);
 
                 if (alternative is null)
                     continue;
 
-                this.currentScope   = this.nextVarBuf;
-                gammaAlt.Scope.Beg  = this.nextVarBuf;
+                this.currentScope = this.nextVarBuf;
+                gammaAlt.Scope.Beg = this.nextVarBuf;
 
                 // Formal params on the Alt lhs
                 gammaAlt.Formal = buildAffixLhsParamsDesc(
-                    alternative.lhs, sig, true, alternative.position);
+                        alternative.lhs, sig, true, alternative.position);
 
                 // A trailing parameter list can belong either to the repetition
                 // alternative or to its last symbol. Matching keys identify the
@@ -546,7 +587,7 @@ private class EAGBuilder
 
                             if (auto lastHsn = cast(HyperSymbolNode) alternative.rhs.back)
                                 if (lastHsn.params !is null
-                                    && lastHsn.params.key == repAlt.params.key)
+                                        && lastHsn.params.key == repAlt.params.key)
                                     repActualIsUndecided = true;
                         }
 
@@ -554,7 +595,7 @@ private class EAGBuilder
                         {
                             auto terms = this.eag.hyperEBNFGrammar.terms(repAlt.params.key);
                             gammaAlt.Actual = buildAffixTermsParamsDesc(terms, sig, false,
-                                repAlt.params.position);
+                                    repAlt.params.position);
                         }
                     }
                 }
@@ -617,7 +658,7 @@ private class EAGBuilder
 
     // Build a ParamsDesc from a LhsNode reference (for Alt.lhs dispatch).
     private EAG.ParamsDesc buildAffixLhsParamsDesc(
-        LhsNode lhsNode, int sig, bool isLhs, Position fallbackPos)
+            LhsNode lhsNode, int sig, bool isLhs, Position fallbackPos)
     {
         auto hln = cast(HyperLhsNode) lhsNode;
 
@@ -631,7 +672,7 @@ private class EAGBuilder
 
     // Build a ParamsDesc from a Term[] slice (already Earley-parsed).
     private EAG.ParamsDesc buildAffixTermsParamsDesc(
-        Term[] terms, int sig, bool isLhs, Position pos)
+            Term[] terms, int sig, bool isLhs, Position pos)
     {
         if (terms.empty)
             return EAG.ParamsDesc(EAG.empty, pos);
@@ -641,7 +682,7 @@ private class EAGBuilder
         foreach (i, term; terms)
         {
             const bool isDef = affixIsDef(sig, cast(int) i, isLhs);
-            const int  tree  = buildAffixTerm(term, isDef);
+            const int tree = buildAffixTerm(term, isDef);
 
             this.paramBuf ~= EAG.ParamRecord(tree, pos, isDef);
             ++this.nextParam;
@@ -660,7 +701,7 @@ private class EAGBuilder
             return false;
 
         int dom = sig;
-        int i   = 0;
+        int i = 0;
 
         while (this.domBuf[dom] != EAG.nil && i < index)
         {
@@ -683,7 +724,7 @@ private class EAGBuilder
         if (auto v = cast(Variable) term)
         {
             const mNontSym = internMNont(v.nonterminal.toString);
-            int   num;
+            int num;
 
             if (v.number.isNull)
             {
@@ -705,7 +746,7 @@ private class EAGBuilder
         assert(c !is null, "Term must be Variable or Composite");
 
         const gammaMAltIdx = this.altToGammaMAlt.get(c.alternative, 0);
-        const treeIndex    = this.nextNode;
+        const treeIndex = this.nextNode;
 
         assert(gammaMAltIdx > EAG.nil);
         assert(c.terms.length == this.mAlt[gammaMAltIdx].Arity);
@@ -749,7 +790,7 @@ private class EAGBuilder
                 const int newV = this.nextVarBuf;
 
                 this.varBuf ~= EAG.VarRecord(sym, num, v, pos, isDef);
-                this.varBuf[v].Neg     = newV;
+                this.varBuf[v].Neg = newV;
                 ++this.nextVarBuf;
                 return newV;
             }
@@ -766,9 +807,9 @@ private class EAGBuilder
     // `node` is the grammar RHS node (HyperSymbolNode or Operator).
     private void buildAffixNontFactor(EAG.Nont nont, Node node)
     {
-        import gamma.grammar.hyper.Group      : HyperGroup = Group;
-        import gamma.grammar.hyper.Operator   : Operator;
-        import gamma.grammar.hyper.Option     : HyperOption = Option;
+        import gamma.grammar.hyper.Group : HyperGroup = Group;
+        import gamma.grammar.hyper.Operator : Operator;
+        import gamma.grammar.hyper.Option : HyperOption = Option;
         import gamma.grammar.hyper.Repetition : HyperRepetition = Repetition;
 
         const refSig = this.hNont[nont.Sym].Sig;
@@ -780,7 +821,7 @@ private class EAGBuilder
                 auto terms = this.eag.hyperEBNFGrammar.terms(hsn.params.key);
 
                 nont.Actual = buildAffixTermsParamsDesc(terms, refSig, false,
-                    hsn.params.position);
+                        hsn.params.position);
             }
         }
         else if (auto op = cast(Operator) node)
@@ -791,7 +832,7 @@ private class EAGBuilder
                 auto terms = this.eag.hyperEBNFGrammar.terms(op.params.key);
 
                 nont.Actual = buildAffixTermsParamsDesc(terms, refSig, false,
-                    op.params.position);
+                        op.params.position);
             }
         }
     }
@@ -937,13 +978,13 @@ private class EAGBuilder
      * firstFactor is set on the first call; lastFactor always points to the new node.
      */
     private void appendHTerm(ref EAG.Factor firstFactor, ref EAG.Factor lastFactor,
-        int sym, Position pos)
+            int sym, Position pos)
     {
         auto f = new EAG.Term;
 
-        f.Sym  = sym;
-        f.Pos  = pos;
-        f.Ind  = this.nextHFactor++;
+        f.Sym = sym;
+        f.Pos = pos;
+        f.Ind = this.nextHFactor++;
         f.Next = null;
         f.Prev = lastFactor;
 
@@ -959,16 +1000,16 @@ private class EAGBuilder
      * Append a nonterminal Factor to the current factor chain.
      */
     private void appendHNont(ref EAG.Factor firstFactor, ref EAG.Factor lastFactor,
-        int sym, Position pos)
+            int sym, Position pos)
     {
         auto f = new EAG.Nont;
 
-        f.Sym    = sym;
+        f.Sym = sym;
         f.Actual = EAG.ParamsDesc.init; // Filled during affix construction.
-        f.Pos    = pos;
-        f.Ind    = this.nextHFactor++;
-        f.Next   = null;
-        f.Prev   = lastFactor;
+        f.Pos = pos;
+        f.Ind = this.nextHFactor++;
+        f.Next = null;
+        f.Prev = lastFactor;
 
         if (lastFactor !is null)
             lastFactor.Next = f;
@@ -1035,4 +1076,3 @@ private struct AffixBuilder
         this.currentScope = EAG.firstVar;
     }
 }
-

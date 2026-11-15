@@ -81,7 +81,8 @@ private class EBNFConverter : HyperVisitor
             auto innerNonterminal = operator.rule.lhs.nonterminal;
 
             this.effectiveNonterminal_[innerNonterminal] = rule.lhs.nonterminal;
-            scope (exit) this.effectiveNonterminal_.remove(innerNonterminal);
+            scope (exit)
+                this.effectiveNonterminal_.remove(innerNonterminal);
 
             this.rhsStack ~= null;
             operator.accept(this);

@@ -81,6 +81,7 @@ static foreach (example; [
         import std.range : walkLength;
         import std.regex : matchAll, regex;
 
+        // dfmt off
         with (sandbox)
         {
             const input = `
@@ -94,18 +95,19 @@ static foreach (example; [
             write(buildPath(directory, "input"), input);
 
             run!"%s %s --space %s --output-directory %s"(
-                gamma, example.option, buildPath("example", "decl-appl.eag"), directory)
+                    gamma, example.option, buildPath("example", "decl-appl.eag"), directory)
                 .shouldPassWith(example.result);
 
             const result = run!"cd %s && %s input"(directory, dotSlash("DeclAppl"));
 
             result
                 .shouldFailWith(
-                    `error: predicate '?NotAlreadyDeclared'? failed\ninput:2:6 DECL aa`,
-                    `error: predicate '?Declared'? failed\ninput:4:6 APPL ab`,
-                    `error: predicate '?Declared'? failed\ninput:5:6 APPL ba`,
-                );
+                        `error: predicate '?NotAlreadyDeclared'? failed\ninput:2:6 DECL aa`,
+                        `error: predicate '?Declared'? failed\ninput:4:6 APPL ab`,
+                        `error: predicate '?Declared'? failed\ninput:5:6 APPL ba`,
+            );
 
             assert(result.output.matchAll(regex(`^error: predicate `, "m")).walkLength == 3, result.output);
         }
+        // dfmt on
     }

@@ -26,3 +26,11 @@ jobs:
     - name: Check style
       run: |
         dub run dscanner -- --styleCheck src test
+
+    - name: Check formatting
+      run: |
+        # dfmt edits in place when it receives more than one path;
+        # checking the resulting diff gives CI a useful patch when formatting is required.
+        rg --files src include test unittest -g '*.d' |
+          xargs dub run dfmt@~master --
+        git diff --exit-code -- '*.d'

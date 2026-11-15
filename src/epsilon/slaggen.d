@@ -338,18 +338,18 @@ public void InitGen(File MOut, int Treatment, Settings settings)
     {
         switch (Treatment)
         {
-        case parsePass:
-            SavePos = true;
-            UseConst = false;
-            UseRefCnt = false;
-            break;
-        case onePass:
-            break;
-        case sweepPass:
-            TraversePass = true;
-            break;
-        default:
-            assert(0);
+            case parsePass:
+                SavePos = true;
+                UseConst = false;
+                UseRefCnt = false;
+                break;
+            case onePass:
+                break;
+            case sweepPass:
+                TraversePass = true;
+                break;
+            default:
+                assert(0);
         }
     }
 

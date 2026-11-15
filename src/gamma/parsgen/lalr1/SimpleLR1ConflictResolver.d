@@ -38,14 +38,14 @@ public class SimpleLR1ConflictResolver : LR1ConflictResolver
     }
 
     public Object resolveReduceReduceConflict(Alternative alternative1, Alternative alternative2,
-        Terminal terminal, size_t state)
+            Terminal terminal, size_t state)
     {
         import std.format : format;
 
         ++rrConflicts;
         alternative1.position
             .markError(format!"reduce/reduce conflict with '%s' for look-ahead %s"(alternative2,
-                (terminal !is null) ? terminal.toString : "(null)"));
+                    (terminal !is null) ? terminal.toString : "(null)"));
 
         const n1 = alternative1.lhs.nonterminal.index;
         const n2 = alternative2.lhs.nonterminal.index;
@@ -72,18 +72,15 @@ public class SimpleLR1ConflictResolver : LR1ConflictResolver
             .markError("reduce/halt conflict");
     }
 
-
     public int getHaltConflicts() const
     {
         return this.haltConflicts;
     }
 
-
     public int getRrConflicts() const
     {
         return this.rrConflicts;
     }
-
 
     public int getSrConflicts() const
     {

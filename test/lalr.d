@@ -11,7 +11,7 @@ unittest
     with (sandbox)
     {
         run!"%s --lalr --sweep --space --runtime . %s --output-directory %s"(
-            gamma, buildPath("example", "abc.eag"), directory)
+                gamma, buildPath("example", "abc.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         run!"cd %s && echo a a a b b b c c c | %s"(directory, dotSlash("S"))
             .shouldPassWith("^1 1 1 \\nOK$");
@@ -59,7 +59,7 @@ unittest
             `.outdent.strip;
 
         run!"%s --lalr --runtime . %s --output-directory %s"(
-            gamma, buildPath("example", "left-recursion.eag"), directory)
+                gamma, buildPath("example", "left-recursion.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "1 + 2");
         run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
@@ -120,15 +120,15 @@ unittest
             `.outdent.strip;
 
         run!"%s --lalr --runtime . %s --output-directory %s"(
-            gamma, buildPath("example", "left-recursion.eag"), directory)
+                gamma, buildPath("example", "left-recursion.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "2 ** 3");
         run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
             .shouldFailWith(
-                `error: Syntax error! Repairing input...`.escape,
-                `info: Inserting '0'`,
-                parseTree.escape,
-            );
+                    `error: Syntax error! Repairing input...`.escape,
+                    `info: Inserting '0'`,
+                    parseTree.escape,
+        );
     }
 }
 
@@ -138,16 +138,16 @@ unittest
     with (sandbox)
     {
         run!"%s --lalr --runtime . %s --output-directory %s"(
-            gamma, buildPath("example", "left-recursion.eag"), directory)
+                gamma, buildPath("example", "left-recursion.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "2 @ * 3");
         run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
             .shouldFailWith(
-                "error: unknown token",
-                "input:1:3",
-                `error: Syntax error! Repairing input...`.escape,
-                "info: Deleting unknown token",
-            );
+                    "error: unknown token",
+                    "input:1:3",
+                    `error: Syntax error! Repairing input...`.escape,
+                    "info: Deleting unknown token",
+        );
     }
 }
 
@@ -157,13 +157,13 @@ unittest
     with (sandbox)
     {
         run!"%s --lalr --runtime . %s --output-directory %s"(
-            gamma, buildPath("example", "abc.eag"), directory)
+                gamma, buildPath("example", "abc.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         run!"cd %s && echo 'ba' | %s"(directory, dotSlash("S"))
             .shouldFailWith(
-                `error: Syntax error! Repairing input...`.escape,
-                "info: End of parsing",
-            );
+                    `error: Syntax error! Repairing input...`.escape,
+                    "info: End of parsing",
+        );
     }
 }
 
@@ -173,14 +173,14 @@ unittest
     with (sandbox)
     {
         run!"%s --lalr --space --runtime . %s --output-directory %s"(
-            gamma, buildPath("example", "decl-appl.eag"), directory)
+                gamma, buildPath("example", "decl-appl.eag"), directory)
             .shouldPassWith("DeclAppl grammar is single sweep");
         write(buildPath(directory, "input"), "DECL ab APPL ba");
         run!"cd %s && %s input"(directory, dotSlash("DeclAppl"))
             .shouldFailWith(
-                "error: predicate 'Declared' failed",
-                "input:1:14 DECL ab APPL ba",
-            );
+                    "error: predicate 'Declared' failed",
+                    "input:1:14 DECL ab APPL ba",
+        );
     }
 }
 
@@ -190,10 +190,10 @@ unittest
     with (sandbox)
     {
         run!"%s --lalr --space --runtime . %s --output-directory %s"(
-            gamma, buildPath("example", "oberon0.eag"), directory)
+                gamma, buildPath("example", "oberon0.eag"), directory)
             .shouldPassWith("OberonO grammar is single sweep");
         run!"cd %s && %s %s"(directory, dotSlash("OberonO"),
-            absolutePath("test/oberon0/BigSample.Mod"))
+                absolutePath("test/oberon0/BigSample.Mod"))
             .shouldPassWith("^^L1 .* RET 0 $$");
     }
 }
@@ -204,7 +204,7 @@ unittest
     with (sandbox)
     {
         run!"%s --lalr --runtime . %s --output-directory %s"(
-            gamma, buildPath("example", "ebnf.eag"), directory)
+                gamma, buildPath("example", "ebnf.eag"), directory)
             .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "a, , ab");
         run!"cd %s && %s input"(directory, dotSlash("S"))

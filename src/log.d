@@ -97,10 +97,12 @@ enum Level
 unittest
 {
     const previousLevels = levels;
-    scope (exit) levels = previousLevels;
+    scope (exit)
+        levels = previousLevels;
     levels = Level.error;
     logger.clear;
-    scope (exit) logger.clear;
+    scope (exit)
+        logger.clear;
 
     trace!"filtered";
     error!"test %s"("message");

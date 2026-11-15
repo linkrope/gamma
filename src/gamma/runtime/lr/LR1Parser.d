@@ -66,6 +66,7 @@ public class LR1Parser
                 continue;
             }
 
+            // dfmt off
             const halted = action.match!(
                 (const Shift shift)
                 {
@@ -90,6 +91,7 @@ public class LR1Parser
                     return true;
                 },
             );
+            // dfmt on
             if (halted)
             {
                 return parseTree;
@@ -111,6 +113,7 @@ public class LR1Parser
         {
             foreach (action; parserTables.actionsFor(state))
             {
+                // dfmt off
                 action.match!(
                     (const Shift shift)
                     {
@@ -119,11 +122,13 @@ public class LR1Parser
                     (const Reduce reduceAction) {},
                     (const Halt halt) {},
                 );
+                // dfmt on
             }
             anchors[parserTables.eofTerminal] = true;
 
             const action = nextContinuationAction;
 
+            // dfmt off
             const continues = action.match!(
                 (const Shift shift)
                 {
@@ -146,11 +151,9 @@ public class LR1Parser
                     return false;
                 },
             );
-            if (continues)
-            {
-                continue;
-            }
-            break;
+            // dfmt on
+            if (!continues)
+                break;
         }
 
         // Phase 2: Delete input until an anchor terminal is reached.
@@ -173,6 +176,7 @@ public class LR1Parser
                 break;
 
             const action = nextContinuationAction;
+            // dfmt off
             const halted = action.match!(
                 (const Shift shift)
                 {
@@ -194,6 +198,7 @@ public class LR1Parser
                     return true;
                 },
             );
+            // dfmt on
 
             if (halted)
             {
@@ -225,11 +230,13 @@ public class LR1Parser
     {
         foreach (action; parserTables.actionsFor(state))
         {
+            // dfmt off
             if (action.match!(
                 (const Shift shift) => shift.lookahead == terminal,
                 _ => false,
             ))
                 return true;
+            // dfmt on
         }
 
         return false;
@@ -293,7 +300,7 @@ public class LR1Parser
     }
 
     private const(ParseNode)* ruleNode(const Rule rule, const(ParseNode)*[] children,
-        const Position position)
+            const Position position)
     {
         const lhsIndex = parserTables.nonterminals[rule.lhs].index;
 

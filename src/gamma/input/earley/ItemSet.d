@@ -74,7 +74,8 @@ class ItemSet : Indexed
                         if (parentItem.symbol == lhsSymbol)
                             add(Item.nextItem(parentItem, item));
                     }
-                } else if (cast(Nonterminal) item.symbol)
+                }
+                else if (cast(Nonterminal) item.symbol)
                 {
                     Nonterminal nonterminal = cast(Nonterminal) item.symbol;
                     Alternative[] alternatives = grammar.ruleOf(nonterminal).alternatives;

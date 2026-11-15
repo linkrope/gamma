@@ -134,8 +134,7 @@ private void ComputeNodeNames(int R) @nogc nothrow
         {
             Var = 0;
             ProcVar = 0;
-            for (AP = SOAG.SymOcc[SO].AffOcc.Beg; AP <= SOAG.SymOcc[SO].AffOcc.End;
-                    ++AP)
+            for (AP = SOAG.SymOcc[SO].AffOcc.Beg; AP <= SOAG.SymOcc[SO].AffOcc.End; ++AP)
             {
                 PBI = SOAG.AffOcc[AP].ParamBufInd;
                 Node = eag.ParamBuf[PBI].Affixform;
@@ -620,8 +619,7 @@ private void GenSynPred(int SymOccInd, int VisitNo)
 
     S = SOAG.SymOcc[SymOccInd].SymInd;
     IsPred = VisitNo == -1;
-    for (AP = SOAG.SymOcc[SymOccInd].AffOcc.Beg; AP <= SOAG.SymOcc[SymOccInd].AffOcc.End;
-            ++AP)
+    for (AP = SOAG.SymOcc[SymOccInd].AffOcc.Beg; AP <= SOAG.SymOcc[SymOccInd].AffOcc.End; ++AP)
     {
         AN = AP - SOAG.SymOcc[SymOccInd].AffOcc.Beg;
         P = SOAG.AffOcc[AP].ParamBufInd;
@@ -856,8 +854,7 @@ private void GenAnalPred(int SymOccInd, int VisitNo) @safe
     S = SOAG.SymOcc[SymOccInd].SymInd;
     IsPred = VisitNo == -1;
     PosNeeded = !IsPred;
-    for (AP = SOAG.SymOcc[SymOccInd].AffOcc.Beg; AP <= SOAG.SymOcc[SymOccInd].AffOcc.End;
-            ++AP)
+    for (AP = SOAG.SymOcc[SymOccInd].AffOcc.Beg; AP <= SOAG.SymOcc[SymOccInd].AffOcc.End; ++AP)
     {
         AN = AP - SOAG.SymOcc[SymOccInd].AffOcc.Beg;
         if (eag.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].isDef

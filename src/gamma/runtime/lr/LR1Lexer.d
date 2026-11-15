@@ -10,7 +10,13 @@ import std.uni : isWhite;
 
 public struct Token
 {
-    public enum Kind { terminal, nonterminal, end, error }
+    public enum Kind
+    {
+        terminal,
+        nonterminal,
+        end,
+        error,
+    }
 
     Kind kind;
 
@@ -48,8 +54,8 @@ public struct LR1Lexer
     private Position whiteSpaceErrorPosition;
 
     public this(Input input, immutable LR1ParserTables parserTables,
-        immutable Nullable!LexerCandidate[] candidates,
-        immutable LexerRule[] rules, immutable string[] terminalNames)
+            immutable Nullable!LexerCandidate[] candidates,
+            immutable LexerRule[] rules, immutable string[] terminalNames)
     {
         this.input = input;
         this.parserTables = parserTables;
@@ -83,7 +89,7 @@ public struct LR1Lexer
         if (!skipWhiteSpace)
         {
             token = Token(Token.Kind.error, size_t.max, whiteSpaceErrorPosition,
-                errorMessage: "comment not closed at end of text".nullable);
+                    errorMessage: "comment not closed at end of text".nullable);
             return;
         }
         if (input.empty)
@@ -241,7 +247,7 @@ public struct LR1Lexer
      * Applies all reductions needed before shifting `terminal`.
      */
     private bool consume(ref size_t[] states, ref const(ParseNode)*[] nodes, size_t terminal,
-        const Position position) const
+            const Position position) const
     {
         for (;;)
         {
@@ -250,6 +256,7 @@ public struct LR1Lexer
             if (!actionFor(states.back, terminal, action))
                 return false;
 
+            // dfmt off
             const shifted = action.match!(
                 (const Shift shift)
                 {
@@ -264,6 +271,7 @@ public struct LR1Lexer
                 },
                 (const Halt halt) => false,
             );
+            // dfmt on
 
             if (shifted)
                 return true;
@@ -274,7 +282,7 @@ public struct LR1Lexer
      * Parses the virtual end marker against a snapshot.
      */
     private Nullable!Token candidateAtVirtualEnd(const size_t[] originalStates,
-        const(ParseNode)*[] originalNodes, const Position position) const
+            const(ParseNode)*[] originalNodes, const Position position) const
     {
         size_t[] states = originalStates.dup;
         const(ParseNode)*[] nodes = originalNodes.dup;
@@ -288,6 +296,7 @@ public struct LR1Lexer
             if (!actionFor(states.back, parserTables.eofTerminal, action))
                 return Nullable!Token();
 
+            // dfmt off
             const completed = action.match!(
                 (const Shift shift)
                 {
@@ -309,6 +318,7 @@ public struct LR1Lexer
                 },
                 (const Halt halt) => true,
             );
+            // dfmt on
 
             if (completed)
             {
@@ -333,8 +343,8 @@ public struct LR1Lexer
 
     private bool actionFor(size_t state, size_t terminal, out Action result) const
     {
-        foreach (action; parserTables.actions[
-            parserTables.actionOffsets[state] .. parserTables.actionOffsets[state + 1]])
+        foreach (action; parserTables
+                .actions[parserTables.actionOffsets[state] .. parserTables.actionOffsets[state + 1]])
             if (action.match!(action => action.lookahead) == terminal)
             {
                 result = action;
@@ -345,7 +355,7 @@ public struct LR1Lexer
     }
 
     private void reduce(ref size_t[] states, ref const(ParseNode)*[] nodes,
-        size_t ruleIndex, const Position position) const
+            size_t ruleIndex, const Position position) const
     {
         const rule = parserTables.rules[ruleIndex];
 
@@ -365,12 +375,12 @@ public struct LR1Lexer
             nodes ~= new ParseNode(TerminalNode(source.terminal, nodePosition(*children.front)));
         else if (source.nonterminal != size_t.max)
             nodes ~= new ParseNode(RuleNode(source.nonterminal, source.alternative, children,
-                children.empty ? position : nodePosition(*children.front)));
+                    children.empty ? position : nodePosition(*children.front)));
         else
             nodes ~= children.length == 1 ? children.front : null;
 
-        foreach (goTo; parserTables.gotos[
-            parserTables.gotoOffsets[states.back] .. parserTables.gotoOffsets[states.back + 1]])
+        foreach (goTo; parserTables
+                .gotos[parserTables.gotoOffsets[states.back] .. parserTables.gotoOffsets[states.back + 1]])
         {
             if (goTo.nonterminal == rule.lhs)
             {

@@ -164,25 +164,25 @@ const notEnoughMemory = 99;
 
 void Error(T)(int ErrorType, T Proc)
 {
-    import std.stdio : stdout;  // TODO: replace with log
+    import std.stdio : stdout; // TODO: replace with log
 
     stdout.write("ERROR: ");
     switch (ErrorType)
     {
-    case abnormalError:
-        stdout.write("abnormal error ");
-        break;
-    case notEnoughMemory:
-        stdout.write("memory allocation failed ");
-        break;
-    case cyclicTDP:
-        stdout.write("TDP is cyclic...aborted\n");
-        break;
-    case notLeftDefined:
-        stdout.write("Grammar are not left defined\n");
-        break;
-    default:
-        assert(0);
+        case abnormalError:
+            stdout.write("abnormal error ");
+            break;
+        case notEnoughMemory:
+            stdout.write("memory allocation failed ");
+            break;
+        case cyclicTDP:
+            stdout.write("TDP is cyclic...aborted\n");
+            break;
+        case notLeftDefined:
+            stdout.write("Grammar are not left defined\n");
+            break;
+        default:
+            assert(0);
     }
     if (ErrorType == abnormalError || ErrorType == notEnoughMemory)
     {

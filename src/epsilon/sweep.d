@@ -280,33 +280,33 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
                 {
                     switch (op)
                     {
-                    case def:
-                        if (Def)
-                            DefVars[-Node] = true;
-                        break;
-                    case right:
-                        if (!DefVars[-Node])
-                        {
+                        case def:
                             if (Def)
+                                DefVars[-Node] = true;
+                            break;
+                        case right:
+                            if (!DefVars[-Node])
                             {
-                                NewEdge(Factor[F.Ind].Vars, -Node);
+                                if (Def)
+                                {
+                                    NewEdge(Factor[F.Ind].Vars, -Node);
+                                }
+                                else
+                                {
+                                    NewEdge(Var[-Node].Factors, F.Ind);
+                                    ++Factor[F.Ind].CountAppl;
+                                }
                             }
-                            else
+                            break;
+                        case appl:
+                            if (!Def && !DefVars[-Node])
                             {
-                                NewEdge(Var[-Node].Factors, F.Ind);
-                                ++Factor[F.Ind].CountAppl;
+                                error!"variable %s is not defined\n%s"(eag.VarRepr(-Node), eag.ParamBuf[P].Pos);
+                                Error = true;
                             }
-                        }
-                        break;
-                    case appl:
-                        if (!Def && !DefVars[-Node])
-                        {
-                            error!"variable %s is not defined\n%s"(eag.VarRepr(-Node), eag.ParamBuf[P].Pos);
-                            Error = true;
-                        }
-                        break;
-                    default:
-                        assert(0);
+                            break;
+                        default:
+                            assert(0);
                     }
                 }
                 else

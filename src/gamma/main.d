@@ -93,7 +93,7 @@ struct Arguments
         ])
         {
             if (__traits(getMember, this, conflict.option1)
-                && __traits(getMember, this, conflict.option2))
+                    && __traits(getMember, this, conflict.option2))
             {
                 error!"--%s cannot be combined with --%s"(conflict.option1, conflict.option2);
                 exit(EXIT_FAILURE);
@@ -220,8 +220,8 @@ void compile(Input input, const Arguments arguments)
         const evaluatorModuleName = epsilonEAG.BaseName ~ "Eval";
         auto lexer = generateLRLexer(eag, settings);
 
-        fileNames = generateLRParser(epsilonEAG, eag, evaluatorModuleName, lexer.moduleName,
-            settings) ~ lexer.fileName ~ fileNames;
+        fileNames = generateLRParser(epsilonEAG, eag, evaluatorModuleName, lexer.moduleName, settings)
+            ~ lexer.fileName ~ fileNames;
     }
     else if (needsTree)
     {
@@ -243,20 +243,19 @@ auto generateLRLexer(EAG eag, const Settings settings)
     import std.typecons : No, Yes;
 
     const parsesLexicalNonterminals = settings.p
-        ? Yes.parsesLexicalNonterminals
-        : No.parsesLexicalNonterminals;
+        ? Yes.parsesLexicalNonterminals : No.parsesLexicalNonterminals;
     auto lexerGrammar = eag.toLexerGrammar(parsesLexicalNonterminals);
     auto conflictResolver = new LexerConflictResolver(lexerGrammar.grammar,
-        lexerGrammar.tokenEnd, lexerGrammar.helpersByTerminal,
-        lexerGrammar.lexicalNonterminalOwners, lexerGrammar.nonterminalNames);
+            lexerGrammar.tokenEnd, lexerGrammar.helpersByTerminal,
+            lexerGrammar.lexicalNonterminalOwners, lexerGrammar.nonterminalNames);
     auto lexerTables = generateParser(lexerGrammar.grammar, conflictResolver);
 
     return generateLexerCode(lexerTables, lexerGrammar,
-        eag.plainHyperGrammar.startSymbol.toString, settings);
+            eag.plainHyperGrammar.startSymbol.toString, settings);
 }
 
 string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, string evaluatorModuleName,
-    string lexerTablesModuleName, const Settings settings)
+        string lexerTablesModuleName, const Settings settings)
 {
     import gamma.parsgen.lalr1.CodeGenerator : generateCode;
     import gamma.parsgen.lalr1.ParserGrammarBuilder : toParserGrammar;
@@ -264,13 +263,12 @@ string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, string evaluatorModule
     import std.typecons : No, Yes;
 
     const parsesLexicalNonterminals = settings.p
-        ? Yes.parsesLexicalNonterminals
-        : No.parsesLexicalNonterminals;
+        ? Yes.parsesLexicalNonterminals : No.parsesLexicalNonterminals;
     auto parserGrammar = eag.toParserGrammar(parsesLexicalNonterminals);
     auto parserTables = generateParser(parserGrammar.grammar);
 
     return generateCode(epsilonEAG, eag, parserTables, parserGrammar, evaluatorModuleName,
-        lexerTablesModuleName, settings);
+            lexerTablesModuleName, settings);
 }
 
 Settings createSettings(const Arguments arguments)
@@ -330,7 +328,7 @@ void generateRecipe(const string outputDirectory, const string[] fileNames, cons
     const outputPath = arguments.outputDirectory.empty ? "." : arguments.outputDirectory;
     buildPath(outputDirectory, "dub.json")
         .write(format!content(name, outputPath.jsonPathLiteral, fileNames.map!baseName,
-            arguments.runtimeDependency));
+                arguments.runtimeDependency));
 }
 
 string runtimeDependency(const Arguments arguments)
@@ -364,10 +362,14 @@ void build(const string outputDirectory, const string[] fileNames, const Argumen
         const name = fileNames.front.baseName(".d");
         const targetPath = absolutePath(arguments.outputDirectory.empty ? "." : arguments.outputDirectory);
 
+        // dfmt off
         args = compiler ~ fileNames.map!baseName.array ~ "-g" ~ "-J."
             ~ absolutePath("include/runtime.d")
-            ~ absolutePath("src/io.d") ~ absolutePath("src/log.d") ~ absolutePath("src/epsilon/soag/listacks.d")
+            ~ absolutePath("src/io.d")
+            ~ absolutePath("src/log.d")
+            ~ absolutePath("src/epsilon/soag/listacks.d")
             ~ format!"-of=%s"(buildPath(targetPath, name.executableName));
+        // dfmt on
     }
 
     trace!"%-(%s %)"(args);

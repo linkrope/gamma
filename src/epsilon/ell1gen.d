@@ -243,34 +243,34 @@ private void ComputeRegNonts()
 
     RegNonts[] = false;
     foreach (N; TestNonts.bitsSet)
-    if (TestNonts[N] && eag.HNont[N].IsToken && !RegNonts[N])
-    {
-        RegNonts[N] = true;
-        TraverseRegNonts(N);
-    }
+        if (TestNonts[N] && eag.HNont[N].IsToken && !RegNonts[N])
+        {
+            RegNonts[N] = true;
+            TraverseRegNonts(N);
+        }
     ConflictNonts = RegNonts.dup;
     foreach (N; ConflictNonts.bitsSet)
-    if (ConflictNonts[N])
-    {
-        A = eag.HNont[N].Def.Sub;
-        do
+        if (ConflictNonts[N])
         {
-            F = A.Last;
-            while (F !is null && cast(EAG.Nont) F && !TestNonts[(cast(EAG.Nont) F).Sym])
-                F = F.Prev;
-            if (F !is null)
-                F = F.Prev;
-            while (F !is null)
+            A = eag.HNont[N].Def.Sub;
+            do
             {
-                if (auto nont = cast(EAG.Nont) F)
-                    if (ConflictNonts[nont.Sym])
-                        DeleteConflictNont(nont.Sym);
-                F = F.Prev;
+                F = A.Last;
+                while (F !is null && cast(EAG.Nont) F && !TestNonts[(cast(EAG.Nont) F).Sym])
+                    F = F.Prev;
+                if (F !is null)
+                    F = F.Prev;
+                while (F !is null)
+                {
+                    if (auto nont = cast(EAG.Nont) F)
+                        if (ConflictNonts[nont.Sym])
+                            DeleteConflictNont(nont.Sym);
+                    F = F.Prev;
+                }
+                A = A.Next;
             }
-            A = A.Next;
+            while (A !is null);
         }
-        while (A !is null);
-    }
 }
 
 private void Finit() @nogc nothrow @safe
@@ -395,8 +395,7 @@ private void ComputeDir()
                 {
                     if (Nont[N1].Anonym)
                     {
-                        items ~= format!"EBNF expression in %s\n%s"
-                            (eag.NamedHNontRepr(N1), eag.HNont[N1].Def.Sub.Pos);
+                        items ~= format!"EBNF expression in %s\n%s"(eag.NamedHNontRepr(N1), eag.HNont[N1].Def.Sub.Pos);
                     }
                     else
                     {
@@ -452,8 +451,8 @@ private void ComputeDir()
     {
         import std.algorithm : map;
 
-        const msg = format!"director set conflict in %s: %-(%s, %)\n%s"
-            (eag.NamedHNontRepr(N), (Dir & PrevDirs).bitsSet.map!TokRepr, Pos);
+        const msg = format!"director set conflict in %s: %-(%s, %)\n%s"(
+                eag.NamedHNontRepr(N), (Dir & PrevDirs).bitsSet.map!TokRepr, Pos);
 
         if ((Dir - PrevDirs).bitsSet.empty)
         {
@@ -892,7 +891,7 @@ private void ComputeSets()
 
 private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
 {
-    import std.stdio :File;
+    import std.stdio : File;
 
     File output;
     Input Fix;
@@ -1248,7 +1247,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                 output.write(DIV(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
                 output.write("][Tok] & 1uL << ");
                 output.write(MOD(Nont[N].FirstIndex - firstGenSetT, nElemsPerSET));
-           }
+            }
             output.writeln(")");
             output.writeln("{");
             TraverseAlts(eag.HNont[N].Def.Sub, FirstNontCall, Nont[N].First);

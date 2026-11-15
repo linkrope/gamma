@@ -81,7 +81,7 @@ public void GenEmitProc(File output, Settings settings)
             {
                 if (ANum > CaseLabels)
                 {
-                    import std.stdio : stdout;  // TODO: replace with log
+                    import std.stdio : stdout; // TODO: replace with log
 
                     stdout.write("internal error: Too many meta alts in ");
                     stdout.write(eag.MTerm[N].Id.repr);
@@ -179,7 +179,7 @@ public void GenEmitCall(File output, Settings settings)
     output.writeln(`Out = File("`, eag.BaseName, `.Out", "w");`);
     output.writeln("else");
     output.writeln("Out = stdout;");
-    output.writeln("Emit", StartMNont, "Type",  Type2[StartMNont] ? "2" : "3", "(V1);");
+    output.writeln("Emit", StartMNont, "Type", Type2[StartMNont] ? "2" : "3", "(V1);");
     output.writeln("Out.writeln;");
     output.writeln("Out.flush;");
 }

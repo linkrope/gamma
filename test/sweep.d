@@ -108,7 +108,7 @@ unittest
     {
         write(buildPath(directory, "input"), "a\nb\n");
         run!"%s --sweep --space %s --output-directory %s"(
-            gamma, buildPath("example", "predicate-order.eag"), directory)
+                gamma, buildPath("example", "predicate-order.eag"), directory)
             .shouldPassWith("PredicateOrder grammar is single sweep");
         run!"cd %s && %s input"(directory, dotSlash("PredicateOrder"))
             .shouldFailWith(`error: predicate 'Matches' failed\ninput:1:1 a`);

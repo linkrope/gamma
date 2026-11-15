@@ -19,7 +19,7 @@ void ComputeVisitNo()
 {
     import std.conv : to;
     import std.exception : enforce;
-    import std.format: format;
+    import std.format : format;
 
     int AP;
     int MaxPart;
@@ -33,8 +33,8 @@ void ComputeVisitNo()
             for (AP = SOAG.Sym[S].AffPos.Beg; AP <= SOAG.Sym[S].AffPos.End; ++AP)
             {
                 enforce(SOAG.PartNum[AP] >= 0,
-                        format!"partition number for affix position %d at symbol %s not determined"
-                            (AP, eag.HNontRepr(S)));
+                        format!"partition number for affix position %d at symbol %s not determined"(
+                        AP, eag.HNontRepr(S)));
 
                 PartNum = DIV(SOAG.PartNum[AP] + 1, 2).to!int;
                 SOAG.PartNum[AP] = MaxPart - PartNum + 1;

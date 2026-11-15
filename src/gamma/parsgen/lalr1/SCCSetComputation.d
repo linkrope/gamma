@@ -61,9 +61,9 @@ public class SCCSetComputation
      * @param transitionEnumerator provides digraph edges
      * @param setOperator realizes set computations
      */
-    static public void computeSets(Indexed [] nodes,
-        TransitionEnumerator transitionEnumerator,
-        SetOperator setOperator)
+    static public void computeSets(Indexed[] nodes,
+            TransitionEnumerator transitionEnumerator,
+            SetOperator setOperator)
     {
         auto instance = new SCCSetComputation(nodes, transitionEnumerator, setOperator);
 
@@ -89,8 +89,8 @@ public class SCCSetComputation
     private TransitionWalker minimizeLowxOp;
 
     private this(Indexed[] nodes,
-        TransitionEnumerator transitionEnumerator,
-        SetOperator setOperator)
+            TransitionEnumerator transitionEnumerator,
+            SetOperator setOperator)
     {
         this.nodes = nodes;
         this.transitionEnumerator = transitionEnumerator;

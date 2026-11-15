@@ -115,10 +115,13 @@ void AddTDPChange(int R, int AO1, int AO2) nothrow @safe
 void ResetTDPChanges(int End) @nogc nothrow
 {
     for (int i = firstChangeBuf; i <= End; ++i)
-    {
-        SOAG.Rule[ChangeBuf[i].RuleInd].TDP[SOAG.AffOcc[ChangeBuf[i].AffOccInd1].AffOccNum.InRule]
-            [SOAG.AffOcc[ChangeBuf[i].AffOccInd2].AffOccNum.InRule] = false;
-    }
+        with (ChangeBuf[i])
+        {
+            const auto sourceInRule = SOAG.AffOcc[AffOccInd1].AffOccNum.InRule;
+            const auto targetInRule = SOAG.AffOcc[AffOccInd2].AffOccNum.InRule;
+
+            SOAG.Rule[RuleInd].TDP[sourceInRule][targetInRule] = false;
+        }
 }
 
 /**
@@ -272,7 +275,7 @@ void ComputeDefAffOcc(int R)
         }
         else
         {
-            import std.stdio : writeln;  // TODO: replace with log
+            import std.stdio : writeln; // TODO: replace with log
 
             writeln(eag.Var[V].Pos);
             SOAG.Error(SOAG.notLeftDefined, "epsilon.soag.partition.ComputeDefAffOcc");
@@ -354,8 +357,7 @@ void ComputeDP()
             for (SO = SOAG.Rule[R].SymOcc.Beg; SO <= SOAG.Rule[R].SymOcc.End; ++SO)
             {
                 FirstSOVar = NextVarBuf;
-                for (AO = SOAG.SymOcc[SO].AffOcc.Beg; AO <= SOAG.SymOcc[SO].AffOcc.End;
-                        ++AO)
+                for (AO = SOAG.SymOcc[SO].AffOcc.Beg; AO <= SOAG.SymOcc[SO].AffOcc.End; ++AO)
                 {
                     PBI = SOAG.AffOcc[AO].ParamBufInd;
                     SetAffOccforVars(AO, eag.ParamBuf[PBI].Affixform, eag.ParamBuf[PBI].isDef);
@@ -368,9 +370,13 @@ void ComputeDP()
                         {
                             if (VarBuf[j].Sym < 0 && VarBuf[i].Sym > 0)
                             {
-                                AddTDPTrans(R, VarBuf[i].AffOcc, VarBuf[j].AffOcc);
-                                SOAG.Rule[R].DP[SOAG.AffOcc[VarBuf[i].AffOcc].AffOccNum.InRule]
-                                    [SOAG.AffOcc[VarBuf[j].AffOcc].AffOccNum.InRule] = true;
+                                const sourceAffOcc = VarBuf[i].AffOcc;
+                                const targetAffOcc = VarBuf[j].AffOcc;
+                                const sourceInRule = SOAG.AffOcc[sourceAffOcc].AffOccNum.InRule;
+                                const targetInRule = SOAG.AffOcc[targetAffOcc].AffOccNum.InRule;
+
+                                AddTDPTrans(R, sourceAffOcc, targetAffOcc);
+                                SOAG.Rule[R].DP[sourceInRule][targetInRule] = true;
                             }
                         }
                     }
@@ -384,9 +390,13 @@ void ComputeDP()
                 {
                     if (VarBuf[i].Sym > 0)
                     {
-                        AddTDPTrans(R, SOAG.DefAffOcc[VarBuf[i].VarInd], VarBuf[i].AffOcc);
-                        SOAG.Rule[R].DP[SOAG.AffOcc[SOAG.DefAffOcc[VarBuf[i].VarInd]].AffOccNum.InRule]
-                            [SOAG.AffOcc[VarBuf[i].AffOcc].AffOccNum.InRule] = true;
+                        const definingAffOcc = SOAG.DefAffOcc[VarBuf[i].VarInd];
+                        const targetAffOcc = VarBuf[i].AffOcc;
+                        const sourceInRule = SOAG.AffOcc[definingAffOcc].AffOccNum.InRule;
+                        const targetInRule = SOAG.AffOcc[targetAffOcc].AffOccNum.InRule;
+
+                        AddTDPTrans(R, definingAffOcc, targetAffOcc);
+                        SOAG.Rule[R].DP[sourceInRule][targetInRule] = true;
                     }
                 }
                 NextVarBuf = firstVarBuf;

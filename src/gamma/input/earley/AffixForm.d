@@ -47,12 +47,13 @@ public class AffixForm
     }
 }
 
+// dfmt off
 version (unittest):
-
 import gamma.grammar.Grammar;
 import gamma.grammar.Symbol;
 import std.range;
 import std.string : lineSplitter;
+//dfmt on
 
 /**
  * Builds an AffixForm from a whitespace-separated sequence of symbols.

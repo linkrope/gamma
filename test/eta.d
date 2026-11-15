@@ -8,6 +8,7 @@ static foreach (eag; ["eta.eag", "eta-utf8.eag"])
     @(format!"compile %s as SLAG and run compiler"(eag))
     unittest
     {
+        // dfmt off
         with (sandbox)
         {
             run!"%s --space %s --output-directory %s"(gamma, buildPath("example", eag), directory)
@@ -19,12 +20,14 @@ static foreach (eag; ["eta.eag", "eta-utf8.eag"])
             run!"cd %s && %s %s"(directory, dotSlash("Eta"), absolutePath("test/cola/PL0.Cola"))
                 .shouldPassWith(`^programm < \+ CODE : CODE > : $`);
         }
+        // dfmt on
     }
 
 static foreach (eag; ["eta.eag", "eta-utf8.eag"])
     @(format!"compile %s as SOAG and run compiler"(eag))
     unittest
     {
+        // dfmt off
         with (sandbox)
         {
             run!"%s --soag -o --space %s --output-directory %s"(gamma, buildPath("example", eag), directory)
@@ -36,4 +39,5 @@ static foreach (eag; ["eta.eag", "eta-utf8.eag"])
             run!"cd %s && %s %s"(directory, dotSlash("Eta"), absolutePath("test/cola/PL0.Cola"))
                 .shouldPassWith(`^programm < \+ CODE : CODE > : $`);
         }
+        // dfmt on
     }

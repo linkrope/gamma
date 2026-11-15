@@ -31,8 +31,8 @@ public class Grammar
         this.startSymbol_ = startSymbol;
         this.isPlain_ = rules
             .all!(rule => rule.alternatives
-                .all!(alternative => alternative.rhs
-                    .all!(node => cast(SymbolNode) node !is null)));
+                    .all!(alternative => alternative.rhs
+                        .all!(node => cast(SymbolNode) node !is null)));
     }
 
     public void accept(Visitor visitor)

@@ -206,7 +206,7 @@ public class GrammarProperties
 
                     if (cast(SymbolNode) node)
                     {
-                        auto symbol = cast(Symbol) (cast(SymbolNode) node).symbol;
+                        auto symbol = cast(Symbol)(cast(SymbolNode) node).symbol;
 
                         if (cast(Nonterminal) symbol)
                             this.nontOccurrences[(cast(Nonterminal) symbol).index] ~= alternative;
@@ -301,8 +301,8 @@ public class GrammarProperties
             }
         }
 
-        trace!"nullable nonterminals:%-(\n%s%)"(this.grammar_.nonterminals
-            .filter!(nonterminal => isNullable(nonterminal)));
+        trace!"nullable nonterminals:%-(\n%s%)"(
+                this.grammar_.nonterminals.filter!(nonterminal => isNullable(nonterminal)));
 
         /*
          * Compute productive nonterminals.
@@ -337,7 +337,7 @@ public class GrammarProperties
 
                 foreach (node; alternative.rhs)
                     if (cast(SymbolNode) node)
-                        if (cast(Terminal) (cast(SymbolNode) node).symbol)
+                        if (cast(Terminal)(cast(SymbolNode) node).symbol)
                             ++t;
                 if (t > 0)
                 {
@@ -367,9 +367,9 @@ public class GrammarProperties
                 --count;
                 alt2Count[alternative] = count;
                 if (count == 0)
-                // the alternative is productive, mark the lhs nonterminal and
-                // put it on the stack
                 {
+                    // the alternative is productive,
+                    // mark the lhs nonterminal and put it on the stack
                     auto lhs = alternative.lhs.nonterminal;
 
                     if (!productiveNonterminals[lhs.index])
@@ -383,8 +383,8 @@ public class GrammarProperties
             }
         }
 
-        trace!"productive nonterminals:%-(\n%s%)"(this.grammar_.nonterminals
-            .filter!(nonterminal => isProductive(nonterminal)));
+        trace!"productive nonterminals:%-(\n%s%)"(
+                this.grammar_.nonterminals.filter!(nonterminal => isProductive(nonterminal)));
     }
 
     /**
@@ -400,10 +400,10 @@ public class GrammarProperties
 
         traverseReachables(this.grammar_.startSymbol);
 
-        trace!"reachable nonterminals:%-(\n%s%)"(this.grammar_.nonterminals
-            .filter!(nonterminal => isReachable(nonterminal)));
-        trace!"reachable terminals:%-(\n%s%)"(this.grammar_.terminals
-            .filter!(terminal => isReachable(terminal)));
+        trace!"reachable nonterminals:%-(\n%s%)"(
+                this.grammar_.nonterminals.filter!(nonterminal => isReachable(nonterminal)));
+        trace!"reachable terminals:%-(\n%s%)"(
+                this.grammar_.terminals.filter!(terminal => isReachable(terminal)));
     }
 
     /**
@@ -431,7 +431,7 @@ public class GrammarProperties
                     {
                         assert(cast(SymbolNode) node);
 
-                        traverseReachables(cast(Symbol) (cast(SymbolNode) node).symbol);
+                        traverseReachables(cast(Symbol)(cast(SymbolNode) node).symbol);
                     }
             }
         }
@@ -455,8 +455,9 @@ public class GrammarProperties
             if (value)
                 traverseLexicalNonterminals(nonterminal);
 
-        trace!"lexical nonterminals:%-(\n%s%)"(this.grammar_.nonterminals
-            .filter!(nonterminal => isLexicalNonterminal(nonterminal)));
+        trace!"lexical nonterminals:%-(\n%s%)"(
+                this.grammar_.nonterminals
+                .filter!(nonterminal => isLexicalNonterminal(nonterminal)));
     }
 
     private void traverseLexicalNonterminals(Nonterminal nonterminal)
@@ -470,8 +471,8 @@ public class GrammarProperties
                 return;
             foreach (alternative; rule.alternatives)
                 foreach (node; alternative.rhs)
-                    if (cast(SymbolNode) node && cast(Nonterminal) (cast(SymbolNode) node).symbol)
-                        traverseLexicalNonterminals(cast(Nonterminal) (cast(SymbolNode) node).symbol);
+                    if (cast(SymbolNode) node && cast(Nonterminal)(cast(SymbolNode) node).symbol)
+                        traverseLexicalNonterminals(cast(Nonterminal)(cast(SymbolNode) node).symbol);
         }
     }
 
@@ -499,7 +500,7 @@ public class GrammarProperties
             foreach (alternative; rule.alternatives)
                 foreach (node; alternative.rhs)
                 {
-                    auto symbol = cast(Symbol) (cast(SymbolNode) node).symbol;
+                    auto symbol = cast(Symbol)(cast(SymbolNode) node).symbol;
 
                     if (cast(Terminal) symbol)
                     {
@@ -508,7 +509,7 @@ public class GrammarProperties
                             nonStrongNullableStack ~= lhs;
                             nonStrongNullables[lhs.index] = true;
                         }
-                        break;  // node loop
+                        break; // node loop
                     }
                 }
         }
@@ -534,7 +535,7 @@ public class GrammarProperties
         this.predicateNonterminals -= nonStrongNullables;
 
         trace!"predicates:%-(\n%s%)"(this.grammar_.nonterminals
-            .filter!(nonterminal => isStrongNullable(nonterminal)));
+                .filter!(nonterminal => isStrongNullable(nonterminal)));
     }
 
     public Grammar grammar()
