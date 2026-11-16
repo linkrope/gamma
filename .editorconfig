@@ -12,9 +12,7 @@ indent_size = 4
 tab_width = 4
 max_line_length = 120
 
-# Keep ordinary code comfortably below the dscanner hard limit without
-# needlessly breaking established 100-column lines.
-dfmt_soft_max_line_length = 100
+dfmt_soft_max_line_length = 120
 dfmt_brace_style = allman
 dfmt_align_switch_statements = false
 dfmt_space_after_cast = true
@@ -22,3 +20,5 @@ dfmt_selective_import_space = true
 dfmt_space_before_named_arg_colon = false
 dfmt_keep_line_breaks = true
 dfmt_reflow_property_chains = false
+dfmt_template_constraint_style = always_newline
+dfmt_single_indent = true

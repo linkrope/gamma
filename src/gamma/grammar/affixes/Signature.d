@@ -34,7 +34,7 @@ public class Signature
             return false;
         foreach (index, domain; this.domains_)
             if (domain !is that.domains_[index]
-                    || this.directions_[index] != that.directions_[index])
+                || this.directions_[index] != that.directions_[index])
                 return false;
         return true;
     }

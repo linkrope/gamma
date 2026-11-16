@@ -642,7 +642,7 @@ public void GenDeclarations(Settings settings)
         while (c != Term)
         {
             enforce(c != 0,
-                    "error: unexpected end of eSLAGGen.fix.d");
+                "error: unexpected end of eSLAGGen.fix.d");
 
             output.write(c);
             Fix.popFront;
@@ -661,7 +661,7 @@ public void GenDeclarations(Settings settings)
         while (c != Term)
         {
             enforce(c != 0,
-                    "error: unexpected end of eSLAGGen.fix.d");
+                "error: unexpected end of eSLAGGen.fix.d");
 
             Fix.popFront;
             c = Fix.front.to!char;

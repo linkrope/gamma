@@ -377,8 +377,8 @@ public class Parser
             markError(`":" expected`);
 
         Alternative[] alternatives = parseHyperExpr(lhsNonterminal, lhsFormalParams, lhsPosition,
-                No.repetition,
-                position);
+            No.repetition,
+            position);
 
         foreach (alternative; alternatives)
             this.hyperGrammarBuilder.add(alternative);
@@ -398,9 +398,9 @@ public class Parser
      *     { '|' [ FormalParams ] HyperTerm [ ActualParams ] }.
      */
     private Alternative[] parseHyperExpr(Nonterminal lhsNonterminal,
-            Nullable!FormalParams lhsFormalParams, Position lhsPosition,
-            Flag!"repetition" repetition,
-            Position position)
+        Nullable!FormalParams lhsFormalParams, Position lhsPosition,
+        Flag!"repetition" repetition,
+        Position position)
     {
         Alternative[] alternatives;
         Nullable!FormalParams formalParams;
@@ -442,9 +442,9 @@ public class Parser
             }
 
             auto alternativeLhs = new HyperLhsNode(lhsNonterminal,
-                    alternativeFormalParams.apply!"a.signature".get(null),
-                    alternativeFormalParams.apply!"a.params".get(null),
-                    lhsPosition);
+                alternativeFormalParams.apply!"a.signature".get(null),
+                alternativeFormalParams.apply!"a.params".get(null),
+                lhsPosition);
             Node[] rhs = parseHyperTerm(spareActualParams);
             Alternative alternative;
 
@@ -558,8 +558,8 @@ public class Parser
 
                 Nonterminal identifier = hyperGrammarBuilder.buildAnonymousNonterminal;
                 Alternative[] alternatives = parseHyperExpr(identifier, Nullable!FormalParams(), position,
-                        (open == '{') ? Yes.repetition : No.repetition,
-                        position);
+                    (open == '{') ? Yes.repetition : No.repetition,
+                    position);
                 auto rule = new Rule(alternatives);
                 const hasFormalParams = (cast(HyperLhsNode) rule.lhs).params !is null;
                 Params params = (spareActualParams !is null)
@@ -624,7 +624,7 @@ public class Parser
                 spareActualParams = null;
             }
             else if (this.lexer.empty || this.lexer.front == '|' || this.lexer.front == '.'
-                    || this.lexer.front == ')' || this.lexer.front == ']' || this.lexer.front == '}')
+                || this.lexer.front == ')' || this.lexer.front == ']' || this.lexer.front == '}')
             {
                 break;
             }
@@ -638,7 +638,7 @@ public class Parser
                     this.lexer.popFront;
                 }
                 while (!this.lexer.empty && this.lexer.front != '|' && this.lexer.front != '.'
-                        && this.lexer.front != '(' && this.lexer.front != '[' && this.lexer.front != '{');
+                    && this.lexer.front != '(' && this.lexer.front != '[' && this.lexer.front != '{');
             }
         }
 
@@ -730,7 +730,7 @@ public class Parser
             assert(directions.length == domains.length);
 
             if (!this.lexer.empty && this.lexer.front != '.'
-                    && this.lexer.front != ',' && this.lexer.front != '>')
+                && this.lexer.front != ',' && this.lexer.front != '>')
             {
                 markError("unexpected symbol");
                 // error recovery
@@ -740,7 +740,7 @@ public class Parser
                     this.lexer.popFront;
                 }
                 while (!this.lexer.empty && this.lexer.front != '.'
-                        && this.lexer.front != ',' && this.lexer.front != '>');
+                    && this.lexer.front != ',' && this.lexer.front != '>');
             }
             if (this.lexer.front == ',')
                 this.lexer.popFront;

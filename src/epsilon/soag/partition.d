@@ -166,11 +166,11 @@ void AddTDPTrans(int R, int AO1, int AO2)
                     {
                         SOAG.Rule[R].TDP[AN3][SOAG.AffOcc[AO4].AffOccNum.InRule] = true;
                         if (SOAG.AffOcc[AO3].SymOccInd == SOAG.AffOcc[AO4].SymOccInd
-                                && !SOAG.IsPredNont(SOAG.AffOcc[AO3].SymOccInd))
+                            && !SOAG.IsPredNont(SOAG.AffOcc[AO3].SymOccInd))
                         {
                             Push(MarkedEdges, SOAG.SymOcc[SOAG.AffOcc[AO3].SymOccInd].SymInd,
-                                    SOAG.AffOcc[AO3].AffOccNum.InSym,
-                                    SOAG.AffOcc[AO4].AffOccNum.InSym);
+                                SOAG.AffOcc[AO3].AffOccNum.InSym,
+                                SOAG.AffOcc[AO4].AffOccNum.InSym);
                         }
                         if (Phase == dynTopSort)
                             AddTDPChange(R, AO3, AO4);
@@ -314,8 +314,8 @@ void ComputeAffixApplCnt(int R) @nogc nothrow
         while (i < NextVarBuf)
         {
             if (eag.Var[A].Sym == -VarBuf[i].Sym
-                    && (eag.Var[A].Num == VarBuf[i].Num && SOAG.DefAffOcc[A] != VarBuf[i].AffOcc
-                        || eag.Var[A].Num == -VarBuf[i].Num && SOAG.DefAffOcc[VarBuf[i].VarInd] == VarBuf[i].AffOcc))
+                && (eag.Var[A].Num == VarBuf[i].Num && SOAG.DefAffOcc[A] != VarBuf[i].AffOcc
+                    || eag.Var[A].Num == -VarBuf[i].Num && SOAG.DefAffOcc[VarBuf[i].VarInd] == VarBuf[i].AffOcc))
             {
                 const AN = VarBuf[i].AffOcc - SOAG.Rule[R].AffOcc.Beg;
                 const DAN = SOAG.DefAffOcc[A] - SOAG.Rule[R].AffOcc.Beg;
@@ -468,7 +468,7 @@ void Orient(int a, int b, int X, ref BitArray New)
     NextChangeBuf = firstChangeBuf;
     SO = SOAG.Sym[X].FirstOcc;
     AddTDPTrans(SOAG.SymOcc[SO].RuleInd, SOAG.SymOcc[SO].AffOcc.Beg + b,
-            SOAG.SymOcc[SO].AffOcc.Beg + a);
+        SOAG.SymOcc[SO].AffOcc.Beg + a);
     ComputeInducedTDP;
     if (CyclicTDP)
     {
@@ -477,7 +477,7 @@ void Orient(int a, int b, int X, ref BitArray New)
         ResetTDPChanges(NextChangeBuf - 1);
         NextChangeBuf = firstChangeBuf;
         AddTDPTrans(SOAG.SymOcc[SO].RuleInd, SOAG.SymOcc[SO].AffOcc.Beg + a,
-                SOAG.SymOcc[SO].AffOcc.Beg + b);
+            SOAG.SymOcc[SO].AffOcc.Beg + b);
         ComputeInducedTDP;
     }
     if (CyclicTDP)
@@ -490,7 +490,7 @@ void Orient(int a, int b, int X, ref BitArray New)
         AO1 = ChangeBuf[i].AffOccInd1;
         AO2 = ChangeBuf[i].AffOccInd2;
         if (SOAG.AffOcc[AO1].SymOccInd == SOAG.AffOcc[AO2].SymOccInd
-                && SOAG.SymOcc[SOAG.AffOcc[AO1].SymOccInd].SymInd == X)
+            && SOAG.SymOcc[SOAG.AffOcc[AO1].SymOccInd].SymInd == X)
         {
             a1 = SOAG.AffOcc[AO1].AffOccNum.InSym;
             b1 = SOAG.AffOcc[AO2].AffOccNum.InSym;

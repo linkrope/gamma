@@ -11,17 +11,17 @@ import gamma.runtime.lr.LR1ParserTables : LexerCandidate, LexerRule;
 import std.typecons : Nullable;
 
 public string[] generateCode(EpsilonEAG epsilonEAG, EAG eag,
-        OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
-        string evaluatorModuleName, string lexerTablesModuleName, Settings settings)
+    OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
+    string evaluatorModuleName, string lexerTablesModuleName, Settings settings)
 {
     with (generateEpsilonBridgeModule(epsilonEAG, parserGrammar, settings))
         return generateLR1Modules(eag, epsilonEAG.BaseName, parserTables, parserGrammar,
-                moduleName, evaluatorModuleName, lexerTablesModuleName, settings)
+            moduleName, evaluatorModuleName, lexerTablesModuleName, settings)
             ~ fileName;
 }
 
 public auto generateLexerCode(OrderedLR1Tables lexerTables, LexerGrammar lexerGrammar,
-        string compilerName, Settings settings)
+    string compilerName, Settings settings)
 {
     import gamma.parsgen.lalr1.LR1TablesWriter : createTables, writeModule;
     import std.algorithm : map, sum;
@@ -61,9 +61,9 @@ public auto generateLexerCode(OrderedLR1Tables lexerTables, LexerGrammar lexerGr
 }
 
 private string[] generateLR1Modules(EAG eag, string name,
-        OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
-        string bridgeModuleName, string evaluatorModuleName, string lexerTablesModuleName,
-        Settings settings)
+    OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
+    string bridgeModuleName, string evaluatorModuleName, string lexerTablesModuleName,
+    Settings settings)
 {
     import gamma.parsgen.lalr1.LR1TablesWriter : createTables, writeModule;
     import io : Input;
@@ -166,7 +166,7 @@ private string stringLiteral(const string text)
 }
 
 private auto generateEpsilonBridgeModule(EpsilonEAG epsilonEAG, ParserGrammar parserGrammar,
-        Settings settings)
+    Settings settings)
 {
     import io : Input;
     import std.stdio : File;

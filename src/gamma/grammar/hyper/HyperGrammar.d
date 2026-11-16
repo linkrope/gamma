@@ -207,7 +207,7 @@ private struct SignatureCollector
             if (!equal)
             {
                 error!"formal params for %s differ\n%s\n%s"(nonterminal, this.positions[nonterminal],
-                        (signature is null) ? position : signature.position);
+                    (signature is null) ? position : signature.position);
                 this.valid = false;
             }
         }
@@ -292,7 +292,7 @@ private struct AffixVariableChecker
     }
 
     private void collectRepetitionActual(RepetitionAlternative alternative, Signature signature,
-            ref VariableUse[] variables)
+        ref VariableUse[] variables)
     {
         if (alternative.params is null)
             return;

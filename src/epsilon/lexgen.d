@@ -89,7 +89,7 @@ public string Generate(Settings settings)
         while (c != Term)
         {
             enforce(c != 0,
-                    "error: unexpected end of lexgen.fix.d");
+                "error: unexpected end of lexgen.fix.d");
 
             output.write(c);
             Fix.popFront;

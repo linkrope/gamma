@@ -41,7 +41,7 @@ public struct LexerGrammar
 }
 
 public LexerGrammar toLexerGrammar(EAG eag,
-        Flag!"parsesLexicalNonterminals" parsesLexicalNonterminals = No.parsesLexicalNonterminals)
+    Flag!"parsesLexicalNonterminals" parsesLexicalNonterminals = No.parsesLexicalNonterminals)
 {
     import std.conv : to;
     import std.utf : byDchar;
@@ -89,7 +89,7 @@ public LexerGrammar toLexerGrammar(EAG eag,
     }
 
     void collectLexicalNonterminalOwners(Nonterminal source, size_t owner,
-            ref bool[Nonterminal] visited)
+        ref bool[Nonterminal] visited)
     {
         if (source in visited)
             return;
@@ -152,7 +152,7 @@ public LexerGrammar toLexerGrammar(EAG eag,
     foreach (rule; eag.plainHyperGrammar.rules)
     {
         if (properties.isLexicalNonterminal(rule.lhs.nonterminal)
-                || properties.isStrongNullable(rule.lhs.nonterminal))
+            || properties.isStrongNullable(rule.lhs.nonterminal))
             continue;
         foreach (alternative; rule.alternatives)
             foreach (node; alternative.rhs)
@@ -177,11 +177,11 @@ public LexerGrammar toLexerGrammar(EAG eag,
 
             const Position position = positions.get(terminal, UndefPos);
             auto alternative = new Alternative(new LhsNode(candidate, position),
-                    [new SymbolNode(terminalHelper(terminal), position)], position);
+                [new SymbolNode(terminalHelper(terminal), position)], position);
 
             builder.add(alternative);
             candidates[alternative] = LexerCandidate(LexerCandidate.Kind.terminal,
-                    terminal.index);
+                terminal.index);
         }
     }
 
@@ -213,8 +213,8 @@ public LexerGrammar toLexerGrammar(EAG eag,
             }
 
             auto copiedAlternative = new Alternative(
-                    new LhsNode(lexicalNonterminals[sourceNonterminal], alternative.lhs.position),
-                    rhs, alternative.position);
+                new LhsNode(lexicalNonterminals[sourceNonterminal], alternative.lhs.position),
+                rhs, alternative.position);
 
             builder.add(copiedAlternative);
             rules[copiedAlternative] = LexerRule(sourceNonterminal.index, alternativeIndex + 1, size_t.max);
@@ -228,14 +228,14 @@ public LexerGrammar toLexerGrammar(EAG eag,
 
         const Position position = eag.plainHyperGrammar.ruleOf(nonterminal).lhs.position;
         auto alternative = new Alternative(new LhsNode(candidate, position),
-                [new SymbolNode(lexicalNonterminals[nonterminal], position)], position);
+            [new SymbolNode(lexicalNonterminals[nonterminal], position)], position);
 
         builder.add(alternative);
         candidates[alternative] = LexerCandidate(LexerCandidate.Kind.nonterminal, nonterminal.index);
     }
 
     return LexerGrammar(builder.getGrammar(root), tokenEnd, helpersByTerminal, candidates, rules,
-            lexicalNonterminalOwners, terminalNames, nonterminalNames);
+        lexicalNonterminalOwners, terminalNames, nonterminalNames);
 }
 
 private Position[Terminal] terminalPositions(EAG eag)

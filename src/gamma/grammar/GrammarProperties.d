@@ -302,7 +302,7 @@ public class GrammarProperties
         }
 
         trace!"nullable nonterminals:%-(\n%s%)"(
-                this.grammar_.nonterminals.filter!(nonterminal => isNullable(nonterminal)));
+            this.grammar_.nonterminals.filter!(nonterminal => isNullable(nonterminal)));
 
         /*
          * Compute productive nonterminals.
@@ -384,7 +384,7 @@ public class GrammarProperties
         }
 
         trace!"productive nonterminals:%-(\n%s%)"(
-                this.grammar_.nonterminals.filter!(nonterminal => isProductive(nonterminal)));
+            this.grammar_.nonterminals.filter!(nonterminal => isProductive(nonterminal)));
     }
 
     /**
@@ -401,9 +401,9 @@ public class GrammarProperties
         traverseReachables(this.grammar_.startSymbol);
 
         trace!"reachable nonterminals:%-(\n%s%)"(
-                this.grammar_.nonterminals.filter!(nonterminal => isReachable(nonterminal)));
+            this.grammar_.nonterminals.filter!(nonterminal => isReachable(nonterminal)));
         trace!"reachable terminals:%-(\n%s%)"(
-                this.grammar_.terminals.filter!(terminal => isReachable(terminal)));
+            this.grammar_.terminals.filter!(terminal => isReachable(terminal)));
     }
 
     /**
@@ -456,7 +456,7 @@ public class GrammarProperties
                 traverseLexicalNonterminals(nonterminal);
 
         trace!"lexical nonterminals:%-(\n%s%)"(
-                this.grammar_.nonterminals
+            this.grammar_.nonterminals
                 .filter!(nonterminal => isLexicalNonterminal(nonterminal)));
     }
 

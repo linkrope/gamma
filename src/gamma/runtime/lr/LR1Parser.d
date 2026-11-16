@@ -300,7 +300,7 @@ public class LR1Parser
     }
 
     private const(ParseNode)* ruleNode(const Rule rule, const(ParseNode)*[] children,
-            const Position position)
+        const Position position)
     {
         const lhsIndex = parserTables.nonterminals[rule.lhs].index;
 

@@ -512,11 +512,10 @@ public class PennelloDeRemer : LR1ParserGenerator
                 this.grammar_ = grammar;
                 this.parserActionRows = new Action[][states.length];
                 this.gotoRows = new Goto[][states.length];
-                // dfmt off
-                this.eofSymbol = cast(Terminal)
-                    (cast(SymbolNode)(cast(Alternative) grammar.ruleOf(grammar.startSymbol).alternatives[0]).rhs[1])
-                    .symbol;
-                // dfmt on
+
+                auto startAlternative = cast(Alternative) grammar.ruleOf(grammar.startSymbol).alternatives[0];
+
+                this.eofSymbol = cast(Terminal)(cast(SymbolNode) startAlternative.rhs[1]).symbol;
             }
 
             public Grammar grammar()
@@ -560,8 +559,8 @@ public class PennelloDeRemer : LR1ParserGenerator
                     if (alt != origAlt)
                     {
                         Object o = lr1ConflictResolver.resolveReduceReduceConflict(origAlt, alt,
-                                grammar.terminal(lookaheadIndex),
-                                stateIndex);
+                            grammar.terminal(lookaheadIndex),
+                            stateIndex);
 
                         if (o == alt)
                         {
@@ -699,8 +698,8 @@ public class PennelloDeRemer : LR1ParserGenerator
                         enterHalt(state.index);
                     else if (cast(Terminal) item.symbolBehindDot)
                         enterShift(state.index,
-                                cast(Terminal) item.symbolBehindDot,
-                                lrMachine.getTransition(state, item.symbolBehindDot).to.index);
+                            cast(Terminal) item.symbolBehindDot,
+                            lrMachine.getTransition(state, item.symbolBehindDot).to.index);
                 }
                 // Set Action.isContinuationAction field(s) in second pass
                 size_t ca = parserActionRowNext[HEAD];
@@ -716,7 +715,7 @@ public class PennelloDeRemer : LR1ParserGenerator
                         {
                             OrderedLR1Tables.Action a = parserActionRow[ca];
                             if (cast(OrderedLR1Tables.Reduce) a
-                                    && (cast(OrderedLR1Tables.Reduce) a).alternative == alt)
+                                && (cast(OrderedLR1Tables.Reduce) a).alternative == alt)
                                 a.isContinuationAction = true;
                         }
                     }

@@ -125,7 +125,7 @@ private string GenerateMod(Flag!"createMod" createMod, Settings settings)
         while (c != Term)
         {
             enforce(c != 0,
-                    "error: unexpected end of eSSweep.fix.d");
+                "error: unexpected end of eSSweep.fix.d");
 
             output.write(c);
             Fix.popFront;

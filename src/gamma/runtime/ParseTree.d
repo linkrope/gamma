@@ -50,7 +50,7 @@ public struct RuleNode
     const Position position;
 
     public this(size_t lhs, size_t alternative, const(ParseNode)*[] children,
-            const Position position)
+        const Position position)
     {
         this.lhs = lhs;
         this.alternative = alternative;
@@ -62,7 +62,7 @@ public struct RuleNode
 public const(Position) position(const ParseNode node)
 {
     return node.match!(
-            (const TerminalNode terminal) => terminal.position,
-            (const RuleNode rule) => rule.position,
+        (const TerminalNode terminal) => terminal.position,
+        (const RuleNode rule) => rule.position,
     );
 }

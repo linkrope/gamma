@@ -33,12 +33,12 @@ public struct ParserGrammar
 }
 
 public ParserGrammar toParserGrammar(EAG eag,
-        Flag!"parsesLexicalNonterminals" parsesLexicalNonterminals = No.parsesLexicalNonterminals)
+    Flag!"parsesLexicalNonterminals" parsesLexicalNonterminals = No.parsesLexicalNonterminals)
 {
     import gamma.grammar.PrintingVisitor : toPrettyString;
 
     auto hyperGrammarProperties = new GrammarProperties(eag.plainHyperGrammar,
-            eag.lexicalHyperNonterminals);
+        eag.lexicalHyperNonterminals);
 
     bool isTerminal(Symbol symbol)
     {
@@ -60,8 +60,8 @@ public ParserGrammar toParserGrammar(EAG eag,
 }
 
 public ParserGrammar toExtendedParserGrammar(Grammar grammar,
-        bool delegate(Symbol) isTerminal,
-        bool delegate(Symbol) isPredicate)
+    bool delegate(Symbol) isTerminal,
+    bool delegate(Symbol) isPredicate)
 in (grammar.isPlain)
 {
     GrammarBuilder grammarBuilder;
@@ -146,5 +146,5 @@ in (grammar.isPlain)
     }
 
     return ParserGrammar(grammarBuilder.getGrammar(extStartSymbol),
-            terminals, lexicalTerminals, nonterminals);
+        terminals, lexicalTerminals, nonterminals);
 }

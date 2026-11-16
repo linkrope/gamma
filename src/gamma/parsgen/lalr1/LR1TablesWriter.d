@@ -44,7 +44,7 @@ public struct LR1Tables
     }
 
     public void setLexerMetadata(const Nullable!LexerCandidate[] candidates,
-            const LexerRule[] rules, const string[] terminalNames, const string[] nonterminalNames)
+        const LexerRule[] rules, const string[] terminalNames, const string[] nonterminalNames)
     {
         import std.algorithm : map;
         import std.array : array;
@@ -61,8 +61,8 @@ public struct LR1Tables
 }
 
 public LR1Tables createTables(OrderedLR1Tables parserTables,
-        Terminal[Terminal] parserTerminals = null,
-        Nonterminal[Nonterminal] parserNonterminals = null)
+    Terminal[Terminal] parserTerminals = null,
+    Nonterminal[Nonterminal] parserNonterminals = null)
 {
     import std.format : format;
     import std.range : enumerate;
@@ -83,14 +83,14 @@ public LR1Tables createTables(OrderedLR1Tables parserTables,
         {
             if (auto shift = cast(OrderedLR1Tables.Shift) action)
                 actions ~= format!"Action(Shift(%s, %s, %s))"(
-                        action.lookahead.index, shift.state, action.isContinuationAction);
+                    action.lookahead.index, shift.state, action.isContinuationAction);
             else if (auto reduce = cast(OrderedLR1Tables.Reduce) action)
                 actions ~= format!"Action(Reduce(%s, %s, %s))"(
-                        action.lookahead.index, result.alternativeIndex(reduce.alternative),
-                        action.isContinuationAction);
+                    action.lookahead.index, result.alternativeIndex(reduce.alternative),
+                    action.isContinuationAction);
             else
                 actions ~= format!"Action(Halt(%s, %s))"(
-                        action.lookahead.index, action.isContinuationAction);
+                    action.lookahead.index, action.isContinuationAction);
         }
         actionOffsets ~= actions.length;
     }
@@ -111,7 +111,7 @@ public LR1Tables createTables(OrderedLR1Tables parserTables,
     {
         foreach (count, alternative; rule.alternatives.enumerate)
             rules ~= format!"Rule(%s, %s, %s)"(
-                    alternative.lhs.nonterminal.index, alternative.rhs.length, count + 1);
+                alternative.lhs.nonterminal.index, alternative.rhs.length, count + 1);
     }
 
     string[] terminals = null;
@@ -185,7 +185,7 @@ public string quoted(const string text)
 }
 
 private string symbolLiteral(ParserSymbol, Symbol)(ParserSymbol parserSymbol,
-        Symbol[ParserSymbol] parserSymbols)
+    Symbol[ParserSymbol] parserSymbols)
 {
     import std.format : format;
 

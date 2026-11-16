@@ -858,7 +858,7 @@ private void GenAnalPred(int SymOccInd, int VisitNo) @safe
     {
         AN = AP - SOAG.SymOcc[SymOccInd].AffOcc.Beg;
         if (eag.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].isDef
-                && (VisitSeq.GetVisitNo(AP) == VisitNo || IsPred))
+            && (VisitSeq.GetVisitNo(AP) == VisitNo || IsPred))
         {
             Node = eag.ParamBuf[SOAG.AffOcc[AP].ParamBufInd].Affixform;
             SN = SymOccInd - SOAG.Rule[SOAG.SymOcc[SymOccInd].RuleInd].SymOcc.Beg;
@@ -1346,7 +1346,7 @@ private string GenerateModule(Settings settings)
         while (c != Term)
         {
             enforce(c != 0,
-                    "error: unexpected end of eSOAG.fix.d");
+                "error: unexpected end of eSOAG.fix.d");
 
             output.write(c);
             Fix.popFront;

@@ -25,7 +25,7 @@ unittest
     assert(hyperGrammar !is null);
 
     auto eag = EAG(parser.buildMetaGrammar, hyperGrammar, hyperGrammar.plainHyperGrammar,
-            parser.getLexicalMetaNonterminals, parser.getLexicalHyperNonterminals).toEAG;
+        parser.getLexicalMetaNonterminals, parser.getLexicalHyperNonterminals).toEAG;
     auto sig = eag.HNont[eag.StartSym].Sig;
 
     assert(eag.DomBuf[sig] > 0);

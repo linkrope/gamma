@@ -320,7 +320,7 @@ class LRMachine
 
                 for (size_t j = alt.rhs.length + 1; j > 0; --j)
                     item = new LRItem(this.nextItemId++, alt,
-                            grammarProperties.isFirstProductiveAlternative(alt), j - 1, item);
+                        grammarProperties.isFirstProductiveAlternative(alt), j - 1, item);
                 this.items[lhs.index][i] = item;
             }
         }
@@ -372,7 +372,7 @@ private int itemSetPartitioner(LRItem i1, LRItem i2)
     import std.conv : to;
 
     if (i1.symbolPrecedingDot !is null && i2.symbolPrecedingDot !is null
-            && i1.symbolPrecedingDot != i2.symbolPrecedingDot)
+        && i1.symbolPrecedingDot != i2.symbolPrecedingDot)
     {
         int n1;
         int n2;

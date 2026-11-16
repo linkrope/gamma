@@ -23,7 +23,7 @@ public class LexerConflictResolver : LR1ConflictResolver
     private string[] nonterminalNames;
 
     public this(Grammar grammar, Terminal tokenEnd, Nonterminal[Terminal] helpersByTerminal,
-            size_t[][Nonterminal] lexicalNonterminalOwners, string[] nonterminalNames)
+        size_t[][Nonterminal] lexicalNonterminalOwners, string[] nonterminalNames)
     {
         this.grammar = grammar;
         this.tokenEnd = tokenEnd;

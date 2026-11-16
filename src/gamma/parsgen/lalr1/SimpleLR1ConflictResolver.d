@@ -38,7 +38,7 @@ public class SimpleLR1ConflictResolver : LR1ConflictResolver
     }
 
     public Object resolveReduceReduceConflict(Alternative alternative1, Alternative alternative2,
-            Terminal terminal, size_t state)
+        Terminal terminal, size_t state)
     {
         import std.format : format;
 

@@ -33,7 +33,7 @@ void ComputeVisitNo()
             for (AP = SOAG.Sym[S].AffPos.Beg; AP <= SOAG.Sym[S].AffPos.End; ++AP)
             {
                 enforce(SOAG.PartNum[AP] >= 0,
-                        format!"partition number for affix position %d at symbol %s not determined"(
+                    format!"partition number for affix position %d at symbol %s not determined"(
                         AP, eag.HNontRepr(S)));
 
                 PartNum = DIV(SOAG.PartNum[AP] + 1, 2).to!int;

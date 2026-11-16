@@ -327,7 +327,7 @@ private class EAGBuilder
     }
 
     private void buildHyperAlt(int lhsSym, Alternative alternative,
-            ref EAG.Alt firstAlt, ref EAG.Alt lastAlt)
+        ref EAG.Alt firstAlt, ref EAG.Alt lastAlt)
     {
         EAG.Factor firstFactor = null;
         EAG.Factor lastFactor = null;
@@ -398,11 +398,11 @@ private class EAGBuilder
         {
             if (cast(Terminal) sn.symbol)
                 appendHTerm(firstFactor, lastFactor,
-                        findOrCreateHTerm(sn.symbol.toString), sn.position);
+                    findOrCreateHTerm(sn.symbol.toString), sn.position);
             else
             {
                 appendHNont(firstFactor, lastFactor,
-                        findOrCreateHNont(cast(Nonterminal) sn.symbol), sn.position);
+                    findOrCreateHNont(cast(Nonterminal) sn.symbol), sn.position);
                 if (auto hsn = cast(HyperSymbolNode) sn)
                     if (hsn.params !is null)
                         this.nontByParamsKey[hsn.params.key] = cast(EAG.Nont) lastFactor;
@@ -570,7 +570,7 @@ private class EAGBuilder
 
                 // Formal params on the Alt lhs
                 gammaAlt.Formal = buildAffixLhsParamsDesc(
-                        alternative.lhs, sig, true, alternative.position);
+                    alternative.lhs, sig, true, alternative.position);
 
                 // A trailing parameter list can belong either to the repetition
                 // alternative or to its last symbol. Matching keys identify the
@@ -587,7 +587,7 @@ private class EAGBuilder
 
                             if (auto lastHsn = cast(HyperSymbolNode) alternative.rhs.back)
                                 if (lastHsn.params !is null
-                                        && lastHsn.params.key == repAlt.params.key)
+                                    && lastHsn.params.key == repAlt.params.key)
                                     repActualIsUndecided = true;
                         }
 
@@ -595,7 +595,7 @@ private class EAGBuilder
                         {
                             auto terms = this.eag.hyperEBNFGrammar.terms(repAlt.params.key);
                             gammaAlt.Actual = buildAffixTermsParamsDesc(terms, sig, false,
-                                    repAlt.params.position);
+                                repAlt.params.position);
                         }
                     }
                 }
@@ -658,7 +658,7 @@ private class EAGBuilder
 
     // Build a ParamsDesc from a LhsNode reference (for Alt.lhs dispatch).
     private EAG.ParamsDesc buildAffixLhsParamsDesc(
-            LhsNode lhsNode, int sig, bool isLhs, Position fallbackPos)
+        LhsNode lhsNode, int sig, bool isLhs, Position fallbackPos)
     {
         auto hln = cast(HyperLhsNode) lhsNode;
 
@@ -672,7 +672,7 @@ private class EAGBuilder
 
     // Build a ParamsDesc from a Term[] slice (already Earley-parsed).
     private EAG.ParamsDesc buildAffixTermsParamsDesc(
-            Term[] terms, int sig, bool isLhs, Position pos)
+        Term[] terms, int sig, bool isLhs, Position pos)
     {
         if (terms.empty)
             return EAG.ParamsDesc(EAG.empty, pos);
@@ -821,7 +821,7 @@ private class EAGBuilder
                 auto terms = this.eag.hyperEBNFGrammar.terms(hsn.params.key);
 
                 nont.Actual = buildAffixTermsParamsDesc(terms, refSig, false,
-                        hsn.params.position);
+                    hsn.params.position);
             }
         }
         else if (auto op = cast(Operator) node)
@@ -832,7 +832,7 @@ private class EAGBuilder
                 auto terms = this.eag.hyperEBNFGrammar.terms(op.params.key);
 
                 nont.Actual = buildAffixTermsParamsDesc(terms, refSig, false,
-                        op.params.position);
+                    op.params.position);
             }
         }
     }
@@ -978,7 +978,7 @@ private class EAGBuilder
      * firstFactor is set on the first call; lastFactor always points to the new node.
      */
     private void appendHTerm(ref EAG.Factor firstFactor, ref EAG.Factor lastFactor,
-            int sym, Position pos)
+        int sym, Position pos)
     {
         auto f = new EAG.Term;
 
@@ -1000,7 +1000,7 @@ private class EAGBuilder
      * Append a nonterminal Factor to the current factor chain.
      */
     private void appendHNont(ref EAG.Factor firstFactor, ref EAG.Factor lastFactor,
-            int sym, Position pos)
+        int sym, Position pos)
     {
         auto f = new EAG.Nont;
 

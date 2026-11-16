@@ -93,7 +93,7 @@ struct Arguments
         ])
         {
             if (__traits(getMember, this, conflict.option1)
-                    && __traits(getMember, this, conflict.option2))
+                && __traits(getMember, this, conflict.option2))
             {
                 error!"--%s cannot be combined with --%s"(conflict.option1, conflict.option2);
                 exit(EXIT_FAILURE);
@@ -246,16 +246,16 @@ auto generateLRLexer(EAG eag, const Settings settings)
         ? Yes.parsesLexicalNonterminals : No.parsesLexicalNonterminals;
     auto lexerGrammar = eag.toLexerGrammar(parsesLexicalNonterminals);
     auto conflictResolver = new LexerConflictResolver(lexerGrammar.grammar,
-            lexerGrammar.tokenEnd, lexerGrammar.helpersByTerminal,
-            lexerGrammar.lexicalNonterminalOwners, lexerGrammar.nonterminalNames);
+        lexerGrammar.tokenEnd, lexerGrammar.helpersByTerminal,
+        lexerGrammar.lexicalNonterminalOwners, lexerGrammar.nonterminalNames);
     auto lexerTables = generateParser(lexerGrammar.grammar, conflictResolver);
 
     return generateLexerCode(lexerTables, lexerGrammar,
-            eag.plainHyperGrammar.startSymbol.toString, settings);
+        eag.plainHyperGrammar.startSymbol.toString, settings);
 }
 
 string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, string evaluatorModuleName,
-        string lexerTablesModuleName, const Settings settings)
+    string lexerTablesModuleName, const Settings settings)
 {
     import gamma.parsgen.lalr1.CodeGenerator : generateCode;
     import gamma.parsgen.lalr1.ParserGrammarBuilder : toParserGrammar;
@@ -268,7 +268,7 @@ string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, string evaluatorModule
     auto parserTables = generateParser(parserGrammar.grammar);
 
     return generateCode(epsilonEAG, eag, parserTables, parserGrammar, evaluatorModuleName,
-            lexerTablesModuleName, settings);
+        lexerTablesModuleName, settings);
 }
 
 Settings createSettings(const Arguments arguments)

@@ -330,10 +330,10 @@ private bool GrammarOk()
                             {
                                 if (Nont[N].Anonym)
                                     error!"nonterminal in %s calls sub-token %s"(
-                                            eag.NamedHNontRepr(N), eag.HNontRepr(nont.Sym));
+                                        eag.NamedHNontRepr(N), eag.HNontRepr(nont.Sym));
                                 else
                                     error!"nonterminal %s calls sub-token %s"(
-                                            eag.HNontRepr(N), eag.HNontRepr(nont.Sym));
+                                        eag.HNontRepr(N), eag.HNontRepr(nont.Sym));
                                 Ok = false;
                             }
                         F = F.Next;
@@ -452,7 +452,7 @@ private void ComputeDir()
         import std.algorithm : map;
 
         const msg = format!"director set conflict in %s: %-(%s, %)\n%s"(
-                eag.NamedHNontRepr(N), (Dir & PrevDirs).bitsSet.map!TokRepr, Pos);
+            eag.NamedHNontRepr(N), (Dir & PrevDirs).bitsSet.map!TokRepr, Pos);
 
         if ((Dir - PrevDirs).bitsSet.empty)
         {
@@ -1010,8 +1010,8 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
                                     output.writeln("S.Get = &S.Get2;");
                                 }
                                 if (F.Next !is null && cast(EAG.Nont) F.Next
-                                        && GenNonts[(cast(EAG.Nont) F.Next).Sym]
-                                        && !Nont[(cast(EAG.Nont) F.Next).Sym].Anonym)
+                                    && GenNonts[(cast(EAG.Nont) F.Next).Sym]
+                                    && !Nont[(cast(EAG.Nont) F.Next).Sym].Anonym)
                                     TwoCalls = true;
                                 else
                                     TwoCalls = false;
@@ -1323,7 +1323,7 @@ private string GenerateMod(Flag!"parsePass" parsePass, Settings settings)
         while (c != Term)
         {
             enforce(c != 0,
-                    "error: unexpected end of eELL1Gen.fix.d");
+                "error: unexpected end of eELL1Gen.fix.d");
 
             output.write(c);
             Fix.popFront;

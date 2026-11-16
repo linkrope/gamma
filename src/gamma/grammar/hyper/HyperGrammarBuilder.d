@@ -19,7 +19,7 @@ public struct HyperGrammarBuilder
         auto nonterminal = new AnonymousNonterminal(index);
 
         enforce(nonterminal.toString !in builder.nonterminalMap,
-                format!"generated nonterminal name already defined by the user: %s"(nonterminal));
+            format!"generated nonterminal name already defined by the user: %s"(nonterminal));
 
         builder.nonterminalMap[nonterminal.toString] = nonterminal;
         builder.nonterminals ~= nonterminal;
