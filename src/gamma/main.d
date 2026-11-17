@@ -78,6 +78,9 @@ struct Arguments
     @(NamedArgument.Description("Use dub to build compiled compiler"))
     bool dub;
 
+    @(NamedArgument("version").Description("Show version and exit"))
+    bool showVersion;
+
     void validateOptions() const
     {
         import core.stdc.stdlib : exit, EXIT_FAILURE;
@@ -106,6 +109,15 @@ void command(Arguments arguments)
 {
     import core.stdc.stdlib : exit, EXIT_FAILURE;
     import std.exception : ErrnoException;
+
+    if (arguments.showVersion)
+    {
+        import std.stdio : writeln;
+        import std.string : strip;
+
+        writeln("gamma " ~ import("version").strip);
+        return;
+    }
 
     arguments.validateOptions;
     with (arguments)
