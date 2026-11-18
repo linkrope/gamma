@@ -1,17 +1,32 @@
 /+ dub.sdl:
+targetPath ".dub"
 +/
 
-import std.file : mkdirRecurse, write;
-import std.path : dirName;
-import std.process : environment, execute;
-import std.range : empty;
-import std.stdio : writeln;
-import std.string : strip;
+import std;
+
+private enum usage = `Usage: dub run --single tool/version.d -- [output-file]
+Write the version to an optional output file.`;
 
 // `git describe --always > build/version 2>/dev/null || printf '%s\n' "$DUB_PACKAGE_VERSION" > build/version`
 // does not work on Windows
-void main(string[] args)
+int main(string[] args)
 {
+    GetoptResult help;
+
+    try
+        help = getopt(args);
+    catch (GetOptException error)
+        return reportUsageError(error.msg);
+
+    if (help.helpWanted)
+    {
+        defaultGetoptPrinter(usage, help.options);
+        return 0;
+    }
+
+    if (args.length > 2)
+        return reportUsageError();
+
     string version_ = environment.get("GITHUB_REF_NAME",
         environment.get("DUB_PACKAGE_VERSION", "unknown"));
 
@@ -31,10 +46,25 @@ void main(string[] args)
     if (args.length > 1)
     {
         const path = args[1];
+        const contents = version_ ~ "\n";
 
-        mkdirRecurse(path.dirName);
-        path.write(version_ ~ "\n");
+        // don't force DUB to relink targets when version is unchanged
+        if (!path.exists || path.readText != contents)
+        {
+            mkdirRecurse(path.dirName);
+            std.file.write(path, contents);
+        }
     }
     else
         writeln(version_);
+
+    return 0;
+}
+
+private int reportUsageError(string message = null)
+{
+    if (!message.empty)
+        stderr.writeln(message);
+    stderr.writeln(usage);
+    return 1;
 }

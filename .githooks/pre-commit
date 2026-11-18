@@ -4,48 +4,4 @@ set -eu
 dub test
 dub run dscanner -- --styleCheck src test
 dub run depend -- --check doc/dependencies.puml $(rg --files src include unittest -g '*.d' | sort)
-
-# Check staged, standalone D sources.
-# The fix/ directory contains templates with generator placeholders,
-# which dfmt cannot parse as D source.
-temporary_directory=$(mktemp -d "${TMPDIR:-/tmp}/gamma-dfmt.XXXXXX")
-trap 'rm -rf "$temporary_directory"' EXIT HUP INT TERM
-source_list="$temporary_directory/sources"
-format_file_list="$temporary_directory/files"
-: > "$source_list"
-: > "$format_file_list"
-
-git diff --cached --name-only --diff-filter=ACMR -- '*.d' |
-    while IFS= read -r source_file
-    do
-        case "$source_file" in
-            src/*.d|include/*.d|test/*.d|unittest/*.d)
-                temporary_file="$temporary_directory/$source_file"
-                mkdir -p "$(dirname "$temporary_file")"
-                git show ":$source_file" > "$temporary_file"
-                printf '%s\n' "$source_file" >> "$source_list"
-                printf '%s\000' "$temporary_file" >> "$format_file_list"
-                ;;
-        esac
-    done
-
-if [ -s "$format_file_list" ]
-then
-    xargs -0 dub run dfmt@~master -- --inplace --config . < "$format_file_list"
-fi
-
-format_failed=0
-while IFS= read -r source_file
-do
-    temporary_file="$temporary_directory/$source_file"
-    if ! git show ":$source_file" | cmp -s "$temporary_file" -
-    then
-        printf '%s\n' "dfmt: $source_file is not formatted; run: dub run dfmt@~master -- --inplace $source_file" >&2
-        format_failed=1
-    fi
-done < "$source_list"
-
-if [ "$format_failed" -ne 0 ]
-then
-    exit 1
-fi
+dub run --single tool/format.d -- --staged
