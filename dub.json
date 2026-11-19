@@ -8,7 +8,6 @@
     "importPaths": ["include", "src"],
     "mainSourceFile": "src/gamma/main.d",
     "stringImportPaths": ["fix", "build"],
-    "preGenerateCommands": ["$DC -run tool/version.d -- build/version"],
     "buildTypes": {
         "release-gamma": {
             "buildOptions": ["debugMode", "optimize", "inline", "debugInfo"]
@@ -17,7 +16,8 @@
     "configurations": [
         {
             "name": "gamma",
-            "targetType": "executable"
+            "targetType": "executable",
+            "preBuildCommands": ["$DC -run dubhash.d -- build/dubhash.txt"]
         },
         {
             "name": "unittest",

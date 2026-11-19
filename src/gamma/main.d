@@ -115,7 +115,7 @@ void command(Arguments arguments)
         import std.stdio : writeln;
         import std.string : strip;
 
-        writeln("gamma " ~ import("version").strip);
+        writeln("gamma " ~ import("dubhash.txt").strip);
         return;
     }
 
