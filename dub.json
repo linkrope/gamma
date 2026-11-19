@@ -17,7 +17,7 @@
         {
             "name": "gamma",
             "targetType": "executable",
-            "preBuildCommands": ["$DC -run dubhash.d -- build/dubhash.txt"]
+            "preBuildCommands": ["$DC -run dubhash.d build/dubhash.txt"]
         },
         {
             "name": "unittest",
