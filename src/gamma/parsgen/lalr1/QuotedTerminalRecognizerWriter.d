@@ -13,7 +13,7 @@ public string writeQuotedTerminalRecognizer(const string[] terminalNames)
 {
     auto root = new TrieNode;
 
-    root.index = 0;
+    root.stateIndex = 0;
 
     foreach (terminal, name; terminalNames)
     {
@@ -37,9 +37,9 @@ public string writeQuotedTerminalRecognizer(const string[] terminalNames)
         {
             auto child = nodes[nodeIndex].children[character];
 
-            if (child.index == size_t.max)
+            if (child.stateIndex == size_t.max)
             {
-                child.index = nodes.length;
+                child.stateIndex = nodes.length;
                 nodes ~= child;
             }
         }
@@ -63,7 +63,7 @@ public string writeQuotedTerminalRecognizer(const string[] terminalNames)
 
 private class TrieNode
 {
-    size_t index = size_t.max;
+    size_t stateIndex = size_t.max;
 
     size_t terminal = size_t.max;
 
@@ -83,7 +83,7 @@ private class TrieNode
 
 private void writeNode(ref string[] lines, TrieNode node)
 {
-    lines ~= format!"state%s:"(node.index);
+    lines ~= format!"state%s:"(node.stateIndex);
     if (node.terminal != size_t.max)
         lines ~= format!"    result = QuotedTerminalCandidate(%s, cursor).nullable;"(node.terminal);
     lines ~= [
@@ -100,7 +100,7 @@ private void writeNode(ref string[] lines, TrieNode node)
 
         lines ~= format!"    case cast(dchar) 0x%08x:"(character);
         lines ~= "        cursor.popFront;";
-        lines ~= format!"        goto state%s;"(child.index);
+        lines ~= format!"        goto state%s;"(child.stateIndex);
     }
 
     lines ~= [
