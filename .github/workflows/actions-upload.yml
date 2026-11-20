@@ -31,7 +31,7 @@ jobs:
         run:  ${{ matrix.rename }} ${{ matrix.exe-name }}
       
       - name: Upload release binary
-        uses: AButler/upload-release-assets@v4.0
+        uses: AButler/upload-release-assets@v4.0.0
         with:
           files: ${{ matrix.exe-name }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
