@@ -17,13 +17,13 @@ jobs:
             exe-name: gamma.linux-amd64
             rename: mv ./gamma
           - os: MacOS
-            exe-name: gamma.macos-amd64
+            exe-name: gamma.macos-arm64
             rename: mv ./gamma
 
     runs-on: ubuntu-latest
     steps:
       - name: Download binary from previous build job
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ matrix.exe-name }}
 
@@ -31,7 +31,7 @@ jobs:
         run:  ${{ matrix.rename }} ${{ matrix.exe-name }}
       
       - name: Upload release binary
-        uses: AButler/upload-release-assets@v3.0
+        uses: AButler/upload-release-assets@v4.0
         with:
           files: ${{ matrix.exe-name }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
