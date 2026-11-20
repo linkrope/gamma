@@ -42,9 +42,6 @@ public struct QuotedTerminalCandidate
 
 /**
  * Recognizes a direct quoted terminal from the supplied input position.
- *
- * The runtime's default adapter scans `terminalNames` linearly. Generated
- * compilers may supply a representation with the same observable result.
  */
 public alias QuotedTerminalRecognizer = Nullable!QuotedTerminalCandidate delegate(Input input);
 
@@ -52,6 +49,13 @@ public alias QuotedTerminalRecognizer = Nullable!QuotedTerminalCandidate delegat
  * An LR lexer that recognizes one longest quoted terminal or nonterminal at a time,
  * using (token-end) only as a virtual lookahead: it is never consumed from the source input.
  * It emits one error token for every unrecognized source character.
+ *
+ * Direct quoted terminals remain separate from starred lexical nonterminals. A
+ * deterministic LR character grammar cannot recognize both a keyword and an
+ * extensible identifier with a common prefix: it needs both the shift that
+ * completes the keyword and the reduction that lets the identifier continue.
+ * Resolving that shift/reduce conflict would lose either quoted-terminal
+ * priority or longest-match lexical recognition.
  */
 public struct LR1Lexer
 {
@@ -65,8 +69,6 @@ public struct LR1Lexer
 
     private immutable LexerRule[] rules;
 
-    private immutable string[] terminalNames;
-
     private immutable QuotedTerminalRecognizer quotedTerminalRecognizer;
 
     private size_t[string] characterTerminals;
@@ -75,16 +77,14 @@ public struct LR1Lexer
 
     public this(Input input, immutable LR1ParserTables parserTables,
         immutable Nullable!LexerCandidate[] candidates,
-        immutable LexerRule[] rules, immutable string[] terminalNames,
+        immutable LexerRule[] rules,
         QuotedTerminalRecognizer quotedTerminalRecognizer = null)
     {
         this.input = input;
         this.parserTables = parserTables;
         this.candidates = candidates;
         this.rules = rules;
-        this.terminalNames = terminalNames;
-        this.quotedTerminalRecognizer = quotedTerminalRecognizer is null
-            ? linearQuotedTerminalRecognizer(terminalNames) : quotedTerminalRecognizer;
+        this.quotedTerminalRecognizer = quotedTerminalRecognizer;
         foreach (index, terminal; parserTables.terminals)
             this.characterTerminals[terminal.name] = index;
         readToken;
@@ -126,7 +126,10 @@ public struct LR1Lexer
         const(ParseNode)*[] nodes = null;
         Nullable!Token acceptedToken;
         Input remainingInput = input;
-        const literal = quotedTerminalRecognizer(input);
+        Nullable!QuotedTerminalCandidate literal;
+
+        if (quotedTerminalRecognizer !is null)
+            literal = quotedTerminalRecognizer(input);
 
         if (!literal.isNull)
         {
@@ -387,42 +390,6 @@ public struct LR1Lexer
     }
 }
 
-private QuotedTerminalRecognizer linearQuotedTerminalRecognizer(const string[] terminalNames)
-{
-    return (Input input) => linearQuotedTerminalCandidate(input, terminalNames);
-}
-
-private Nullable!QuotedTerminalCandidate linearQuotedTerminalCandidate(Input input,
-    const string[] terminalNames)
-{
-    import std.utf : byDchar;
-
-    Nullable!QuotedTerminalCandidate result;
-
-    foreach (terminal, name; terminalNames)
-    {
-        if (name.empty)
-            continue;
-
-        Input cursor = input;
-        const representation = name[1 .. $ - 1];
-
-        foreach (character; representation.byDchar)
-        {
-            if (cursor.empty || cursor.front != character)
-                break;
-            cursor.popFront;
-        }
-
-        if (cursor.index - input.index != representation.length)
-            continue;
-        if (result.isNull || cursor.index > result.get.remainingInput.index)
-            result = QuotedTerminalCandidate(terminal, cursor);
-    }
-
-    return result;
-}
-
 @("skip Unicode WhiteSpace")
 unittest
 {
@@ -460,5 +427,5 @@ unittest
 
 version (unittest) private LR1Lexer lexer(string text)
 {
-    return LR1Lexer(Input("input", text), LR1ParserTables(), candidates: null, rules: null, terminalNames: null);
+    return LR1Lexer(Input("input", text), LR1ParserTables(), candidates: null, rules: null);
 }
