@@ -31,6 +31,24 @@ public struct Token
 }
 
 /**
+ * The best direct quoted-terminal match beginning at a lexer position.
+ */
+public struct QuotedTerminalCandidate
+{
+    size_t terminal;
+
+    Input remainingInput;
+}
+
+/**
+ * Recognizes a direct quoted terminal from the supplied input position.
+ *
+ * The runtime's default adapter scans `terminalNames` linearly. Generated
+ * compilers may supply a representation with the same observable result.
+ */
+public alias QuotedTerminalRecognizer = Nullable!QuotedTerminalCandidate delegate(Input input);
+
+/**
  * An LR lexer that recognizes one longest quoted terminal or nonterminal at a time,
  * using (token-end) only as a virtual lookahead: it is never consumed from the source input.
  * It emits one error token for every unrecognized source character.
@@ -49,19 +67,24 @@ public struct LR1Lexer
 
     private immutable string[] terminalNames;
 
+    private immutable QuotedTerminalRecognizer quotedTerminalRecognizer;
+
     private size_t[string] characterTerminals;
 
     private Position whiteSpaceErrorPosition;
 
     public this(Input input, immutable LR1ParserTables parserTables,
         immutable Nullable!LexerCandidate[] candidates,
-        immutable LexerRule[] rules, immutable string[] terminalNames)
+        immutable LexerRule[] rules, immutable string[] terminalNames,
+        QuotedTerminalRecognizer quotedTerminalRecognizer = null)
     {
         this.input = input;
         this.parserTables = parserTables;
         this.candidates = candidates;
         this.rules = rules;
         this.terminalNames = terminalNames;
+        this.quotedTerminalRecognizer = quotedTerminalRecognizer is null
+            ? linearQuotedTerminalRecognizer(terminalNames) : quotedTerminalRecognizer;
         foreach (index, terminal; parserTables.terminals)
             this.characterTerminals[terminal.name] = index;
         readToken;
@@ -103,7 +126,7 @@ public struct LR1Lexer
         const(ParseNode)*[] nodes = null;
         Nullable!Token acceptedToken;
         Input remainingInput = input;
-        const literal = literalCandidate;
+        const literal = quotedTerminalRecognizer(input);
 
         if (!literal.isNull)
         {
@@ -157,36 +180,6 @@ public struct LR1Lexer
     private dchar next()
     {
         return input.empty ? 0 : input.front;
-    }
-
-    private Nullable!LiteralResult literalCandidate() const
-    {
-        import std.utf : byDchar;
-
-        Nullable!LiteralResult result;
-
-        foreach (terminal, name; terminalNames)
-        {
-            if (name.empty)
-                continue;
-
-            Input cursor = input;
-            const representation = name[1 .. $ - 1];
-
-            foreach (character; representation.byDchar)
-            {
-                if (cursor.empty || cursor.front != character)
-                    break;
-                cursor.popFront;
-            }
-
-            if (cursor.index - input.index != representation.length)
-                continue;
-            if (result.isNull || cursor.index > result.get.remainingInput.index)
-                result = LiteralResult(terminal, cursor);
-        }
-
-        return result;
     }
 
     private bool skipWhiteSpace()
@@ -394,11 +387,40 @@ public struct LR1Lexer
     }
 }
 
-private struct LiteralResult
+private QuotedTerminalRecognizer linearQuotedTerminalRecognizer(const string[] terminalNames)
 {
-    size_t terminal;
+    return (Input input) => linearQuotedTerminalCandidate(input, terminalNames);
+}
 
-    Input remainingInput;
+private Nullable!QuotedTerminalCandidate linearQuotedTerminalCandidate(Input input,
+    const string[] terminalNames)
+{
+    import std.utf : byDchar;
+
+    Nullable!QuotedTerminalCandidate result;
+
+    foreach (terminal, name; terminalNames)
+    {
+        if (name.empty)
+            continue;
+
+        Input cursor = input;
+        const representation = name[1 .. $ - 1];
+
+        foreach (character; representation.byDchar)
+        {
+            if (cursor.empty || cursor.front != character)
+                break;
+            cursor.popFront;
+        }
+
+        if (cursor.index - input.index != representation.length)
+            continue;
+        if (result.isNull || cursor.index > result.get.remainingInput.index)
+            result = QuotedTerminalCandidate(terminal, cursor);
+    }
+
+    return result;
 }
 
 @("skip Unicode WhiteSpace")
