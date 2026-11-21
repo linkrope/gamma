@@ -31,9 +31,9 @@ public struct Token
 }
 
 /**
- * The best direct quoted-terminal match beginning at a lexer position.
+ * The best terminal match beginning at a lexer position.
  */
-public struct QuotedTerminalCandidate
+public struct TerminalCandidate
 {
     size_t terminal;
 
@@ -41,20 +41,20 @@ public struct QuotedTerminalCandidate
 }
 
 /**
- * Recognizes a direct quoted terminal from the supplied input position.
+ * Recognizes a terminal from the supplied input position.
  */
-public alias QuotedTerminalRecognizer = Nullable!QuotedTerminalCandidate delegate(Input input);
+public alias TerminalRecognizer = Nullable!TerminalCandidate delegate(Input input);
 
 /**
- * An LR lexer that recognizes one longest quoted terminal or nonterminal at a time,
+ * An LR lexer that recognizes one longest terminal or nonterminal at a time,
  * using (token-end) only as a virtual lookahead: it is never consumed from the source input.
  * It emits one error token for every unrecognized source character.
  *
- * Direct quoted terminals remain separate from starred lexical nonterminals. A
+ * Terminals remain separate from lexical nonterminals. A
  * deterministic LR character grammar cannot recognize both a keyword and an
  * extensible identifier with a common prefix: it needs both the shift that
  * completes the keyword and the reduction that lets the identifier continue.
- * Resolving that shift/reduce conflict would lose either quoted-terminal
+ * Resolving that shift/reduce conflict would lose either terminal
  * priority or longest-match lexical recognition.
  */
 public struct LR1Lexer
@@ -69,7 +69,7 @@ public struct LR1Lexer
 
     private immutable LexerRule[] rules;
 
-    private immutable QuotedTerminalRecognizer quotedTerminalRecognizer;
+    private immutable TerminalRecognizer terminalRecognizer;
 
     private size_t[string] characterTerminals;
 
@@ -78,13 +78,13 @@ public struct LR1Lexer
     public this(Input input, immutable LR1ParserTables parserTables,
         immutable Nullable!LexerCandidate[] candidates,
         immutable LexerRule[] rules,
-        QuotedTerminalRecognizer quotedTerminalRecognizer = null)
+        TerminalRecognizer terminalRecognizer = null)
     {
         this.input = input;
         this.parserTables = parserTables;
         this.candidates = candidates;
         this.rules = rules;
-        this.quotedTerminalRecognizer = quotedTerminalRecognizer;
+        this.terminalRecognizer = terminalRecognizer;
         foreach (index, terminal; parserTables.terminals)
             this.characterTerminals[terminal.name] = index;
         readToken;
@@ -126,10 +126,10 @@ public struct LR1Lexer
         const(ParseNode)*[] nodes = null;
         Nullable!Token acceptedToken;
         Input remainingInput = input;
-        Nullable!QuotedTerminalCandidate literal;
+        Nullable!TerminalCandidate literal;
 
-        if (quotedTerminalRecognizer !is null)
-            literal = quotedTerminalRecognizer(input);
+        if (terminalRecognizer !is null)
+            literal = terminalRecognizer(input);
 
         if (!literal.isNull)
         {

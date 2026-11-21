@@ -12,12 +12,12 @@ import std.typecons : Nullable;
 
 public string[] generateCode(EpsilonEAG epsilonEAG, EAG eag,
     OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
-    string evaluatorModuleName, string lexerTablesModuleName, string quotedTerminalRecognizer,
+    string evaluatorModuleName, string lexerTablesModuleName, const string[] terminalNames,
     Settings settings)
 {
     with (generateEpsilonBridgeModule(epsilonEAG, parserGrammar, settings))
         return generateLR1Modules(eag, epsilonEAG.BaseName, parserTables, parserGrammar,
-            moduleName, evaluatorModuleName, lexerTablesModuleName, quotedTerminalRecognizer, settings)
+            moduleName, evaluatorModuleName, lexerTablesModuleName, terminalNames, settings)
             ~ fileName;
 }
 
@@ -25,14 +25,12 @@ public auto generateLexerCode(OrderedLR1Tables lexerTables, LexerGrammar lexerGr
     string compilerName, Settings settings)
 {
     import gamma.parsgen.lalr1.LR1TablesWriter : createTables, writeModule;
-    import gamma.parsgen.lalr1.QuotedTerminalRecognizerWriter : writeQuotedTerminalRecognizer;
     import std.algorithm : map, sum;
     import std.typecons : tuple;
 
     auto tables = lexerTables.createTables;
     const moduleName = compilerName ~ "LexerTables";
     const fileName = settings.path(moduleName ~ ".d");
-    const quotedTerminalRecognizer = writeQuotedTerminalRecognizer(lexerGrammar.terminalNames);
 
     Nullable!LexerCandidate[] candidates;
     LexerRule[] rules;
@@ -60,16 +58,17 @@ public auto generateLexerCode(OrderedLR1Tables lexerTables, LexerGrammar lexerGr
     tables.setLexerMetadata(candidates, rules, lexerGrammar.terminalNames, lexerGrammar.nonterminalNames);
     fileName.writeModule(moduleName, tables);
 
-    return tuple!("fileName", "moduleName", "quotedTerminalRecognizer")(fileName, moduleName,
-        quotedTerminalRecognizer);
+    return tuple!("fileName", "moduleName", "terminalNames")(fileName, moduleName,
+        lexerGrammar.terminalNames);
 }
 
 private string[] generateLR1Modules(EAG eag, string name,
     OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
     string bridgeModuleName, string evaluatorModuleName, string lexerTablesModuleName,
-    string quotedTerminalRecognizer, Settings settings)
+    const string[] terminalNames, Settings settings)
 {
     import gamma.parsgen.lalr1.LR1TablesWriter : createTables, writeModule;
+    import gamma.parsgen.lalr1.TerminalRecognizerWriter : writeTerminalRecognizer;
     import io : Input;
     import std.format : format;
     import std.stdio : File;
@@ -104,7 +103,7 @@ private string[] generateLR1Modules(EAG eag, string name,
     includeFix(fix, output, '$', fixName);
     output.write(sourceNonterminals);
     includeFix(fix, output, '$', fixName);
-    output.write(quotedTerminalRecognizer);
+    output.writeTerminalRecognizer(terminalNames);
     includeFix(fix, output, '$', fixName);
     output.close;
 

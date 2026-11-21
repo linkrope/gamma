@@ -5,7 +5,7 @@ import $;
 import $;
 import Eval = $;
 import gamma.runtime.lr.LR1Parser : LR1Parser;
-import gamma.runtime.lr.LR1Lexer : LR1Lexer, QuotedTerminalCandidate, Token;
+import gamma.runtime.lr.LR1Lexer : LR1Lexer, TerminalCandidate, Token;
 import gamma.runtime.lr.ParseTreeLexer : ParseTreeLexer;
 import gamma.runtime.ParseTree : ParseNode, RuleNode, TerminalNode;
 import gamma.runtime.lr.LR1ParserTables : Symbol;
@@ -36,7 +36,7 @@ class GeneratedLexer : ParseTreeLexer
         this.eofToken = eofToken;
         this.position_ = input.position;
         this.lrLexer = LR1Lexer(input, lexerTables, lexerCandidates, lexerRules,
-            input => quotedTerminalCandidate(input));
+            input => terminalCandidate(input));
     }
 
     public int nextToken()

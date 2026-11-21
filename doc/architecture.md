@@ -122,16 +122,16 @@ SOAG is the most general backend: it derives direct/transitive affix dependencie
 
 ```text
 plain hyper grammar ──> parser projection ──> LALR tables ──> LR runtime
-direct quoted terminals ──> generated prefix trie ─┐
-starred lexical nonterminals ──> character grammar ──> LALR tables ─┤
+terminals ──> generated prefix trie ─┐
+lexical nonterminals ──> character grammar ──> LALR tables ─┤
                                                       └─> longest-match lexer
                                                               │
                                                               └─ parse-tree bridge ──> Epsilon evaluator
 ```
 
-The generated trie recognizes only direct syntax terminals. `LR1Lexer` runs it beside the
-character-LR recognizer for starred lexical nonterminals, choosing the longer candidate and
-preferring the quoted terminal on an equal-length tie.
+The generated trie recognizes only syntax terminals. `LR1Lexer` runs it beside the
+character-LR recognizer for lexical nonterminals, choosing the longer candidate and
+preferring the terminal on an equal-length tie.
 
 The parser projection makes lexical hyper nonterminals terminals, removes predicate nodes from syntactic RHSs, and retains mappings for the evaluator bridge. [ParserGrammarBuilder.d](../src/gamma/parsgen/lalr1/ParserGrammarBuilder.d#L31)
 
