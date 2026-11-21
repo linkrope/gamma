@@ -178,3 +178,38 @@ unittest
             .shouldFailWith("error: ambiguous lexical nonterminals a and b");
     }
 }
+
+@("recognize direct terminals without assuming an identifier alphabet")
+unittest
+{
+    with (sandbox)
+    {
+        const grammar = `
+            S = .
+
+            S <+ : S>: { 'if' | '€' | id }.
+
+            letter = 'i' | 'x'.
+
+            letter: 'i' | 'x'.
+
+            id* = letter | id letter.
+
+            id*:
+                id letter
+              | letter.
+            `;
+        const fileName = buildPath(directory, "nonconventional-identifier.eag");
+
+        write(fileName, grammar);
+        run!"%s --lalr --runtime . %s --output-directory %s"(gamma, fileName, directory)
+            .shouldPassWith("S grammar is single sweep");
+        write(buildPath(directory, "input"), "if € ix");
+        run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
+            .shouldPassWith(
+                "trace: lexer terminal 'if'",
+                "trace: lexer terminal '€'",
+                "trace: lexer nonterminal id",
+        );
+    }
+}

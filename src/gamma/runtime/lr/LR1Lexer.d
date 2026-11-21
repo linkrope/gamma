@@ -31,9 +31,31 @@ public struct Token
 }
 
 /**
- * An LR lexer that recognizes one longest quoted terminal or nonterminal at a time,
+ * The best terminal match beginning at a lexer position.
+ */
+public struct TerminalCandidate
+{
+    size_t terminal;
+
+    Input remainingInput;
+}
+
+/**
+ * Recognizes a terminal from the supplied input position.
+ */
+public alias TerminalRecognizer = Nullable!TerminalCandidate delegate(Input input);
+
+/**
+ * An LR lexer that recognizes one longest terminal or nonterminal at a time,
  * using (token-end) only as a virtual lookahead: it is never consumed from the source input.
  * It emits one error token for every unrecognized source character.
+ *
+ * Terminals remain separate from lexical nonterminals. A
+ * deterministic LR character grammar cannot recognize both a keyword and an
+ * extensible identifier with a common prefix: it needs both the shift that
+ * completes the keyword and the reduction that lets the identifier continue.
+ * Resolving that shift/reduce conflict would lose either terminal
+ * priority or longest-match lexical recognition.
  */
 public struct LR1Lexer
 {
@@ -47,7 +69,7 @@ public struct LR1Lexer
 
     private immutable LexerRule[] rules;
 
-    private immutable string[] terminalNames;
+    private immutable TerminalRecognizer terminalRecognizer;
 
     private size_t[string] characterTerminals;
 
@@ -55,13 +77,14 @@ public struct LR1Lexer
 
     public this(Input input, immutable LR1ParserTables parserTables,
         immutable Nullable!LexerCandidate[] candidates,
-        immutable LexerRule[] rules, immutable string[] terminalNames)
+        immutable LexerRule[] rules,
+        TerminalRecognizer terminalRecognizer = null)
     {
         this.input = input;
         this.parserTables = parserTables;
         this.candidates = candidates;
         this.rules = rules;
-        this.terminalNames = terminalNames;
+        this.terminalRecognizer = terminalRecognizer;
         foreach (index, terminal; parserTables.terminals)
             this.characterTerminals[terminal.name] = index;
         readToken;
@@ -103,7 +126,10 @@ public struct LR1Lexer
         const(ParseNode)*[] nodes = null;
         Nullable!Token acceptedToken;
         Input remainingInput = input;
-        const literal = literalCandidate;
+        Nullable!TerminalCandidate literal;
+
+        if (terminalRecognizer !is null)
+            literal = terminalRecognizer(input);
 
         if (!literal.isNull)
         {
@@ -157,36 +183,6 @@ public struct LR1Lexer
     private dchar next()
     {
         return input.empty ? 0 : input.front;
-    }
-
-    private Nullable!LiteralResult literalCandidate() const
-    {
-        import std.utf : byDchar;
-
-        Nullable!LiteralResult result;
-
-        foreach (terminal, name; terminalNames)
-        {
-            if (name.empty)
-                continue;
-
-            Input cursor = input;
-            const representation = name[1 .. $ - 1];
-
-            foreach (character; representation.byDchar)
-            {
-                if (cursor.empty || cursor.front != character)
-                    break;
-                cursor.popFront;
-            }
-
-            if (cursor.index - input.index != representation.length)
-                continue;
-            if (result.isNull || cursor.index > result.get.remainingInput.index)
-                result = LiteralResult(terminal, cursor);
-        }
-
-        return result;
     }
 
     private bool skipWhiteSpace()
@@ -394,13 +390,6 @@ public struct LR1Lexer
     }
 }
 
-private struct LiteralResult
-{
-    size_t terminal;
-
-    Input remainingInput;
-}
-
 @("skip Unicode WhiteSpace")
 unittest
 {
@@ -438,5 +427,5 @@ unittest
 
 version (unittest) private LR1Lexer lexer(string text)
 {
-    return LR1Lexer(Input("input", text), LR1ParserTables(), candidates: null, rules: null, terminalNames: null);
+    return LR1Lexer(Input("input", text), LR1ParserTables(), candidates: null, rules: null);
 }

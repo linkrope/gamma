@@ -3,7 +3,7 @@ module gamma.parsgen.lalr1.LR1TablesWriter;
 import gamma.grammar.Alternative;
 import gamma.grammar.Nonterminal;
 import gamma.grammar.Terminal;
-import gamma.parsgen.lalr1.FixWriter : includeFix;
+import gamma.parsgen.FixWriter : includeFix;
 import gamma.parsgen.lalr1.OrderedLR1Tables;
 import gamma.runtime.lr.LR1ParserTables : LexerCandidate, LexerRule;
 import std.stdio : File;

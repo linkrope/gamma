@@ -3,7 +3,7 @@ module gamma.parsgen.lalr1.CodeGenerator;
 import epsilon.eag : EpsilonEAG = EAG;
 import epsilon.settings : Settings;
 import gamma.input.epsilang.analyzer : EAG;
-import gamma.parsgen.lalr1.FixWriter : includeFix;
+import gamma.parsgen.FixWriter : includeFix;
 import gamma.parsgen.lalr1.LexerGrammarBuilder : LexerGrammar;
 import gamma.parsgen.lalr1.OrderedLR1Tables;
 import gamma.parsgen.lalr1.ParserGrammarBuilder : ParserGrammar;
@@ -12,11 +12,12 @@ import std.typecons : Nullable;
 
 public string[] generateCode(EpsilonEAG epsilonEAG, EAG eag,
     OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
-    string evaluatorModuleName, string lexerTablesModuleName, Settings settings)
+    string evaluatorModuleName, string lexerTablesModuleName, const string[] terminalNames,
+    Settings settings)
 {
     with (generateEpsilonBridgeModule(epsilonEAG, parserGrammar, settings))
         return generateLR1Modules(eag, epsilonEAG.BaseName, parserTables, parserGrammar,
-            moduleName, evaluatorModuleName, lexerTablesModuleName, settings)
+            moduleName, evaluatorModuleName, lexerTablesModuleName, terminalNames, settings)
             ~ fileName;
 }
 
@@ -57,15 +58,17 @@ public auto generateLexerCode(OrderedLR1Tables lexerTables, LexerGrammar lexerGr
     tables.setLexerMetadata(candidates, rules, lexerGrammar.terminalNames, lexerGrammar.nonterminalNames);
     fileName.writeModule(moduleName, tables);
 
-    return tuple!("fileName", "moduleName")(fileName, moduleName);
+    return tuple!("fileName", "moduleName", "terminalNames")(fileName, moduleName,
+        lexerGrammar.terminalNames);
 }
 
 private string[] generateLR1Modules(EAG eag, string name,
     OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
     string bridgeModuleName, string evaluatorModuleName, string lexerTablesModuleName,
-    Settings settings)
+    const string[] terminalNames, Settings settings)
 {
     import gamma.parsgen.lalr1.LR1TablesWriter : createTables, writeModule;
+    import gamma.parsgen.TerminalRecognizerWriter : writeTerminalRecognizer;
     import io : Input;
     import std.format : format;
     import std.stdio : File;
@@ -99,6 +102,8 @@ private string[] generateLR1Modules(EAG eag, string name,
     output.write(sourceTerminals);
     includeFix(fix, output, '$', fixName);
     output.write(sourceNonterminals);
+    includeFix(fix, output, '$', fixName);
+    output.writeTerminalRecognizer(terminalNames);
     includeFix(fix, output, '$', fixName);
     output.close;
 

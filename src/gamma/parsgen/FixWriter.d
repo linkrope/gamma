@@ -1,4 +1,4 @@
-module gamma.parsgen.lalr1.FixWriter;
+module gamma.parsgen.FixWriter;
 
 import io : Input;
 import std.exception : enforce;

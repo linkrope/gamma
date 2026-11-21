@@ -12,6 +12,9 @@ to the relevant documentation, then remove it from this file.
 - **Structure generated code.**
   Replace direct code fragments with an explicit representation,
   such as an abstract syntax tree or other intermediate language nodes.
+- **Reconsider `.fix` templates for generated code.**
+  Evaluate the `.fix` writer approach and record the decision, whether it is retained,
+  replaced, or revised, in an ADR.
 - **Use sum types where they clarify legacy state models.**
   Identify a concrete subtype hierarchy before pursuing this.
 

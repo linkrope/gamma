@@ -5,18 +5,21 @@ import $;
 import $;
 import Eval = $;
 import gamma.runtime.lr.LR1Parser : LR1Parser;
-import gamma.runtime.lr.LR1Lexer : LR1Lexer, Token;
+import gamma.runtime.lr.LR1Lexer : LR1Lexer, TerminalCandidate, Token;
 import gamma.runtime.lr.ParseTreeLexer : ParseTreeLexer;
 import gamma.runtime.ParseTree : ParseNode, RuleNode, TerminalNode;
 import gamma.runtime.lr.LR1ParserTables : Symbol;
 import io : Input, Position, read;
 import log : error, trace;
 import std.sumtype : get;
+import std.typecons : Nullable, nullable;
 
 private enum int[] terminalToParserToken = $;
 private enum int[] lexicalNonterminalToParserToken = $;
 private enum sourceTerminals = $;
 private enum sourceNonterminals = $;
+
+$
 
 class GeneratedLexer : ParseTreeLexer
 {
@@ -32,7 +35,8 @@ class GeneratedLexer : ParseTreeLexer
     {
         this.eofToken = eofToken;
         this.position_ = input.position;
-        this.lrLexer = LR1Lexer(input, lexerTables, lexerCandidates, lexerRules, terminalNames);
+        this.lrLexer = LR1Lexer(input, lexerTables, lexerCandidates, lexerRules,
+            input => terminalCandidate(input));
     }
 
     public int nextToken()
