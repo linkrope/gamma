@@ -1,6 +1,6 @@
-module gamma.parsgen.lalr1.TerminalRecognizerWriter;
+module gamma.parsgen.TerminalRecognizerWriter;
 
-import gamma.parsgen.lalr1.FixWriter : includeFix;
+import gamma.parsgen.FixWriter : includeFix;
 import io : Input;
 import std.array : array;
 import std.format : format;

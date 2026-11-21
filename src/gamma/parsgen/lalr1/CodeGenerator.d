@@ -3,7 +3,7 @@ module gamma.parsgen.lalr1.CodeGenerator;
 import epsilon.eag : EpsilonEAG = EAG;
 import epsilon.settings : Settings;
 import gamma.input.epsilang.analyzer : EAG;
-import gamma.parsgen.lalr1.FixWriter : includeFix;
+import gamma.parsgen.FixWriter : includeFix;
 import gamma.parsgen.lalr1.LexerGrammarBuilder : LexerGrammar;
 import gamma.parsgen.lalr1.OrderedLR1Tables;
 import gamma.parsgen.lalr1.ParserGrammarBuilder : ParserGrammar;
@@ -68,7 +68,7 @@ private string[] generateLR1Modules(EAG eag, string name,
     const string[] terminalNames, Settings settings)
 {
     import gamma.parsgen.lalr1.LR1TablesWriter : createTables, writeModule;
-    import gamma.parsgen.lalr1.TerminalRecognizerWriter : writeTerminalRecognizer;
+    import gamma.parsgen.TerminalRecognizerWriter : writeTerminalRecognizer;
     import io : Input;
     import std.format : format;
     import std.stdio : File;
