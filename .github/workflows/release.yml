@@ -14,7 +14,7 @@ jobs:
     uses: ./.github/workflows/actions-build.yml
     with:
       compiler_version: ldc-1.43.0
-      build_type: release-gamma
+      build_type: release-asserts
 
   upload:
     uses: ./.github/workflows/actions-upload.yml

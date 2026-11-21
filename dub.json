@@ -9,8 +9,11 @@
     "mainSourceFile": "src/gamma/main.d",
     "stringImportPaths": ["fix", "build"],
     "buildTypes": {
-        "release-gamma": {
-            "buildOptions": ["debugMode", "optimize", "inline", "debugInfo"]
+        "release-asserts": {
+            "buildOptions": ["releaseMode", "optimize", "inline", "debugInfo"],
+            "dflags": ["-checkaction=context"],
+            "dflags-dmd": ["-check=assert=on"],
+            "dflags-ldc": ["-enable-asserts"]
         }
     },
     "configurations": [
