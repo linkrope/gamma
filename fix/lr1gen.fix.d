@@ -15,6 +15,7 @@ import std.typecons : Nullable, nullable;
 
 private enum int[] terminalToParserToken = $;
 private enum int[] lexicalNonterminalToParserToken = $;
+private enum recognizesTokens = $;
 $
 
 class GeneratedLexer : SyntaxTreeLexer
@@ -31,12 +32,16 @@ class GeneratedLexer : SyntaxTreeLexer
     {
         this.eofToken = eofToken;
         this.position_ = input.position;
-        this.lrLexer = LR1Lexer(input, lexerTables, lexerCandidates, lexerRules,
-            input => terminalCandidate(input));
+        if (recognizesTokens)
+            this.lrLexer = LR1Lexer(input, lexerTables, lexerCandidates, lexerRules,
+                input => terminalCandidate(input));
     }
 
     public int nextToken()
     {
+        if (!recognizesTokens)
+            return eofToken;
+
         if (lrLexer.empty)
             return eofToken;
 

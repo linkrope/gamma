@@ -13,12 +13,12 @@ import std.typecons : Nullable;
 public string[] generateCode(EpsilonEAG epsilonEAG, EAG eag,
     OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
     string evaluatorModuleName, string lexerTablesModuleName, const string[] terminalNames,
-    Settings settings)
+    bool recognizesTokens, Settings settings)
 {
     with (generateSyntaxTreeWriterModule(eag, epsilonEAG.BaseName, settings))
         return generateLR1Modules(eag, epsilonEAG.BaseName, parserTables, parserGrammar,
             moduleName, evaluatorModuleName, lexerTablesModuleName, terminalNames,
-            epsilonEAG.hyperArityMask, settings)
+            recognizesTokens, epsilonEAG.hyperArityMask, settings)
             ~ fileName;
 }
 
@@ -59,14 +59,30 @@ public auto generateLexerCode(OrderedLR1Tables lexerTables, LexerGrammar lexerGr
     tables.setLexerMetadata(candidates, rules, lexerGrammar.terminalNames, lexerGrammar.nonterminalNames);
     fileName.writeModule(moduleName, tables);
 
-    return tuple!("fileName", "moduleName", "terminalNames")(fileName, moduleName,
-        lexerGrammar.terminalNames);
+    return tuple!("fileName", "moduleName", "terminalNames", "recognizesTokens")(
+        fileName, moduleName, lexerGrammar.terminalNames, true);
+}
+
+public auto generateEmptyLexerCode(LexerGrammar lexerGrammar, string compilerName,
+    Settings settings)
+{
+    import gamma.parsgen.lalr1.LR1TablesWriter : createEmptyLexerTables, writeModule;
+    import std.typecons : tuple;
+
+    const moduleName = compilerName ~ "LexerTables";
+    const fileName = settings.path(moduleName ~ ".d");
+    auto tables = createEmptyLexerTables;
+
+    tables.setLexerMetadata(null, null, lexerGrammar.terminalNames, lexerGrammar.nonterminalNames);
+    fileName.writeModule(moduleName, tables);
+    return tuple!("fileName", "moduleName", "terminalNames", "recognizesTokens")(
+        fileName, moduleName, lexerGrammar.terminalNames, false);
 }
 
 private string[] generateLR1Modules(EAG eag, string name,
     OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
     string syntaxTreeWriterModuleName, string evaluatorModuleName, string lexerTablesModuleName,
-    const string[] terminalNames, int hyperArityMask, Settings settings)
+    const string[] terminalNames, bool recognizesTokens, int hyperArityMask, Settings settings)
 {
     import gamma.parsgen.lalr1.LR1TablesWriter : createTables, writeModule;
     import gamma.parsgen.TerminalRecognizerWriter : writeTerminalRecognizer;
@@ -97,6 +113,8 @@ private string[] generateLR1Modules(EAG eag, string name,
     output.write(terminalTokenMap);
     includeFix(fix, output, '$', fixName);
     output.write(lexicalTokenMap);
+    includeFix(fix, output, '$', fixName);
+    output.write(recognizesTokens);
     includeFix(fix, output, '$', fixName);
     output.writeTerminalRecognizer(terminalNames);
     includeFix(fix, output, '$', fixName);

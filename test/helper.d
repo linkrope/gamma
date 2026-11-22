@@ -10,11 +10,13 @@ struct ParserExample
     string arguments;
 
     bool supportsSLAG;
+
+    string repairedInputPattern;
 }
 
 static immutable parserExamples = [
-    ParserExample("ELL", "", true),
-    ParserExample("LR", "--lalr --runtime .", false),
+    ParserExample("ELL", "", true, "^info: errors detected: 31$"),
+    ParserExample("LR", "--lalr --runtime .", false, "error: Syntax error! Repairing input..."),
 ];
 
 struct EvaluatorExample

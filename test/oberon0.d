@@ -40,7 +40,7 @@ static foreach (parser; parserExamples)
             run!"cd %s && %s %s"(directory, dotSlash("OberonO"), absolutePath("test/oberon0/BigSample.Mod"))
                 .shouldPassWith("^^L1 .* RET 0 $$");
             run!"cd %s && %s %s"(directory, dotSlash("OberonO"), absolutePath("test/oberon0/Error.Mod"))
-                .shouldFailWith("^info: errors detected: 31$");
+                .shouldFailWith(parser.repairedInputPattern);
         }
         // dfmt on
     }

@@ -233,7 +233,7 @@ void compile(Input input, const Arguments arguments)
         auto lexer = generateLRLexer(eag, settings);
 
         fileNames = generateLRParser(epsilonEAG, eag, evaluatorModuleName, lexer.moduleName,
-            lexer.terminalNames, settings) ~ lexer.fileName ~ fileNames;
+            lexer.terminalNames, lexer.recognizesTokens, settings) ~ lexer.fileName ~ fileNames;
     }
     else if (needsTree)
     {
@@ -248,7 +248,7 @@ void compile(Input input, const Arguments arguments)
 
 auto generateLRLexer(EAG eag, const Settings settings)
 {
-    import gamma.parsgen.lalr1.CodeGenerator : generateLexerCode;
+    import gamma.parsgen.lalr1.CodeGenerator : generateEmptyLexerCode, generateLexerCode;
     import gamma.parsgen.lalr1.LexerConflictResolver : LexerConflictResolver;
     import gamma.parsgen.lalr1.LexerGrammarBuilder : toLexerGrammar;
     import gamma.parsgen.lalr1.PennelloDeRemer : generateParser;
@@ -257,6 +257,11 @@ auto generateLRLexer(EAG eag, const Settings settings)
     const parsesLexicalNonterminals = settings.p
         ? Yes.parsesLexicalNonterminals : No.parsesLexicalNonterminals;
     auto lexerGrammar = eag.toLexerGrammar(parsesLexicalNonterminals);
+
+    if (lexerGrammar.candidates.empty)
+        return generateEmptyLexerCode(lexerGrammar, eag.plainHyperGrammar.startSymbol.toString,
+            settings);
+
     auto conflictResolver = new LexerConflictResolver(lexerGrammar.grammar,
         lexerGrammar.tokenEnd, lexerGrammar.helpersByTerminal,
         lexerGrammar.lexicalNonterminalOwners, lexerGrammar.nonterminalNames);
@@ -267,7 +272,8 @@ auto generateLRLexer(EAG eag, const Settings settings)
 }
 
 string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, string evaluatorModuleName,
-    string lexerTablesModuleName, const string[] terminalNames, const Settings settings)
+    string lexerTablesModuleName, const string[] terminalNames, bool recognizesTokens,
+    const Settings settings)
 {
     import gamma.parsgen.lalr1.CodeGenerator : generateCode;
     import gamma.parsgen.lalr1.ParserGrammarBuilder : toParserGrammar;
@@ -280,7 +286,7 @@ string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, string evaluatorModule
     auto parserTables = generateParser(parserGrammar.grammar);
 
     return generateCode(epsilonEAG, eag, parserTables, parserGrammar, evaluatorModuleName,
-        lexerTablesModuleName, terminalNames, settings);
+        lexerTablesModuleName, terminalNames, recognizesTokens, settings);
 }
 
 Settings createSettings(const Arguments arguments)
