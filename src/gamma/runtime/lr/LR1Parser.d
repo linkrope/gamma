@@ -2,8 +2,8 @@ module gamma.runtime.lr.LR1Parser;
 
 import gamma.runtime.lr.LR1ParserTables;
 import gamma.runtime.lr.SyntaxTreeLexer;
-import gamma.runtime.SyntaxTree : createRuleApplication, setRoot, SyntaxTreeNode,
-    syntaxTreeTerminal = terminal;
+import gamma.runtime.SyntaxTree : checkpoint, createRuleApplication, rollback, setRoot,
+    SyntaxTreeNode, syntaxTreeTerminal = terminal;
 import io : Position;
 import log;
 import std.bitmanip : BitArray;
@@ -106,6 +106,7 @@ public class LR1Parser
         // syntax error and collect candidate anchor terminals.
         auto stackSnapshot = stack;
         auto treeStackSnapshot = treeStack.dup;
+        const syntaxTreeSnapshot = checkpoint;
         const stateSnapshot = state;
         BitArray anchors;
 
@@ -166,11 +167,12 @@ public class LR1Parser
             needLookahead;
         }
 
-        // Phase 3: Restore the parser state and execute the continuation
-        // prefix, inserting terminals until the anchor can be shifted.
+        // Phase 3: Restore parser and syntax-tree state, then execute the
+        // continuation prefix, inserting terminals until the anchor can be shifted.
         state = stateSnapshot;
         stack = stackSnapshot;
         treeStack = treeStackSnapshot;
+        rollback(syntaxTreeSnapshot);
         for (;;)
         {
             if (canShift(lookahead))
