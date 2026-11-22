@@ -21,6 +21,8 @@ jobs:
         compiler: ${{ inputs.compiler_version }}
 
     - run: |
+        sudo apt-get update
+        sudo apt-get install --yes ripgrep
         dub fetch dscanner@0.15.2
         dub fetch depend@0.4.0
 
