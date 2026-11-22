@@ -270,46 +270,9 @@ private int[] lexicalNonterminalToParserToken(ParserGrammar parserGrammar)
     return result;
 }
 
-private string symbolsLiteral(Symbol)(const Symbol[] symbols)
-{
-    import std.algorithm : map;
-    import std.format : format;
-
-    string symbolLiteral(const Symbol symbol)
-    {
-        return format!"Symbol(%s, %s)"(symbol.index, stringLiteral(symbol.toString));
-    }
-
-    return format!"[%-(%s, %)]"(symbols.map!symbolLiteral);
-}
-
 private string stringLiteral(const string text)
 {
     import std.string : translate;
 
     return `"` ~ text.translate(['\\': `\\`, '"': `\"`]) ~ `"`;
-}
-
-private auto generateEpsilonBridgeModule(EpsilonEAG epsilonEAG, ParserGrammar parserGrammar,
-    Settings settings)
-{
-    import io : Input;
-    import std.stdio : File;
-    import std.typecons : tuple;
-
-    const moduleName = epsilonEAG.BaseName ~ "LREpsilonBridge";
-    const fileName = settings.path(moduleName ~ ".d");
-    const hyperArityMask = epsilonEAG.hyperArityMask;
-    enum fixName = "lrepsilonbridge.fix.d";
-    Input fix = Input(fixName, import(fixName));
-    File output = File(fileName, "w");
-
-    includeFix(fix, output, '$', fixName);
-    output.write(moduleName);
-    includeFix(fix, output, '$', fixName);
-    output.write(hyperArityMask);
-    includeFix(fix, output, '$', fixName);
-    output.close;
-
-    return tuple!("fileName", "moduleName")(fileName, moduleName);
 }

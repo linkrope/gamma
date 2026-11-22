@@ -126,18 +126,18 @@ terminals ──> generated prefix trie ─┐
 lexical nonterminals ──> character grammar ──> LALR tables ─┤
                                                       └─> longest-match lexer
                                                               │
-                                                              └─ parse-tree bridge ──> Epsilon evaluator
+                                                              └─ direct syntax tree ──> Epsilon evaluator
 ```
 
 The generated trie recognizes only syntax terminals. `LR1Lexer` runs it beside the
 character-LR recognizer for lexical nonterminals, choosing the longer candidate and
 preferring the terminal on an equal-length tie.
 
-The parser projection makes lexical hyper nonterminals terminals, removes predicate nodes from syntactic RHSs, and retains mappings for the evaluator bridge. [ParserGrammarBuilder.d](../src/gamma/parsgen/lalr1/ParserGrammarBuilder.d#L31)
+The parser projection makes lexical hyper nonterminals terminals and removes predicate nodes from syntactic RHSs. [ParserGrammarBuilder.d](../src/gamma/parsgen/lalr1/ParserGrammarBuilder.d#L31)
 
 `PennelloDeRemer` computes LALR lookaheads on an LR(0) machine using READ/FOLLOW/lookback relations and SCC propagation. [PennelloDeRemer.d](../src/gamma/parsgen/lalr1/PennelloDeRemer.d#L227)
 
-At runtime, `LR1Lexer` implements longest-match tokenization with whitespace/comment skipping, while `LR1Parser` constructs parse trees and does automatic repair through deletion to anchors and token insertion. [LR1Lexer.d](../src/gamma/runtime/lr/LR1Lexer.d#L69) and [LR1Parser.d](../src/gamma/runtime/lr/LR1Parser.d#L99)
+At runtime, `LR1Lexer` implements longest-match tokenization with whitespace/comment skipping, while `LR1Parser` constructs the evaluator-compatible syntax tree and does automatic repair through deletion to anchors and token insertion. [LR1Lexer.d](../src/gamma/runtime/lr/LR1Lexer.d#L69) and [LR1Parser.d](../src/gamma/runtime/lr/LR1Parser.d#L99)
 
 ## Current boundaries to keep in mind
 
