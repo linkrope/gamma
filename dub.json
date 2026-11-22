@@ -63,6 +63,7 @@
                 "src/gamma/runtime/lr/LR1ParserTables.d",
                 "src/gamma/runtime/lr/LR1Parser.d",
                 "src/gamma/runtime/lr/ParseTreeLexer.d",
+                "src/gamma/runtime/lr/SyntaxTreeLexer.d",
                 "src/gamma/runtime/ParseTree.d",
                 "src/gamma/runtime/ParseTreeWriter.d",
                 "src/gamma/runtime/SyntaxTree.d"

@@ -1,7 +1,7 @@
 module gamma.runtime.SyntaxTree_test;
 
-import gamma.runtime.SyntaxTree : checkpoint, createRule, positions, reset, rollback, root,
-    setRoot, tree;
+import gamma.runtime.SyntaxTree : checkpoint, createRule, createRuleApplication, positions,
+    reset, rollback, root, setRoot, terminal, tree;
 import io : Position;
 
 @("create evaluator-compatible syntax-tree rule applications")
@@ -39,4 +39,19 @@ unittest
     assert(tree == [1L]);
     assert(positions == [originalPosition]);
     assert(root == original);
+}
+
+@("omit terminal occurrences from direct rule applications")
+unittest
+{
+    const position = Position("input", 1, 1, "one");
+
+    reset;
+    const child = createRuleApplication(1, null, position);
+    const parent = createRuleApplication(2, [terminal(position), child, terminal(position)], position);
+    setRoot(parent.address);
+
+    assert(tree == [1L, 2L, child.address]);
+    assert(positions == [position, position, position]);
+    assert(root == parent.address);
 }

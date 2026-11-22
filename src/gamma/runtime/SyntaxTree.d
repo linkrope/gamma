@@ -16,6 +16,24 @@ private long root_;
 
 private bool hasRoot;
 
+/**
+ * One occurrence on an LR parser stack.
+ *
+ * Terminal occurrences retain only their position. Rule occurrences also
+ * identify their record in the shared syntax-tree arena.
+ */
+public struct SyntaxTreeNode
+{
+    long address = -1;
+
+    Position position;
+
+    public bool isRule() const
+    {
+        return address >= 0;
+    }
+}
+
 public struct SyntaxTreeCheckpoint
 {
     private size_t treeLength;
@@ -51,6 +69,43 @@ in (alternative > 0)
         positions_[address + 1 + offset] = positions_[child];
     }
     return address;
+}
+
+public SyntaxTreeNode terminal(const Position position)
+{
+    return SyntaxTreeNode(-1, position);
+}
+
+public SyntaxTreeNode createRuleApplication(const size_t alternative,
+    const(SyntaxTreeNode)[] children, const Position position)
+in (alternative > 0)
+{
+    size_t childCount;
+
+    foreach (child; children)
+        if (child.isRule)
+            ++childCount;
+
+    const address = cast(long) tree_.length;
+    const recordLength = 1 + childCount;
+
+    tree_.length += recordLength;
+    positions_.length += recordLength;
+    tree_[address] = cast(long) alternative;
+    positions_[address] = position;
+
+    size_t offset = 1;
+    foreach (child; children)
+    {
+        if (!child.isRule)
+            continue;
+
+        assert(child.address < address);
+        tree_[address + offset] = child.address;
+        positions_[address + offset] = positions_[child.address];
+        ++offset;
+    }
+    return SyntaxTreeNode(address, position);
 }
 
 public void setRoot(const long root)

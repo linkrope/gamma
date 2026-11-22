@@ -1,8 +1,9 @@
 module gamma.runtime.lr.LR1Parser;
 
 import gamma.runtime.lr.LR1ParserTables;
-import gamma.runtime.lr.ParseTreeLexer;
-import gamma.runtime.ParseTree;
+import gamma.runtime.lr.SyntaxTreeLexer;
+import gamma.runtime.SyntaxTree : createRuleApplication, setRoot, SyntaxTreeNode,
+    syntaxTreeTerminal = terminal;
 import io : Position;
 import log;
 import std.bitmanip : BitArray;
@@ -22,7 +23,7 @@ public class LR1Parser
 {
     private LR1ParserTables parserTables;
 
-    private ParseTreeLexer lexer;
+    private SyntaxTreeLexer lexer;
 
     private bool haveLookahead;
 
@@ -34,11 +35,11 @@ public class LR1Parser
 
     private Stack stack;
 
-    private const(ParseNode)*[] treeStack;
+    private SyntaxTreeNode[] treeStack;
 
     private size_t errorCount_;
 
-    public this(LR1ParserTables parserTables, ParseTreeLexer lexer)
+    public this(LR1ParserTables parserTables, SyntaxTreeLexer lexer)
     in (lexer !is null)
     {
         this.parserTables = parserTables;
@@ -50,7 +51,7 @@ public class LR1Parser
         return this.errorCount_;
     }
 
-    public ParseTree parse()
+    public long parse()
     {
         stack.push(0);
         for (;;)
@@ -74,7 +75,7 @@ public class LR1Parser
                     haveLookahead = false;
                     state = shift.state;
                     stack.push(state);
-                    treeStack ~= lexer.parseNode;
+                    treeStack ~= lexer.syntaxTreeNode;
                     trace!"%s"(stack);
                     return false;
                 },
@@ -94,7 +95,7 @@ public class LR1Parser
             // dfmt on
             if (halted)
             {
-                return parseTree;
+                return syntaxTree;
             }
         }
     }
@@ -135,7 +136,7 @@ public class LR1Parser
                     trace!"(C)Shift %s"(shift.lookahead);
                     state = shift.state;
                     stack.push(state);
-                    treeStack ~= terminalNode(shift.lookahead, lookaheadPosition);
+                    treeStack ~= syntaxTreeTerminal(lookaheadPosition);
                     return true;
                 },
                 (const Reduce reduceAction)
@@ -183,7 +184,7 @@ public class LR1Parser
                     info!"Inserting %s"(parserTables.terminalRepresentation(cast(int) shift.lookahead));
                     state = shift.state;
                     stack.push(state);
-                    treeStack ~= terminalNode(shift.lookahead, lookaheadPosition);
+                    treeStack ~= syntaxTreeTerminal(lookaheadPosition);
                     return false;
                 },
                 (const Reduce reduceAction)
@@ -258,10 +259,10 @@ public class LR1Parser
         assert(rule.rhsLength <= treeStack.length);
 
         auto children = treeStack[$ - rule.rhsLength .. $];
-        auto rulePosition = children.empty ? lookaheadPosition : position(*children.front);
+        auto rulePosition = children.empty ? lookaheadPosition : children.front.position;
 
         treeStack.length -= rule.rhsLength;
-        treeStack ~= ruleNode(rule, children, rulePosition);
+        treeStack ~= createRuleApplication(rule.alternative, children, rulePosition);
         stack.pop(rule.rhsLength);
         foreach (goTo; parserTables.gotosFor(stack.top))
         {
@@ -285,26 +286,13 @@ public class LR1Parser
         }
     }
 
-    private ParseTree parseTree()
+    private long syntaxTree()
     {
         assert(treeStack.length == 1);
 
-        return ParseTree(treeStack.back, lookaheadPosition);
-    }
-
-    private const(ParseNode)* terminalNode(size_t terminal, const Position position)
-    {
-        const terminalIndex = parserTables.terminals[terminal].index;
-
-        return new ParseNode(TerminalNode(terminalIndex, position));
-    }
-
-    private const(ParseNode)* ruleNode(const Rule rule, const(ParseNode)*[] children,
-        const Position position)
-    {
-        const lhsIndex = parserTables.nonterminals[rule.lhs].index;
-
-        return new ParseNode(RuleNode(lhsIndex, rule.alternative, children, position));
+        assert(treeStack.back.isRule);
+        setRoot(treeStack.back.address);
+        return treeStack.back.address;
     }
 
 }

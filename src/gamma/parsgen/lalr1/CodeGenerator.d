@@ -15,9 +15,10 @@ public string[] generateCode(EpsilonEAG epsilonEAG, EAG eag,
     string evaluatorModuleName, string lexerTablesModuleName, const string[] terminalNames,
     Settings settings)
 {
-    with (generateEpsilonBridgeModule(epsilonEAG, parserGrammar, settings))
+    with (generateSyntaxTreeWriterModule(eag, epsilonEAG.BaseName, settings))
         return generateLR1Modules(eag, epsilonEAG.BaseName, parserTables, parserGrammar,
-            moduleName, evaluatorModuleName, lexerTablesModuleName, terminalNames, settings)
+            moduleName, evaluatorModuleName, lexerTablesModuleName, terminalNames,
+            epsilonEAG.hyperArityMask, settings)
             ~ fileName;
 }
 
@@ -64,8 +65,8 @@ public auto generateLexerCode(OrderedLR1Tables lexerTables, LexerGrammar lexerGr
 
 private string[] generateLR1Modules(EAG eag, string name,
     OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
-    string bridgeModuleName, string evaluatorModuleName, string lexerTablesModuleName,
-    const string[] terminalNames, Settings settings)
+    string syntaxTreeWriterModuleName, string evaluatorModuleName, string lexerTablesModuleName,
+    const string[] terminalNames, int hyperArityMask, Settings settings)
 {
     import gamma.parsgen.lalr1.LR1TablesWriter : createTables, writeModule;
     import gamma.parsgen.TerminalRecognizerWriter : writeTerminalRecognizer;
@@ -78,8 +79,6 @@ private string[] generateLR1Modules(EAG eag, string name,
     const tablesFileName = settings.path(tablesModuleName ~ ".d");
     const terminalTokenMap = format!"[%(%s, %)]"(parserGrammar.terminalToParserToken);
     const lexicalTokenMap = format!"[%(%s, %)]"(parserGrammar.lexicalNonterminalToParserToken);
-    const sourceTerminals = eag.plainHyperGrammar.terminals.symbolsLiteral;
-    const sourceNonterminals = eag.plainHyperGrammar.nonterminals.symbolsLiteral;
     enum fixName = "lr1gen.fix.d";
     Input fix = Input(fixName, import(fixName));
     File output = File(fileName, "w");
@@ -91,19 +90,17 @@ private string[] generateLR1Modules(EAG eag, string name,
     includeFix(fix, output, '$', fixName);
     output.write(tablesModuleName);
     includeFix(fix, output, '$', fixName);
-    output.write(bridgeModuleName);
-    includeFix(fix, output, '$', fixName);
     output.write(evaluatorModuleName);
+    includeFix(fix, output, '$', fixName);
+    output.write(syntaxTreeWriterModuleName);
     includeFix(fix, output, '$', fixName);
     output.write(terminalTokenMap);
     includeFix(fix, output, '$', fixName);
     output.write(lexicalTokenMap);
     includeFix(fix, output, '$', fixName);
-    output.write(sourceTerminals);
-    includeFix(fix, output, '$', fixName);
-    output.write(sourceNonterminals);
-    includeFix(fix, output, '$', fixName);
     output.writeTerminalRecognizer(terminalNames);
+    includeFix(fix, output, '$', fixName);
+    output.write(hyperArityMask);
     includeFix(fix, output, '$', fixName);
     output.close;
 
@@ -112,6 +109,129 @@ private string[] generateLR1Modules(EAG eag, string name,
     tablesFileName.writeModule(tablesModuleName, tables);
 
     return [fileName, tablesFileName];
+}
+
+private auto generateSyntaxTreeWriterModule(EAG eag, string compilerName, Settings settings)
+{
+    import io : Input;
+    import std.stdio : File;
+    import std.typecons : tuple;
+
+    const moduleName = compilerName ~ "SyntaxTreeWriter";
+    const fileName = settings.path(moduleName ~ ".d");
+    const startWriter = syntaxTreeWriterFunctionName(eag.plainHyperGrammar.startSymbol.index);
+    enum fixName = "syntaxtreewriter.fix.d";
+    Input fix = Input(fixName, import(fixName));
+    File output = File(fileName, "w");
+
+    includeFix(fix, output, '$', fixName);
+    output.write(moduleName);
+    includeFix(fix, output, '$', fixName);
+    output.write(startWriter);
+    includeFix(fix, output, '$', fixName);
+    output.write(syntaxTreeWriterFunctions(eag));
+    includeFix(fix, output, '$', fixName);
+    output.close;
+
+    return tuple!("fileName", "moduleName")(fileName, moduleName);
+}
+
+private string syntaxTreeWriterFunctions(EAG eag)
+{
+    import gamma.grammar.Nonterminal : Nonterminal;
+    import gamma.grammar.SymbolNode : SymbolNode;
+    import gamma.grammar.Terminal : Terminal;
+    import std.format : format;
+    import std.range : empty;
+
+    string result;
+
+    foreach (rule; eag.plainHyperGrammar.grammar.rules)
+    {
+        const nonterminal = rule.lhs.nonterminal;
+        const writerFunction = syntaxTreeWriterFunctionName(nonterminal.index);
+
+        result ~= "    private size_t " ~ writerFunction
+            ~ "(ref Appender!string writer, const long address)\n    {\n"
+            ~ "        switch (tree()[address])\n        {\n";
+        foreach (alternativeIndex; 0 .. rule.alternatives.length)
+        {
+            const alternativeWriter = syntaxTreeWriterAlternativeFunctionName(nonterminal.index,
+                alternativeIndex + 1);
+
+            result ~= format!"        case %s:\n            return %s(writer, address);\n"(
+                alternativeIndex + 1, alternativeWriter);
+        }
+        result ~= "        default:\n            assert(false, \"unknown syntax-tree alternative\");\n"
+            ~ "        }\n    }\n\n";
+
+        foreach (alternativeIndex, alternative; rule.alternatives)
+        {
+            const alternativeWriter = syntaxTreeWriterAlternativeFunctionName(nonterminal.index,
+                alternativeIndex + 1);
+
+            result ~= "    private size_t " ~ alternativeWriter
+                ~ "(ref Appender!string writer, const long address)\n    {\n"
+                ~ "        const nodeNumber = this.nextNode++;\n"
+                ~ `        writer.put(format!"  n%s [label=\"%s\"];\n"(nodeNumber, escape(`
+                ~ stringLiteral(nonterminal.toString) ~ ")));\n"
+                ~ "        size_t childOffset = 1;\n";
+
+            if (alternative.rhs.empty)
+            {
+                result ~= "        const childNumber = this.nextNode++;\n"
+                    ~ `        writer.put(format!"  n%s [label=\"ε\"];\n"(childNumber));
+`
+                    ~ `        writer.put(format!"  n%s -> n%s;\n"(nodeNumber, childNumber));
+`;
+            }
+
+            foreach (node; alternative.rhs)
+            {
+                auto symbolNode = cast(SymbolNode) node;
+
+                assert(symbolNode !is null);
+                result ~= "        {\n";
+                if (auto terminal = cast(Terminal) symbolNode.symbol)
+                {
+                    result ~= "        const childNumber = this.nextNode++;\n"
+                        ~ `        writer.put(format!"  n%s [label=\"%s\"];\n"(childNumber, escape(`
+                        ~ stringLiteral(terminal.toString) ~ ")));\n"
+                        ~ `        writer.put(format!"  n%s -> n%s;\n"(nodeNumber, childNumber));
+`;
+                }
+                else
+                {
+                    const childNonterminal = cast(Nonterminal) symbolNode.symbol;
+
+                    assert(childNonterminal !is null);
+                    result ~= "        const childNumber = "
+                        ~ syntaxTreeWriterFunctionName(childNonterminal.index)
+                        ~ "(writer, tree()[address + childOffset]);\n"
+                        ~ "        ++childOffset;\n"
+                        ~ `        writer.put(format!"  n%s -> n%s;\n"(nodeNumber, childNumber));
+`;
+                }
+                result ~= "        }\n";
+            }
+            result ~= "        return nodeNumber;\n    }\n\n";
+        }
+    }
+    return result;
+}
+
+private string syntaxTreeWriterFunctionName(size_t nonterminal)
+{
+    import std.conv : to;
+
+    return "writeRule" ~ nonterminal.to!string;
+}
+
+private string syntaxTreeWriterAlternativeFunctionName(size_t nonterminal, size_t alternative)
+{
+    import std.conv : to;
+
+    return syntaxTreeWriterFunctionName(nonterminal) ~ "Alternative" ~ alternative.to!string;
 }
 
 private int[] terminalToParserToken(ParserGrammar parserGrammar)
