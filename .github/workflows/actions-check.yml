@@ -36,3 +36,17 @@ jobs:
 
     - name: Check formatting
       run: dub run --single tool/format.d -- --check
+
+    - name: Check cognitive complexity
+      run: |
+        git clone --depth 1 --branch v1.9.0 \
+          https://github.com/funkwerk-mobility/cogito.git "$RUNNER_TEMP/cogito"
+        pushd "$RUNNER_TEMP/cogito"
+        dub build --build=release --config=executable
+        popd
+        "$RUNNER_TEMP/cogito/build/cogito" \
+          --threshold 15 \
+          --module-threshold 100 \
+          --format flat \
+          --config cogito.conf \
+          $(rg --files src include test unittest -g '*.d' | sort)
