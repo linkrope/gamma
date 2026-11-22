@@ -122,11 +122,11 @@ SOAG is the most general backend: it derives direct/transitive affix dependencie
 
 ```text
 plain hyper grammar ──> parser projection ──> LALR tables ──> LR runtime
-terminals ──> generated prefix trie ─┐
+terminals ──> generated prefix trie ────────────────────────┐
 lexical nonterminals ──> character grammar ──> LALR tables ─┤
-                                                      └─> longest-match lexer
-                                                              │
-                                                              └─ direct syntax tree ──> Epsilon evaluator
+                                                            └─> longest-match lexer
+                                                                │
+                                                                └─ direct syntax tree ──> Epsilon evaluator
 ```
 
 The generated trie recognizes only syntax terminals. `LR1Lexer` runs it beside the

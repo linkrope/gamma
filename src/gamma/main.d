@@ -233,7 +233,7 @@ void compile(Input input, const Arguments arguments)
         auto lexer = generateLRLexer(eag, settings);
 
         fileNames = generateLRParser(epsilonEAG, eag, evaluatorModuleName, lexer.moduleName,
-            lexer.terminalNames, lexer.recognizesTokens, settings) ~ lexer.fileName ~ fileNames;
+            lexer.terminalNames, settings) ~ lexer.fileName ~ fileNames;
     }
     else if (needsTree)
     {
@@ -272,8 +272,7 @@ auto generateLRLexer(EAG eag, const Settings settings)
 }
 
 string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, string evaluatorModuleName,
-    string lexerTablesModuleName, const string[] terminalNames, bool recognizesTokens,
-    const Settings settings)
+    string lexerTablesModuleName, const string[] terminalNames, const Settings settings)
 {
     import gamma.parsgen.lalr1.CodeGenerator : generateCode;
     import gamma.parsgen.lalr1.ParserGrammarBuilder : toParserGrammar;
@@ -286,7 +285,7 @@ string[] generateLRParser(EpsilonEAG epsilonEAG, EAG eag, string evaluatorModule
     auto parserTables = generateParser(parserGrammar.grammar);
 
     return generateCode(epsilonEAG, eag, parserTables, parserGrammar, evaluatorModuleName,
-        lexerTablesModuleName, terminalNames, recognizesTokens, settings);
+        lexerTablesModuleName, terminalNames, settings);
 }
 
 Settings createSettings(const Arguments arguments)

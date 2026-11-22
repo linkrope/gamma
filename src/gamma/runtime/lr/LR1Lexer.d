@@ -1,8 +1,7 @@
 module gamma.runtime.lr.LR1Lexer;
 
 import gamma.runtime.lr.LR1ParserTables;
-import gamma.runtime.SyntaxTree : createRuleApplication, SyntaxTreeNode,
-    syntaxTreeTerminal = terminal;
+import gamma.runtime.SyntaxTree : ruleNode, SyntaxTreeNode, terminalNode;
 import io : Input, Position;
 import std.range : back, empty, front;
 import std.sumtype : match;
@@ -260,7 +259,7 @@ public struct LR1Lexer
                 (const Shift shift)
                 {
                     states ~= shift.state;
-                    nodes ~= syntaxTreeTerminal(position);
+                    nodes ~= terminalNode(position);
                     return true;
                 },
                 (const Reduce reduceAction)
@@ -374,10 +373,10 @@ public struct LR1Lexer
         if (source.terminal != size_t.max)
             nodes ~= children.front;
         else if (source.nonterminal != size_t.max)
-            nodes ~= createRuleApplication(source.alternative, children,
+            nodes ~= ruleNode(source.alternative, children,
                 children.empty ? position : children.front.position);
         else
-            nodes ~= children.length == 1 ? children.front : syntaxTreeTerminal(position);
+            nodes ~= children.length == 1 ? children.front : terminalNode(position);
 
         foreach (goTo; parserTables
             .gotos[parserTables.gotoOffsets[states.back] .. parserTables.gotoOffsets[states.back + 1]])

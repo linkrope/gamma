@@ -3,23 +3,27 @@ module test.helper;
 import std.range;
 import std.typecons;
 
-struct ParserExample
+static immutable parsers = [
+    Parser("ELL", "", "^info: errors detected: 31$"),
+    Parser("LR", "--lalr --runtime .", r"error: Syntax error! Repairing input\.\.\."),
+];
+
+struct Parser
 {
     string name;
 
     string arguments;
 
-    bool supportsSLAG;
-
-    string repairedInputPattern;
+    string errorPattern;
 }
 
-static immutable parserExamples = [
-    ParserExample("ELL", "", true, "^info: errors detected: 31$"),
-    ParserExample("LR", "--lalr --runtime .", false, "error: Syntax error! Repairing input..."),
+static immutable evaluators = [
+    Evaluator("SLAG", "--slag", "grammar is SLAG"),
+    Evaluator("Single-Sweep", "--sweep", "grammar is single sweep"),
+    Evaluator("SOAG", "--soag -o", "grammar is SOAG"),
 ];
 
-struct EvaluatorExample
+struct Evaluator
 {
     string name;
 
@@ -27,12 +31,6 @@ struct EvaluatorExample
 
     string successMessage;
 }
-
-static immutable evaluatorExamples = [
-    EvaluatorExample("SLAG", "--slag", "grammar is SLAG"),
-    EvaluatorExample("Single-Sweep", "--sweep", "grammar is single sweep"),
-    EvaluatorExample("SOAG", "--soag -o", "grammar is SOAG"),
-];
 
 Sandbox sandbox()
 {
@@ -88,6 +86,12 @@ in (!patterns.empty)
         foreach (pattern; patterns)
             assert(output.matches(pattern), output);
     }
+    return result;
+}
+
+Result shouldPass(Result result)
+{
+    assert(result.status == 0, result.output);
     return result;
 }
 

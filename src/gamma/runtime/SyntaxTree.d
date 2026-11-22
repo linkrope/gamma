@@ -16,6 +16,8 @@ private long root_;
 
 private bool hasRoot;
 
+private size_t nodeCount_;
+
 /**
  * One occurrence on an LR parser stack.
  *
@@ -38,6 +40,8 @@ public struct SyntaxTreeCheckpoint
 {
     private size_t treeLength;
 
+    private size_t nodeCount;
+
     private long root;
 
     private bool hasRoot;
@@ -48,36 +52,16 @@ public void reset()
     tree_.length = 0;
     positions_.length = 0;
     hasRoot = false;
+    nodeCount_ = 0;
 }
 
-public long createRule(const size_t alternative, const(long)[] children,
-    const Position position)
-in (alternative > 0)
-{
-    const address = cast(long) tree_.length;
-    const recordLength = 1 + children.length;
-
-    tree_.length += recordLength;
-    positions_.length += recordLength;
-    tree_[address] = cast(long) alternative;
-    positions_[address] = position;
-
-    foreach (offset, child; children)
-    {
-        assert(0 <= child && child < address);
-        tree_[address + 1 + offset] = child;
-        positions_[address + 1 + offset] = positions_[child];
-    }
-    return address;
-}
-
-public SyntaxTreeNode terminal(const Position position)
+public SyntaxTreeNode terminalNode(const Position position)
 {
     return SyntaxTreeNode(-1, position);
 }
 
-public SyntaxTreeNode createRuleApplication(const size_t alternative,
-    const(SyntaxTreeNode)[] children, const Position position)
+public SyntaxTreeNode ruleNode(const size_t alternative, const(SyntaxTreeNode)[] children,
+    const Position position)
 in (alternative > 0)
 {
     size_t childCount;
@@ -93,14 +77,17 @@ in (alternative > 0)
     positions_.length += recordLength;
     tree_[address] = cast(long) alternative;
     positions_[address] = position;
+    ++nodeCount_;
 
     size_t offset = 1;
+
     foreach (child; children)
     {
         if (!child.isRule)
             continue;
 
         assert(child.address < address);
+
         tree_[address + offset] = child.address;
         positions_[address + offset] = positions_[child.address];
         ++offset;
@@ -117,7 +104,7 @@ in (0 <= root && root < tree_.length)
 
 public SyntaxTreeCheckpoint checkpoint()
 {
-    return SyntaxTreeCheckpoint(tree_.length, root_, hasRoot);
+    return SyntaxTreeCheckpoint(tree_.length, nodeCount_, root_, hasRoot);
 }
 
 public void rollback(const SyntaxTreeCheckpoint checkpoint)
@@ -125,6 +112,7 @@ in (checkpoint.treeLength <= tree_.length)
 {
     tree_.length = checkpoint.treeLength;
     positions_.length = checkpoint.treeLength;
+    nodeCount_ = checkpoint.nodeCount;
     root_ = checkpoint.root;
     hasRoot = checkpoint.hasRoot;
 }
@@ -137,6 +125,11 @@ public long[] tree()
 public Position[] positions()
 {
     return positions_;
+}
+
+public size_t nodeCount()
+{
+    return nodeCount_;
 }
 
 public long root()

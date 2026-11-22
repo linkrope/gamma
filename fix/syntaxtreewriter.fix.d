@@ -14,9 +14,9 @@ public struct SyntaxTreeWriter
     {
         auto result = appender!string;
 
-        result.put("digraph ParseTree {\n  node [shape=box];\n");
+        result.put("digraph SyntaxTree {\n  node [shape=box];\n");
         this.nextNode = 0;
-        $(result, root());
+        $(result, root);
         result.put("}\n");
 
         return result[];

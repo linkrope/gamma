@@ -2,8 +2,7 @@ module gamma.runtime.lr.LR1Parser;
 
 import gamma.runtime.lr.LR1ParserTables;
 import gamma.runtime.lr.SyntaxTreeLexer;
-import gamma.runtime.SyntaxTree : checkpoint, createRuleApplication, rollback, setRoot,
-    SyntaxTreeNode, syntaxTreeTerminal = terminal;
+import gamma.runtime.SyntaxTree : checkpoint, rollback, ruleNode, setRoot, SyntaxTreeNode, terminalNode;
 import io : Position;
 import log;
 import std.bitmanip : BitArray;
@@ -137,7 +136,7 @@ public class LR1Parser
                     trace!"(C)Shift %s"(shift.lookahead);
                     state = shift.state;
                     stack.push(state);
-                    treeStack ~= syntaxTreeTerminal(lookaheadPosition);
+                    treeStack ~= terminalNode(lookaheadPosition);
                     return true;
                 },
                 (const Reduce reduceAction)
@@ -190,7 +189,7 @@ public class LR1Parser
                     info!"Inserting %s"(parserTables.terminalRepresentation(cast(int) shift.lookahead));
                     state = shift.state;
                     stack.push(state);
-                    treeStack ~= syntaxTreeTerminal(lookaheadPosition);
+                    treeStack ~= terminalNode(lookaheadPosition);
                     return false;
                 },
                 (const Reduce reduceAction)
@@ -268,7 +267,7 @@ public class LR1Parser
         auto rulePosition = children.empty ? lookaheadPosition : children.front.position;
 
         treeStack.length -= rule.rhsLength;
-        treeStack ~= createRuleApplication(rule.alternative, children, rulePosition);
+        treeStack ~= ruleNode(rule.alternative, children, rulePosition);
         stack.pop(rule.rhsLength);
         foreach (goTo; parserTables.gotosFor(stack.top))
         {
@@ -295,9 +294,10 @@ public class LR1Parser
     private long syntaxTree()
     {
         assert(treeStack.length == 1);
-
         assert(treeStack.back.isRule);
+
         setRoot(treeStack.back.address);
+
         return treeStack.back.address;
     }
 

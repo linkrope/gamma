@@ -4,7 +4,6 @@ import std.file;
 import std.format;
 import std.path;
 import std.string;
-import std.typecons : tuple;
 import test.helper;
 
 @("issue #1: grammar with unproductive start symbol")
@@ -68,14 +67,8 @@ unittest
     }
 }
 
-alias Example = tuple!("evaluator", "option", "result");
-
-static foreach (example; [
-    Example("SLAG", "", "grammar is SLAG"),
-    Example("single-sweep", "--sweep", "grammar is single sweep"),
-    Example("SOAG", "--soag", "grammar is SOAG"),
-])
-    @(format!"issue #6: %s predicate errors point to the checked identifier"(example.evaluator))
+static foreach (evaluator; evaluators)
+    @(format!"issue #6: %s predicate errors point to the checked identifier"(evaluator.name))
     unittest
     {
         import std.range : walkLength;
@@ -95,8 +88,8 @@ static foreach (example; [
             write(buildPath(directory, "input"), input);
 
             run!"%s %s --space %s --output-directory %s"(
-                    gamma, example.option, buildPath("example", "decl-appl.eag"), directory)
-                .shouldPassWith(example.result);
+                    gamma, evaluator.arguments, buildPath("example", "decl-appl.eag"), directory)
+                .shouldPassWith(evaluator.successMessage);
 
             const result = run!"cd %s && %s input"(directory, dotSlash("DeclAppl"));
 
@@ -104,8 +97,7 @@ static foreach (example; [
                 .shouldFailWith(
                         `error: predicate '?NotAlreadyDeclared'? failed\ninput:2:6 DECL aa`,
                         `error: predicate '?Declared'? failed\ninput:4:6 APPL ab`,
-                        `error: predicate '?Declared'? failed\ninput:5:6 APPL ba`,
-            );
+                        `error: predicate '?Declared'? failed\ninput:5:6 APPL ba`);
 
             assert(result.output.matchAll(regex(`^error: predicate `, "m")).walkLength == 3, result.output);
         }

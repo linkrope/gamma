@@ -7,18 +7,20 @@ import gamma.parsgen.FixWriter : includeFix;
 import gamma.parsgen.lalr1.LexerGrammarBuilder : LexerGrammar;
 import gamma.parsgen.lalr1.OrderedLR1Tables;
 import gamma.parsgen.lalr1.ParserGrammarBuilder : ParserGrammar;
+import gamma.parsgen.SourceWriter : indent;
 import gamma.runtime.lr.LR1ParserTables : LexerCandidate, LexerRule;
+import std.string : outdent, stripLeft;
 import std.typecons : Nullable;
 
 public string[] generateCode(EpsilonEAG epsilonEAG, EAG eag,
     OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
     string evaluatorModuleName, string lexerTablesModuleName, const string[] terminalNames,
-    bool recognizesTokens, Settings settings)
+    Settings settings)
 {
     with (generateSyntaxTreeWriterModule(eag, epsilonEAG.BaseName, settings))
         return generateLR1Modules(eag, epsilonEAG.BaseName, parserTables, parserGrammar,
             moduleName, evaluatorModuleName, lexerTablesModuleName, terminalNames,
-            recognizesTokens, epsilonEAG.hyperArityMask, settings)
+            epsilonEAG.hyperArityMask, settings)
             ~ fileName;
 }
 
@@ -59,8 +61,8 @@ public auto generateLexerCode(OrderedLR1Tables lexerTables, LexerGrammar lexerGr
     tables.setLexerMetadata(candidates, rules, lexerGrammar.terminalNames, lexerGrammar.nonterminalNames);
     fileName.writeModule(moduleName, tables);
 
-    return tuple!("fileName", "moduleName", "terminalNames", "recognizesTokens")(
-        fileName, moduleName, lexerGrammar.terminalNames, true);
+    return tuple!("fileName", "moduleName", "terminalNames")(
+        fileName, moduleName, lexerGrammar.terminalNames);
 }
 
 public auto generateEmptyLexerCode(LexerGrammar lexerGrammar, string compilerName,
@@ -75,14 +77,15 @@ public auto generateEmptyLexerCode(LexerGrammar lexerGrammar, string compilerNam
 
     tables.setLexerMetadata(null, null, lexerGrammar.terminalNames, lexerGrammar.nonterminalNames);
     fileName.writeModule(moduleName, tables);
-    return tuple!("fileName", "moduleName", "terminalNames", "recognizesTokens")(
-        fileName, moduleName, lexerGrammar.terminalNames, false);
+
+    return tuple!("fileName", "moduleName", "terminalNames")(
+        fileName, moduleName, lexerGrammar.terminalNames);
 }
 
 private string[] generateLR1Modules(EAG eag, string name,
     OrderedLR1Tables parserTables, ParserGrammar parserGrammar,
     string syntaxTreeWriterModuleName, string evaluatorModuleName, string lexerTablesModuleName,
-    const string[] terminalNames, bool recognizesTokens, int hyperArityMask, Settings settings)
+    const string[] terminalNames, int hyperArityMask, Settings settings)
 {
     import gamma.parsgen.lalr1.LR1TablesWriter : createTables, writeModule;
     import gamma.parsgen.TerminalRecognizerWriter : writeTerminalRecognizer;
@@ -113,8 +116,6 @@ private string[] generateLR1Modules(EAG eag, string name,
     output.write(terminalTokenMap);
     includeFix(fix, output, '$', fixName);
     output.write(lexicalTokenMap);
-    includeFix(fix, output, '$', fixName);
-    output.write(recognizesTokens);
     includeFix(fix, output, '$', fixName);
     output.writeTerminalRecognizer(terminalNames);
     includeFix(fix, output, '$', fixName);
@@ -159,49 +160,64 @@ private string syntaxTreeWriterFunctions(EAG eag)
     import gamma.grammar.Nonterminal : Nonterminal;
     import gamma.grammar.SymbolNode : SymbolNode;
     import gamma.grammar.Terminal : Terminal;
+    import std.array : appender;
     import std.format : format;
     import std.range : empty;
 
-    string result;
+    auto result = appender!string;
 
     foreach (rule; eag.plainHyperGrammar.grammar.rules)
     {
         const nonterminal = rule.lhs.nonterminal;
         const writerFunction = syntaxTreeWriterFunctionName(nonterminal.index);
 
-        result ~= "    private size_t " ~ writerFunction
-            ~ "(ref Appender!string writer, const long address)\n    {\n"
-            ~ "        switch (tree()[address])\n        {\n";
+        result ~= format!(`
+            private size_t %s(ref Appender!string writer, const long address)
+            {
+                switch (tree()[address])
+                {
+            `.outdent.stripLeft)(writerFunction).indent!4;
         foreach (alternativeIndex; 0 .. rule.alternatives.length)
         {
             const alternativeWriter = syntaxTreeWriterAlternativeFunctionName(nonterminal.index,
                 alternativeIndex + 1);
 
-            result ~= format!"        case %s:\n            return %s(writer, address);\n"(
-                alternativeIndex + 1, alternativeWriter);
+            result ~= format!(`
+                case %s:
+                    return %s(writer, address);
+                `.outdent.stripLeft)(alternativeIndex + 1, alternativeWriter).indent!8;
         }
-        result ~= "        default:\n            assert(false, \"unknown syntax-tree alternative\");\n"
-            ~ "        }\n    }\n\n";
+        result ~= `
+            default:
+                assert(false, "unknown syntax-tree alternative");
+            }
+            `.outdent.stripLeft.indent!8;
+        result ~= `
+            }
+
+            `.outdent.stripLeft.indent!4;
 
         foreach (alternativeIndex, alternative; rule.alternatives)
         {
             const alternativeWriter = syntaxTreeWriterAlternativeFunctionName(nonterminal.index,
                 alternativeIndex + 1);
 
-            result ~= "    private size_t " ~ alternativeWriter
-                ~ "(ref Appender!string writer, const long address)\n    {\n"
-                ~ "        const nodeNumber = this.nextNode++;\n"
-                ~ `        writer.put(format!"  n%s [label=\"%s\"];\n"(nodeNumber, escape(`
-                ~ stringLiteral(nonterminal.toString) ~ ")));\n"
-                ~ "        size_t childOffset = 1;\n";
+            result ~= format!(`
+                private size_t %s(ref Appender!string writer, const long address)
+                {
+                    const nodeNumber = this.nextNode++;
+                    writer.put(format!"  n%%s [label=\"%%s\"];\n"(nodeNumber, escape(%s)));
+                    size_t childOffset = 1;
+                `.outdent.stripLeft)(alternativeWriter, stringLiteral(nonterminal.toString))
+                .indent!4;
 
             if (alternative.rhs.empty)
             {
-                result ~= "        const childNumber = this.nextNode++;\n"
-                    ~ `        writer.put(format!"  n%s [label=\"ε\"];\n"(childNumber));
-`
-                    ~ `        writer.put(format!"  n%s -> n%s;\n"(nodeNumber, childNumber));
-`;
+                result ~= `
+                    const childNumber = this.nextNode++;
+                    writer.put(format!"  n%s [label=\"ε\"];\n"(childNumber));
+                    writer.put(format!"  n%s -> n%s;\n"(nodeNumber, childNumber));
+                    `.outdent.stripLeft.indent!8;
             }
 
             foreach (node; alternative.rhs)
@@ -209,47 +225,57 @@ private string syntaxTreeWriterFunctions(EAG eag)
                 auto symbolNode = cast(SymbolNode) node;
 
                 assert(symbolNode !is null);
-                result ~= "        {\n";
+                result ~= `
+                    {
+                    `.outdent.stripLeft.indent!8;
                 if (auto terminal = cast(Terminal) symbolNode.symbol)
                 {
-                    result ~= "        const childNumber = this.nextNode++;\n"
-                        ~ `        writer.put(format!"  n%s [label=\"%s\"];\n"(childNumber, escape(`
-                        ~ stringLiteral(terminal.toString) ~ ")));\n"
-                        ~ `        writer.put(format!"  n%s -> n%s;\n"(nodeNumber, childNumber));
-`;
+                    result ~= format!(`
+                        const childNumber = this.nextNode++;
+                        writer.put(format!"  n%%s [label=\"%%s\"];\n"(childNumber, escape(%s)));
+                        writer.put(format!"  n%%s -> n%%s;\n"(nodeNumber, childNumber));
+                        `.outdent.stripLeft)(stringLiteral(terminal.toString)).indent!8;
                 }
                 else
                 {
                     const childNonterminal = cast(Nonterminal) symbolNode.symbol;
 
                     assert(childNonterminal !is null);
-                    result ~= "        const childNumber = "
-                        ~ syntaxTreeWriterFunctionName(childNonterminal.index)
-                        ~ "(writer, tree()[address + childOffset]);\n"
-                        ~ "        ++childOffset;\n"
-                        ~ `        writer.put(format!"  n%s -> n%s;\n"(nodeNumber, childNumber));
-`;
+                    result ~= format!(`
+                        const childNumber = %s(writer, tree()[address + childOffset]);
+                        ++childOffset;
+                        writer.put(format!"  n%%s -> n%%s;\n"(nodeNumber, childNumber));
+                        `.outdent.stripLeft)(
+                        syntaxTreeWriterFunctionName(childNonterminal.index)).indent!8;
                 }
-                result ~= "        }\n";
+                result ~= `
+                    }
+                    `.outdent.stripLeft.indent!8;
             }
-            result ~= "        return nodeNumber;\n    }\n\n";
+            result ~= `
+                return nodeNumber;
+                `.outdent.stripLeft.indent!8;
+            result ~= `
+                }
+
+                `.outdent.stripLeft.indent!4;
         }
     }
-    return result;
+    return result.data;
 }
 
 private string syntaxTreeWriterFunctionName(size_t nonterminal)
 {
-    import std.conv : to;
+    import std.format : format;
 
-    return "writeRule" ~ nonterminal.to!string;
+    return format!"writeRule%s"(nonterminal);
 }
 
 private string syntaxTreeWriterAlternativeFunctionName(size_t nonterminal, size_t alternative)
 {
-    import std.conv : to;
+    import std.format : format;
 
-    return syntaxTreeWriterFunctionName(nonterminal) ~ "Alternative" ~ alternative.to!string;
+    return format!"%sAlternative%s"(syntaxTreeWriterFunctionName(nonterminal), alternative);
 }
 
 private int[] terminalToParserToken(ParserGrammar parserGrammar)
@@ -290,7 +316,9 @@ private int[] lexicalNonterminalToParserToken(ParserGrammar parserGrammar)
 
 private string stringLiteral(const string text)
 {
+    import std.format : format;
     import std.string : translate;
 
-    return `"` ~ text.translate(['\\': `\\`, '"': `\"`]) ~ `"`;
+    return format!`"%s"`(text.translate(['\\': `\\`, '"': `\"`]));
+
 }

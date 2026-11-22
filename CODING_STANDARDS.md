@@ -11,7 +11,7 @@ Apply these rules to new and substantially changed code in `src/gamma/`. In `src
 ### Names and layout
 
 - Use `PascalCase` for types and `camelCase` for functions, methods, and locals. Keep one primary type per matching file.
-- Use `camelCase` for private fields; add a trailing underscore only when it distinguishes a field from its accessor.
+- Use `camelCase` for private fields. Use `this.` to distinguish a field from a local or parameter; add a trailing underscore only when it distinguishes a field from its accessor.
 - Spell domain names in full: `nonterminal`, `alternative`, and `operator`. `lhs`, `rhs`, and `eag` are established exceptions.
 - Name primitive values by their domain and unit. In particular, an index must say what it indexes, such as `lexicalRootIndex`; introduce a small domain type when the value crosses a module boundary.
 - Name mappings for their direction, such as `helpersByTerminal`. Prefer a direct relation or a well-named set over a predicate that scans a mapping to rediscover the relation.

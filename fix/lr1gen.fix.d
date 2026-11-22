@@ -7,15 +7,15 @@ import $ : SyntaxTreeWriter;
 import gamma.runtime.lr.LR1Parser : LR1Parser;
 import gamma.runtime.lr.LR1Lexer : LR1Lexer, TerminalCandidate, Token;
 import gamma.runtime.lr.SyntaxTreeLexer : SyntaxTreeLexer;
-import gamma.runtime.SyntaxTree : SyntaxTreeNode, reset, root, positions, syntaxTreeTerminal = terminal, tree;
+import gamma.runtime.SyntaxTree : SyntaxTreeNode, reset, root, positions, terminalNode, tree;
 import io : Input, Position, read;
 import log : error, trace;
+import std.range : empty;
 import std.sumtype : get;
 import std.typecons : Nullable, nullable;
 
 private enum int[] terminalToParserToken = $;
 private enum int[] lexicalNonterminalToParserToken = $;
-private enum recognizesTokens = $;
 $
 
 class GeneratedLexer : SyntaxTreeLexer
@@ -32,18 +32,18 @@ class GeneratedLexer : SyntaxTreeLexer
     {
         this.eofToken = eofToken;
         this.position_ = input.position;
-        if (recognizesTokens)
+        if (!lexerCandidates.empty)
             this.lrLexer = LR1Lexer(input, lexerTables, lexerCandidates, lexerRules,
                 input => terminalCandidate(input));
     }
 
     public int nextToken()
     {
-        if (!recognizesTokens)
-            return eofToken;
+        if (lexerCandidates.empty)
+            return endOfInput;
 
         if (lrLexer.empty)
-            return eofToken;
+            return endOfInput;
 
         auto token = lrLexer.front;
 
@@ -54,7 +54,7 @@ class GeneratedLexer : SyntaxTreeLexer
         final switch (token.kind)
         {
         case Token.Kind.terminal:
-            syntaxTreeNode_ = syntaxTreeTerminal(position_);
+            syntaxTreeNode_ = terminalNode(position_);
             if (token.terminal >= terminalToParserToken.length)
                 return -1;
             return terminalToParserToken[token.terminal];
@@ -66,7 +66,7 @@ class GeneratedLexer : SyntaxTreeLexer
                 return -1;
             return lexicalNonterminalToParserToken[nonterminal];
         case Token.Kind.end:
-            return eofToken;
+            return endOfInput;
         case Token.Kind.error:
             return -1;
         }
@@ -80,6 +80,12 @@ class GeneratedLexer : SyntaxTreeLexer
     public SyntaxTreeNode syntaxTreeNode() const
     {
         return syntaxTreeNode_;
+    }
+
+    private int endOfInput()
+    {
+        syntaxTreeNode_ = terminalNode(position_);
+        return eofToken;
     }
 
     private void traceToken(Token token)
@@ -131,13 +137,16 @@ int main(string[] args)
         levels |= Level.trace;
 
     Input input = args.length > 1 ? read(args[1]) : read("stdin", stdin);
-    reset();
+    reset;
+
     auto lexer = new GeneratedLexer(input, cast(int) tables.eofTerminal);
     auto parser = new LR1Parser(tables, lexer);
-    parser.parse;
-    auto writer = SyntaxTreeWriter();
 
-    trace!"%s"(writer.write());
+    parser.parse;
+
+    SyntaxTreeWriter writer;
+
+    trace!"%s"(writer.write);
 
     if (parser.errorCount != 0)
         return EXIT_FAILURE;
@@ -145,8 +154,9 @@ int main(string[] args)
     if (!Eval.EvalInitSucceeds())
         return EXIT_FAILURE;
 
-    assert(tree().length == positions().length);
-    Eval.TraverseSyntaxTree(tree(), positions(), 0, root(), $, info, write);
+    assert(tree.length == positions.length);
+
+    Eval.TraverseSyntaxTree(tree, positions, 0, root, $, info, write);
     writeln("OK");
 
 

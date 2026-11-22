@@ -20,6 +20,21 @@ to the relevant documentation, then remove it from this file.
 
 ## Compiler behavior and diagnostics
 
+- **Make generated-compiler tests safe to run in parallel.**
+  Generated compilers currently share `libgamma_runtime.a` while building, so
+  the suite runs single-threaded. Isolate that runtime artifact and restore
+  parallel test execution.
+- **Avoid speculative lexical syntax-tree construction.**
+  The direct LR path still creates shared syntax-tree records while testing
+  lexical candidates. The 0.398 MiB Oberon-0 probe retained 1,346,839
+  records, allocated 6.41 GiB, and spent 1.58 s collecting. Profile and
+  redesign that candidate path so only the chosen lexical match contributes
+  records; do not begin table-lookup micro-optimizations first.
+- **Eliminate empty LR lexer tables.**
+  A tokenless grammar currently produces an unproductive synthetic lexer
+  grammar and an empty lexer-table module only to satisfy the generated
+  compiler's uniform imports. Stop before lexer-table generation and emit the
+  direct end-of-input lexer instead.
 - **Escape sequences.**
   Give equivalent escape spellings one terminal-symbol identity
   in generated compilers rather than copying their source spellings.
