@@ -198,6 +198,21 @@ unittest
     }
 }
 
+@("repair Oberon-0 input with an LR parser without corrupting its syntax tree")
+unittest
+{
+    with (sandbox)
+    {
+        run!"%s --lalr --space --runtime . %s --output-directory %s"(
+            gamma, buildPath("example", "oberon0.eag"), directory)
+            .shouldPassWith("OberonO grammar is single sweep");
+        const result = run!"cd %s && %s %s"(directory, dotSlash("OberonO"),
+            absolutePath("test/oberon0/Error.Mod"));
+        result.shouldFailWith(`error: Syntax error! Repairing input...`.escape);
+        assert(!result.output.matches("Assertion failure"), result.output);
+    }
+}
+
 @("compile ebnf.eag and run LR parser without crashing")
 unittest
 {

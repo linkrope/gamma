@@ -158,6 +158,14 @@ public class LR1Parser
                 break;
         }
 
+        // Discard the speculative continuation before asking the lexer for
+        // more tokens. An anchor lexical rule application must remain in the
+        // shared arena when the repaired parser later shifts that token.
+        state = stateSnapshot;
+        stack = stackSnapshot;
+        treeStack = treeStackSnapshot;
+        rollback(syntaxTreeSnapshot);
+
         // Phase 2: Delete input until an anchor terminal is reached.
         needLookahead;
         while (lookahead < 0 || !anchors[lookahead])
@@ -167,12 +175,8 @@ public class LR1Parser
             needLookahead;
         }
 
-        // Phase 3: Restore parser and syntax-tree state, then execute the
-        // continuation prefix, inserting terminals until the anchor can be shifted.
-        state = stateSnapshot;
-        stack = stackSnapshot;
-        treeStack = treeStackSnapshot;
-        rollback(syntaxTreeSnapshot);
+        // Phase 3: Execute the continuation prefix, inserting terminals
+        // until the anchor can be shifted.
         for (;;)
         {
             if (canShift(lookahead))
