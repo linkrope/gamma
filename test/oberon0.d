@@ -21,15 +21,20 @@ unittest
     }
 }
 
-static foreach (eag; ["oberon0.eag", "unequal.eag"])
-    @(format!"compile %s and run Oberon-0 compiler"(eag))
+static foreach (parser; parserExamples)
+    static foreach (evaluator; evaluatorExamples)
+        static if (parser.supportsSLAG || evaluator.name != "SLAG")
+            static foreach (eag; ["oberon0.eag", "unequal.eag"])
+    @(format!"compile %s with %s parser and %s evaluator and run Oberon-0 compiler"(
+        eag, parser.name, evaluator.name))
     unittest
     {
         // dfmt off
         with (sandbox)
         {
-            run!"%s --space %s --output-directory %s"(gamma, buildPath("example", eag), directory)
-                .shouldPassWith("OberonO grammar is SLAG");
+            run!"%s %s %s --space %s --output-directory %s"(
+                gamma, parser.arguments, evaluator.arguments, buildPath("example", eag), directory)
+                .shouldPassWith(evaluator.successMessage);
             run!"cd %s && %s %s"(directory, dotSlash("OberonO"), absolutePath("test/oberon0/Sample.Mod"))
                 .shouldPassWith("^L1 .* RET 0 $");
             run!"cd %s && %s %s"(directory, dotSlash("OberonO"), absolutePath("test/oberon0/BigSample.Mod"))

@@ -4,34 +4,20 @@ import std.format;
 import std.path;
 import test.helper;
 
-static foreach (eag; ["eta.eag", "eta-utf8.eag"])
-    @(format!"compile %s as SLAG and run compiler"(eag))
+static foreach (parser; parserExamples)
+    static foreach (evaluator; evaluatorExamples)
+        static if (parser.supportsSLAG || evaluator.name != "SLAG")
+            static foreach (eag; ["eta.eag", "eta-utf8.eag"])
+    @(format!"compile %s with %s parser and %s evaluator and run compiler"(
+        eag, parser.name, evaluator.name))
     unittest
     {
         // dfmt off
         with (sandbox)
         {
-            run!"%s --space %s --output-directory %s"(gamma, buildPath("example", eag), directory)
-                .shouldPassWith("Eta grammar is SLAG");
-            run!"cd %s && %s %s"(directory, dotSlash("Eta"), absolutePath("test/cola/Pico.Cola"))
-                .shouldPassWith(`^program < \+ 'ok' : CODE > : $`);
-            run!"cd %s && %s %s"(directory, dotSlash("Eta"), absolutePath("test/cola/Mikro.Cola"))
-                .shouldPassWith(`^programm < \+ CODE 'ret' ';' : CODE > : $`);
-            run!"cd %s && %s %s"(directory, dotSlash("Eta"), absolutePath("test/cola/PL0.Cola"))
-                .shouldPassWith(`^programm < \+ CODE : CODE > : $`);
-        }
-        // dfmt on
-    }
-
-static foreach (eag; ["eta.eag", "eta-utf8.eag"])
-    @(format!"compile %s as SOAG and run compiler"(eag))
-    unittest
-    {
-        // dfmt off
-        with (sandbox)
-        {
-            run!"%s --soag -o --space %s --output-directory %s"(gamma, buildPath("example", eag), directory)
-                .shouldPassWith("grammar is SOAG");
+            run!"%s %s %s --space %s --output-directory %s"(
+                gamma, parser.arguments, evaluator.arguments, buildPath("example", eag), directory)
+                .shouldPassWith(evaluator.successMessage);
             run!"cd %s && %s %s"(directory, dotSlash("Eta"), absolutePath("test/cola/Pico.Cola"))
                 .shouldPassWith(`^program < \+ 'ok' : CODE > : $`);
             run!"cd %s && %s %s"(directory, dotSlash("Eta"), absolutePath("test/cola/Mikro.Cola"))

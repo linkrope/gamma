@@ -3,6 +3,35 @@ module test.helper;
 import std.range;
 import std.typecons;
 
+struct ParserExample
+{
+    string name;
+
+    string arguments;
+
+    bool supportsSLAG;
+}
+
+static immutable parserExamples = [
+    ParserExample("ELL", "", true),
+    ParserExample("LR", "--lalr --runtime .", false),
+];
+
+struct EvaluatorExample
+{
+    string name;
+
+    string arguments;
+
+    string successMessage;
+}
+
+static immutable evaluatorExamples = [
+    EvaluatorExample("SLAG", "--slag", "grammar is SLAG"),
+    EvaluatorExample("Single-Sweep", "--sweep", "grammar is single sweep"),
+    EvaluatorExample("SOAG", "--soag -o", "grammar is SOAG"),
+];
+
 Sandbox sandbox()
 {
     import std.file : mkdirRecurse;
