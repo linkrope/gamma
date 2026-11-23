@@ -10,8 +10,8 @@ unittest
 {
     with (sandbox)
     {
-        const parseTree = `
-            trace: digraph ParseTree {
+        const syntaxTree = `
+            trace: digraph SyntaxTree {
               node [shape=box];
               n0 [label="S"];
               n1 [label="_1"];
@@ -75,8 +75,7 @@ unittest
                 "trace: lexer terminal '<'",
                 "trace: lexer terminal '<='",
                 "trace: lexer nonterminal id",
-                parseTree.escape,
-        );
+                syntaxTree.escape);
     }
 }
 
@@ -110,8 +109,7 @@ unittest
             "input:1:1",
             `error: Syntax error! Repairing input...`.escape,
             "info: Deleting unknown token",
-            "trace: lexer nonterminal id",
-        );
+            "trace: lexer nonterminal id");
     }
 }
 
@@ -151,8 +149,7 @@ unittest
             "error: comment not closed at end of text",
             "input:1:1",
             `error: Syntax error! Repairing input...`.escape,
-            "info: End of parsing",
-        );
+            "info: End of parsing");
     }
 }
 
@@ -209,7 +206,6 @@ unittest
             .shouldPassWith(
                 "trace: lexer terminal 'if'",
                 "trace: lexer terminal '€'",
-                "trace: lexer nonterminal id",
-        );
+                "trace: lexer nonterminal id");
     }
 }

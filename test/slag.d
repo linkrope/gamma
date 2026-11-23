@@ -154,11 +154,12 @@ unittest
     with (sandbox)
     {
         run!"%s %s --output-directory %s"(gamma, buildPath("example", "non-slag.eag"), directory)
-            .shouldPassWith("cannot analyze bottom up")
-            .shouldPassWith("cannot synthesize 2 times bottom up")
-            .shouldPassWith("cannot check for equality bottom up")
-            .shouldPassWith("cannot check for inequality bottom up")
-            .shouldPassWith("S grammar is no SLAG but LAG");
+            .shouldPassWith(
+                "cannot analyze bottom up",
+                "cannot synthesize 2 times bottom up",
+                "cannot check for equality bottom up",
+                "cannot check for inequality bottom up",
+                "S grammar is no SLAG but LAG");
     }
 }
 

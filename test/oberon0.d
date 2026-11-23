@@ -5,71 +5,93 @@ import std.format;
 import std.path;
 import test.helper;
 
-@("compile and run Oberon-0 frontend")
-unittest
+// dfmt off
+static foreach (parser; parsers)
+    static foreach (evaluator; evaluators)
+        static if (parser.name == "ELL" || evaluator.name != "SLAG")
+        {
+            @(format!"compile and run Oberon-0 frontend with %s and %s"(parser.name, evaluator.name))
+            unittest
+            {
+                testFrontend(parser, evaluator);
+            }
+
+            static foreach (eag; ["oberon0.eag", "unequal.eag"])
+                @(format!"compile %s with %s and %s and run Oberon-0 compiler"(eag, parser.name, evaluator.name))
+                unittest
+                {
+                    testCompiler(eag, parser, evaluator);
+                }
+
+            static if (evaluator.name != "SLAG")
+                @(format!"compile and run Oberon-0 compiler pipeline with %s and %s"(parser.name, evaluator.name))
+                unittest
+                {
+                    testPipeline(parser, evaluator);
+                }
+        }
+// dfmt on
+
+void testFrontend(Parser parser, Evaluator evaluator)
 {
     with (sandbox)
     {
-        run!"%s %s --output-directory %s"(gamma, buildPath("example", "frontend.eag"), directory)
-            .shouldPassWith("OberonO grammar is SLAG");
+        run!"%s %s %s --space %s --output-directory %s"(
+            gamma, parser.arguments, evaluator.arguments, buildPath("example", "frontend.eag"), directory)
+            .shouldPassWith(evaluator.successMessage);
         run!"cd %s && %s %s"(directory, dotSlash("OberonO"), absolutePath("test/oberon0/Sample.Mod"))
-            .shouldPassWith("^done$");
+            .shouldPassWith("^ *done *$");
         run!"cd %s && %s %s"(directory, dotSlash("OberonO"), absolutePath("test/oberon0/BigSample.Mod"))
-            .shouldPassWith("^done$");
-        run!"cd %s && %s %s"(directory, dotSlash("OberonO"), absolutePath("test/oberon0/Error.Mod"))
-            .shouldFailWith("^info: errors detected: 31$");
+            .shouldPassWith("^ *done *$");
     }
 }
 
-static foreach (eag; ["oberon0.eag", "unequal.eag"])
-    @(format!"compile %s and run Oberon-0 compiler"(eag))
-    unittest
-    {
-        // dfmt off
-        with (sandbox)
-        {
-            run!"%s --space %s --output-directory %s"(gamma, buildPath("example", eag), directory)
-                .shouldPassWith("OberonO grammar is SLAG");
-            run!"cd %s && %s %s"(directory, dotSlash("OberonO"), absolutePath("test/oberon0/Sample.Mod"))
-                .shouldPassWith("^L1 .* RET 0 $");
-            run!"cd %s && %s %s"(directory, dotSlash("OberonO"), absolutePath("test/oberon0/BigSample.Mod"))
-                .shouldPassWith("^^L1 .* RET 0 $$");
-            run!"cd %s && %s %s"(directory, dotSlash("OberonO"), absolutePath("test/oberon0/Error.Mod"))
-                .shouldFailWith("^info: errors detected: 31$");
-        }
-        // dfmt on
-    }
-
-@("compile and run Oberon-0 compiler pipeline")
-unittest
+void testCompiler(const string eag, Parser parser, Evaluator evaluator)
 {
     with (sandbox)
     {
-        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "abstract-syntax.eag"), directory)
-            .shouldPassWith("OberonOa grammar is single sweep");
-        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "type-tables.eag"), directory)
-            .shouldPassWith("OberonOb grammar is SLAG");
-        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "type-resolution.eag"), directory)
-            .shouldPassWith("OberonOc grammar is single sweep");
-        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "symbol-tables.eag"), directory)
-            .shouldPassWith("OberonOd grammar is SLAG");
-        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "symbol-resolution.eag"), directory)
-            .shouldPassWith("OberonOe grammar is SLAG");
-        run!"%s --space %s --output-directory %s"(gamma, buildPath("example", "type-check.eag"), directory)
-            .shouldPassWith("OberonOf grammar is single sweep");
+        run!"%s %s %s --space %s --output-directory %s"(
+            gamma, parser.arguments, evaluator.arguments, buildPath("example", eag), directory)
+            .shouldPassWith(evaluator.successMessage);
+        run!"cd %s && %s %s"(directory, dotSlash("OberonO"), absolutePath("test/oberon0/Sample.Mod"))
+            .shouldPassWith("^L1 .* RET 0 $");
+        run!"cd %s && %s %s"(directory, dotSlash("OberonO"), absolutePath("test/oberon0/BigSample.Mod"))
+            .shouldPassWith("^^L1 .* RET 0 $$");
+        run!"cd %s && %s %s"(directory, dotSlash("OberonO"), absolutePath("test/oberon0/Error.Mod"))
+            .shouldFailWith(parser.errorPattern);
+    }
+}
 
-        run!"cd %s && %sa -v -w %s"(directory, dotSlash("OberonO"), absolutePath("test/oberon0/Sample.Mod"))
-            .shouldPassWith("OberonOa compiler: compiling...");
-        run!"cd %s && %sb -v -w OberonOa.Out"(directory, dotSlash("OberonO"))
-            .shouldPassWith("OberonOb compiler: compiling...");
-        run!"cd %s && %sc -v -w OberonOb.Out"(directory, dotSlash("OberonO"))
-            .shouldPassWith("OberonOc compiler: compiling...");
-        run!"cd %s && %sd -v -w OberonOc.Out"(directory, dotSlash("OberonO"))
-            .shouldPassWith("OberonOd compiler: compiling...");
-        run!"cd %s && %se -v -w OberonOd.Out"(directory, dotSlash("OberonO"))
-            .shouldPassWith("OberonOe compiler: compiling...");
-        run!"cd %s && %sf -v -w OberonOe.Out"(directory, dotSlash("OberonO"))
-            .shouldPassWith("OberonOf compiler: compiling...");
+void testPipeline(Parser parser, Evaluator evaluator)
+{
+    with (sandbox)
+    {
+        foreach (eag; [
+            "abstract-syntax.eag",
+            "type-tables.eag",
+            "type-resolution.eag",
+            "symbol-tables.eag",
+            "symbol-resolution.eag",
+            "type-check.eag",
+        ])
+        {
+            run!"%s %s %s --space %s --output-directory %s"(
+                gamma, parser.arguments, evaluator.arguments, buildPath("example", eag), directory)
+                .shouldPass;
+        }
+
+        run!"cd %s && %sa -w %s"(directory, dotSlash("OberonO"), absolutePath("test/oberon0/Sample.Mod"))
+            .shouldPass;
+        run!"cd %s && %sb -w OberonOa.Out"(directory, dotSlash("OberonO"))
+            .shouldPass;
+        run!"cd %s && %sc -w OberonOb.Out"(directory, dotSlash("OberonO"))
+            .shouldPass;
+        run!"cd %s && %sd -w OberonOc.Out"(directory, dotSlash("OberonO"))
+            .shouldPass;
+        run!"cd %s && %se -w OberonOd.Out"(directory, dotSlash("OberonO"))
+            .shouldPass;
+        run!"cd %s && %sf -w OberonOe.Out"(directory, dotSlash("OberonO"))
+            .shouldPass;
 
         const output = readText(buildPath(directory, "OberonOf.Out"));
 

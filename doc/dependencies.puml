@@ -28,6 +28,7 @@ package gamma {
     gamma.input.earley ..> gamma.grammar.affixes
     gamma.input.epsilang ..> gamma.grammar.hyper
     gamma.parsgen.lalr1 ..> gamma.input.epsilang
+    gamma.parsgen.lalr1 ..> gamma.parsgen
     gamma.parsgen.lalr1 ..> gamma.runtime.lr
     gamma.runtime ..[#red]> gamma.runtime.lr
     gamma.runtime.lr ..> gamma.runtime

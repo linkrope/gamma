@@ -1,12 +1,13 @@
 module gamma.parsgen.TerminalRecognizerWriter;
 
 import gamma.parsgen.FixWriter : includeFix;
+import gamma.parsgen.SourceWriter : indent;
 import io : Input;
 import std.array : array;
 import std.format : format;
 import std.range : empty;
 import std.stdio : File;
-import std.string : outdent, splitLines, stripLeft;
+import std.string : outdent, stripLeft;
 import std.utf : byDchar;
 
 /**
@@ -86,7 +87,7 @@ private void writeNode(File output, TrieNode node)
     if (node.terminal != size_t.max)
         output.write(format!(`
             result = TerminalCandidate(%s, cursor).nullable;
-            `.outdent.stripLeft)(node.terminal).indent("    "));
+            `.outdent.stripLeft)(node.terminal).indent!4);
     output.write(
         `
         if (cursor.empty)
@@ -94,7 +95,7 @@ private void writeNode(File output, TrieNode node)
 
         switch (cursor.front)
         {
-        `.outdent.stripLeft.indent("    "));
+        `.outdent.stripLeft.indent!4);
 
     foreach (character; nodeCharacters(node))
     {
@@ -104,7 +105,7 @@ private void writeNode(File output, TrieNode node)
             case cast(dchar) 0x%08x:
                 cursor.popFront;
                 goto state%s;
-            `.outdent.stripLeft)(character, child.stateIndex).indent("    "));
+            `.outdent.stripLeft)(character, child.stateIndex).indent!4);
     }
 
     output.write(
@@ -113,35 +114,7 @@ private void writeNode(File output, TrieNode node)
             return result;
         }
 
-        `.outdent.stripLeft.indent("    "));
-}
-
-private string indent(string text, string indentation)
-{
-    import std.array : appender;
-    import std.typecons : Yes;
-
-    auto result = appender!string;
-
-    foreach (line; text.splitLines(Yes.keepTerminator))
-    {
-        if (line != "\n")
-            result.put(indentation);
-        result.put(line);
-    }
-    return result.data;
-}
-
-@("indent generated source without indenting blank lines")
-unittest
-{
-    const source = `
-        first;
-
-        second;
-        `.outdent.stripLeft;
-
-    assert(source.indent("    ") == "    first;\n\n    second;\n");
+        `.outdent.stripLeft.indent!4);
 }
 
 private dchar[] nodeCharacters(TrieNode node)

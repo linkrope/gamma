@@ -139,6 +139,25 @@ public LR1Tables createTables(OrderedLR1Tables parserTables,
     return result;
 }
 
+public LR1Tables createEmptyLexerTables()
+{
+    LR1Tables result;
+
+    result.eofTerminal = "0";
+    result.actions = "[]";
+    result.actionOffsets = "[0]";
+    result.gotos = "[]";
+    result.gotoOffsets = "[0]";
+    result.rules = "[]";
+    result.terminals = "[]";
+    result.nonterminals = "[]";
+    result.lexerCandidates = "[]";
+    result.lexerRules = "[]";
+    result.terminalNames = "[]";
+    result.nonterminalNames = "[]";
+    return result;
+}
+
 public void writeModule(string fileName, string moduleName, LR1Tables tables)
 {
     import io : Input;

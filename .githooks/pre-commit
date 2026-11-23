@@ -3,5 +3,5 @@ set -eu
 
 dub test
 dub run dscanner -- --styleCheck src test
-dub run depend -- --check doc/dependencies.puml $(rg --files src include unittest -g '*.d' | sort)
+dub run depend -- --check doc/dependencies.puml $(find src include unittest -type f -name '*.d' -print | sort)
 dub run --single tool/format.d -- --staged

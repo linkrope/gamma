@@ -1,7 +1,7 @@
 module gamma.runtime.lr.LR1Lexer;
 
 import gamma.runtime.lr.LR1ParserTables;
-import gamma.runtime.ParseTree : nodePosition = position, ParseNode, RuleNode, TerminalNode;
+import gamma.runtime.SyntaxTree : ruleNode, SyntaxTreeNode, terminalNode;
 import io : Input, Position;
 import std.range : back, empty, front;
 import std.sumtype : match;
@@ -25,7 +25,9 @@ public struct Token
 
     Position position;
 
-    const(ParseNode)* rule;
+    size_t nonterminal = size_t.max;
+
+    long syntaxTreeAddress = -1;
 
     Nullable!string errorMessage;
 }
@@ -123,7 +125,7 @@ public struct LR1Lexer
 
         const position = input.position;
         size_t[] states = [0];
-        const(ParseNode)*[] nodes = null;
+        SyntaxTreeNode[] nodes = null;
         Nullable!Token acceptedToken;
         Input remainingInput = input;
         Nullable!TerminalCandidate literal;
@@ -242,7 +244,7 @@ public struct LR1Lexer
     /**
      * Applies all reductions needed before shifting `terminal`.
      */
-    private bool consume(ref size_t[] states, ref const(ParseNode)*[] nodes, size_t terminal,
+    private bool consume(ref size_t[] states, ref SyntaxTreeNode[] nodes, size_t terminal,
         const Position position) const
     {
         for (;;)
@@ -257,7 +259,7 @@ public struct LR1Lexer
                 (const Shift shift)
                 {
                     states ~= shift.state;
-                    nodes ~= new ParseNode(TerminalNode(size_t.max, position));
+                    nodes ~= terminalNode(position);
                     return true;
                 },
                 (const Reduce reduceAction)
@@ -278,10 +280,10 @@ public struct LR1Lexer
      * Parses the virtual end marker against a snapshot.
      */
     private Nullable!Token candidateAtVirtualEnd(const size_t[] originalStates,
-        const(ParseNode)*[] originalNodes, const Position position) const
+        const(SyntaxTreeNode)[] originalNodes, const Position position) const
     {
         size_t[] states = originalStates.dup;
-        const(ParseNode)*[] nodes = originalNodes.dup;
+        SyntaxTreeNode[] nodes = originalNodes.dup;
         Nullable!LexerCandidate matchedCandidate;
         size_t matchedRule = size_t.max;
 
@@ -330,9 +332,10 @@ public struct LR1Lexer
 
                 auto sourceRule = nodes[$ - parserTables.rules[matchedRule].rhsLength];
 
-                assert(sourceRule !is null);
+                assert(sourceRule.isRule);
 
-                return Token(Token.Kind.nonterminal, size_t.max, position, sourceRule).nullable;
+                return Token(Token.Kind.nonterminal, size_t.max, position, candidate.symbol,
+                    sourceRule.address).nullable;
             }
         }
     }
@@ -350,7 +353,7 @@ public struct LR1Lexer
         return false;
     }
 
-    private void reduce(ref size_t[] states, ref const(ParseNode)*[] nodes,
+    private void reduce(ref size_t[] states, ref SyntaxTreeNode[] nodes,
         size_t ruleIndex, const Position position) const
     {
         const rule = parserTables.rules[ruleIndex];
@@ -368,13 +371,12 @@ public struct LR1Lexer
         const source = rules[ruleIndex];
 
         if (source.terminal != size_t.max)
-            nodes ~= new ParseNode(TerminalNode(source.terminal, nodePosition(*children.front)));
+            nodes ~= children.front;
         else if (source.nonterminal != size_t.max)
-            nodes ~= new ParseNode(RuleNode(source.nonterminal, source.alternative, children,
-                    children.empty ? position
-                    : nodePosition(*children.front)));
+            nodes ~= ruleNode(source.alternative, children,
+                children.empty ? position : children.front.position);
         else
-            nodes ~= children.length == 1 ? children.front : null;
+            nodes ~= children.length == 1 ? children.front : terminalNode(position);
 
         foreach (goTo; parserTables
             .gotos[parserTables.gotoOffsets[states.back] .. parserTables.gotoOffsets[states.back + 1]])

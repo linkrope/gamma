@@ -248,7 +248,7 @@ void compile(Input input, const Arguments arguments)
 
 auto generateLRLexer(EAG eag, const Settings settings)
 {
-    import gamma.parsgen.lalr1.CodeGenerator : generateLexerCode;
+    import gamma.parsgen.lalr1.CodeGenerator : generateEmptyLexerCode, generateLexerCode;
     import gamma.parsgen.lalr1.LexerConflictResolver : LexerConflictResolver;
     import gamma.parsgen.lalr1.LexerGrammarBuilder : toLexerGrammar;
     import gamma.parsgen.lalr1.PennelloDeRemer : generateParser;
@@ -257,6 +257,11 @@ auto generateLRLexer(EAG eag, const Settings settings)
     const parsesLexicalNonterminals = settings.p
         ? Yes.parsesLexicalNonterminals : No.parsesLexicalNonterminals;
     auto lexerGrammar = eag.toLexerGrammar(parsesLexicalNonterminals);
+
+    if (lexerGrammar.candidates.empty)
+        return generateEmptyLexerCode(lexerGrammar, eag.plainHyperGrammar.startSymbol.toString,
+            settings);
+
     auto conflictResolver = new LexerConflictResolver(lexerGrammar.grammar,
         lexerGrammar.tokenEnd, lexerGrammar.helpersByTerminal,
         lexerGrammar.lexicalNonterminalOwners, lexerGrammar.nonterminalNames);

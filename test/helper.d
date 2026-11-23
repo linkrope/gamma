@@ -3,6 +3,35 @@ module test.helper;
 import std.range;
 import std.typecons;
 
+static immutable parsers = [
+    Parser("ELL", "", "^info: errors detected: 31$"),
+    Parser("LR", "--lalr --runtime .", r"error: Syntax error! Repairing input\.\.\."),
+];
+
+struct Parser
+{
+    string name;
+
+    string arguments;
+
+    string errorPattern;
+}
+
+static immutable evaluators = [
+    Evaluator("SLAG", "--slag", "grammar is SLAG"),
+    Evaluator("Single-Sweep", "--sweep", "grammar is single sweep"),
+    Evaluator("SOAG", "--soag -o", "grammar is SOAG"),
+];
+
+struct Evaluator
+{
+    string name;
+
+    string arguments;
+
+    string successMessage;
+}
+
 Sandbox sandbox()
 {
     import std.file : mkdirRecurse;
@@ -57,6 +86,12 @@ in (!patterns.empty)
         foreach (pattern; patterns)
             assert(output.matches(pattern), output);
     }
+    return result;
+}
+
+Result shouldPass(Result result)
+{
+    assert(result.status == 0, result.output);
     return result;
 }
 

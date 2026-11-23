@@ -23,8 +23,8 @@ unittest
 {
     with (sandbox)
     {
-        const parseTree = `
-            trace: digraph ParseTree {
+        const syntaxTree = `
+            trace: digraph SyntaxTree {
               node [shape=box];
               n0 [label="S"];
               n1 [label="expr"];
@@ -63,7 +63,7 @@ unittest
             .shouldPassWith("S grammar is single sweep");
         write(buildPath(directory, "input"), "1 + 2");
         run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
-            .shouldPassWith(parseTree.escape);
+            .shouldPassWith(syntaxTree.escape);
     }
 }
 
@@ -72,8 +72,8 @@ unittest
 {
     with (sandbox)
     {
-        const parseTree = `
-            trace: digraph ParseTree {
+        const syntaxTree = `
+            trace: digraph SyntaxTree {
               node [shape=box];
               n0 [label="S"];
               n1 [label="expr"];
@@ -127,8 +127,7 @@ unittest
             .shouldFailWith(
                 `error: Syntax error! Repairing input...`.escape,
                 `info: Inserting '0'`,
-                parseTree.escape,
-        );
+                syntaxTree.escape);
     }
 }
 
@@ -146,12 +145,44 @@ unittest
                 "error: unknown token",
                 "input:1:3",
                 `error: Syntax error! Repairing input...`.escape,
-                "info: Deleting unknown token",
-        );
+                "info: Deleting unknown token");
     }
 }
 
-@("recover out-of-order LR input at end of file")
+@("repair immediate end of input without corrupting syntax tree")
+unittest
+{
+    with (sandbox)
+    {
+        const name = buildPath(directory, "single-terminal.eag");
+        const eag = `
+            S = .
+
+            S <+ : S>: 'a'.
+            `.outdent.strip;
+        const syntaxTree = `
+            trace: digraph SyntaxTree {
+              node [shape=box];
+              n0 [label="S"];
+              n1 [label="'a'"];
+              n0 -> n1;
+            }
+            `.outdent.strip;
+
+        write(name, eag);
+        run!"%s --lalr --runtime . %s --output-directory %s"(
+            gamma, name, directory)
+            .shouldPassWith("S grammar is single sweep");
+        write(buildPath(directory, "input"), "");
+        run!"cd %s && %s --verbose input"(directory, dotSlash("S"))
+            .shouldFailWith(
+                `error: Syntax error! Repairing input...`.escape,
+                `info: Inserting 'a'`,
+                syntaxTree.escape);
+    }
+}
+
+@("recover out-of-order LR input at end of input")
 unittest
 {
     with (sandbox)
@@ -162,8 +193,7 @@ unittest
         run!"cd %s && echo 'ba' | %s"(directory, dotSlash("S"))
             .shouldFailWith(
                 `error: Syntax error! Repairing input...`.escape,
-                "info: End of parsing",
-        );
+                "info: End of parsing");
     }
 }
 
@@ -179,8 +209,7 @@ unittest
         run!"cd %s && %s input"(directory, dotSlash("DeclAppl"))
             .shouldFailWith(
                 "error: predicate 'Declared' failed",
-                "input:1:14 DECL ab APPL ba",
-        );
+                "input:1:14 DECL ab APPL ba");
     }
 }
 
@@ -195,6 +224,24 @@ unittest
         run!"cd %s && %s %s"(directory, dotSlash("OberonO"),
             absolutePath("test/oberon0/BigSample.Mod"))
             .shouldPassWith("^^L1 .* RET 0 $$");
+    }
+}
+
+@("repair input without corrupting syntax tree")
+unittest
+{
+    with (sandbox)
+    {
+        run!"%s --lalr --space --runtime . %s --output-directory %s"(
+            gamma, buildPath("example", "oberon0.eag"), directory)
+            .shouldPassWith("OberonO grammar is single sweep");
+
+        const result = run!"cd %s && %s %s"(directory, dotSlash("OberonO"),
+            absolutePath("test/oberon0/Error.Mod"));
+
+        result.shouldFailWith(`error: Syntax error! Repairing input...`.escape);
+
+        assert(!result.output.matches("Assertion failure"), result.output);
     }
 }
 
