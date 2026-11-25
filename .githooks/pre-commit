@@ -2,6 +2,6 @@
 set -eu
 
 dub test
-dub run dscanner -- --styleCheck src test
-dub run depend -- --check doc/dependencies.puml $(find src include unittest -type f -name '*.d' -print | sort)
+dub run --single tool/dscanner.d
+dub run --single tool/depend.d
 dub run --single tool/format.d -- --staged

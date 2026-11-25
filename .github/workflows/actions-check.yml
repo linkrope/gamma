@@ -20,19 +20,14 @@ jobs:
       with:
         compiler: ${{ inputs.compiler_version }}
 
-    - run: |
-        dub fetch dscanner@0.15.2
-        dub fetch depend@0.4.0
-
     - name: Check style
-      run: |
-        dub run dscanner -- --styleCheck src test
-
-    - name: Check dependency model
-      run: |
-        dub run depend -- \
-          --check doc/dependencies.puml \
-          $(rg --files src include unittest -g '*.d' | sort)
+      run: dub run --single tool/dscanner.d
 
     - name: Check formatting
       run: dub run --single tool/format.d -- --check
+
+    - name: Check dependencies
+      run: dub run --single tool/depend.d
+
+    - name: Check cognitive complexity
+      run: dub run --single tool/cogito.d
